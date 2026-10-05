@@ -1,18 +1,58 @@
 # Sensi Golf Enhanced
 
-Modern port/remaster investigation for Sensible Golf.
+A preservation-first modern port/remaster investigation for **Sensible Golf**.
 
-## Current status
+> **Current gate:** Gameplay/physics recovery  
+> **Status:** PROVISIONAL GO — original binaries/data still need to be inspected and parity-tested.
 
-**Gate 1: Gameplay/physics recovery — PROVISIONAL GO, binary verification pending.**
+## Project rule
 
-The project does not move into HD art, mobile UI, or feature work until the original shot and ball model can be recovered and validated against the original game.
+We do **not** start HD art, mobile UI, new courses, progression or other enhancement work until the original gameplay model is recovered and validated.
 
-See [`docs/GAMEPLAY_RECOVERY_GATE.md`](docs/GAMEPLAY_RECOVERY_GATE.md).
+The target is not "similar arcade golf". The target is:
 
-## Repository rules
+```
+identical controlled input
+        ↓
+original Sensible Golf
+        ↓
+trajectory / landing / bounce / roll
 
-- Preserve original gameplay before enhancing it.
-- Do not commit original commercial executables, EPF archives, music, graphics, or other licensed game data to this public repository unless redistribution rights explicitly permit it.
-- Keep recovery notes, clean tooling, tests and newly written port code here.
-- Every recovered mechanic needs parity tests against recorded original-game behaviour.
+vs.
+
+identical controlled input
+        ↓
+portable recovered core
+        ↓
+trajectory / landing / bounce / roll
+```
+
+Only when those outputs match within an agreed tolerance does Gate 1 pass.
+
+## Repository layout
+
+- `docs/` — recovery plan, evidence, decisions and parity specifications
+- `tools/` — clean analysis/import utilities
+- `tests/` — automated tests for tools and later gameplay parity
+- `.github/workflows/` — CI
+- `original/` — **local only**, ignored; licensed commercial game files must not be committed here
+
+## Start here
+
+1. Read [Gate 1 — Gameplay Recovery](docs/GAMEPLAY_RECOVERY_GATE.md).
+2. Read [Original Input Policy](docs/ORIGINAL_INPUT_POLICY.md).
+3. Put a legally held DOS game copy in a local ignored `original/` directory.
+4. Run `python tools/hash_inputs.py original`.
+5. Run `python tools/epf_inspect.py <archive.epf> --json`.
+6. Record findings in [Analysis Log](docs/ANALYSIS_LOG.md).
+7. Build controlled-shot traces described in [Parity Test Plan](docs/PARITY_TEST_PLAN.md).
+
+## Scope after Gate 1
+
+If parity succeeds, the project moves to a portable deterministic gameplay core, a modern renderer, Android/iOS input and display layers, then HD assets and enhanced features.
+
+See [Roadmap](docs/ROADMAP.md).
+
+## Rights
+
+This public repository is for newly written tooling, documentation and port code. Original commercial executables, archives, graphics, music, course data and other licensed material stay out of the repository unless redistribution rights explicitly allow them.

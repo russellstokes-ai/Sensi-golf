@@ -24,18 +24,18 @@ At minimum sample:
 ### Lies/surfaces
 - tee;
 - fairway;
-- semi-rough;
-- rough;
+- poor/recessed lies identified by the game;
 - bunker;
 - green;
 - water/out-of-bounds boundary cases.
 
-### Environment
-- no/low/high wind if available;
-- wind aligned, opposed and crosswind;
+### Environment / geometry
 - flat landing area;
-- slope;
-- obstacle/tree interaction.
+- green slope;
+- obstacle/tree interaction;
+- hazard boundaries.
+
+**No wind cases:** the original manual explicitly describes Sensible Golf as not modelling wind, so wind must not be invented in classic-mode parity tests.
 
 ## Trace schema
 
@@ -50,7 +50,6 @@ Each controlled shot should record:
   "aim": 0,
   "club": "1W",
   "lie": "tee",
-  "wind": {"direction": 0, "strength": 0},
   "power_tick": 0,
   "accuracy_tick": 0,
   "trajectory": [],

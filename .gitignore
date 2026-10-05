@@ -1,0 +1,23 @@
+# Original/licensed game material — keep outside the public repository
+original/
+analysis/binaries/
+analysis/extracted/
+*.exe
+*.epf
+*.adf
+*.img
+*.iso
+*.bin
+*.cue
+
+# Reverse-engineering work products
+*.ghidra
+*.gpr
+*.rep
+*.idb
+*.i64
+
+# Local tooling/output
+__pycache__/
+*.pyc
+.DS_Store

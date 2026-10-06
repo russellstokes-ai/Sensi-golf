@@ -38,3 +38,15 @@ add_executable(sensigolf_recovered_full_probe
     tools/recovered_full_probe.cpp
 )
 target_link_libraries(sensigolf_recovered_full_probe PRIVATE sensigolf_core)
+
+
+add_executable(sensigolf_recovered_prng_tests
+    tests/recovered_prng_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_prng_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_prng_tests COMMAND sensigolf_recovered_prng_tests)
+
+add_executable(sensigolf_recovered_prng_probe
+    tools/recovered_prng_probe.cpp
+)
+target_link_libraries(sensigolf_recovered_prng_probe PRIVATE sensigolf_core)

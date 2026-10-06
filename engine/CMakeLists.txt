@@ -1,6 +1,7 @@
 add_library(sensigolf_core
     src/trace.cpp
     src/recovered_flight.cpp
+    src/recovered_ground.cpp
 )
 
 target_include_directories(sensigolf_core
@@ -22,7 +23,18 @@ add_executable(sensigolf_recovered_flight_tests
 target_link_libraries(sensigolf_recovered_flight_tests PRIVATE sensigolf_core)
 add_test(NAME sensigolf_recovered_flight_tests COMMAND sensigolf_recovered_flight_tests)
 
+add_executable(sensigolf_recovered_ground_tests
+    tests/recovered_ground_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_ground_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_ground_tests COMMAND sensigolf_recovered_ground_tests)
+
 add_executable(sensigolf_recovered_probe
     tools/recovered_probe.cpp
 )
 target_link_libraries(sensigolf_recovered_probe PRIVATE sensigolf_core)
+
+add_executable(sensigolf_recovered_full_probe
+    tools/recovered_full_probe.cpp
+)
+target_link_libraries(sensigolf_recovered_full_probe PRIVATE sensigolf_core)

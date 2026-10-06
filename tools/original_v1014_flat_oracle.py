@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Original v1.014 launch-to-rest oracle on a controlled generic flat surface."""
+"""Original v1.014 launch-to-rest oracle on controlled terrain descriptors."""
 
 from __future__ import annotations
 
@@ -22,6 +22,8 @@ from original_v1014_oracle import (
     STACK,
     build_uc,
     ri32,
+    ru16,
+    ru32,
     sample,
     setup,
     w16,
@@ -37,13 +39,47 @@ GROUND_ENTRY_VA = 0x40A65E
 GROUND_STOP_VA = 0x40AA78
 
 
-def prepare_surface(uc):
-    wu32(uc, TERRAIN_POINTER_TABLE_VA, TERRAIN_DESCRIPTOR)
-    w16(uc, TERRAIN_DESCRIPTOR, 0)
+def descriptor_info(uc, terrain_index: int) -> dict:
+    if not 0 <= terrain_index < 128:
+        raise ValueError("terrain index outside scoped table")
+    pointer = ru32(uc, TERRAIN_POINTER_TABLE_VA + terrain_index * 4)
+    landing_code = ru16(uc, pointer)
+    variant_raw = ru16(uc, pointer + 2)
+    profile_slot = ru16(uc, pointer + 4)
+    raw = bytes(uc.mem_read(pointer + 6, 48)).split(b"\0", 1)[0]
+    name = raw.decode("ascii", "replace")
+    variant = variant_raw - 0x10000 if variant_raw & 0x8000 else variant_raw
+    return {
+        "terrain_index": terrain_index,
+        "pointer": pointer,
+        "landing_code": landing_code,
+        "variant": variant,
+        "profile_slot": profile_slot,
+        "name": name,
+    }
+
+
+def prepare_surface(uc, terrain_index: int | None) -> dict:
+    if terrain_index is None:
+        # Legacy neutral oracle used by the original generic-flat suite.
+        wu32(uc, TERRAIN_POINTER_TABLE_VA, TERRAIN_DESCRIPTOR)
+        w16(uc, TERRAIN_DESCRIPTOR, 0)
+        info = {
+            "terrain_index": 0,
+            "landing_code": 0,
+            "variant": 0,
+            "profile_slot": None,
+            "name": "GENERIC FLAT",
+        }
+    else:
+        info = descriptor_info(uc, terrain_index)
+
+    # Avoid audiovisual side effects; gameplay arithmetic is untouched.
     w16(uc, PLAYER + 0x60, 1)
+    return info
 
 
-def complete_terrain_call(uc):
+def complete_terrain_call(uc, terrain_index: int | None):
     from unicorn.x86_const import UC_X86_REG_EBX, UC_X86_REG_ESP
 
     sp = uc.reg_read(UC_X86_REG_ESP)
@@ -51,12 +87,13 @@ def complete_terrain_call(uc):
     if ret != TERRAIN_RETURN_VA:
         raise RuntimeError(f"unexpected terrain return {ret:#x}")
 
+    value = 0 if terrain_index is None else terrain_index
     ebx = uc.reg_read(UC_X86_REG_EBX)
-    uc.reg_write(UC_X86_REG_EBX, ebx & 0xFFFF0000)
+    uc.reg_write(UC_X86_REG_EBX, (ebx & 0xFFFF0000) | (value & 0xFFFF))
     uc.reg_write(UC_X86_REG_ESP, sp + 4)
 
 
-def run_tick(uc, tick, landing):
+def run_tick(uc, tick, landing, terrain_index):
     from unicorn import UC_HOOK_CODE
     from unicorn.x86_const import (
         UC_X86_REG_EDI,
@@ -98,7 +135,7 @@ def run_tick(uc, tick, landing):
             stop_reason = None
             uc.emu_start(start, SENTINEL, count=20000)
             if stop_reason == "terrain":
-                complete_terrain_call(uc)
+                complete_terrain_call(uc, terrain_index)
                 start = TERRAIN_RETURN_VA
                 continue
             if stop_reason == "done":
@@ -110,21 +147,27 @@ def run_tick(uc, tick, landing):
         uc.hook_del(token)
 
 
-def run_flat(exe, club, lie, power, accuracy, direction, max_ticks):
+def run_flat(exe, club, lie, power, accuracy, direction, max_ticks, terrain_index=None):
     uc, digest = build_uc(exe)
+
+    surface = prepare_surface(uc, terrain_index)
+    if surface["profile_slot"] is not None and lie != surface["profile_slot"]:
+        raise ValueError(
+            f"lie/profile slot {lie} does not match {surface['name']} "
+            f"descriptor slot {surface['profile_slot']}")
+
     profile, lower, upper = setup(
         uc, club, lie, power, accuracy, direction)
     uc.emu_start(LIVE_LAUNCH_VA, SENTINEL, count=5000)
 
     w16(uc, BALL + 0x1C, 100)
-    prepare_surface(uc)
 
     samples = [sample(uc, 0)]
     landing = None
     rest = None
 
     for tick in range(1, max_ticks + 1):
-        landing = run_tick(uc, tick, landing)
+        landing = run_tick(uc, tick, landing, terrain_index)
         row = sample(uc, tick)
         samples.append(row)
         if (
@@ -136,12 +179,16 @@ def run_flat(exe, club, lie, power, accuracy, direction, max_ticks):
             break
 
     if landing is None or rest is None:
-        raise RuntimeError("original generic-flat shot did not reach final rest")
+        raise RuntimeError("original controlled-surface shot did not reach final rest")
 
     return {
-        "oracle": "original-v1.014-generic-flat",
+        "oracle": "original-v1.014-controlled-surface",
         "build_sha256": digest,
-        "surface_code": 0,
+        "terrain_index": surface["terrain_index"],
+        "surface_name": surface["name"],
+        "surface_code": surface["landing_code"],
+        "surface_variant": surface["variant"],
+        "profile_slot": lie,
         "profile_id": profile,
         "profile_bounds": [lower, upper],
         "samples": samples,
@@ -154,12 +201,13 @@ def main():
     ap.add_argument("exe", type=Path)
     for name in ("club", "lie", "power", "accuracy", "direction", "max-ticks"):
         ap.add_argument(f"--{name}", type=int, required=True)
+    ap.add_argument("--terrain-index", type=int)
     ap.add_argument("-o", "--output", type=Path)
     a = ap.parse_args()
 
     result = run_flat(
         a.exe, a.club, a.lie, a.power, a.accuracy,
-        a.direction, a.max_ticks)
+        a.direction, a.max_ticks, a.terrain_index)
     text = json.dumps(result, indent=2) + "\n"
     if a.output:
         a.output.write_text(text, encoding="utf-8")

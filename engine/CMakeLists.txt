@@ -2,6 +2,7 @@ add_library(sensigolf_core
     src/trace.cpp
     src/recovered_flight.cpp
     src/recovered_ground.cpp
+    src/recovered_prng.cpp
 )
 
 target_include_directories(sensigolf_core

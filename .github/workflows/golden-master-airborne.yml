@@ -1,0 +1,70 @@
+name: Golden Master Airborne
+
+on:
+  push:
+    paths:
+      - ".github/workflows/golden-master-airborne.yml"
+      - "engine/**"
+      - "tools/original_v1014_oracle.py"
+      - "tools/compare_airborne_oracle.py"
+      - "tools/pe_target_xrefs.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-machine-code-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+      - name: Fetch and ingest reference PC build
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip             --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Build recovered core probe
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+      - name: Locate v1.014 executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          test -n "$WIN_EXE"
+          echo "WIN_EXE=$WIN_EXE" >> "$GITHUB_ENV"
+      - name: Exact oracle parity cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p analysis/private/golden-master-airborne
+
+          run_case() {
+            name="$1"; club="$2"; power="$3"; direction="$4"; swing="$5"; ticks="$6"
+            python tools/original_v1014_oracle.py "$WIN_EXE"               --club "$club" --power "$power" --direction "$direction"               --swing-adjuster "$swing" --ticks "$ticks"               -o "analysis/private/golden-master-airborne/${name}-original.json"
+
+            ./build/engine/sensigolf_recovered_probe               "$club" "$power" "$direction" "$swing" "$ticks"               > "analysis/private/golden-master-airborne/${name}-recovered.json"
+
+            python tools/compare_airborne_oracle.py               "analysis/private/golden-master-airborne/${name}-original.json"               "analysis/private/golden-master-airborne/${name}-recovered.json"               -o "analysis/private/golden-master-airborne/${name}-comparison.json"
+
+            cat "analysis/private/golden-master-airborne/${name}-comparison.json"
+          }
+
+          run_case straight_1w 0 105 0 0 20
+          run_case curved_mid 5 83 777 1 20
+          run_case curved_high 11 60 3072 -2 15
+      - name: Unit and core tests
+        run: |
+          python -m unittest discover -s tests -v
+          ctest --test-dir build --output-on-failure
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-golden-master-airborne
+          path: analysis/private/golden-master-airborne/
+          retention-days: 14

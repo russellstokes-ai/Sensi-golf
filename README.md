@@ -3,31 +3,13 @@
 A preservation-first modern port/remaster investigation for **Sensible Golf**.
 
 > **Step 2: COMPLETE** — original PC v1.014 identified, fingerprinted and unpacked.  
-> **Current gate:** Gameplay/physics recovery — **GO**, with runtime golden-master parity still required before enhancement work.
+> **Gate 1: GO** — the first exact original-machine-code parity stage now passes; full-shot parity through final rest remains required.
 
 ## Project rule
 
 We do **not** start HD art, mobile UI, new courses, progression or other enhancement work until the original gameplay model is recovered and numerically validated.
 
-The target is not "similar arcade golf". The target is:
-
-```
-identical controlled input
-        ↓
-original Sensible Golf
-        ↓
-trajectory / landing / bounce / roll
-
-vs.
-
-identical controlled input
-        ↓
-portable recovered core
-        ↓
-trajectory / landing / bounce / roll
-```
-
-Only when representative outputs match within the documented tolerance does Gate 1 close.
+The target is not "similar arcade golf". The target is original behavior reproduced deterministically.
 
 ## Verified original PC reference
 
@@ -39,60 +21,77 @@ Selected parity build:
 - `GOLF.EPF` — 833,273 bytes
 - `GOLF.EPF`: **277/277 entries extracted successfully**
 
-The commercial payload was processed in disposable/private analysis storage and is not committed to this public repository.
+Original commercial payloads remain outside the public repository.
 
-See:
-- [Step 2 verified results](docs/STEP2_VERIFIED_RESULTS.md)
-- [Recovered physics v1.014](docs/RECOVERED_PHYSICS_1_014.md)
-- [Gameplay recovery gate](docs/GAMEPLAY_RECOVERY_GATE.md)
+## First exact parity milestone
+
+The live-player launch and normal clear-air paths are now **parity-verified** against the original v1.014 x86 machine code.
+
+Three cases were executed through an original-code Unicorn oracle:
+
+- straight club 0 / power 105;
+- curved club 5 / power 83;
+- opposite-sign curved club 11 / power 60.
+
+Result:
+
+**58 state samples × 6 fields, zero mismatches, tolerance 0.**
+
+Compared fields:
+
+- X;
+- Y;
+- height;
+- vertical force;
+- horizontal force;
+- direction.
+
+See [Golden Master — Live Launch and Clear-Air Result](docs/GOLDEN_MASTER_AIRBORNE_RESULT.md).
+
+## Important correction
+
+Parity preparation exposed an older interpretation error in the active core.
+
+The normal live-player launch is `0x40C84F`, not the previously used `0x40AD1D` interpretation. The active C++ core has been corrected so raw `DropPower` drives launch force and swing/profile adjustment remains a separate path.
 
 ## Repository layout
 
-- `docs/` — recovery plan, evidence, decisions and parity specifications
-- `reference/` — metadata-only fingerprints of known historical builds
+- `docs/` — recovery plan, evidence and parity results
+- `reference/` — metadata-only historical fingerprints
 - `analysis/evidence/` — non-copyright recovery evidence
-- `tools/` — clean analysis/import/recovery utilities
-- `engine/` — portable C++17 recovered classic-core work
-- `tests/` — automated tooling/core tests
+- `tools/` — clean analysis/oracle/import utilities
+- `engine/` — portable C++17 classic core
+- `tests/` — automated tests
 - `.github/workflows/` — reproducible analysis and CI
-- `original/` and `analysis/private/` — local/private only and ignored
+- `original/`, `analysis/private/` — private/ignored
 
 ## Recovery state
 
-Completed or substantially recovered:
-- PC build identity;
-- complete EPF extraction;
-- 72-hole data family discovery;
-- PE/DOS binary cross-check anchors;
-- ball structure and fixed-point coordinates;
-- 4096-step direction system and exact Q14 trig;
-- 13-row club physics table;
-- launch-force formula;
-- swing/accuracy profile tables;
-- gravity;
-- landing/bounce;
-- normal and green rolling drag;
-- terrain/slope projection path;
-- deterministic portable math/kernel scaffolding.
+Parity-verified:
+- live-player non-putter launch;
+- club launch scaling;
+- initial heading;
+- exact Q14 trig projection;
+- clear-air gravity;
+- normal clear-air drag;
+- swing-adjuster direction stepping;
+- X/Y fixed-point movement.
+
+Recovered but not yet fully parity-verified:
+- landing/bounce/roll;
+- green drag and slope path;
+- swing profile tables;
+- terrain data structures.
 
 Still required before Gate 1 closes:
-- exact user-facing meter timing -> raw shot inputs where not yet fully proven;
-- remaining surface/lie and hazard semantics;
-- cup-capture/near-hole behaviour;
-- logical simulation tick frequency;
-- controlled original-game runtime traces;
-- numerical golden-master parity through final rest.
-
-## Step 2 ingestion tooling
-
-A legal local PC ZIP can still be re-ingested reproducibly with:
-
-```bash
-python tools/ingest_pc_build.py /path/to/SENSEGOLF.ZIP
-```
-
-No original game payload is committed.
+- end-to-end meter/profile mapping;
+- surface/lie semantics;
+- obstacle/hazard behavior;
+- putting/cup capture;
+- logical tick frequency;
+- original-course ground contact;
+- complete shot traces through final rest.
 
 ## Rights
 
-This public repository is for newly written tooling, documentation and port code. Original commercial executables, archives, graphics, music, course data and other licensed material stay out of the repository unless redistribution rights explicitly allow them.
+This public repository contains newly written tooling, documentation and port code only. Original commercial executables, archives, graphics, music, course data and other licensed material stay out of the repository unless redistribution rights explicitly allow them.

@@ -2,13 +2,31 @@
 
 ## Purpose
 
-A visual resemblance test is insufficient. The golden-master harness compares an original Sensible Golf shot with the recovered core numerically.
+A visual resemblance test is insufficient. The golden-master harness compares original Sensible Golf state evolution with the recovered core numerically.
 
-## Trace contract
+## Stage 1 result — exact machine-code parity
+
+The first oracle stage now passes.
+
+The original Windows v1.014 PE machine code is executed directly in Unicorn for the live-player launch and normal clear-air paths, then compared with the portable C++ core.
+
+Result:
+
+- three controlled cases;
+- 58 total state samples;
+- X/Y/height/vertical force/horizontal force/direction compared;
+- **zero mismatches**;
+- **tolerance 0**.
+
+See [GOLDEN_MASTER_AIRBORNE_RESULT.md](GOLDEN_MASTER_AIRBORNE_RESULT.md).
+
+This is a subsystem golden master. It does **not** close Gate 1 because landing, real terrain, hazards, cup behavior and final rest are not yet covered.
+
+## Full-shot trace contract
 
 Canonical schema: `spec/shot_trace.schema.json`.
 
-A trace records:
+A full trace records:
 - exact original build identity;
 - course/hole;
 - shot inputs;
@@ -17,9 +35,7 @@ A trace records:
 - final rest point;
 - hazard and holed state.
 
-Native coordinate units and tick rate remain unspecified until recovered.
-
-## Comparator
+## Full-shot comparator
 
 ```bash
 python tools/compare_traces.py \
@@ -28,7 +44,7 @@ python tools/compare_traces.py \
   --event-tolerance <native-units>
 ```
 
-A pass requires:
+A full-shot pass requires:
 - every reference tick is present;
 - no unexpected candidate ticks;
 - maximum XY deviation within tolerance;
@@ -36,21 +52,27 @@ A pass requires:
 - hazard outcome identical;
 - holed state identical.
 
-It also reports RMS XY error and, when both traces contain height, maximum Z error.
+## Exact machine-code oracle
 
-## Why exact tick sets initially
+For recovered pure mechanics, the stricter stage-1 harness uses:
 
-During recovery, differing tick counts can hide timing errors. The first classic core therefore has to expose the same logical simulation ticks as the reference. Rendering interpolation to 60/90/120 Hz belongs above this layer and is not part of physics parity.
+- `tools/original_v1014_oracle.py`
+- `engine/tools/recovered_probe.cpp`
+- `tools/compare_airborne_oracle.py`
+- `.github/workflows/golden-master-airborne.yml`
+
+The oracle reads club parameters from the original executable and executes the original x86 instructions. It does not copy expected numeric outputs into the portable implementation.
 
 ## Tolerance policy
 
 Do not choose tolerances to make tests pass.
 
-After native representation is known:
-- use zero tolerance for exact integer/fixed-point state where practical;
-- otherwise use the smallest tolerance justified by capture precision;
-- document any unavoidable measurement noise separately from implementation error.
+- Use zero tolerance for exact integer/fixed-point state where practical.
+- For later black-box capture, use the smallest tolerance justified by capture precision.
+- Keep measurement noise separate from implementation error.
 
 ## No invented fixtures
 
-Synthetic traces in `tests/` validate the comparator itself. They are **not gameplay evidence**. Real golden masters enter the analysis set only after capture from the identified original build.
+Synthetic traces in `tests/` validate comparators only. They are not gameplay evidence.
+
+Machine-code oracle results and future real-game traces are stored as analysis artifacts; original commercial binary payloads remain out of the public repository.

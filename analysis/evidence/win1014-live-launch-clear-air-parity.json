@@ -1,0 +1,23 @@
+{
+  "id": "win1014-live-launch-clear-air-parity",
+  "status": "parity-verified",
+  "claim": "The portable core exactly reproduces the Windows v1.014 live-player launch routine at 0x40C84F and the normal clear-air update path at 0x40A603/0x40A96F for the tested club, power, direction and swing-adjuster cases.",
+  "sources": [
+    {
+      "kind": "windows-executable",
+      "source": "GOLFWIN.EXE v1.014 SHA256 3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+      "sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+      "offset": null,
+      "observation": "The original PE machine code was executed directly in Unicorn for the live-player launch and normal clear-air instruction ranges. Three cases produced 58 samples total with exact equality across X, Y, height, vertical force, horizontal force and direction."
+    }
+  ],
+  "tests": [
+    ".github/workflows/golden-master-airborne.yml",
+    "GitHub Actions run 37519158957",
+    "artifact sensible-golf-golden-master-airborne sha256:d8f04345c8dfb7fac8defe6b17afe38c5b3b716bf2c426f10a4f613077c617df",
+    "straight_1w: 21 samples, 0 mismatches, tolerance 0",
+    "curved_mid: 21 samples, 0 mismatches, tolerance 0",
+    "curved_high: 16 samples, 0 mismatches, tolerance 0"
+  ],
+  "notes": "This verifies launch and normal clear-air state evolution only. Terrain lookup, landing, bounce/roll terminal behavior, hazards, cup capture, putter and full in-game input/profile selection remain outside this parity record. The earlier 0x40AD1D interpretation is not used as the live-player launch path."
+}

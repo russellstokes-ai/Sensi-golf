@@ -1,0 +1,58 @@
+name: Step 3 Current Ball Pointer
+
+on:
+  push:
+    paths:
+      - ".github/workflows/step3-current-ball.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  current-ball:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Capstone
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest public PC archive
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace current ball/player pointer globals
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          mkdir -p analysis/private/step3
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x41f3ac \
+            --va 0x41f3a8 \
+            --radius 40 \
+            -o analysis/private/step3/current-ball-xrefs.json
+      - name: Summarise
+        run: |
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/step3/current-ball-xrefs.json'))
+          names={0x41f3ac:'current-ball pointer',0x41f3a8:'current-player pointer'}
+          print('xref_count',len(j['xrefs']))
+          for x in j['xrefs']:
+              labels=[names.get(v,hex(v)) for v in x['targets']]
+              print('\nXREF',hex(x['xref_va']),'->',labels)
+              for ins in x['instructions']:
+                  mark='>>' if ins['address']==x['xref_va'] else '  '
+                  print(f"{mark} {ins['address']:08x} {ins['mnemonic']:8} {ins['op_str']}")
+          PY
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-step3-current-ball
+          path: analysis/private/step3/current-ball-xrefs.json
+          retention-days: 7

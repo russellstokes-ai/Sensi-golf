@@ -1,0 +1,57 @@
+name: Step 3 Physics Dependencies
+
+on:
+  push:
+    paths:
+      - ".github/workflows/step3-physics-deps.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Disassemble dependency routines
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          mkdir -p analysis/private/step3/deps
+          python tools/pe_disasm_range.py "$WIN_EXE" --start-va 0x40a1d0 --end-va 0x40a2b0 -o analysis/private/step3/deps/shot-adjust.json
+          python tools/pe_disasm_range.py "$WIN_EXE" --start-va 0x40b900 --end-va 0x40ba30 -o analysis/private/step3/deps/distance-terrain.json
+          python tools/pe_disasm_range.py "$WIN_EXE" --start-va 0x40c300 --end-va 0x40c460 -o analysis/private/step3/deps/club-shot-setup.json
+          python tools/pe_va_xrefs.py "$WIN_EXE"             --va 0x41ee7a             --va 0x41de80             --va 0x41de84             --va 0x41f0c5             --va 0x41f0c9             --va 0x41dff7             --radius 24             -o analysis/private/step3/deps/dependency-xrefs.json
+      - name: Print dependency analysis
+        run: |
+          python - <<'PY'
+          import json,glob,os
+          for p in sorted(glob.glob('analysis/private/step3/deps/*.json')):
+              if p.endswith('dependency-xrefs.json'): continue
+              j=json.load(open(p))
+              print("\n====",os.path.basename(p),hex(j["start_va"]),hex(j["end_va"]),"====")
+              for i in j["instructions"]:
+                  print(f'{i["address"]:08x} {i["mnemonic"]:8} {i["op_str"]}')
+          j=json.load(open('analysis/private/step3/deps/dependency-xrefs.json'))
+          print("\n==== DEPENDENCY XREFS",len(j["xrefs"]),"====")
+          for x in j["xrefs"]:
+              print("\nXREF",hex(x["xref_va"]),"targets",[hex(v) for v in x["targets"]])
+              for i in x["instructions"]:
+                  mark=">>" if i["address"]==x["xref_va"] else "  "
+                  print(f'{mark} {i["address"]:08x} {i["mnemonic"]:8} {i["op_str"]}')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-step3-physics-deps
+          path: analysis/private/step3/deps/
+          retention-days: 7

@@ -70,12 +70,12 @@ int main(int argc, char** argv) {
         if (max_ticks <= 0) {
             throw std::invalid_argument("max_ticks must be positive");
         }
-        const int surface_code =
-            argc == 8 ? static_cast<int>(parse_long(argv[7], "surface_code")) : 0;
-        if (surface_code != 0 && (surface_code < 2 || surface_code > 7)) {
-            throw std::invalid_argument(
-                "full probe currently scopes generic/normal landing codes 0 or 2..7");
+        const long parsed_surface =
+            argc == 8 ? parse_long(argv[7], "surface_code") : 0;
+        if (parsed_surface < 0 || parsed_surface > 0xFFFF) {
+            throw std::invalid_argument("surface_code outside uint16 range");
         }
+        const auto surface_code = static_cast<std::uint16_t>(parsed_surface);
 
         auto state = launch_normal_shot(input);
         std::optional<PointEvent> landing;
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
         sample_json(state, 0, false);
 
         for (int tick = 1; tick <= max_ticks; ++tick) {
-            const auto step = step_generic_flat_surface(state);
+            const auto step = step_controlled_surface(state, surface_code);
             if (step.contacted_ground && !landing) {
                 landing = PointEvent{tick, step.contact_x, step.contact_y};
             }
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 
         if (!landing || !rest) {
             throw std::runtime_error(
-                "flat-surface probe did not reach landing/rest within max_ticks");
+                "controlled-surface probe did not reach landing/rest within max_ticks");
         }
 
         std::cout

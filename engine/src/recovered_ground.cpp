@@ -7,6 +7,8 @@
 namespace sensigolf::recovered {
 namespace {
 
+constexpr std::uint16_t kImmediateStopHazardCode = 0x23;
+
 std::int32_t checked_i32(std::int64_t value, const char* what) {
     if (value < std::numeric_limits<std::int32_t>::min()
         || value > std::numeric_limits<std::int32_t>::max()) {
@@ -84,7 +86,9 @@ DragResult drag_then_move(FlightState& state) {
 
 } // namespace
 
-GroundStepResult step_generic_flat_surface(FlightState& state) {
+GroundStepResult step_controlled_surface(
+    FlightState& state,
+    std::uint16_t landing_code) {
     GroundStepResult result{};
 
     state.vertical_force = checked_i32(
@@ -105,6 +109,18 @@ GroundStepResult step_generic_flat_surface(FlightState& state) {
     result.contacted_ground = true;
     result.contact_x = state.x;
     result.contact_y = state.y;
+
+    // Windows v1.014 0x40A692..0x40A72B. Terrain descriptors WATER,
+    // NO GO and OUT OF BOUNDS use landing code 0x23. On contact the original
+    // zeros H, V and height before leaving the normal bounce branch.
+    if (landing_code == kImmediateStopHazardCode) {
+        state.horizontal_force = 0;
+        state.vertical_force = 0;
+        state.height = 0;
+        result.hazard_stop = true;
+        result.resting = true;
+        return result;
+    }
 
     for (;;) {
         if (state.vertical_force == 0) {

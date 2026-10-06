@@ -1,0 +1,21 @@
+HDBall X coord
+HDBall Y coord
+HDBall V force
+HDBall H force
+HDBall direction
+HDBall height
+HDBall pause
+DWWind amount
+HDWind adjustment
+HDWind x adj
+HDWind y adj
+HWSwing adjuster
+HWDrop Power
+DWball x position
+DWball y position
+DDball-hole in yards
+DWgreen x1
+DWgreen x2
+DWgreen y1
+DWgreen y2
+HDgreen offset

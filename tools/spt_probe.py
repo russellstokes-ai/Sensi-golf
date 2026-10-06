@@ -33,9 +33,23 @@ def analyse_directory(root: Path) -> dict[str, object]:
 
     parsed = {path.name: parse_spt(path.read_bytes()) for path in paths}
     sequences = {
-        f"word{word}": sorted({tuple(record[word] for record in rows) for rows in parsed.values()})
+        f"word{word}": [
+            list(sequence)
+            for sequence in sorted({
+                tuple(record[word] for record in rows)
+                for rows in parsed.values()
+            })
+        ]
         for word in range(5)
     }
+
+    sequence_files = {}
+    for word in (0, 4):
+        buckets = {}
+        for name, rows in parsed.items():
+            key = ",".join(str(record[word]) for record in rows)
+            buckets.setdefault(key, []).append(name)
+        sequence_files[f"word{word}"] = buckets
 
     slot_ranges = []
     for slot in range(5):
@@ -70,6 +84,7 @@ def analyse_directory(root: Path) -> dict[str, object]:
         "records_per_file": 5,
         "endianness": "big",
         "unique_sequences": sequences,
+        "sequence_files": sequence_files,
         "slot_ranges": slot_ranges,
         "distance_observations": {
             "first_four_pairwise_max": max(first_four_cluster_distances),

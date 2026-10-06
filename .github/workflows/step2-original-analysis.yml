@@ -23,48 +23,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Obtain public Sensible Golf PC archive
+      - name: Obtain verified public Sensible Golf v1.014 PC archive
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/sensigolf
-          cd /tmp/sensigolf
-
-          ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/128 Safari/537.36'
-
-          echo "Trying normal Old-Games free-download flow..."
-          curl -fsSLA "$ua" -c cookies.txt -b cookies.txt             'https://www.old-games.com/getfile/7732' -o getfile.html || true
-
-          curl -fsSLA "$ua" -c cookies.txt -b cookies.txt             -e 'https://www.old-games.com/getfile/7732'             'https://www.old-games.com/getfree/7732' -o first-response || true
-
-          echo "Waiting the advertised 20 seconds..."
-          sleep 22
-
-          curl -fsSLA "$ua" -c cookies.txt -b cookies.txt             -e 'https://www.old-games.com/getfree/7732'             'https://www.old-games.com/getfree/7732' -o candidate.zip || true
-
-          if python - <<'PY'
-          from pathlib import Path
-          p=Path('/tmp/sensigolf/candidate.zip')
-          raise SystemExit(0 if p.exists() and p.read_bytes()[:2] == b'PK' else 1)
-          PY
-          then
-            echo "Old-Games free flow returned a ZIP."
-            mv candidate.zip /tmp/Sensible_Golf_PC.zip
-            echo "SOURCE=old-games" >> "$GITHUB_ENV"
-          else
-            echo "Using public Internet Archive preservation copy."
-            curl -fL --retry 3 --retry-delay 2               'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'               -o /tmp/Sensible_Golf_PC.zip
-            echo "SOURCE=internet-archive" >> "$GITHUB_ENV"
-          fi
-
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('/tmp/Sensible_Golf_PC.zip')
-          if p.read_bytes()[:2] != b'PK':
-              raise SystemExit("download is not a ZIP")
-          print("download_size", p.stat().st_size)
-          PY
-          sha256sum /tmp/Sensible_Golf_PC.zip
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          echo "SOURCE=internet-archive" >> "$GITHUB_ENV"
+          test "$(sha256sum /tmp/Sensible_Golf_PC.zip | cut -d' ' -f1)" = \
+            "7685a9657c50fc2fad77d96d35c68d37b36f0d9cac13d3211727d1ab030b53df"
 
       - name: Run private ingestion
         run: |
@@ -101,6 +69,18 @@ jobs:
           python tools/spt_probe.py \
             analysis/private/step2/extracted/epf \
             -o analysis/private/probes/spt-structure.json
+
+      - name: Capture targeted disassembly ranges
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          mkdir -p analysis/private/probes/disasm
+          objdump -d -Mintel --start-address=0x40a800 --stop-address=0x40ae40 "$WIN_EXE" > analysis/private/probes/disasm/shot-init.txt
+          objdump -d -Mintel --start-address=0x407900 --stop-address=0x407c00 "$WIN_EXE" > analysis/private/probes/disasm/ball-update-a.txt
+          objdump -d -Mintel --start-address=0x409e80 --stop-address=0x40a250 "$WIN_EXE" > analysis/private/probes/disasm/ball-setup.txt
+          objdump -d -Mintel --start-address=0x40b880 --stop-address=0x40ba20 "$WIN_EXE" > analysis/private/probes/disasm/wind-adjust.txt
+          objdump -d -Mintel --start-address=0x40c300 --stop-address=0x40c4d0 "$WIN_EXE" > analysis/private/probes/disasm/green-bounds.txt
 
       - name: Print targeted recovery summary
         shell: bash

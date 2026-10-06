@@ -1,0 +1,91 @@
+name: Golden Master Hazards
+
+on:
+  push:
+    paths:
+      - ".github/workflows/golden-master-hazards.yml"
+      - "engine/**"
+      - "tools/original_v1014_flat_oracle.py"
+      - "tools/original_v1014_oracle.py"
+      - "tools/compare_full_oracle.py"
+      - "tools/pe_target_xrefs.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hazard-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+
+      - name: Build portable core
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+
+      - name: Locate reference executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          test -n "$WIN_EXE"
+          echo "WIN_EXE=$WIN_EXE" >> "$GITHUB_ENV"
+
+      - name: Zero-tolerance hazard parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="analysis/private/golden-master-hazards"
+          mkdir -p "$out"
+
+          run_case() {
+            name="$1"; terrain="$2"
+            python tools/original_v1014_flat_oracle.py "$WIN_EXE" \
+              --club 5 --lie 7 --power 83 --accuracy 63 \
+              --direction 777 --max-ticks 512 --terrain-index "$terrain" \
+              -o "$out/${name}-original.json"
+
+            ./build/engine/sensigolf_recovered_full_probe \
+              5 7 83 63 777 512 35 \
+              > "$out/${name}-recovered.json"
+
+            python tools/compare_full_oracle.py \
+              "$out/${name}-original.json" "$out/${name}-recovered.json" \
+              -o "$out/${name}-comparison.json"
+
+            python -c 'import json,sys; o=json.load(open(sys.argv[1])); c=json.load(open(sys.argv[2])); print(o["surface_name"], "terrain", o["terrain_index"], "landing", o["events"]["landing"]["tick"], "rest", o["events"]["rest"]["tick"], "pass", c["pass"], "mismatches", c["mismatch_count"])' \
+              "$out/${name}-original.json" "$out/${name}-comparison.json"
+          }
+
+          run_case water 6
+          run_case no_go 14
+          run_case out_of_bounds 22
+
+      - name: Unit/core tests
+        run: |
+          python -m unittest discover -s tests -v
+          ctest --test-dir build --output-on-failure
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-golden-master-hazards
+          path: analysis/private/golden-master-hazards/
+          retention-days: 14

@@ -60,5 +60,49 @@ int main() {
     assert(state.height == 0);
     assert(state.vertical_force == 0);
     assert(state.horizontal_force == 0);
+
+    // Original club-12 flat-green oracle, power 10.
+    input.club_index = 12;
+    input.lie_index = 6;
+    input.captured_power = 10;
+    input.accuracy_tick = 63;
+    input.player_direction = 0;
+    state = launch_normal_shot(input);
+    assert(state.height == 0);
+    assert(state.vertical_force == 15360);
+    assert(state.horizontal_force == 23552);
+
+    rest_tick = -1;
+    for (int tick = 1; tick <= 64; ++tick) {
+        const auto step = step_flat_green_putt(state);
+        assert(state.height == 0);
+        if (step.resting) {
+            rest_tick = tick;
+            break;
+        }
+    }
+    assert(rest_tick == 13);
+    assert(state.x == 0);
+    assert(state.y == 132864);
+    assert(state.vertical_force == 0);
+    assert(state.horizontal_force == 0);
+
+    // Power 30 is a second exact oracle anchor.
+    input.captured_power = 30;
+    state = launch_normal_shot(input);
+    rest_tick = -1;
+    for (int tick = 1; tick <= 64; ++tick) {
+        const auto step = step_flat_green_putt(state);
+        if (step.resting) {
+            rest_tick = tick;
+            break;
+        }
+    }
+    assert(rest_tick == 29);
+    assert(state.x == 0);
+    assert(state.y == 740096);
+    assert(state.vertical_force == 0);
+    assert(state.horizontal_force == 0);
+
     return 0;
 }

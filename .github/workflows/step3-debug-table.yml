@@ -1,0 +1,48 @@
+name: Step 3 Debug Table Xrefs
+
+on:
+  push:
+    paths:
+      - ".github/workflows/step3-debug-table.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  debug-table:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace debug table addresses
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          mkdir -p analysis/private/step3
+          python tools/pe_va_xrefs.py "$WIN_EXE"             --va 0x41da9c             --va 0x41daa0             --va 0x41dabc             --va 0x41db2c             --va 0x42dbe9             --radius 40             -o analysis/private/step3/debug-table-xrefs.json
+      - name: Summarise
+        run: |
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/step3/debug-table-xrefs.json'))
+          print("xref_count",len(j["xrefs"]))
+          for x in j["xrefs"]:
+              print("\n=== XREF",hex(x["xref_va"]),"targets",[hex(v) for v in x["targets"]],"===")
+              for ins in x["instructions"]:
+                  mark=">>" if ins["address"]==x["xref_va"] else "  "
+                  print(f'{mark} {ins["address"]:08x} {ins["mnemonic"]:8} {ins["op_str"]}')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-step3-debug-table
+          path: analysis/private/step3/debug-table-xrefs.json
+          retention-days: 7

@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - ".github/workflows/golden-master-wine-probe.yml"
-      - "tools/live_ball_probe.py"
+      - "tools/wine_parent_probe.py"
 
 permissions:
   contents: read
@@ -20,9 +20,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Wine and X11 automation
-        shell: bash
         run: |
-          set -euxo pipefail
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get install -y wine64 wine32:i386 xvfb xdotool x11-utils imagemagick unzip
@@ -31,72 +29,48 @@ jobs:
         run: |
           curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
           python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
-          cat /tmp/ingest.json
 
-      - name: Boot original Windows executable under Xvfb/Wine
+      - name: Boot original at 8-bit colour and sample as parent
         shell: bash
         run: |
-          set -euxo pipefail
+          set -uo pipefail
           export DISPLAY=:99
           export WINEPREFIX="$RUNNER_TEMP/wineprefix"
-          export WINEDEBUG=-all
-          Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 &
+          # Keep crash/loader diagnostics for this compatibility probe.
+          export WINEDEBUG=+seh,+module
+          Xvfb :99 -screen 0 800x600x8 >/tmp/xvfb.log 2>&1 &
+          XVFB_PID=$!
           sleep 2
-          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
-          GAME_DIR="$(dirname "$WIN_EXE")"
-          cd "$GAME_DIR"
           wineboot -u >/tmp/wineboot.log 2>&1 || true
-          wine ./GOLFWIN.EXE >/tmp/golfwin.stdout 2>/tmp/golfwin.stderr &
-          echo $! >/tmp/wine_launcher_pid
-          sleep 10
 
-          echo "=== processes ==="
-          ps auxww | grep -E 'wine|GOLFWIN|golfwin' | grep -v grep || true
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          python tools/wine_parent_probe.py "$WIN_EXE"             --duration-s 12 --interval-ms 20             -o analysis/private/wine-ball-probe.json             --stdout /tmp/golfwin.stdout --stderr /tmp/golfwin.stderr
+          PROBE_RC=$?
+
           echo "=== windows ==="
           xdotool search --onlyvisible --name '.*' getwindowname %@ 2>/dev/null || true
-          echo "=== xwininfo ==="
+          echo "=== tree ==="
           xwininfo -root -tree || true
-
           import -window root "$GITHUB_WORKSPACE/analysis/private/wine-root.png" || true
 
-          # Find the Linux process whose mapped executable contains GOLFWIN.EXE.
-          python - <<'PY'
-          from pathlib import Path
-          import os,re,time
-          matches=[]
-          for p in Path('/proc').iterdir():
-              if not p.name.isdigit(): continue
-              try:
-                  maps=(p/'maps').read_text(errors='ignore')
-                  cmd=(p/'cmdline').read_bytes().replace(b'\0',b' ').decode(errors='ignore')
-              except Exception:
-                  continue
-              if 'GOLFWIN.EXE' in maps.upper() or 'GOLFWIN.EXE' in cmd.upper():
-                  matches.append((int(p.name),cmd,maps[:1000]))
-          print(matches)
-          if not matches:
-              raise SystemExit('no live GOLFWIN process found')
-          Path('/tmp/golf_pid').write_text(str(matches[0][0]))
-          PY
-
-          PID="$(cat /tmp/golf_pid)"
-          python "$GITHUB_WORKSPACE/tools/live_ball_probe.py" "$PID"             --duration-s 2 --interval-ms 20             -o "$GITHUB_WORKSPACE/analysis/private/wine-ball-probe.json"
+          kill "$XVFB_PID" 2>/dev/null || true
+          exit "$PROBE_RC"
 
       - name: Print probe summary
         if: always()
-        shell: bash
         run: |
-          echo "=== stdout ==="; cat /tmp/golfwin.stdout 2>/dev/null || true
-          echo "=== stderr ==="; cat /tmp/golfwin.stderr 2>/dev/null || true
-          echo "=== ball probe ==="
+          echo "=== probe ==="
           python - <<'PY'
-          import json, pathlib
+          import json,pathlib
           p=pathlib.Path('analysis/private/wine-ball-probe.json')
           if p.exists():
               j=json.loads(p.read_text())
-              print('samples',len(j['samples']))
-              for row in j['samples'][:10]: print(row)
+              print('pid',j['pid'],'rc',j['returncode'],'samples',j['sample_count'])
+              print('errors',j['errors'][-10:])
+              for row in j['samples'][:20]: print(row)
           PY
+          echo "=== stderr tail ==="
+          tail -200 /tmp/golfwin.stderr 2>/dev/null || true
 
       - uses: actions/upload-artifact@v4
         if: always()

@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Inspect the original v1.014 terrain descriptor pointer table.
-
-This records structural data only. It deliberately does not assign semantic
-surface names until code/runtime evidence supports them.
-"""
+"""Inspect named terrain descriptors from Sensible Golf Windows v1.014."""
 
 from __future__ import annotations
 
@@ -36,6 +32,21 @@ def read_bytes(data: bytes, va: int, size: int, image_base: int, sections: list[
     return blob
 
 
+def read_cstring(data: bytes, va: int, image_base: int, sections: list[dict], limit: int = 48) -> str:
+    off = va_to_offset(va, image_base, sections)
+    end = min(len(data), off + limit)
+    raw = data[off:end].split(b"\0", 1)[0]
+    if not raw:
+        return ""
+    if any(byte < 32 or byte > 126 for byte in raw):
+        return ""
+    return raw.decode("ascii")
+
+
+def signed_u16(value: int) -> int:
+    return value - 0x10000 if value & 0x8000 else value
+
+
 def probe(exe: Path, count: int = 128) -> dict:
     data = exe.read_bytes()
     image_base, _, sections = parse_pe(data)
@@ -46,39 +57,47 @@ def probe(exe: Path, count: int = 128) -> dict:
             raw_ptr = read_bytes(data, TABLE_VA + index * 4, 4, image_base, sections)
         except ValueError:
             break
-        pointer = struct.unpack("<I", raw_ptr)[0]
 
+        pointer = struct.unpack("<I", raw_ptr)[0]
         row = {"index": index, "pointer": pointer, "mapped": False}
         try:
-            payload = read_bytes(data, pointer, 24, image_base, sections)
+            header = read_bytes(data, pointer, 6, image_base, sections)
         except ValueError:
             rows.append(row)
             continue
 
-        row["mapped"] = True
-        row["words_u16"] = list(struct.unpack("<12H", payload))
-        row["dwords_u32"] = list(struct.unpack("<6I", payload))
+        landing_code, variant_raw, profile_slot = struct.unpack("<3H", header)
+        row.update({
+            "mapped": True,
+            "landing_code": landing_code,
+            "variant_raw": variant_raw,
+            "variant_signed": signed_u16(variant_raw),
+            "profile_slot": profile_slot,
+            "name": read_cstring(data, pointer + 6, image_base, sections),
+        })
         rows.append(row)
 
-    by_first_word: dict[str, list[int]] = {}
+    by_landing_code: dict[str, list[int]] = {}
+    by_profile_slot: dict[str, list[int]] = {}
     for row in rows:
-        if row.get("mapped"):
-            key = str(row["words_u16"][0])
-            by_first_word.setdefault(key, []).append(row["index"])
-
-    special = {}
-    for code in (0, 8, 0x23, 0x32):
-        special[str(code)] = [
-            row for row in rows
-            if row.get("mapped") and row["words_u16"][0] == code
-        ]
+        if not row.get("mapped"):
+            continue
+        by_landing_code.setdefault(str(row["landing_code"]), []).append(row["index"])
+        by_profile_slot.setdefault(str(row["profile_slot"]), []).append(row["index"])
 
     return {
         "table_va": TABLE_VA,
+        "descriptor_header": {
+            "size": 6,
+            "word0": "landing_code (read by landing branch)",
+            "word1": "variant field (written to ball +0x22; semantics under recovery)",
+            "word2": "profile_slot (written to ball +0x20 and used by swing profile selector)",
+            "name": "NUL-terminated original debug/name string at +0x06",
+        },
         "requested_count": count,
         "rows": rows,
-        "indices_by_first_word": by_first_word,
-        "special_first_word_groups": special,
+        "indices_by_landing_code": by_landing_code,
+        "indices_by_profile_slot": by_profile_slot,
     }
 
 

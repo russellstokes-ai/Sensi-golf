@@ -2,30 +2,22 @@
 
 ## Current status
 
-The harness now distinguishes two original v1.014 paths correctly:
+**Live-player launch-to-rest parity is now proven for the controlled generic-flat path.**
 
-1. **Internal predictor:** `0x40C84F` / predictor simulation — zero-tolerance arithmetic parity already demonstrated.
-2. **Live player launch:** `0x40AD1D` — current authoritative gameplay target.
+The oracle executes original Sensible Golf Windows v1.014 machine code directly under 32-bit x86 Unicorn. The portable C++17 core is compared against it at **zero tolerance**.
 
-The predictor result is useful evidence but does not count as live-player launch parity.
+## Verified full-shot cases
 
-## Live-player oracle
+Workflow: `.github/workflows/golden-master-flat-rest.yml`  
+Successful run: **37523005402**
 
-`tools/original_v1014_oracle.py` executes the original v1.014 PE machine code directly under 32-bit x86 Unicorn.
+| Case | Input summary | Samples | Result |
+|---|---|---:|---|
+| straight_1w | club 0, lie 0, power 105, accuracy 63, heading 0 | 153 | exact |
+| draw_mid | club 5, lie 2, power 83, accuracy 59, heading 777 | 131 | exact |
+| fade_high | club 11, lie 0, power 60, accuracy 67, heading 3072 | 111 | exact |
 
-Inputs:
-
-- club;
-- lie/surface selector slot;
-- Welly power;
-- accuracy tick;
-- heading.
-
-The original routine itself selects the appropriate accuracy profile, reduces power by accuracy error, alters heading and writes the swing-adjuster value.
-
-The portable C++ core independently reproduces the same process.
-
-Compared at zero tolerance:
+Compared every logical sample for:
 
 - X;
 - Y;
@@ -36,14 +28,31 @@ Compared at zero tolerance:
 - swing adjuster;
 - adjusted power.
 
-Workflow: `.github/workflows/golden-master-airborne.yml`.
+Landing and final-rest events also match exactly.
 
-## Full-shot gate
+Representative event anchors:
 
-After live launch/clear-air parity, extend the oracle through:
+- straight 1W: landing tick 80 at (0, 20615840), rest tick 152 at (0, 26251460);
+- draw mid: landing tick 70 at (9595717, 2006927), rest tick 130 at (10661268, 2038783);
+- fade high: landing tick 59 at (-3188529, -454500), rest tick 110 at (-3759359, -636210).
 
-ground contact -> bounce -> roll -> final rest
+## Important recovered edge case
 
-and then exercise real course terrain, hazards, putter/green behavior and cup capture.
+The draw test exposed a one-tick quirk in the original drag branch. If horizontal force is positive at tick entry but normal drag pushes it below zero while the ball is airborne, v1.014 sets horizontal force to zero and ends the tick **without** applying the direction/curve step. On the next tick, an already-zero force does pass through the direction step.
 
-Synthetic comparator fixtures are never treated as gameplay evidence.
+The portable core now preserves this exact behavior.
+
+## Scope of this proof
+
+The controlled oracle supplies a neutral generic terrain result (surface code 0). Everything from live launch through flight, landing, bounce, drag, movement and final rest is original machine code versus independently recovered portable code.
+
+This proof does **not** yet cover:
+
+- every terrain/lie modifier;
+- tree/obstacle collision;
+- water/out-of-bounds;
+- green/putter behavior;
+- cup capture;
+- any remaining random/state-dependent game rules.
+
+Evidence record: `analysis/evidence/full_shot_generic_flat_parity.json`.

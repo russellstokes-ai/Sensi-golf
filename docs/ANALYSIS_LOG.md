@@ -83,3 +83,18 @@ Detailed record: `docs/RECOVERED_PHYSICS_1_014.md`.
 
 ### Rule
 Do not promote static recovery to `parity-verified` until a runtime original-game trace is reproduced by the portable core.
+
+## 2026-10-06 — Live launch-to-rest golden-master parity
+
+### Parity-verified
+GitHub Actions run `37523005402` executed original Windows v1.014 live-player machine code under Unicorn and compared it with the portable recovered core at zero tolerance on a controlled generic flat surface.
+
+- straight 1W: 153 samples, 0 mismatches
+- draw mid shot: 131 samples, 0 mismatches
+- fade high shot: 111 samples, 0 mismatches
+
+Compared X/Y, height, vertical force, horizontal force, direction, swing adjuster and adjusted power at every logical sample. Landing and final-rest events also matched exactly.
+
+The draw case exposed and fixed a subtle original branch: when positive horizontal force is reduced below zero by drag during an airborne tick, the original sets H=0 and ends that tick without applying the direction/curve update. The portable core now preserves that behavior.
+
+Scope limitation: terrain lookup was controlled to generic surface code 0. Real terrain, hazards, putting/green and cup-capture branches remain to be parity-verified.

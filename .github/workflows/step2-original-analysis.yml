@@ -1,0 +1,159 @@
+name: Step 2 Original PC Analysis
+
+on:
+  push:
+    paths:
+      - ".github/workflows/step2-original-analysis.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  analyse-original-pc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Obtain public Sensible Golf PC archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sensigolf
+          cd /tmp/sensigolf
+
+          ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/128 Safari/537.36'
+
+          echo "Trying normal Old-Games free-download flow..."
+          curl -fsSLA "$ua" -c cookies.txt -b cookies.txt             'https://www.old-games.com/getfile/7732'             -o getfile.html || true
+
+          curl -fsSLA "$ua" -c cookies.txt -b cookies.txt             -e 'https://www.old-games.com/getfile/7732'             'https://www.old-games.com/getfree/7732'             -o first-response || true
+
+          echo "Waiting the advertised 20 seconds..."
+          sleep 22
+
+          curl -fsSLA "$ua" -c cookies.txt -b cookies.txt             -e 'https://www.old-games.com/getfree/7732'             'https://www.old-games.com/getfree/7732'             -o candidate.zip || true
+
+          if python - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/sensigolf/candidate.zip')
+          raise SystemExit(0 if p.exists() and p.read_bytes()[:2] == b'PK' else 1)
+          PY
+          then
+            echo "Old-Games free flow returned a ZIP."
+            mv candidate.zip /tmp/Sensible_Golf_PC.zip
+            echo "SOURCE=old-games" >> "$GITHUB_ENV"
+          else
+            echo "Old-Games did not return a ZIP to curl; using public Internet Archive copy linked by oldgame.cz."
+            curl -fL --retry 3 --retry-delay 2               'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'               -o /tmp/Sensible_Golf_PC.zip
+            echo "SOURCE=internet-archive" >> "$GITHUB_ENV"
+          fi
+
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/Sensible_Golf_PC.zip')
+          print("download_size", p.stat().st_size)
+          print("magic", p.read_bytes()[:4])
+          if p.read_bytes()[:2] != b'PK':
+              raise SystemExit("download is not a ZIP")
+          PY
+
+          sha256sum /tmp/Sensible_Golf_PC.zip
+
+      - name: Run Step 2 ingestion
+        run: |
+          set -euo pipefail
+          python tools/ingest_pc_build.py             /tmp/Sensible_Golf_PC.zip             --workspace analysis/private/step2
+
+      - name: Probe original executables
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p analysis/private/probes
+
+          DOS_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFDOS.EXE' -print -quit || true)"
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit || true)"
+
+          if [ -n "$DOS_EXE" ]; then
+            python tools/executable_probe.py "$DOS_EXE"               --number 240               -o analysis/private/probes/golfdos-probe.json
+          fi
+
+          if [ -n "$WIN_EXE" ]; then
+            python tools/executable_probe.py "$WIN_EXE"               --number 240               -o analysis/private/probes/golfwin-probe.json
+          fi
+
+          if [ -f analysis/private/probes/golfdos-probe.json ] &&              [ -f analysis/private/probes/golfwin-probe.json ]; then
+            python tools/compare_probes.py               analysis/private/probes/golfdos-probe.json               analysis/private/probes/golfwin-probe.json               -o analysis/private/probes/pc-crosscheck.json
+          fi
+
+      - name: Print sanitised analysis summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "SOURCE=$SOURCE"
+          echo "===== STEP2 REPORT ====="
+          cat analysis/private/step2/reports/step2_report.json
+
+          echo "===== EPF ENTRY NAMES/SIZES ====="
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('analysis/private/step2/reports/epf_inventory.json')
+          rows=json.loads(p.read_text())
+          print("entry_count", len(rows))
+          for row in rows:
+              print(row["filename"], row["compressed_size"], row["decompressed_size"], "compressed="+str(row["compressed"]))
+          PY
+
+          if [ -f analysis/private/probes/golfdos-probe.json ]; then
+            echo "===== GOLFDOS PROBE SUMMARY ====="
+            python - <<'PY'
+          import json
+          p='analysis/private/probes/golfdos-probe.json'
+          j=json.load(open(p))
+          print(json.dumps({
+            "path":j.get("path"),
+            "size":j.get("size"),
+            "sha256":j.get("sha256"),
+            "crc32":j.get("crc32"),
+            "format":j.get("format"),
+            "string_count":j.get("string_count"),
+            "integer_hits_240":j.get("integer_hits",[])[:50]
+          }, indent=2))
+          PY
+          fi
+
+          if [ -f analysis/private/probes/golfwin-probe.json ]; then
+            echo "===== GOLFWIN PROBE SUMMARY ====="
+            python - <<'PY'
+          import json
+          p='analysis/private/probes/golfwin-probe.json'
+          j=json.load(open(p))
+          print(json.dumps({
+            "path":j.get("path"),
+            "size":j.get("size"),
+            "sha256":j.get("sha256"),
+            "crc32":j.get("crc32"),
+            "format":j.get("format"),
+            "number_sections":j.get("number_sections"),
+            "sections":j.get("sections"),
+            "string_count":j.get("string_count"),
+            "integer_hits_240":j.get("integer_hits",[])[:50]
+          }, indent=2))
+          PY
+          fi
+
+      - name: Upload metadata-only reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-step2-metadata
+          path: |
+            analysis/private/step2/reports/
+            analysis/private/probes/
+          if-no-files-found: error
+          retention-days: 7

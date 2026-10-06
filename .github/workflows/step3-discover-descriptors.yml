@@ -1,0 +1,50 @@
+name: Step 3 Discover Gameplay Descriptors
+
+on:
+  push:
+    paths:
+      - ".github/workflows/step3-discover-descriptors.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch and ingest public PC archive
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Discover all developer variable descriptors
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          mkdir -p analysis/private/step3
+          python tools/discover_debug_descriptors.py "$WIN_EXE" \
+            -o analysis/private/step3/all-debug-descriptors.json
+      - name: Print gameplay-relevant descriptors
+        run: |
+          python - <<'PY'
+          import json,re
+          j=json.load(open('analysis/private/step3/all-debug-descriptors.json'))
+          print("descriptor_count",len(j["descriptors"]))
+          terms=re.compile(r'ball|club|shot|swing|power|force|angle|direction|height|lie|green|wind|putt|bounce|roll|spin|welly|meter',re.I)
+          for d in j["descriptors"]:
+              if terms.search(d["label"]):
+                  print(d["label"],d["type_prefix"],hex(d["variable_va"]))
+          PY
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-all-debug-descriptors
+          path: analysis/private/step3/all-debug-descriptors.json
+          retention-days: 7

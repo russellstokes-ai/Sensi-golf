@@ -97,6 +97,7 @@ def complete_terrain_call(uc, terrain_index: int | None):
 def run_tick(uc, tick, landing, terrain_index):
     from unicorn import UC_HOOK_CODE
     from unicorn.x86_const import (
+        UC_X86_REG_EBX,
         UC_X86_REG_EDI,
         UC_X86_REG_EIP,
         UC_X86_REG_ESI,
@@ -117,7 +118,10 @@ def run_tick(uc, tick, landing, terrain_index):
         if address == TERRAIN_LOOKUP_VA:
             stop_reason = "terrain"
             machine.emu_stop()
-        elif address == HOLE_BRANCH_VA:
+        elif (
+            address == HOLE_BRANCH_VA
+            and (machine.reg_read(UC_X86_REG_EBX) & 0xFFFF) == 8
+        ):
             stop_reason = "holed"
             machine.emu_stop()
         elif address in (AIR_TICK_END_VA, GROUND_STOP_VA):

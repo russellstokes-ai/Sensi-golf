@@ -38,11 +38,15 @@ jobs:
           mkdir -p analysis/private/terrain
 
           python tools/pe_disasm_range.py "$WIN_EXE" \
-            --start-va 0x4094d0 --end-va 0x409650 \
+            --start-va 0x4094f0 --end-va 0x409535 \
+            -o analysis/private/terrain/terrain-state-helper-disasm.json
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x409535 --end-va 0x409650 \
             -o analysis/private/terrain/terrain-lookup-disasm.json
 
           python tools/pe_disasm_range.py "$WIN_EXE" \
-            --start-va 0x40b900 --end-va 0x40ba80 \
+            --start-va 0x40b935 --end-va 0x40ba00 \
             -o analysis/private/terrain/terrain-slope-disasm.json
 
           python tools/terrain_descriptor_probe.py "$WIN_EXE" --count 128 \

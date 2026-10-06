@@ -8,6 +8,7 @@ on:
       - "tools/original_v1014_oracle.py"
       - "tools/compare_airborne_oracle.py"
       - "tools/pe_target_xrefs.py"
+      - "tests/test_compare_airborne_oracle.py"
   workflow_dispatch:
 
 permissions:
@@ -25,8 +26,11 @@ jobs:
       - run: python -m pip install --disable-pip-version-check unicorn
       - name: Fetch and ingest v1.014
         run: |
-          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
-          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
       - name: Build portable core
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -44,9 +48,17 @@ jobs:
           mkdir -p analysis/private/golden-master-live
           run_case() {
             name="$1"; club="$2"; lie="$3"; power="$4"; accuracy="$5"; direction="$6"; ticks="$7"
-            python tools/original_v1014_oracle.py "$WIN_EXE"               --club "$club" --lie "$lie" --power "$power" --accuracy "$accuracy"               --direction "$direction" --ticks "$ticks"               -o "analysis/private/golden-master-live/${name}-original.json"
-            ./build/engine/sensigolf_recovered_probe               "$club" "$lie" "$power" "$accuracy" "$direction" "$ticks"               > "analysis/private/golden-master-live/${name}-recovered.json"
-            python tools/compare_airborne_oracle.py               "analysis/private/golden-master-live/${name}-original.json"               "analysis/private/golden-master-live/${name}-recovered.json"               -o "analysis/private/golden-master-live/${name}-comparison.json"
+            python tools/original_v1014_oracle.py "$WIN_EXE" \
+              --club "$club" --lie "$lie" --power "$power" --accuracy "$accuracy" \
+              --direction "$direction" --ticks "$ticks" \
+              -o "analysis/private/golden-master-live/${name}-original.json"
+            ./build/engine/sensigolf_recovered_probe \
+              "$club" "$lie" "$power" "$accuracy" "$direction" "$ticks" \
+              > "analysis/private/golden-master-live/${name}-recovered.json"
+            python tools/compare_airborne_oracle.py \
+              "analysis/private/golden-master-live/${name}-original.json" \
+              "analysis/private/golden-master-live/${name}-recovered.json" \
+              -o "analysis/private/golden-master-live/${name}-comparison.json"
             cat "analysis/private/golden-master-live/${name}-comparison.json"
           }
           run_case straight_1w 0 0 105 63 0 20

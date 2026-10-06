@@ -11,7 +11,7 @@ from pathlib import Path
 from original_v1014_oracle import build_uc, wu32, w16
 
 LOOKUP_VA=0x409535
-LOOKUP_RETURN_VA=0x40967D
+LOOKUP_RETURN_VA=0x40967C
 MAPBUF=0x510000
 DESC=0x520000
 MASK=0x530000

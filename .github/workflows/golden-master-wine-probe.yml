@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - ".github/workflows/golden-master-wine-probe.yml"
-      - "tools/wine_parent_probe.py"
+      - "tools/live_ball_probe.py"
       - "tools/patch_golden_master_seed.py"
 
 permissions:
@@ -31,7 +31,7 @@ jobs:
           curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
           python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
 
-      - name: Patch only unavailable BIOS RNG seed call
+      - name: Apply minimal deterministic Wine compatibility patch
         shell: bash
         run: |
           set -euo pipefail
@@ -40,7 +40,7 @@ jobs:
           python tools/patch_golden_master_seed.py "$WIN_EXE" "$PATCHED" --seed 0x12345678
           echo "PATCHED_EXE=$PATCHED" >> "$GITHUB_ENV"
 
-      - name: Boot deterministic original and sample as parent
+      - name: Boot deterministic original and sample mapped game process
         shell: bash
         run: |
           set -uo pipefail
@@ -52,13 +52,42 @@ jobs:
           sleep 2
           wineboot -u >/tmp/wineboot.log 2>&1 || true
 
-          python tools/wine_parent_probe.py "$PATCHED_EXE"             --duration-s 12 --interval-ms 20             -o analysis/private/wine-ball-probe.json             --stdout /tmp/golfwin.stdout --stderr /tmp/golfwin.stderr
+          GAME_DIR="$(dirname "$PATCHED_EXE")"
+          (
+            cd "$GAME_DIR"
+            wine ./GOLFWIN_GM.EXE >/tmp/golfwin.stdout 2>/tmp/golfwin.stderr
+          ) &
+          WINE_LAUNCH_PID=$!
+          sleep 4
+
+          python - <<'PY'
+          from pathlib import Path
+          found=[]
+          for p in Path('/proc').iterdir():
+              if not p.name.isdigit(): continue
+              try:
+                  maps=(p/'maps').read_text(errors='ignore')
+                  cmd=(p/'cmdline').read_bytes().replace(b'\0',b' ').decode(errors='ignore')
+              except Exception:
+                  continue
+              upper=(maps+' '+cmd).upper()
+              if 'GOLFWIN_GM.EXE' in upper:
+                  found.append((int(p.name),cmd))
+          print('mapped candidates',found)
+          if not found: raise SystemExit('no mapped GOLFWIN_GM.EXE process')
+          Path('/tmp/golf_pid').write_text(str(found[0][0]))
+          PY
+
+          PID="$(cat /tmp/golf_pid)"
+          sudo python "$GITHUB_WORKSPACE/tools/live_ball_probe.py" "$PID"             --duration-s 5 --interval-ms 20             -o "$GITHUB_WORKSPACE/analysis/private/wine-ball-probe.json"
           PROBE_RC=$?
 
           echo "=== windows ==="
           xdotool search --onlyvisible --name '.*' getwindowname %@ 2>/dev/null || true
           xwininfo -root -tree || true
           import -window root "$GITHUB_WORKSPACE/analysis/private/wine-root.png" || true
+
+          kill "$WINE_LAUNCH_PID" 2>/dev/null || true
           kill "$XVFB_PID" 2>/dev/null || true
           exit "$PROBE_RC"
 
@@ -70,9 +99,8 @@ jobs:
           p=pathlib.Path('analysis/private/wine-ball-probe.json')
           if p.exists():
               j=json.loads(p.read_text())
-              print('pid',j['pid'],'rc',j['returncode'],'samples',j['sample_count'])
-              print('errors',j['errors'][-10:])
-              for row in j['samples'][:20]: print(row)
+              print('samples',len(j['samples']))
+              print('first',j['samples'][:10])
           PY
           echo "=== stderr tail ==="
           tail -120 /tmp/golfwin.stderr 2>/dev/null || true

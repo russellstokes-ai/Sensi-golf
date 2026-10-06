@@ -1,0 +1,69 @@
+name: Gate 1 SPT Object Pointer Analysis
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate1-spt-object-xrefs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install disassembler
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip             --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace per-hole SPT object data
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT="analysis/private/gate1-spt"
+          mkdir -p "$OUT"
+
+          python tools/pe_va_xrefs.py "$WIN_EXE"             --va 0x41EE2E --va 0x41EE32             --va 0x41EE36 --va 0x41EE3A --va 0x41EE3E --va 0x41EE42 --va 0x41EE46             --radius 64 -o "$OUT/spt-and-common-xrefs.json"
+
+          python - "$OUT/spt-summary.json" analysis/private/step2/extracted/epf <<'PY'
+          import json,sys
+          from pathlib import Path
+          out=Path(sys.argv[1]); root=Path(sys.argv[2])
+          rows=[]
+          for p in sorted(root.glob('MAPM*.SPT')):
+              b=p.read_bytes()
+              rows.append({
+                'file':p.name,'size':len(b),
+                'nonzero_bytes':sum(x!=0 for x in b),
+                'unique_values':len(set(b)),
+                'five_byte_record_nonzero':[sum(x!=0 for x in b[i:i+5]) for i in range(0,len(b),5)],
+                'ten_byte_record_nonzero':[sum(x!=0 for x in b[i:i+10]) for i in range(0,len(b),10)],
+              })
+          out.write_text(json.dumps(rows,indent=2)+'\n')
+          print('SPT files',len(rows))
+          for r in rows[:12]: print(r)
+          PY
+
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/gate1-spt/spt-and-common-xrefs.json'))
+          print('xref count',len(j['xrefs']))
+          for x in j['xrefs']:
+              print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
+              for i in x['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate1-spt-object-analysis
+          path: analysis/private/gate1-spt/
+          retention-days: 14

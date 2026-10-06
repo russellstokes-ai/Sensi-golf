@@ -45,10 +45,11 @@ struct PointEvent {
 } // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 7) {
+    if (argc != 7 && argc != 8) {
         std::cerr
             << "usage: recovered_full_probe "
-            << "<club> <lie> <power> <accuracy_tick> <direction> <max_ticks>\n";
+            << "<club> <lie> <power> <accuracy_tick> <direction> <max_ticks> "
+            << "[surface_code]\n";
         return 2;
     }
 
@@ -69,12 +70,19 @@ int main(int argc, char** argv) {
         if (max_ticks <= 0) {
             throw std::invalid_argument("max_ticks must be positive");
         }
+        const int surface_code =
+            argc == 8 ? static_cast<int>(parse_long(argv[7], "surface_code")) : 0;
+        if (surface_code != 0 && (surface_code < 2 || surface_code > 7)) {
+            throw std::invalid_argument(
+                "full probe currently scopes generic/normal landing codes 0 or 2..7");
+        }
 
         auto state = launch_normal_shot(input);
         std::optional<PointEvent> landing;
         std::optional<PointEvent> rest;
 
-        std::cout << "{\n  \"surface_code\":0,\n  \"samples\":[\n";
+        std::cout << "{\n  \"surface_code\":" << surface_code
+                  << ",\n  \"samples\":[\n";
         sample_json(state, 0, false);
 
         for (int tick = 1; tick <= max_ticks; ++tick) {

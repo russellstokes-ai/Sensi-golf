@@ -13,7 +13,7 @@ from pe_target_xrefs import parse_pe
 
 EXPECTED_SHA256="3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8"
 PATCH_VA=0x402B04
-EXPECTED=bytes.fromhex("b402cd1a6631c2c1e2106689ca6631da891510a34100c3")
+EXPECTED=bytes.fromhex("b402cd1a6633d0c1e210668bd16633d3891510a34100c3")
 
 def va_to_offset(va,image_base,sections):
     rva=va-image_base

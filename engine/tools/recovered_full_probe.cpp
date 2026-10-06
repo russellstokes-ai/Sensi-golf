@@ -45,11 +45,11 @@ struct PointEvent {
 } // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 7 && argc != 8) {
+    if (argc != 7 && argc != 8 && argc != 10) {
         std::cerr
             << "usage: recovered_full_probe "
             << "<club> <lie> <power> <accuracy_tick> <direction> <max_ticks> "
-            << "[surface_code]\n";
+            << "[surface_code [slope_direction slope_magnitude]]\n";
         return 2;
     }
 
@@ -76,6 +76,12 @@ int main(int argc, char** argv) {
             throw std::invalid_argument("surface_code outside uint16 range");
         }
         const auto surface_code = static_cast<std::uint16_t>(parsed_surface);
+        const auto slope_direction = argc == 10
+            ? static_cast<std::uint16_t>(parse_long(argv[8], "slope_direction"))
+            : 0;
+        const auto slope_magnitude = argc == 10
+            ? static_cast<std::uint16_t>(parse_long(argv[9], "slope_magnitude"))
+            : 0;
 
         auto state = launch_normal_shot(input);
         std::optional<PointEvent> landing;
@@ -95,7 +101,7 @@ int main(int argc, char** argv) {
 
         for (int tick = 1; tick <= max_ticks; ++tick) {
             const auto step = input.club_index == 12
-                ? step_flat_green_putt(state)
+                ? step_green_putt(state, slope_direction, slope_magnitude)
                 : step_controlled_surface(state, surface_code);
             if (step.contacted_ground && !landing) {
                 landing = PointEvent{tick, step.contact_x, step.contact_y};

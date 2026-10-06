@@ -1,7 +1,9 @@
 # Original/licensed game material — keep outside the public repository
 original/
+analysis/private/
 analysis/binaries/
 analysis/extracted/
+analysis/input-sha256.json
 *.exe
 *.epf
 *.adf

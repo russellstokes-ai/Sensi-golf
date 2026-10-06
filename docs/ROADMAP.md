@@ -3,13 +3,21 @@
 ## Gate 1 — Recover original gameplay/physics
 **Current**
 
-Deliverables:
-- original-file manifest;
-- EPF inventory/extraction;
+Completed infrastructure:
+- public repo / original-file separation;
+- known PC build reference manifest;
+- safe private ingestion pipeline;
+- EPF parser/decompressor/extractor;
+- executable metadata/string/constant probe;
+- shot-trace schema and numeric comparator;
+- portable C++17 classic-core contract and trace recorder.
+
+Evidence still required from the original game:
+- ingest exact original-file set;
 - executable map;
 - recovered gameplay tables/routines;
 - controlled original-game shot traces;
-- deterministic portable prototype;
+- deterministic recovered implementation;
 - parity report.
 
 Exit: representative parity suite passes.
@@ -17,7 +25,7 @@ Exit: representative parity suite passes.
 ## Gate 2 — Faithful desktop harness
 
 Deliverables:
-- portable core compiled outside DOS/Windows legacy runtime;
+- recovered classic implementation compiled outside DOS/Windows legacy runtime;
 - one full original hole/course path through importer;
 - original-resolution reference renderer;
 - input replay and deterministic save/load tests.

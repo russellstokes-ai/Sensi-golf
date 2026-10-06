@@ -46,23 +46,40 @@ void move_after_drag(FlightState& state) {
         static_cast<std::int64_t>(state.y) + dy, "ground y overflow");
 }
 
-bool drag_then_move_or_reenter_ground(FlightState& state) {
+enum class DragResult {
+    Moved,
+    EndTick,
+    ReenterGround,
+};
+
+DragResult drag_then_move(FlightState& state) {
     if (state.horizontal_force > 0) {
         const auto after =
             static_cast<std::int64_t>(state.horizontal_force)
             - kHorizontalDragPerTick;
+
         if (after < 0) {
             state.horizontal_force = 0;
-            if (state.height == 0) return true;
-        } else {
-            state.horizontal_force = static_cast<std::int32_t>(after);
+
+            // Original v1.014 branch at 0x40A634:
+            // when positive H crosses below zero, the game does NOT enter
+            // 0x40A96F on this tick. Airborne shots end the tick immediately;
+            // ground shots fall straight back into landing resolution.
+            if (state.height == 0) {
+                return DragResult::ReenterGround;
+            }
+            return DragResult::EndTick;
         }
+
+        state.horizontal_force = static_cast<std::int32_t>(after);
     } else {
+        // If H was already zero/non-positive on entry, original code does
+        // continue through 0x40A96F, so direction still advances.
         state.horizontal_force = 0;
     }
 
     move_after_drag(state);
-    return false;
+    return DragResult::Moved;
 }
 
 } // namespace
@@ -81,7 +98,7 @@ GroundStepResult step_generic_flat_surface(FlightState& state) {
         : checked_i32(next_height, "ground height overflow");
 
     if (state.height != 0) {
-        (void)drag_then_move_or_reenter_ground(state);
+        (void)drag_then_move(state);
         return result;
     }
 
@@ -112,7 +129,8 @@ GroundStepResult step_generic_flat_surface(FlightState& state) {
         state.horizontal_force =
             checked_i32(horizontal, "bounce H overflow");
 
-        if (drag_then_move_or_reenter_ground(state)) {
+        const auto drag = drag_then_move(state);
+        if (drag == DragResult::ReenterGround) {
             continue;
         }
         return result;

@@ -124,9 +124,6 @@ FlightState launch_normal_shot(const LaunchInput& input) {
         throw std::out_of_range("lie index outside recovered 0..9 selector range");
     }
     const auto& club = kClubTable[input.club_index];
-    if (club.special_putter_path) {
-        throw std::invalid_argument("club index 12 uses the special putter path");
-    }
     if (input.captured_power < 0 || input.captured_power > kMaxCapturedPower) {
         throw std::out_of_range("captured power outside recovered 0..105 range");
     }

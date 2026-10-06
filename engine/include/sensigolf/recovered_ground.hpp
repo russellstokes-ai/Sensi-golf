@@ -21,6 +21,10 @@ GroundStepResult step_controlled_surface(
     FlightState& state,
     std::uint16_t landing_code);
 
+// Original club-12 flat-green path: no gravity, green drag (0x780),
+// normal Q14 planar movement, and V/H are cleared when the putt stops.
+GroundStepResult step_flat_green_putt(FlightState& state);
+
 inline GroundStepResult step_generic_flat_surface(FlightState& state) {
     return step_controlled_surface(state, 0);
 }

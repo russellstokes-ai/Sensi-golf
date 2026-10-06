@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/golden-master-wine-probe.yml"
       - "tools/wine_parent_probe.py"
+      - "tools/patch_golden_master_seed.py"
 
 permissions:
   contents: read
@@ -30,36 +31,40 @@ jobs:
           curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
           python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
 
-      - name: Boot original at 8-bit colour and sample as parent
+      - name: Patch only unavailable BIOS RNG seed call
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          PATCHED="$(dirname "$WIN_EXE")/GOLFWIN_GM.EXE"
+          python tools/patch_golden_master_seed.py "$WIN_EXE" "$PATCHED" --seed 0x12345678
+          echo "PATCHED_EXE=$PATCHED" >> "$GITHUB_ENV"
+
+      - name: Boot deterministic original and sample as parent
         shell: bash
         run: |
           set -uo pipefail
           export DISPLAY=:99
           export WINEPREFIX="$RUNNER_TEMP/wineprefix"
-          # Keep crash/loader diagnostics for this compatibility probe.
-          export WINEDEBUG=+seh,+module
+          export WINEDEBUG=+seh
           Xvfb :99 -screen 0 800x600x8 >/tmp/xvfb.log 2>&1 &
           XVFB_PID=$!
           sleep 2
           wineboot -u >/tmp/wineboot.log 2>&1 || true
 
-          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
-          python tools/wine_parent_probe.py "$WIN_EXE"             --duration-s 12 --interval-ms 20             -o analysis/private/wine-ball-probe.json             --stdout /tmp/golfwin.stdout --stderr /tmp/golfwin.stderr
+          python tools/wine_parent_probe.py "$PATCHED_EXE"             --duration-s 12 --interval-ms 20             -o analysis/private/wine-ball-probe.json             --stdout /tmp/golfwin.stdout --stderr /tmp/golfwin.stderr
           PROBE_RC=$?
 
           echo "=== windows ==="
           xdotool search --onlyvisible --name '.*' getwindowname %@ 2>/dev/null || true
-          echo "=== tree ==="
           xwininfo -root -tree || true
           import -window root "$GITHUB_WORKSPACE/analysis/private/wine-root.png" || true
-
           kill "$XVFB_PID" 2>/dev/null || true
           exit "$PROBE_RC"
 
       - name: Print probe summary
         if: always()
         run: |
-          echo "=== probe ==="
           python - <<'PY'
           import json,pathlib
           p=pathlib.Path('analysis/private/wine-ball-probe.json')
@@ -70,7 +75,7 @@ jobs:
               for row in j['samples'][:20]: print(row)
           PY
           echo "=== stderr tail ==="
-          tail -200 /tmp/golfwin.stderr 2>/dev/null || true
+          tail -120 /tmp/golfwin.stderr 2>/dev/null || true
 
       - uses: actions/upload-artifact@v4
         if: always()

@@ -22,6 +22,10 @@ def compare(original,recovered):
         a=original.get("events",{}).get(event); b=recovered.get("events",{}).get(event)
         if a!=b:
             mismatches.append({"kind":"event","event":event,"original":a,"recovered":b})
+    original_holed=bool(original.get("events",{}).get("holed",False))
+    recovered_holed=bool(recovered.get("events",{}).get("holed",False))
+    if original_holed!=recovered_holed:
+        mismatches.append({"kind":"event","event":"holed","original":original_holed,"recovered":recovered_holed})
     if original.get("surface_code")!=recovered.get("surface_code"):
         mismatches.append({"kind":"surface_code","original":original.get("surface_code"),"recovered":recovered.get("surface_code")})
     return {"pass":not mismatches,"sample_count":min(len(left),len(right)),"fields":list(FIELDS),"tolerance":0,

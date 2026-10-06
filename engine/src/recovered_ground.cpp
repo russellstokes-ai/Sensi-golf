@@ -31,7 +31,10 @@ std::int32_t q14_delta(std::int32_t force, std::int16_t trig) {
         "ground Q14 delta overflow");
 }
 
-void move_after_drag(FlightState& state) {
+void move_after_drag(
+    FlightState& state,
+    std::int32_t slope_x_raw = 0,
+    std::int32_t slope_y_raw = 0) {
     state.direction = static_cast<std::uint16_t>(
         static_cast<std::int64_t>(state.direction)
         - static_cast<std::int64_t>(state.swing_adjuster) * 2)
@@ -41,11 +44,15 @@ void move_after_drag(FlightState& state) {
     const auto dy = q14_delta(
         state.horizontal_force,
         trig_q14(static_cast<std::uint16_t>(state.direction + 1024)));
+    const auto slope_dx = static_cast<std::int32_t>(sar_floor(slope_x_raw, 14));
+    const auto slope_dy = static_cast<std::int32_t>(sar_floor(slope_y_raw, 14));
 
     state.x = checked_i32(
-        static_cast<std::int64_t>(state.x) + dx, "ground x overflow");
+        static_cast<std::int64_t>(state.x) + dx + slope_dx,
+        "ground x overflow");
     state.y = checked_i32(
-        static_cast<std::int64_t>(state.y) + dy, "ground y overflow");
+        static_cast<std::int64_t>(state.y) + dy + slope_dy,
+        "ground y overflow");
 }
 
 enum class DragResult {
@@ -86,7 +93,32 @@ DragResult drag_then_move(FlightState& state) {
 
 } // namespace
 
-GroundStepResult step_flat_green_putt(FlightState& state) {
+GreenSlopeAdjustment green_slope_adjustment(
+    std::uint16_t slope_direction,
+    std::uint16_t slope_magnitude) {
+    // Original 0x40B965:
+    //   eax = magnitude << 12
+    //   imul q14_sin/cos -> low 32-bit raw adjustment
+    const auto base =
+        static_cast<std::int32_t>(static_cast<std::uint32_t>(slope_magnitude) << 12);
+    const auto raw_x_wide =
+        static_cast<std::int64_t>(base) * trig_q14(slope_direction);
+    const auto raw_y_wide =
+        static_cast<std::int64_t>(base) *
+        trig_q14(static_cast<std::uint16_t>(slope_direction + 1024));
+
+    return GreenSlopeAdjustment{
+        static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(raw_x_wide)),
+        static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(raw_y_wide)),
+    };
+}
+
+GroundStepResult step_green_putt(
+    FlightState& state,
+    std::uint16_t slope_direction,
+    std::uint16_t slope_magnitude) {
     GroundStepResult result{};
 
     // Club 12 enters the original update at 0x40A581. On a normal green
@@ -106,7 +138,7 @@ GroundStepResult step_flat_green_putt(FlightState& state) {
 
     if (after < 0) {
         // Original stop path clears the launch V field as the putt comes
-        // to rest; the oracle shows no final movement on this crossing tick.
+        // to rest; no movement/slope term is applied on the crossing tick.
         state.horizontal_force = 0;
         state.vertical_force = 0;
         result.resting = true;
@@ -115,7 +147,9 @@ GroundStepResult step_flat_green_putt(FlightState& state) {
 
     state.horizontal_force =
         checked_i32(after, "green putter H overflow");
-    move_after_drag(state);
+    const auto slope = green_slope_adjustment(
+        slope_direction, slope_magnitude);
+    move_after_drag(state, slope.raw_x, slope.raw_y);
     return result;
 }
 

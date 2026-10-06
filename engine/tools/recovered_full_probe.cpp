@@ -86,6 +86,7 @@ int main(int argc, char** argv) {
         auto state = launch_normal_shot(input);
         std::optional<PointEvent> landing;
         std::optional<PointEvent> rest;
+        bool holed = false;
 
         if (input.club_index == 12) {
             if (surface_code != 1) {
@@ -106,6 +107,9 @@ int main(int argc, char** argv) {
             if (step.contacted_ground && !landing) {
                 landing = PointEvent{tick, step.contact_x, step.contact_y};
             }
+            if (step.holed) {
+                holed = true;
+            }
             sample_json(state, tick, true);
             if (step.resting) {
                 rest = PointEvent{tick, state.x, state.y};
@@ -125,7 +129,8 @@ int main(int argc, char** argv) {
             << ",\"y\":" << landing->y << "},"
             << "\"rest\":{\"tick\":" << rest->tick
             << ",\"x\":" << rest->x
-            << ",\"y\":" << rest->y << "}"
+            << ",\"y\":" << rest->y << "},"
+            << "\"holed\":" << (holed ? "true" : "false")
             << "}\n}\n";
         return 0;
     } catch (const std::exception& exc) {

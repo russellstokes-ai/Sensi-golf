@@ -3,6 +3,7 @@ add_library(sensigolf_core
     src/recovered_flight.cpp
     src/recovered_ground.cpp
     src/recovered_prng.cpp
+    src/recovered_interactions.cpp
 )
 
 target_include_directories(sensigolf_core
@@ -40,7 +41,6 @@ add_executable(sensigolf_recovered_full_probe
 )
 target_link_libraries(sensigolf_recovered_full_probe PRIVATE sensigolf_core)
 
-
 add_executable(sensigolf_recovered_prng_tests
     tests/recovered_prng_tests.cpp
 )
@@ -51,3 +51,14 @@ add_executable(sensigolf_recovered_prng_probe
     tools/recovered_prng_probe.cpp
 )
 target_link_libraries(sensigolf_recovered_prng_probe PRIVATE sensigolf_core)
+
+add_executable(sensigolf_recovered_interactions_tests
+    tests/recovered_interactions_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_interactions_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_interactions_tests COMMAND sensigolf_recovered_interactions_tests)
+
+add_executable(sensigolf_recovered_interactions_probe
+    tools/recovered_interactions_probe.cpp
+)
+target_link_libraries(sensigolf_recovered_interactions_probe PRIVATE sensigolf_core)

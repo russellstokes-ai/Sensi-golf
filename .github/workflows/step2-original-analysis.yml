@@ -6,6 +6,7 @@ on:
       - ".github/workflows/step2-original-analysis.yml"
       - "tools/pe_string_xrefs.py"
       - "tools/spt_probe.py"
+      - "tools/debug_pointer_probe.py"
 
 permissions:
   contents: read
@@ -121,6 +122,18 @@ jobs:
                       print('  xref',hex(ref['instruction_address']) if ref['instruction_address'] else None)
                       for line in ref['context']:
                           print('   ',line)
+          PY
+
+          echo "===== LIVE DEBUG VARIABLE POINTERS ====="
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/probes/golfwin-debug-pointers.json'))
+          for record in j['records']:
+              for occ in record['occurrences']:
+                  print(record['label'], occ['pointer_hex'], 'refs=',len(occ['code_references']))
+                  for ref in occ['code_references'][:5]:
+                      print('  xref',hex(ref['instruction_address']) if ref['instruction_address'] else None)
+                      print('   ',ref['line'])
           PY
 
           echo "===== SPT STRUCTURE ====="

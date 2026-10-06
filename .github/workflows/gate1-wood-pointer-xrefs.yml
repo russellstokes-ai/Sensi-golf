@@ -1,0 +1,86 @@
+name: Gate 1 Wood Pointer Xrefs
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate1-wood-pointer-xrefs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install disassembler
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace WOOD resource pointers and characterise collision assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          ROOT="analysis/private/step2/extracted/epf"
+          OUT="analysis/private/gate1-wood-xrefs"
+          mkdir -p "$OUT"
+
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x4246d2 --va 0x4246d6 --va 0x4246da --va 0x4246de --va 0x4246e2 \
+            --radius 48 -o "$OUT/wood-pointer-xrefs.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x412180 --end-va 0x412320 \
+            -o "$OUT/wood-loader.json"
+
+          python - "$ROOT" "$OUT/resource-stats.json" <<'PY'
+          import collections,hashlib,json,math,sys
+          from pathlib import Path
+          root=Path(sys.argv[1]); out=Path(sys.argv[2])
+          names=['SGOLF.HIT','WOOD1.BIN','WOOD2.BIN','WOOD3.BIN','WOOD4.BIN']
+          rows=[]
+          for name in names:
+              p=root/name
+              data=p.read_bytes()
+              counts=collections.Counter(data)
+              ent=0.0
+              for n in counts.values():
+                  q=n/len(data); ent-=q*math.log2(q)
+              # Derived structure only: no original byte payload is emitted.
+              rows.append({
+                'name':name,'size':len(data),'sha256':hashlib.sha256(data).hexdigest(),
+                'unique_byte_values':len(counts),'entropy_bits_per_byte':round(ent,6),
+                'zero_fraction':round(counts.get(0,0)/len(data),6),
+                'ff_fraction':round(counts.get(255,0)/len(data),6),
+                'divisors':[d for d in (8,10,16,20,32,40,64,80,128,160,256,320,512,640)
+                            if len(data)%d==0],
+              })
+          out.write_text(json.dumps(rows,indent=2)+'\n')
+          print(json.dumps(rows,indent=2))
+          PY
+
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/gate1-wood-xrefs/wood-pointer-xrefs.json'))
+          print('xref count',len(j['xrefs']))
+          for x in j['xrefs']:
+              print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
+              for i in x['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate1-wood-pointer-xrefs
+          path: analysis/private/gate1-wood-xrefs/
+          retention-days: 14

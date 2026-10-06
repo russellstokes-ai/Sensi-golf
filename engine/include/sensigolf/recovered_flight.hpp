@@ -11,6 +11,7 @@ constexpr std::int32_t kMaxCapturedPower = 105;
 constexpr std::int32_t kAccuracyCenter = 63;
 constexpr std::int32_t kGravityPerTick = 0x2100;
 constexpr std::int32_t kHorizontalDragPerTick = 0x0F00;
+constexpr std::int32_t kGreenHorizontalDragPerTick = 0x0780;
 
 struct ClubLaunchParameters {
     std::int32_t vertical_base;
@@ -52,6 +53,9 @@ struct LaunchInput {
 //   swing_adjuster = selected_profile[evenized(error)]
 //   V = club.vertical_base + club.power_scale * adjusted_power
 //   H = club.horizontal_base + club.power_scale * adjusted_power
+//
+// Club index 12 shares this launch initializer; its per-tick motion then uses
+// the separately recovered putter/green path.
 //
 // Out-of-profile-bound accuracy behavior remains intentionally unimplemented
 // until its surrounding state semantics are parity-tested.

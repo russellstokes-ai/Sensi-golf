@@ -64,6 +64,27 @@ int main() {
     assert(state.vertical_force == 249344);
     assert(state.horizontal_force == 159232);
 
+    // Original zero-crossing quirk: if positive horizontal force falls
+    // below zero after drag while airborne, that tick ends before the
+    // direction/curve update. The next already-zero-H tick does update it.
+    FlightState zero_cross{};
+    zero_cross.height = 200000;
+    zero_cross.vertical_force = 100000;
+    zero_cross.horizontal_force = 272;
+    zero_cross.direction = 1023;
+    zero_cross.swing_adjuster = -1;
+
+    assert(step_clear_air(zero_cross) == AirborneStepResult::Airborne);
+    assert(zero_cross.horizontal_force == 0);
+    assert(zero_cross.direction == 1023);
+    assert(zero_cross.x == 0);
+    assert(zero_cross.y == 0);
+
+    assert(step_clear_air(zero_cross) == AirborneStepResult::Airborne);
+    assert(zero_cross.direction == 1025);
+    assert(zero_cross.x == 0);
+    assert(zero_cross.y == 0);
+
     bool out_of_bounds_rejected = false;
     try {
         launch.accuracy_tick = 80;

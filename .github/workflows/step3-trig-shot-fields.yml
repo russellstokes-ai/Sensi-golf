@@ -18,34 +18,48 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+
       - name: Fetch and ingest
         run: |
           curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
           python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
-      - name: Analyse trig and shot parameter fields
+
+      - name: Analyse trig, clubs and shot parameter fields
         shell: bash
         run: |
           set -euo pipefail
           WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
           mkdir -p analysis/private/step3/field-analysis
           python tools/analyze_trig_table.py "$WIN_EXE"             -o analysis/private/step3/field-analysis/trig.json
+          python tools/extract_club_table.py "$WIN_EXE"             -o analysis/private/step3/field-analysis/clubs.json
           python tools/scan_struct_offsets.py "$WIN_EXE"             --offset 0x12 --offset 0x28 --offset 0x2a --offset 0x2e --offset 0x32             --offset 0x5a --offset 0x62             --radius 10             -o analysis/private/step3/field-analysis/shot-field-refs.json
-      - name: Print results
+
+      - name: Print key results
         run: |
           python - <<'PY'
           import json
           t=json.load(open('analysis/private/step3/field-analysis/trig.json'))
           print("==== TRIG ====")
           print(json.dumps(t,indent=2))
+
+          c=json.load(open('analysis/private/step3/field-analysis/clubs.json'))
+          print("\n==== CLUB PHYSICS TABLE ====")
+          for row in c["clubs"]:
+              print(row)
+          print("\n==== LIE/DISTANCE ROWS ====")
+          for row in c["lie_distance_rows"]:
+              print(row)
+
           s=json.load(open('analysis/private/step3/field-analysis/shot-field-refs.json'))
-          print("\n==== SHOT FIELD REFERENCES ====")
-          print("hit_count",len(s["hits"]))
+          print("\n==== GAMEPLAY SHOT FIELD REFERENCES ====")
           for h in s["hits"]:
-              print("\n",hex(h["address"]),h["instruction"],h["operands"])
-              for i in h["context"]:
-                  mark=">>" if i["address"]==h["address"] else "  "
-                  print(f'{mark} {i["address"]:08x} {i["mnemonic"]:8} {i["op_str"]}')
+              if h["address"] < 0x406000:
+                  continue
+              if not any(o["disp"] in (0x28,0x2a,0x2e,0x32,0x5a,0x62) for o in h["operands"]):
+                  continue
+              print(hex(h["address"]),h["instruction"],h["operands"])
           PY
+
       - uses: actions/upload-artifact@v4
         with:
           name: sensible-golf-step3-trig-shot-fields

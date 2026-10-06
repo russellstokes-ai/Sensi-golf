@@ -1,24 +1,29 @@
 # Roadmap
 
 ## Gate 1 — Recover original gameplay/physics
-**Current**
+**Current — GO; runtime parity remains**
 
-Completed infrastructure:
+Completed:
 - public repo / original-file separation;
-- known PC build reference manifest;
-- safe private ingestion pipeline;
-- EPF parser/decompressor/extractor;
-- executable metadata/string/constant probe;
-- shot-trace schema and numeric comparator;
-- portable C++17 classic-core contract and trace recorder.
+- exact PC v1.014 reference build fingerprinting;
+- complete EPF extraction (277/277 entries);
+- executable map and DOS/Windows cross-check anchors;
+- ball-state layout;
+- exact direction/trig model;
+- club physics table and launch formula;
+- swing/accuracy tables;
+- gravity, landing/bounce and rolling drag;
+- green-state and slope projection path;
+- portable C++17 recovered math/kernel scaffolding;
+- trace schema and numerical comparator.
 
-Evidence still required from the original game:
-- ingest exact original-file set;
-- executable map;
-- recovered gameplay tables/routines;
-- controlled original-game shot traces;
-- deterministic recovered implementation;
-- parity report.
+Still required:
+- close remaining meter/profile mapping details;
+- finish lie/surface, collision/hazard and cup semantics;
+- determine logical simulation tick frequency and randomness behaviour;
+- capture controlled original-game runtime traces;
+- complete recovered implementation for exercised paths;
+- pass the representative golden-master parity suite.
 
 Exit: representative parity suite passes.
 

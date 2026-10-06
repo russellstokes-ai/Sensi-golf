@@ -1,103 +1,78 @@
 # Step 3 — Executable Analysis and Physics Recovery
 
-Status: **ANALYSIS HARNESS READY — original executable required for evidence work**
+Status: **IN PROGRESS — substantial Windows v1.014 static recovery complete**
 
 ## Objective
 
 Recover the implementation of the classic shot and ball model rather than approximate it.
 
-## Analysis order
+## Reference implementation
 
-1. `GOLFWIN.EXE` first when the selected build contains it.
-   - PE32 has explicit sections and standard tooling.
-   - Locate strings/data references and candidate numeric tables.
-2. `GOLFDOS.EXE` second.
-   - Cross-check shared constants/tables and behaviour.
-   - Distinguish genuine gameplay rules from Windows-port-specific implementation.
-3. `GOLF.EPF` extracted data.
-   - Determine which gameplay parameters live in data versus executable code.
+Primary:
+- `GOLFWIN.EXE` v1.014 — PE32 and the clearest static-analysis target.
 
-## New probe
+Cross-check:
+- `GOLFDOS.EXE` from the same selected package.
 
-```bash
-python tools/executable_probe.py GOLFWIN.EXE --number 240 -o analysis/private/golfwin-probe.json
-python tools/executable_probe.py GOLFDOS.EXE --number 240 -o analysis/private/golfdos-probe.json
-```
+Data:
+- completely extracted `GOLF.EPF` — 277 entries.
 
-The `240` search is only a useful anchor because the manual documents a 240-yard maximum-power 1 Wood. A hit is **not** evidence by itself; it becomes meaningful only when referenced by code or adjacent to a coherent club table.
+Exact fingerprints are recorded in [STEP2_VERIFIED_RESULTS.md](STEP2_VERIFIED_RESULTS.md).
 
-The probe records:
-- SHA-256 and CRC-32;
-- executable format;
-- PE section metadata;
-- printable strings and offsets;
-- requested 16/32-bit integer occurrences.
+## Completed static recovery
 
-It intentionally does not claim to be a decompiler.
+The current analysis has recovered or strongly mapped:
 
-## Recovery sequence
+- authoritative ball-state structure and stride;
+- fixed-point X/Y handling;
+- 4096-step heading system;
+- exact clean-generated Q14 trig;
+- 13-row club physics table;
+- club launch parameters;
+- raw `DropPower` launch formula;
+- swing/accuracy direction adjustment;
+- 11 accuracy profile tables;
+- gravity and vertical integration;
+- landing/bounce;
+- rolling drag;
+- green state/bounds;
+- terrain/slope projection;
+- distance-to-hole path;
+- DOS/Windows debug-state cross-check.
 
-### A. Find state anchors
+The portable C++17 math/kernel work intentionally implements only evidenced mechanics.
 
-Search for:
-- club names or club-selection UI text;
-- lie/surface labels;
-- score/hole strings;
-- maximum-distance display strings/numbers;
-- Welly-o-meter related UI resources.
+Detailed formula record: [RECOVERED_PHYSICS_1_014.md](RECOVERED_PHYSICS_1_014.md).
 
-Trace cross-references from those anchors to candidate state variables/tables.
+## Remaining static/dynamic closure
 
-### B. Identify authoritative ball state
+### Input mapping
+- prove the complete user-facing upper-meter timing -> raw `DropPower` mapping;
+- prove club/player -> accuracy-profile selection;
+- determine whether any draw/fade curvature continues after launch.
 
-Find the variables updated while a shot is active:
-- horizontal position;
-- height;
-- direction;
-- velocity or per-tick deltas;
-- flight/ground state;
-- surface;
-- bounce/roll state.
+### Terrain/game rules
+- decode lie/surface IDs and modifiers;
+- map obstacle/tree collision;
+- map water/out-of-bounds transitions;
+- recover cup capture / near-hole special branch.
 
-Do not name a field until observed reads/writes support the name.
+### Timing/determinism
+- determine logical simulation tick frequency;
+- identify any PRNG dependency that affects shot outcomes.
 
-### C. Recover shot initialization
-
-Map:
-- aim input -> heading;
-- selected club -> base parameters;
-- upper meter timing -> power;
-- lower meter timing -> straight/draw/fade;
-- lie -> modifier.
-
-### D. Recover per-tick update
-
-Separate:
-- airborne update;
-- curvature;
-- collision query;
-- landing;
-- bounce;
-- ground roll;
-- hazard/cup termination.
-
-### E. Putting
-
-Treat putting independently if the original does:
-- power mapping;
-- surface/slope vector;
-- friction/deceleration;
-- cup capture.
+### Runtime evidence
+Capture controlled original v1.014 shots and compare per-tick state with the portable core using the golden-master harness.
 
 ## Evidence standard
 
-Every recovered formula/table must have:
-1. binary/data location;
-2. observed callers/readers;
+Every promoted formula/table requires:
+1. binary/data location or unambiguous runtime evidence;
+2. observed readers/writers/callers;
 3. human-readable interpretation;
-4. one or more original-game traces that exercise it;
-5. parity test against the portable implementation.
+4. an original-game trace exercising it where applicable;
+5. parity coverage in the portable implementation.
 
 ## Stop condition
 
-If the executable cannot be obtained legally, Step 3 can be prepared but not honestly completed. We do not fill unknown physics with guessed values.
+Do not fill unresolved behaviour with guessed modern golf physics. If a rule is not recovered, it stays explicitly open until binary/data/runtime evidence resolves it.

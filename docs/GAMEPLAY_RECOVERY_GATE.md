@@ -1,118 +1,105 @@
 # Gate 1 — Original Gameplay and Physics Recovery
 
-Status: **PROVISIONAL GO — requires executable/data verification**
+Status: **GO — static recovery is substantial; runtime golden-master parity still required**
 
 ## Purpose
 
-This is the project-killing gate. Before graphics, mobile UI or enhancements, prove that the original Sensible Golf gameplay can be recovered faithfully enough for a modern port.
+This is the project-killing gate. Before HD graphics, mobile presentation or enhancement features, prove that the original Sensible Golf gameplay can be recovered faithfully enough for a modern port.
 
-## What must be recovered
+The earlier binary/data feasibility question has now been answered positively. The selected PC v1.014 build has been ingested, its complete EPF archive extracted, and major shot/ball routines and tables recovered. The remaining gate is **runtime parity**, not access to the implementation.
 
-1. Shot aiming and heading representation.
-2. Welly-o-meter timing and power mapping.
-3. Accuracy timing -> straight/draw/fade mapping.
-4. Club table: maximum distance, launch/height behaviour, and any club-specific modifiers.
-5. Lie/surface penalties and safe-zone changes.
-6. Airborne ball movement and curvature.
-7. Tree/obstacle collision behaviour.
-8. Landing, bounce and roll.
-9. Water/out-of-bounds handling.
-10. Putting physics and green slope influence.
-11. Hole/cup capture behaviour.
-12. Any deterministic/random variation affecting shot outcome.
+## Recovery checklist
 
-## Evidence already established
+1. **Shot aiming and heading representation** — recovered: 4096 direction units/circle.
+2. **Welly-o-meter timing and power mapping** — partially recovered; final user-facing timing mapping requires closure.
+3. **Accuracy -> straight/draw/fade mapping** — 11 profile tables and launch adjustment recovered; final runtime behaviour requires parity.
+4. **Club table** — 13 physics records recovered; putter special path identified.
+5. **Lie/surface penalties** — incomplete.
+6. **Airborne movement** — core fixed-point integration, trig and gravity recovered; any remaining continuous curvature must be proven.
+7. **Tree/obstacle collision** — incomplete.
+8. **Landing, bounce and roll** — major branch/arithmetic recovered.
+9. **Water/out-of-bounds handling** — incomplete.
+10. **Putting and green slope** — putter path, green drag/state and slope projection substantially recovered; full semantics/parity incomplete.
+11. **Hole/cup capture** — incomplete.
+12. **Randomness** — final classification pending.
+13. **Logical simulation tick rate** — pending.
+14. **Golden-master runtime parity** — pending and mandatory.
 
-- The PC release contains a DOS4GW executable (`GOLFDOS.EXE`) and a separate PE32 Windows executable (`GOLFWIN.EXE`). Two implementations are useful for cross-checking recovered logic.
-- The DOS port was produced by East Point Software.
-- East Point's EPF archive format used by Sensible Golf is documented: it stores 8.3 filenames, compression flags and compressed/decompressed sizes. Compression is documented LZW (9–14 bit dynamic codes), so game data is not an opaque container.
-- The original manual describes a deliberately compact arcade model rather than a high-dimensional golf simulation: three-click power/accuracy, draw/fade, club trajectory differences, lie penalties, and green slope behaviour.
-- Manual calibration points include a 1 Wood maximum of 240 yards, woods travelling far/low, higher irons pitching over obstacles, worse lies reducing distance, and green slopes altering direction/speed.
+## Verified reference build
 
-## Recovery strategy
+Selected parity build:
 
-### Phase A — Inventory and unpack
+- `GOLFWIN.EXE`: v1.014, SHA-256 `3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8`
+- `GOLFDOS.EXE`: SHA-256 `14c049b2456cda9bc7f54ce1c999fac815879775baf2807a76ef889559d0e1ed`
+- `GOLF.EPF`: SHA-256 `58955f2ef89ad1757998b3ceee661a8ab7edcbd88e00bc1c6683009aa123ab1e`
 
-Input required: a legally held DOS installation/archive containing the original game files.
+`GOLF.EPF` was extracted successfully: **277/277 entries**.
 
-- SHA-256 every input file.
-- Identify PE/LE executables and resource/archive files.
-- Enumerate every EPF FAT entry without modifying the originals.
-- Extract EPF content to an analysis workspace.
-- Classify likely course, tile, palette, sound, lookup-table and gameplay-data files.
+## Major static recovery already established
 
-### Phase B — Static executable analysis
+The Windows v1.014 executable exposes enough debug/state structure to trace the original engine directly.
 
-Prefer `GOLFWIN.EXE` first because PE32 analysis is simpler, then cross-check `GOLFDOS.EXE`.
+Recovered evidence includes:
+- 44-byte ball-state stride;
+- fixed-point X/Y representation;
+- vertical/horizontal force, direction, height and terrain-related fields;
+- 12-bit direction mask = 4096 angular units/circle;
+- exact Q14 trig regeneration;
+- 13-row club physics table;
+- raw launch formula from club parameters + `DropPower`;
+- launch heading adjustment from swing accuracy;
+- 11 swing/accuracy profile tables;
+- gravity = `0x2100` raw units/logical update;
+- normal rolling drag = `0xF00`;
+- green rolling drag = `0x780`;
+- bounce response and force transfer;
+- terrain/slope vector projection;
+- green-bounds state;
+- distance-to-hole calculation.
 
-Locate code/data via:
+See [RECOVERED_PHYSICS_1_014.md](RECOVERED_PHYSICS_1_014.md).
 
-- references to club names/distances and UI values;
-- reads of current club, lie and Welly-o-meter state;
-- writes to ball X/Y/height/velocity-like state;
-- terrain lookup calls during flight/landing/roll;
-- green arrow/slope data access;
-- collision and cup checks;
-- fixed-point math, lookup tables and PRNG calls.
+## Reimplementation rule
 
-Name recovered functions by observed behaviour, never by guesswork.
+Portable code must implement recovered integer/fixed-point behaviour rather than substitute a modern physics engine.
 
-### Phase C — Dynamic black-box measurements
-
-Record repeatable original-game shots with controlled inputs:
-
-- same hole/tee/aim/club;
-- several exact power points;
-- centre accuracy plus symmetric draw/fade offsets;
-- fairway/rough/semi-rough/bunker lies;
-- representative woods and irons;
-- putting uphill/downhill/across slope.
-
-For every run capture frame/tick trajectory, landing point, bounce(s), final rest point and surface transitions.
-
-### Phase D — Reimplementation
-
-Write a deterministic portable gameplay core independent of renderer and frame rate. Preserve original fixed-point/table behaviour where it materially affects feel.
-
-Target API shape:
+Target boundary:
 
 ```
-ShotInput -> OriginalGameplayCore -> BallState[t] -> RestResult
+ShotInput -> ClassicGameplayCore -> BallState[t] -> RestResult
 ```
 
-Rendering must consume simulation state; it must not drive physics.
+The renderer consumes simulation state and may interpolate visually; it never drives authoritative physics.
 
-## Hard parity tests
+## Hard parity test
 
-The gate passes only when a representative suite demonstrates:
+Gate 1 closes only when representative shots captured from the original v1.014 build are replayed through the portable core and demonstrate:
 
-- same shot direction for identical aiming input;
-- same power/distance mapping within measurement tolerance;
-- same sign and practical magnitude of draw/fade;
-- same club trajectory class and obstacle-clearing behaviour;
-- same lie penalties;
-- same terrain outcome and hazard handling;
-- same green slope response;
-- same landing and final-rest coordinates within agreed tolerance;
+- same launch heading;
+- same power/distance behaviour;
+- same draw/fade behaviour;
+- same trajectory class;
+- same lie/surface effects;
+- same collision/hazard outcomes;
+- same green/slope behaviour;
+- same landing/bounce/roll;
+- same final rest;
+- same hole/cup outcome;
+- same logical tick progression where observable;
 - deterministic repeatability where the original is deterministic.
 
-A pretty approximation does **not** pass.
+A visually convincing approximation does **not** pass.
 
-## Go / No-Go criteria
+## Go / No-Go decision
 
-### GO
+### Current decision: GO
 
-Proceed if we can identify the relevant state and either:
+The original engine is compact fixed-point/integer logic with recoverable state, tables and update arithmetic. No encryption, inaccessible external dependency or irreducibly opaque simulation has been found.
 
-A. translate the original routines/tables directly into portable code, or
-B. reproduce their externally observed behaviour with a deterministic model that passes the parity suite.
+### Remaining stop condition
 
-### NO-GO
+If controlled runtime traces reveal material shot behaviour that cannot be explained/reproduced from the recovered state and routines, Gate 1 remains open. Enhancement work must still wait.
 
-Stop the Enhanced-port approach if, after binary/data analysis, the shot result depends on unrecoverable encrypted/obfuscated logic, inaccessible external data, or behaviour that cannot be reproduced consistently from controlled tests.
+## Immediate next evidence
 
-Current evidence makes those failure modes look unlikely, but this remains unproven until the actual binary/data set is inspected.
-
-## Immediate next input
-
-Place/provide a legally held copy of the original DOS game archive/install for analysis. Do **not** commit it to this public repository unless the licence explicitly grants redistribution rights.
+Capture at least one controlled **original v1.014 golden-master shot trace**, then reproduce it numerically through the portable core from launch to final rest. Expand that into the representative parity suite before closing Gate 1.

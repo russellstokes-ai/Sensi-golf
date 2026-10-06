@@ -2,12 +2,12 @@
 
 A preservation-first modern port/remaster investigation for **Sensible Golf**.
 
-> **Current gate:** Gameplay/physics recovery  
-> **Step 2:** engineering complete; awaiting ingestion of a legal original PC package.
+> **Step 2: COMPLETE** — original PC v1.014 identified, fingerprinted and unpacked.  
+> **Current gate:** Gameplay/physics recovery — **GO**, with runtime golden-master parity still required before enhancement work.
 
 ## Project rule
 
-We do **not** start HD art, mobile UI, new courses, progression or other enhancement work until the original gameplay model is recovered and validated.
+We do **not** start HD art, mobile UI, new courses, progression or other enhancement work until the original gameplay model is recovered and numerically validated.
 
 The target is not "similar arcade golf". The target is:
 
@@ -27,52 +27,71 @@ portable recovered core
 trajectory / landing / bounce / roll
 ```
 
-Only when those outputs match within an agreed tolerance does Gate 1 pass.
+Only when representative outputs match within the documented tolerance does Gate 1 close.
+
+## Verified original PC reference
+
+Selected parity build:
+
+- **Sensible Golf v1.014**
+- `GOLFDOS.EXE` — 582,895 bytes
+- `GOLFWIN.EXE` — 239,616 bytes
+- `GOLF.EPF` — 833,273 bytes
+- `GOLF.EPF`: **277/277 entries extracted successfully**
+
+The commercial payload was processed in disposable/private analysis storage and is not committed to this public repository.
+
+See:
+- [Step 2 verified results](docs/STEP2_VERIFIED_RESULTS.md)
+- [Recovered physics v1.014](docs/RECOVERED_PHYSICS_1_014.md)
+- [Gameplay recovery gate](docs/GAMEPLAY_RECOVERY_GATE.md)
 
 ## Repository layout
 
 - `docs/` — recovery plan, evidence, decisions and parity specifications
 - `reference/` — metadata-only fingerprints of known historical builds
-- `tools/` — clean analysis/import utilities
-- `tests/` — automated tests for tools and later gameplay parity
-- `.github/workflows/` — CI definition
-- `original/` and `analysis/private/` — **local only**, ignored
+- `analysis/evidence/` — non-copyright recovery evidence
+- `tools/` — clean analysis/import/recovery utilities
+- `engine/` — portable C++17 recovered classic-core work
+- `tests/` — automated tooling/core tests
+- `.github/workflows/` — reproducible analysis and CI
+- `original/` and `analysis/private/` — local/private only and ignored
 
-## Step 2 ingestion
+## Recovery state
 
-Given a legally held original PC ZIP:
+Completed or substantially recovered:
+- PC build identity;
+- complete EPF extraction;
+- 72-hole data family discovery;
+- PE/DOS binary cross-check anchors;
+- ball structure and fixed-point coordinates;
+- 4096-step direction system and exact Q14 trig;
+- 13-row club physics table;
+- launch-force formula;
+- swing/accuracy profile tables;
+- gravity;
+- landing/bounce;
+- normal and green rolling drag;
+- terrain/slope projection path;
+- deterministic portable math/kernel scaffolding.
+
+Still required before Gate 1 closes:
+- exact user-facing meter timing -> raw shot inputs where not yet fully proven;
+- remaining surface/lie and hazard semantics;
+- cup-capture/near-hole behaviour;
+- logical simulation tick frequency;
+- controlled original-game runtime traces;
+- numerical golden-master parity through final rest.
+
+## Step 2 ingestion tooling
+
+A legal local PC ZIP can still be re-ingested reproducibly with:
 
 ```bash
 python tools/ingest_pc_build.py /path/to/SENSEGOLF.ZIP
 ```
 
-The pipeline:
-1. safely unpacks the ZIP;
-2. SHA-256 and CRC-32 fingerprints every file;
-3. compares it with the known TDC PC reference build;
-4. identifies the DOS/Windows executable formats;
-5. locates and inventories `GOLF.EPF`;
-6. decompresses all EPF entries into the ignored private workspace;
-7. classifies extracted files;
-8. creates metadata-only JSON and Markdown reports.
-
 No original game payload is committed.
-
-See [Step 2 PC Input Inventory](docs/STEP2_PC_INPUT_INVENTORY.md).
-
-## Start here
-
-1. Read [Gate 1 — Gameplay Recovery](docs/GAMEPLAY_RECOVERY_GATE.md).
-2. Read [Original Input Policy](docs/ORIGINAL_INPUT_POLICY.md).
-3. Run Step 2 ingestion against a legal PC copy.
-4. Record verified findings in [Analysis Log](docs/ANALYSIS_LOG.md).
-5. Continue to controlled-shot and executable analysis in [Parity Test Plan](docs/PARITY_TEST_PLAN.md).
-
-## Scope after Gate 1
-
-If parity succeeds, the project moves to a portable deterministic gameplay core, a modern renderer, Android/iOS input and display layers, then HD assets and enhanced features.
-
-See [Roadmap](docs/ROADMAP.md).
 
 ## Rights
 

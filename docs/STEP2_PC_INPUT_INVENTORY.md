@@ -1,133 +1,81 @@
 # Step 2 — PC Input Inventory
 
-Status: **TOOLING COMPLETE / LOCAL PAYLOAD INGESTION PENDING ACCESS TO A LEGAL COPY**
+Status: **COMPLETE**
 
-## Outcome
+The original PC data-ingestion gate has been completed against the selected preserved build. This document records the reproducible pipeline; authoritative results are in [STEP2_VERIFIED_RESULTS.md](STEP2_VERIFIED_RESULTS.md).
 
-The Step-2 pipeline is complete. A legal PC ZIP or extracted installation can now be ingested with one command; it will be fingerprinted, compared to the known reference build, its executables identified, `GOLF.EPF` inventoried and decompressed, and metadata-only reports produced.
+## Selected parity/reference build
 
-The public repository does not contain the original game.
+Embedded strings identify the ingested PC release as:
 
-## Sources checked
+**Sensible Golf — Version 1.014**
 
-### Internet Archive
-Item: `msdos_Sensible_Golf_1994`
+Verified critical files:
 
-Verified public metadata:
-- access-restricted / stream-only;
-- DOSBox emulator;
-- emulator input is a ZIP;
-- start path is `SensGolf/golfdos.exe`.
+| File | Size | CRC-32 | SHA-256 |
+|---|---:|---|---|
+| `GOLFDOS.EXE` | 582,895 | `45bcac33` | `14c049b2456cda9bc7f54ce1c999fac815879775baf2807a76ef889559d0e1ed` |
+| `GOLFWIN.EXE` | 239,616 | `23c300b4` | `3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8` |
+| `GOLF.EPF` | 833,273 | `fbd76014` | `58955f2ef89ad1757998b3ceee661a8ab7edcbd88e00bc1c6683009aa123ab1e` |
 
-The item can be played in-browser but the underlying ZIP is not openly downloadable from this analysis environment. No access controls were bypassed.
+The selected build resolves the earlier 582,895-vs-582,975 DOS executable discrepancy. The selected parity package uses the **582,895-byte** executable. Its `GOLF.EPF` is byte-identical to the previously catalogued TDC reference archive.
 
-### Old-Games.com
-The title page exposes:
-- original download labelled `SENSEGOLF.ZIP` at about 2.51 MB;
-- two Easy Setup packages.
+## Archive ingestion result
 
-The free-download flow is timer/session gated and does not expose the binary to this environment. No attempt was made to bypass that control.
+`GOLF.EPF`:
 
-### My Abandonware
-The site exposes a DOS download of roughly 1 MB and in-browser play. Its download endpoint intentionally requires a normal browser-page/referrer flow and redirects automated retrieval. No bypass was attempted.
+- **277 entries**
+- **250 compressed**
+- **277/277 extracted successfully**
+- no encryption
+- big-endian dynamic-width LZW successfully decoded
 
-### The Old Computer
-A `Sensible Golf (1994)(Avalon Interactive).zip` entry exists at about 1.23 MB, but download access requires an authenticated/upgraded account.
+Major recovered data families:
 
-## Known PC reference build
+- `MAPM01.MAP` … `MAPM72.MAP`: 72 × 7,848 bytes
+- `MAPS01.MAP` … `MAPS72.MAP`: 72 smaller map records
+- `MAPM01.SPT` … `MAPM72.SPT`: 72 × 50-byte records
+- 19 LBM graphics resources
+- 15 MCH graphics/sprite resources
+- 13 RAW resources
+- 5 DAT files
+- 4 BIN files including `WOOD1.BIN` … `WOOD4.BIN`
 
-The Total DOS Collection metadata database records build `5865.0` with a detailed inventory. Critical reference files:
+The one-to-one 72-file numbering across the map/SPT families is treated as structural evidence. Field semantics are promoted only when supported by code/data analysis.
 
-| File | Size | CRC-32 | Role |
-|---|---:|---:|---|
-| GOLF.EPF | 833,273 | fbd76014 | Main East Point archive; first data target |
-| GOLFDOS.EXE | 582,975 | c070f837 | DOS4GW/LE gameplay executable |
-| GOLFWIN.EXE | 239,616 | 4c11d6b0 | PE32 Windows gameplay executable |
-| GOLF.HMP | 47,218 | 28fae5d2 | HMI music |
-| GOLF.MID | 47,337 | 1ecd328d | MIDI music |
-| EPSMIX32.DLL | 6,144 | fe73806a | Windows audio/support library |
-| WINGPAL.WND | 5,024 | a2b26dc7 | graphics/palette support data |
+## Acquisition and public-repo handling
 
-Full reference: `reference/pc_build_5865.0.json`.
+The build was fetched by a disposable GitHub Actions analysis runner from a public preservation CORS URL. No access control was bypassed.
 
-A separate executable index reports `GOLFDOS.EXE` as 582,895 bytes rather than 582,975. This is why the actual supplied copy must be hashed before reverse engineering; there may be multiple PC builds.
+The original commercial ZIP, executables, EPF archive and extracted copyrighted payload were **not committed**. Only fingerprints, structural metadata, clean tooling and derived recovery findings are retained in this repository.
 
-## EPF status
+## Reproducible tooling
 
-The EPF format is fully documented and is not encrypted:
+- `tools/hash_inputs.py` — SHA-256 manifest
+- `tools/verify_reference_build.py` — historical-build comparison
+- `tools/epf_inspect.py` — EPF inventory
+- `tools/epf_extract.py` — EPF decompression/extraction
+- `tools/ingest_pc_build.py` — complete Step-2 pipeline
 
-- `EPFS` signature;
-- 11-byte header;
-- FAT offset in header;
-- 8.3 filenames;
-- compression flag;
-- compressed/decompressed sizes;
-- big-endian LZW;
-- dynamic 9–14 bit code width;
-- highest code = EOF;
-- second-highest = dictionary reset;
-- code width remains unchanged after reset.
-
-Repository tooling:
-- `tools/epf_inspect.py` — inventory;
-- `tools/epf_extract.py` — extract/decompress;
-- `tools/ingest_pc_build.py` — complete Step-2 pipeline.
-
-## One-command ingestion
-
-For a legal ZIP:
+Re-run on a legal local copy:
 
 ```bash
 python tools/ingest_pc_build.py /path/to/SENSEGOLF.ZIP
 ```
 
-For an already extracted installation:
+Private output remains under ignored `analysis/private/`.
 
-```bash
-python tools/ingest_pc_build.py /path/to/SensGolf
-```
+## Step 2 exit criteria
 
-Default private output:
+- [x] Original PC archive fingerprinted
+- [x] Exact selected executable build identified
+- [x] DOS and Windows executables identified
+- [x] `GOLF.EPF` inventoried
+- [x] EPF compression decoded
+- [x] 277/277 EPF entries extracted
+- [x] Major data families classified
+- [x] Original payload excluded from the public repository
+- [x] Metadata-only findings documented
+- [x] Analysis is reproducible through repository tooling
 
-```
-analysis/private/step2/
-  input/
-  extracted/epf/
-  reports/
-    input_manifest.json
-    reference_comparison.json
-    epf_inventory.json
-    epf_extracted_manifest.json
-    step2_report.json
-    step2_report.md
-```
-
-That directory is ignored by Git.
-
-## Physics facts already established from original/manual descriptions
-
-These are behavioural constraints, not recovered implementation details:
-
-- no wind simulation;
-- lie quality reduces achievable shot distance;
-- maximum-power 1 Wood is documented as 240 yards;
-- the lower timing zone controls straight/draw/fade;
-- woods are low/far while irons can provide higher trajectory;
-- putting remains on the green surface and green slope arrows affect direction/speed.
-
-## Step 2 completion definition
-
-### Engineering/tooling: COMPLETE
-- reference manifest pinned;
-- build verifier implemented;
-- SHA-256/CRC inventory implemented;
-- EPF parser implemented;
-- EPF LZW decompressor/extractor implemented;
-- private end-to-end ingestion pipeline implemented;
-- synthetic unit tests added;
-- original payload exclusion enforced in `.gitignore`.
-
-### Evidence ingest: PENDING LEGAL BINARY ACCESS
-The only uncompleted evidence operation is running the pipeline against the actual game payload. Until that happens, internal `GOLF.EPF` filenames and the exact executable build cannot truthfully be called locally verified.
-
-Once a legal ZIP is supplied, no additional Step-2 engineering is required: run the ingestion command and commit only the resulting non-copyright analysis findings.
+**Step 2 is closed.**

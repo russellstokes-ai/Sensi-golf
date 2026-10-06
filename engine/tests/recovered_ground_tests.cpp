@@ -104,5 +104,47 @@ int main() {
     assert(state.vertical_force == 0);
     assert(state.horizontal_force == 0);
 
+    // Original controlled green-slope oracle, club 12 power 30.
+    input.captured_power = 30;
+
+    state = launch_normal_shot(input);
+    rest_tick = -1;
+    for (int tick = 1; tick <= 64; ++tick) {
+        const auto step = step_green_putt(state, 0, 1);
+        if (step.resting) {
+            rest_tick = tick;
+            break;
+        }
+    }
+    assert(rest_tick == 29);
+    assert(state.x == 0);
+    assert(state.y == 854784);
+
+    state = launch_normal_shot(input);
+    rest_tick = -1;
+    for (int tick = 1; tick <= 64; ++tick) {
+        const auto step = step_green_putt(state, 1024, 1);
+        if (step.resting) {
+            rest_tick = tick;
+            break;
+        }
+    }
+    assert(rest_tick == 29);
+    assert(state.x == 114688);
+    assert(state.y == 740096);
+
+    state = launch_normal_shot(input);
+    rest_tick = -1;
+    for (int tick = 1; tick <= 64; ++tick) {
+        const auto step = step_green_putt(state, 512, 3);
+        if (step.resting) {
+            rest_tick = tick;
+            break;
+        }
+    }
+    assert(rest_tick == 29);
+    assert(state.x == 243264);
+    assert(state.y == 983360);
+
     return 0;
 }

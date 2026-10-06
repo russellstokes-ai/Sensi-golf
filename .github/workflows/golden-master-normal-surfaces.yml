@@ -77,13 +77,8 @@ jobs:
               "$out/${name}-original.json" "$out/${name}-recovered.json" \
               -o "$out/${name}-comparison.json"
 
-            python - "$out/${name}-original.json" "$out/${name}-comparison.json" <<'PY'
-import json,sys
-o=json.load(open(sys.argv[1]))
-c=json.load(open(sys.argv[2]))
-print(o["surface_name"], "terrain", o["terrain_index"], "code", o["surface_code"],
-      "samples", c["sample_count"], "pass", c["pass"], "mismatches", c["mismatch_count"])
-PY
+            python -c 'import json,sys; o=json.load(open(sys.argv[1])); c=json.load(open(sys.argv[2])); print(o["surface_name"], "terrain", o["terrain_index"], "code", o["surface_code"], "samples", c["sample_count"], "pass", c["pass"], "mismatches", c["mismatch_count"])' \
+              "$out/${name}-original.json" "$out/${name}-comparison.json"
           }
 
           run_case skirt 0 5 2

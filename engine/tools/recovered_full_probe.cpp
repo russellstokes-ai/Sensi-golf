@@ -81,12 +81,22 @@ int main(int argc, char** argv) {
         std::optional<PointEvent> landing;
         std::optional<PointEvent> rest;
 
+        if (input.club_index == 12) {
+            if (surface_code != 1) {
+                throw std::invalid_argument(
+                    "club 12 recovered full probe currently scopes flat GREEN H4 code 1");
+            }
+            landing = PointEvent{0, state.x, state.y};
+        }
+
         std::cout << "{\n  \"surface_code\":" << surface_code
                   << ",\n  \"samples\":[\n";
         sample_json(state, 0, false);
 
         for (int tick = 1; tick <= max_ticks; ++tick) {
-            const auto step = step_controlled_surface(state, surface_code);
+            const auto step = input.club_index == 12
+                ? step_flat_green_putt(state)
+                : step_controlled_surface(state, surface_code);
             if (step.contacted_ground && !landing) {
                 landing = PointEvent{tick, step.contact_x, step.contact_y};
             }

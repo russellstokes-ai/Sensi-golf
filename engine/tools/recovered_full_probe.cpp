@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
             throw std::invalid_argument("max_ticks must be positive");
         }
         const long parsed_surface =
-            argc == 8 ? parse_long(argv[7], "surface_code") : 0;
+            argc >= 8 ? parse_long(argv[7], "surface_code") : 0;
         if (parsed_surface < 0 || parsed_surface > 0xFFFF) {
             throw std::invalid_argument("surface_code outside uint16 range");
         }

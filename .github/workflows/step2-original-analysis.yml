@@ -7,6 +7,7 @@ on:
       - "tools/pe_string_xrefs.py"
       - "tools/spt_probe.py"
       - "tools/debug_pointer_probe.py"
+      - "tools/gameplay_table_probe.py"
 
 permissions:
   contents: read
@@ -56,6 +57,7 @@ jobs:
             python tools/executable_probe.py "$WIN_EXE"               --number 240               -o analysis/private/probes/golfwin-probe.json
             python tools/pe_string_xrefs.py "$WIN_EXE"               --context 10               -o analysis/private/probes/golfwin-debug-xrefs.json
             python tools/debug_pointer_probe.py "$WIN_EXE"           --context 8                -o analysis/private/probes/golfwin-debug-pointers.json
+            python tools/gameplay_table_probe.py "$WIN_EXE"           -o analysis/private/probes/gameplay-tables.json
           fi
 
           if [ -f analysis/private/probes/golfdos-probe.json ] &&              [ -f analysis/private/probes/golfwin-probe.json ]; then
@@ -115,6 +117,18 @@ jobs:
                   for ref in occ['code_references'][:5]:
                       print('  xref',hex(ref['instruction_address']) if ref['instruction_address'] else None)
                       print('   ',ref['line'])
+          PY
+
+          echo "===== GAMEPLAY TABLES ====="
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/probes/gameplay-tables.json'))
+          print(json.dumps({
+              'trig': j['trig'],
+              'accuracy': j['accuracy'],
+              'launch_mapping': j['launch_mapping'],
+              'launch_records': j['launch_records'],
+          }, indent=2))
           PY
 
           echo "===== SPT STRUCTURE ====="

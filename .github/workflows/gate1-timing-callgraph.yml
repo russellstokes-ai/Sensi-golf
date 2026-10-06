@@ -1,0 +1,63 @@
+name: Gate 1 Timing Callgraph
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate1-timing-callgraph.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  timing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install disassembler
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace update callers and timing state
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT="analysis/private/gate1-timing-callgraph"
+          mkdir -p "$OUT"
+
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x40A603 --va 0x42DBE9 --va 0x426004 --va 0x4287F2 \
+            --radius 42 -o "$OUT/timing-xrefs.json"
+
+          objdump -p "$WIN_EXE" > "$OUT/pe-imports.txt"
+          grep -i -B8 -A8 'GetTickCount' "$OUT/pe-imports.txt" > "$OUT/gettickcount-import.txt" || true
+
+          objdump -d -Mintel "$WIN_EXE" | \
+            grep -i -B10 -A12 'GetTickCount' > "$OUT/gettickcount-disasm-grep.txt" || true
+
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/gate1-timing-callgraph/timing-xrefs.json'))
+          print('xref count',len(j['xrefs']))
+          for x in j['xrefs']:
+              print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
+              for i in x['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          print('\n=== GetTickCount import ===')
+          print(open('analysis/private/gate1-timing-callgraph/gettickcount-import.txt').read())
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate1-timing-callgraph
+          path: analysis/private/gate1-timing-callgraph/
+          retention-days: 14

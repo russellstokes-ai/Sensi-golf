@@ -86,6 +86,39 @@ DragResult drag_then_move(FlightState& state) {
 
 } // namespace
 
+GroundStepResult step_flat_green_putt(FlightState& state) {
+    GroundStepResult result{};
+
+    // Club 12 enters the original update at 0x40A581. On a normal green
+    // descriptor it bypasses gravity entirely and stays at height zero.
+    state.height = 0;
+
+    if (state.horizontal_force <= 0) {
+        state.horizontal_force = 0;
+        state.vertical_force = 0;
+        result.resting = true;
+        return result;
+    }
+
+    const auto after =
+        static_cast<std::int64_t>(state.horizontal_force)
+        - kGreenHorizontalDragPerTick;
+
+    if (after < 0) {
+        // Original stop path clears the launch V field as the putt comes
+        // to rest; the oracle shows no final movement on this crossing tick.
+        state.horizontal_force = 0;
+        state.vertical_force = 0;
+        result.resting = true;
+        return result;
+    }
+
+    state.horizontal_force =
+        checked_i32(after, "green putter H overflow");
+    move_after_drag(state);
+    return result;
+}
+
 GroundStepResult step_controlled_surface(
     FlightState& state,
     std::uint16_t landing_code) {

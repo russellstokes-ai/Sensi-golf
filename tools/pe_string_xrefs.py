@@ -100,7 +100,7 @@ def analyse(
         by_text.setdefault(str(row["text"]), []).append(int(row["offset"]))
 
     proc = subprocess.run(
-        [objdump, "-D", "-Mintel", str(executable)],
+        [objdump, "-d", "-Mintel", str(executable)],
         check=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

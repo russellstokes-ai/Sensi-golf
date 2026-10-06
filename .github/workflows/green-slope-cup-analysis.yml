@@ -43,6 +43,14 @@ jobs:
             --start-va 0x40b900 --end-va 0x40ba20 \
             -o "$out/slope-and-distance.json"
 
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40a1f0 --end-va 0x40a250 \
+            -o "$out/hole-helper.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40cd00 --end-va 0x40cdb0 \
+            -o "$out/hole-flow-target.json"
+
           python tools/pe_va_xrefs.py "$WIN_EXE" \
             --va 0x41ee7a --va 0x41ef66 --va 0x41f0c5 --va 0x41f0c9 \
             --va 0x41f3b2 --va 0x41f3b4 --radius 48 \

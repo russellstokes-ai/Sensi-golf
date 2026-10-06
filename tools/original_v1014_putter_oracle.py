@@ -28,17 +28,20 @@ from original_v1014_oracle import (
     SPECIAL_MODE_VA,
     STACK,
     build_uc,
+    ri32,
     ru32,
     sample,
     setup,
     w16,
     wi32,
+    wu32,
 )
 from original_v1014_flat_oracle import descriptor_info
 
 TERRAIN_LOOKUP_VA = 0x409535
 PUTTER_TICK_VA = 0x40A581
 TICK_END_VA = 0x40AA78
+SLOPE_ADJUST_VA = 0x40B965
 DEFAULT_GREEN_TERRAIN_INDEX = 31  # GREEN H4, landing code 1, profile slot 6.
 
 
@@ -51,7 +54,22 @@ def complete_terrain_call(uc, terrain_index: int) -> int:
     return ret
 
 
-def run_putter_tick(uc, terrain_index: int, landing_code: int) -> None:
+def compute_slope_adjustment(uc, direction: int, magnitude: int) -> tuple[int, int]:
+    w16(uc, BALL + 0x26, direction)
+    w16(uc, BALL + 0x2A, magnitude)
+    sp = STACK + 0xF000 - 4
+    wu32(uc, sp, SENTINEL)
+    uc.reg_write(UC_X86_REG_ESP, sp)
+    uc.emu_start(SLOPE_ADJUST_VA, SENTINEL, count=1000)
+    return ri32(uc, ADJ_X_VA), ri32(uc, ADJ_Y_VA)
+
+
+def run_putter_tick(
+    uc,
+    terrain_index: int,
+    landing_code: int,
+    slope_active: bool = False,
+) -> None:
     stop_reason = None
 
     def hook(machine, address, size, user_data):
@@ -66,9 +84,10 @@ def run_putter_tick(uc, terrain_index: int, landing_code: int) -> None:
     token = uc.hook_add(UC_HOOK_CODE, hook)
     try:
         w16(uc, GREEN_MODE_VA, 1)
-        w16(uc, SPECIAL_MODE_VA, landing_code)
-        wi32(uc, ADJ_X_VA, 0)
-        wi32(uc, ADJ_Y_VA, 0)
+        w16(uc, SPECIAL_MODE_VA, 2 if slope_active else landing_code)
+        if not slope_active:
+            wi32(uc, ADJ_X_VA, 0)
+            wi32(uc, ADJ_Y_VA, 0)
         uc.reg_write(UC_X86_REG_ESI, PLAYER)
         uc.reg_write(UC_X86_REG_EDI, BALL)
         uc.reg_write(UC_X86_REG_ESP, STACK + 0xF000)
@@ -92,8 +111,16 @@ def run_putter_tick(uc, terrain_index: int, landing_code: int) -> None:
         uc.hook_del(token)
 
 
-def run_putter(exe: Path, power: int, accuracy: int, direction: int, max_ticks: int,
-               terrain_index: int = DEFAULT_GREEN_TERRAIN_INDEX) -> dict:
+def run_putter(
+    exe: Path,
+    power: int,
+    accuracy: int,
+    direction: int,
+    max_ticks: int,
+    terrain_index: int = DEFAULT_GREEN_TERRAIN_INDEX,
+    slope_direction: int = 0,
+    slope_magnitude: int = 0,
+) -> dict:
     uc, digest = build_uc(exe)
     surface = descriptor_info(uc, terrain_index)
 
@@ -115,6 +142,15 @@ def run_putter(exe: Path, power: int, accuracy: int, direction: int, max_ticks: 
     w16(uc, BALL + 0x1C, 100)
     w16(uc, GREEN_MODE_VA, 1)
 
+    slope_active = slope_magnitude != 0
+    if slope_active:
+        adj_x, adj_y = compute_slope_adjustment(
+            uc, slope_direction & 0x0FFF, slope_magnitude)
+    else:
+        adj_x = adj_y = 0
+        wi32(uc, ADJ_X_VA, 0)
+        wi32(uc, ADJ_Y_VA, 0)
+
     samples = [sample(uc, 0)]
     rest = None
 
@@ -123,6 +159,7 @@ def run_putter(exe: Path, power: int, accuracy: int, direction: int, max_ticks: 
             uc,
             terrain_index=terrain_index,
             landing_code=int(surface["landing_code"]),
+            slope_active=slope_active,
         )
         row = sample(uc, tick)
         samples.append(row)
@@ -144,6 +181,12 @@ def run_putter(exe: Path, power: int, accuracy: int, direction: int, max_ticks: 
         "profile_slot": lie,
         "profile_id": profile,
         "profile_bounds": [lower, upper],
+        "slope": {
+            "direction": slope_direction & 0x0FFF,
+            "magnitude": slope_magnitude,
+            "adj_x_raw": adj_x,
+            "adj_y_raw": adj_y,
+        },
         "input": {
             "club": club,
             "lie": lie,
@@ -167,6 +210,8 @@ def main() -> int:
     ap.add_argument("--direction", type=int, default=0)
     ap.add_argument("--max-ticks", type=int, default=512)
     ap.add_argument("--terrain-index", type=int, default=DEFAULT_GREEN_TERRAIN_INDEX)
+    ap.add_argument("--slope-direction", type=int, default=0)
+    ap.add_argument("--slope-magnitude", type=int, default=0)
     ap.add_argument("-o", "--output", type=Path)
     args = ap.parse_args()
 
@@ -177,6 +222,8 @@ def main() -> int:
         args.direction,
         args.max_ticks,
         args.terrain_index,
+        args.slope_direction,
+        args.slope_magnitude,
     )
     text = json.dumps(report, indent=2) + "\n"
     if args.output:

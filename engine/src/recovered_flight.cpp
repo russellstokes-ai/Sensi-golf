@@ -176,8 +176,21 @@ AirborneStepResult step_clear_air(FlightState& state) {
     }
     state.height = checked_i32(next_height, "height overflow");
 
-    state.horizontal_force =
-        std::max<std::int32_t>(0, state.horizontal_force - kHorizontalDragPerTick);
+    if (state.horizontal_force > 0) {
+        const auto after_drag =
+            static_cast<std::int64_t>(state.horizontal_force)
+            - kHorizontalDragPerTick;
+        if (after_drag < 0) {
+            // Original v1.014 ends this airborne tick immediately when a
+            // positive H crosses below zero. Direction/movement resume on
+            // the following tick with H already zero.
+            state.horizontal_force = 0;
+            return AirborneStepResult::Airborne;
+        }
+        state.horizontal_force = static_cast<std::int32_t>(after_drag);
+    } else {
+        state.horizontal_force = 0;
+    }
 
     state.direction = static_cast<std::uint16_t>(
         static_cast<std::int64_t>(state.direction)

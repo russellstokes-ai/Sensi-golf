@@ -9,14 +9,16 @@ struct GroundStepResult {
     bool contacted_ground = false;
     bool resting = false;
     bool hazard_stop = false;
+    bool holed = false;
     std::int32_t contact_x = 0;
     std::int32_t contact_y = 0;
 };
 
 // Execute the recovered landing/ground branch for a controlled terrain
 // descriptor landing code. Code 0 is the neutral oracle surface; codes 2..7
-// are ordinary named lies. Code 0x23 (35) is the original immediate-stop
-// hazard branch used by WATER/NO GO/OUT OF BOUNDS descriptors.
+// are ordinary named lies. Code 8 is the original terminal hole/cup branch.
+// Code 0x23 (35) is the immediate-stop hazard branch used by
+// WATER/NO GO/OUT OF BOUNDS descriptors.
 GroundStepResult step_controlled_surface(
     FlightState& state,
     std::uint16_t landing_code);

@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - ".github/workflows/step2-original-analysis.yml"
+      - "tools/pe_string_xrefs.py"
+      - "tools/spt_probe.py"
 
 permissions:
   contents: read
@@ -90,28 +92,13 @@ jobs:
             python tools/compare_probes.py               analysis/private/probes/golfdos-probe.json               analysis/private/probes/golfwin-probe.json               -o analysis/private/probes/pc-crosscheck.json
           fi
 
-      - name: Inspect candidate course records
+      - name: Analyse per-hole SPT records
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          root=Path('analysis/private/step2/extracted/epf')
-          out={}
-          for name in ['MAPM01.SPT','MAPM02.SPT','MAPM18.SPT','MAPM19.SPT','MAPM37.SPT','MAPM55.SPT']:
-              p=root/name
-              if p.exists():
-                  b=p.read_bytes()
-                  out[name]={
-                      "size":len(b),
-                      "hex":b.hex(),
-                      "u8":list(b),
-                      "u16le":[int.from_bytes(b[i:i+2],'little') for i in range(0,len(b)-1,2)]
-                  }
-          Path('analysis/private/probes/spt-samples.json').write_text(json.dumps(out,indent=2)+'\n')
-          PY
+          python tools/spt_probe.py \
+            analysis/private/step2/extracted/epf \
+            -o analysis/private/probes/spt-structure.json
 
       - name: Print targeted recovery summary
         shell: bash
@@ -136,8 +123,8 @@ jobs:
                           print('   ',line)
           PY
 
-          echo "===== SPT SAMPLE RECORDS ====="
-          cat analysis/private/probes/spt-samples.json
+          echo "===== SPT STRUCTURE ====="
+          cat analysis/private/probes/spt-structure.json
 
       - name: Upload metadata-only reports
         uses: actions/upload-artifact@v4

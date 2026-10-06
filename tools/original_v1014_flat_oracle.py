@@ -36,6 +36,7 @@ TERRAIN_RETURN_VA = 0x40A677
 TERRAIN_POINTER_TABLE_VA = 0x41DFF7
 TERRAIN_DESCRIPTOR = PLAYER + 0x2000
 GROUND_ENTRY_VA = 0x40A65E
+HOLE_BRANCH_VA = 0x40A730
 GROUND_STOP_VA = 0x40AA78
 
 
@@ -116,6 +117,9 @@ def run_tick(uc, tick, landing, terrain_index):
         if address == TERRAIN_LOOKUP_VA:
             stop_reason = "terrain"
             machine.emu_stop()
+        elif address == HOLE_BRANCH_VA:
+            stop_reason = "holed"
+            machine.emu_stop()
         elif address in (AIR_TICK_END_VA, GROUND_STOP_VA):
             stop_reason = "done"
             machine.emu_stop()
@@ -138,8 +142,10 @@ def run_tick(uc, tick, landing, terrain_index):
                 complete_terrain_call(uc, terrain_index)
                 start = TERRAIN_RETURN_VA
                 continue
+            if stop_reason == "holed":
+                return current_landing, "holed"
             if stop_reason == "done":
-                return current_landing
+                return current_landing, None
             eip = uc.reg_read(UC_X86_REG_EIP)
             raise RuntimeError(f"tick stopped unexpectedly at {eip:#x}")
         raise RuntimeError("too many terrain helper passes in one tick")
@@ -165,11 +171,16 @@ def run_flat(exe, club, lie, power, accuracy, direction, max_ticks, terrain_inde
     samples = [sample(uc, 0)]
     landing = None
     rest = None
+    holed = False
 
     for tick in range(1, max_ticks + 1):
-        landing = run_tick(uc, tick, landing, terrain_index)
+        landing, terminal = run_tick(uc, tick, landing, terrain_index)
         row = sample(uc, tick)
         samples.append(row)
+        if terminal == "holed":
+            holed = True
+            rest = {"tick": tick, "x": row["x"], "y": row["y"]}
+            break
         if (
             row["height"] == 0
             and row["vertical_force"] == 0
@@ -192,7 +203,7 @@ def run_flat(exe, club, lie, power, accuracy, direction, max_ticks, terrain_inde
         "profile_id": profile,
         "profile_bounds": [lower, upper],
         "samples": samples,
-        "events": {"landing": landing, "rest": rest},
+        "events": {"landing": landing, "rest": rest, "holed": holed},
     }
 
 

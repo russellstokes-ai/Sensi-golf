@@ -29,7 +29,7 @@ jobs:
           PATCHED="$(dirname "$WIN_EXE")/GOLFWIN_GM.EXE"
           python tools/patch_golden_master_seed.py "$WIN_EXE" "$PATCHED" --seed 0x12345678
           echo "PATCHED_EXE=$PATCHED" >> "$GITHUB_ENV"
-      - name: Explore title and menus
+      - name: Observe stable intro then advance carefully
         shell: bash
         run: |
           set -uo pipefail
@@ -46,25 +46,28 @@ jobs:
             wine ./GOLFWIN_GM.EXE >/tmp/golfwin.stdout 2>/tmp/golfwin.stderr
           ) &
           GPID=$!
-          sleep 4
+          sleep 2
           WID="$(xdotool search --onlyvisible --name '^Sensible Golf$' | head -1)"
-          echo "WID=$WID"
           xdotool windowactivate --sync "$WID" || true
-
           snap () {
-            name="$1"
-            import -window "$WID" "$GITHUB_WORKSPACE/analysis/private/ui-discovery/$name.png" || true
-            sleep 1
+            import -window "$WID" "$GITHUB_WORKSPACE/analysis/private/ui-discovery/$1.png" || true
           }
 
-          snap 00-title
-          xdotool key --window "$WID" space; sleep 2; snap 01-space
-          xdotool key --window "$WID" Return; sleep 2; snap 02-return
-          xdotool key --window "$WID" Down; sleep 1; snap 03-down
-          xdotool key --window "$WID" Return; sleep 2; snap 04-down-return
-          xdotool key --window "$WID" Escape; sleep 1; snap 05-escape
-          xdotool click --window "$WID" 1; sleep 2; snap 06-click
-          xdotool key --window "$WID" Return; sleep 2; snap 07-click-return
+          sleep 2; snap 00-t4
+          sleep 3; snap 01-t7
+          sleep 3; snap 02-t10
+          sleep 3; snap 03-t13
+          sleep 3; snap 04-t16
+
+          xdotool key --window "$WID" space
+          sleep 4; snap 05-space-plus4
+          sleep 4; snap 06-space-plus8
+
+          xdotool key --window "$WID" Return
+          sleep 4; snap 07-return-plus4
+
+          xdotool mousemove --window "$WID" 160 120 click 1
+          sleep 4; snap 08-center-click-plus4
 
           kill "$GPID" 2>/dev/null || true
           kill "$XVFB" 2>/dev/null || true

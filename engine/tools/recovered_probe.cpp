@@ -6,20 +6,13 @@
 
 #include "sensigolf/recovered_flight.hpp"
 
-using sensigolf::recovered::AirborneStepResult;
-using sensigolf::recovered::FlightState;
-using sensigolf::recovered::LaunchInput;
-using sensigolf::recovered::launch_normal_shot;
-using sensigolf::recovered::step_clear_air;
+using namespace sensigolf::recovered;
 
 namespace {
-
 long parse_long(const char* s, const char* name) {
     char* end = nullptr;
     const long value = std::strtol(s, &end, 0);
-    if (!end || *end != '\0') {
-        throw std::invalid_argument(std::string("invalid ") + name);
-    }
+    if (!end || *end != '\0') throw std::invalid_argument(std::string("invalid ") + name);
     return value;
 }
 
@@ -33,28 +26,27 @@ void sample_json(const FlightState& s, int tick, bool comma) {
         << ",\"vertical_force\":" << s.vertical_force
         << ",\"horizontal_force\":" << s.horizontal_force
         << ",\"direction\":" << s.direction
+        << ",\"swing_adjuster\":" << s.swing_adjuster
+        << ",\"adjusted_power\":" << s.adjusted_power
         << "}";
 }
-
-} // namespace
+}
 
 int main(int argc, char** argv) {
-    if (argc != 6) {
-        std::cerr << "usage: recovered_probe <club> <power> <direction> <swing_adjuster> <ticks>\n";
+    if (argc != 7) {
+        std::cerr << "usage: recovered_probe <club> <lie> <power> <accuracy_tick> <direction> <ticks>\n";
         return 2;
     }
-
     try {
         LaunchInput input{};
         input.club_index = static_cast<std::uint16_t>(parse_long(argv[1], "club"));
-        input.captured_power = static_cast<std::int32_t>(parse_long(argv[2], "power"));
-        input.player_direction = static_cast<std::uint16_t>(parse_long(argv[3], "direction"));
-        input.swing_adjuster = static_cast<std::int32_t>(parse_long(argv[4], "swing_adjuster"));
-        const int ticks = static_cast<int>(parse_long(argv[5], "ticks"));
-        if (ticks < 0) throw std::invalid_argument("ticks must be non-negative");
+        input.lie_index = static_cast<std::uint16_t>(parse_long(argv[2], "lie"));
+        input.captured_power = static_cast<std::int32_t>(parse_long(argv[3], "power"));
+        input.accuracy_tick = static_cast<std::int32_t>(parse_long(argv[4], "accuracy_tick"));
+        input.player_direction = static_cast<std::uint16_t>(parse_long(argv[5], "direction"));
+        const int ticks = static_cast<int>(parse_long(argv[6], "ticks"));
 
         auto state = launch_normal_shot(input);
-
         std::cout << "{\n  \"samples\":[\n";
         sample_json(state, 0, false);
         for (int tick = 1; tick <= ticks; ++tick) {

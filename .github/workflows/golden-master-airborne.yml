@@ -1,4 +1,4 @@
-name: Golden Master Airborne
+name: Golden Master Live Player
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  original-machine-code-parity:
+  live-player-parity:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -22,49 +22,42 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install original-code emulator
-        run: python -m pip install --disable-pip-version-check unicorn
-      - name: Fetch and ingest reference PC build
+      - run: python -m pip install --disable-pip-version-check unicorn
+      - name: Fetch and ingest v1.014
         run: |
           curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
-          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip             --workspace analysis/private/step2 >/tmp/ingest.json
-      - name: Build recovered core probe
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Build portable core
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release --parallel
-      - name: Locate v1.014 executable
+      - name: Locate reference executable
         shell: bash
         run: |
-          set -euo pipefail
           WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
           test -n "$WIN_EXE"
           echo "WIN_EXE=$WIN_EXE" >> "$GITHUB_ENV"
-      - name: Exact oracle parity cases
+      - name: Exact live-player parity cases
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p analysis/private/golden-master-airborne
-
+          mkdir -p analysis/private/golden-master-live
           run_case() {
-            name="$1"; club="$2"; power="$3"; direction="$4"; swing="$5"; ticks="$6"
-            python tools/original_v1014_oracle.py "$WIN_EXE"               --club "$club" --power "$power" --direction "$direction"               --swing-adjuster "$swing" --ticks "$ticks"               -o "analysis/private/golden-master-airborne/${name}-original.json"
-
-            ./build/engine/sensigolf_recovered_probe               "$club" "$power" "$direction" "$swing" "$ticks"               > "analysis/private/golden-master-airborne/${name}-recovered.json"
-
-            python tools/compare_airborne_oracle.py               "analysis/private/golden-master-airborne/${name}-original.json"               "analysis/private/golden-master-airborne/${name}-recovered.json"               -o "analysis/private/golden-master-airborne/${name}-comparison.json"
-
-            cat "analysis/private/golden-master-airborne/${name}-comparison.json"
+            name="$1"; club="$2"; lie="$3"; power="$4"; accuracy="$5"; direction="$6"; ticks="$7"
+            python tools/original_v1014_oracle.py "$WIN_EXE"               --club "$club" --lie "$lie" --power "$power" --accuracy "$accuracy"               --direction "$direction" --ticks "$ticks"               -o "analysis/private/golden-master-live/${name}-original.json"
+            ./build/engine/sensigolf_recovered_probe               "$club" "$lie" "$power" "$accuracy" "$direction" "$ticks"               > "analysis/private/golden-master-live/${name}-recovered.json"
+            python tools/compare_airborne_oracle.py               "analysis/private/golden-master-live/${name}-original.json"               "analysis/private/golden-master-live/${name}-recovered.json"               -o "analysis/private/golden-master-live/${name}-comparison.json"
+            cat "analysis/private/golden-master-live/${name}-comparison.json"
           }
-
-          run_case straight_1w 0 105 0 0 20
-          run_case curved_mid 5 83 777 1 20
-          run_case curved_high 11 60 3072 -2 15
-      - name: Unit and core tests
+          run_case straight_1w 0 0 105 63 0 20
+          run_case draw_mid 5 2 83 59 777 20
+          run_case fade_high 11 0 60 67 3072 15
+      - name: Unit/core tests
         run: |
           python -m unittest discover -s tests -v
           ctest --test-dir build --output-on-failure
       - uses: actions/upload-artifact@v4
         with:
-          name: sensible-golf-golden-master-airborne
-          path: analysis/private/golden-master-airborne/
+          name: sensible-golf-golden-master-live
+          path: analysis/private/golden-master-live/
           retention-days: 14

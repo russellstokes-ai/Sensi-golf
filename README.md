@@ -3,95 +3,44 @@
 A preservation-first modern port/remaster investigation for **Sensible Golf**.
 
 > **Step 2: COMPLETE** — original PC v1.014 identified, fingerprinted and unpacked.  
-> **Gate 1: GO** — the first exact original-machine-code parity stage now passes; full-shot parity through final rest remains required.
+> **Gate 1: GO** — static recovery is strong; live-player golden-master parity is in progress.
 
 ## Project rule
 
-We do **not** start HD art, mobile UI, new courses, progression or other enhancement work until the original gameplay model is recovered and numerically validated.
-
-The target is not "similar arcade golf". The target is original behavior reproduced deterministically.
+No HD art, mobile UI or enhancement work begins until original gameplay behavior is recovered and validated numerically.
 
 ## Verified original PC reference
 
-Selected parity build:
-
-- **Sensible Golf v1.014**
-- `GOLFDOS.EXE` — 582,895 bytes
-- `GOLFWIN.EXE` — 239,616 bytes
-- `GOLF.EPF` — 833,273 bytes
-- `GOLF.EPF`: **277/277 entries extracted successfully**
+- Sensible Golf Windows v1.014
+- GOLFDOS.EXE — 582,895 bytes
+- GOLFWIN.EXE — 239,616 bytes
+- GOLF.EPF — 833,273 bytes
+- GOLF.EPF — 277/277 entries extracted
 
 Original commercial payloads remain outside the public repository.
 
-## First exact parity milestone
+## Parity status
 
-The live-player launch and normal clear-air paths are now **parity-verified** against the original v1.014 x86 machine code.
+A zero-tolerance machine-code oracle already verified the internal predictor/clear-air arithmetic for three cases. Later call-site tracing correctly classified that launch routine as an internal predictor, not the live player shot.
 
-Three cases were executed through an original-code Unicorn oracle:
+The live player launch is now established at `0x40AD1D`. It consumes:
 
-- straight club 0 / power 105;
-- curved club 5 / power 83;
-- opposite-sign curved club 11 / power 60.
+- club index;
+- lie/surface selector slot;
+- raw Welly power;
+- accuracy tick centred on 63;
+- player heading.
 
-Result:
+The repo now contains the recovered 13x10 profile selector matrix, 11 profile bounds and signed swing profiles needed to reproduce that live launch path. The live-player zero-tolerance workflow targets this routine directly.
 
-**58 state samples × 6 fields, zero mismatches, tolerance 0.**
+## Still required before Gate 1 closes
 
-Compared fields:
-
-- X;
-- Y;
-- height;
-- vertical force;
-- horizontal force;
-- direction.
-
-See [Golden Master — Live Launch and Clear-Air Result](docs/GOLDEN_MASTER_AIRBORNE_RESULT.md).
-
-## Important correction
-
-Parity preparation exposed an older interpretation error in the active core.
-
-The normal live-player launch is `0x40C84F`, not the previously used `0x40AD1D` interpretation. The active C++ core has been corrected so raw `DropPower` drives launch force and swing/profile adjustment remains a separate path.
-
-## Repository layout
-
-- `docs/` — recovery plan, evidence and parity results
-- `reference/` — metadata-only historical fingerprints
-- `analysis/evidence/` — non-copyright recovery evidence
-- `tools/` — clean analysis/oracle/import utilities
-- `engine/` — portable C++17 classic core
-- `tests/` — automated tests
-- `.github/workflows/` — reproducible analysis and CI
-- `original/`, `analysis/private/` — private/ignored
-
-## Recovery state
-
-Parity-verified:
-- live-player non-putter launch;
-- club launch scaling;
-- initial heading;
-- exact Q14 trig projection;
-- clear-air gravity;
-- normal clear-air drag;
-- swing-adjuster direction stepping;
-- X/Y fixed-point movement.
-
-Recovered but not yet fully parity-verified:
-- landing/bounce/roll;
-- green drag and slope path;
-- swing profile tables;
-- terrain data structures.
-
-Still required before Gate 1 closes:
-- end-to-end meter/profile mapping;
-- surface/lie semantics;
-- obstacle/hazard behavior;
-- putting/cup capture;
+- live launch + airborne parity;
+- landing/bounce/roll through final rest;
+- terrain/lie semantics;
+- hazards/obstacles;
+- putting and cup capture;
 - logical tick frequency;
-- original-course ground contact;
-- complete shot traces through final rest.
+- complete original-course shot traces.
 
-## Rights
-
-This public repository contains newly written tooling, documentation and port code only. Original commercial executables, archives, graphics, music, course data and other licensed material stay out of the repository unless redistribution rights explicitly allow them.
+See `docs/GAMEPLAY_RECOVERY_GATE.md` and `docs/GOLDEN_MASTER_HARNESS.md`.

@@ -1,0 +1,18 @@
+{
+  "id": "win1014-welly-power-cap",
+  "status": "observed",
+  "claim": "The Windows v1.014 Welly-o-meter normalizes raw DropPower to a maximum value of 0x69 (105).",
+  "sources": [
+    {
+      "kind": "windows-executable",
+      "source": "GOLFWIN.EXE v1.014 SHA256 3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+      "sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+      "offset": null,
+      "observation": "Welly routine around VA 0x40768B-0x4078D7 stores the meter counter into DropPower, compares the rising counter against 0x69, and on the alternate direction adds half the counter before storing it."
+    }
+  ],
+  "tests": [
+    "engine/tests/recovered_math_tests.cpp: kDropPowerMax and full-power launch arithmetic"
+  ],
+  "notes": "The complete user-facing two-click state/timing mapping is not yet promoted; only the raw normalized cap is."
+}

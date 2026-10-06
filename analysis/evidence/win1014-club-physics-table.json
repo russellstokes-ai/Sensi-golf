@@ -1,0 +1,19 @@
+{
+  "id": "win1014-club-physics-table",
+  "status": "observed",
+  "claim": "GOLFWIN.EXE v1.014 contains 13 12-byte club physics records at VA 0x41F108; each record provides vertical base, horizontal base and power scale, with club index 12 on the putter path.",
+  "sources": [
+    {
+      "kind": "windows-executable",
+      "source": "GOLFWIN.EXE v1.014 SHA256 3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+      "sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+      "offset": null,
+      "observation": "Routine around VA 0x40A1C1 computes club_index*12, loads three dwords from 0x41F108, halves the first two, and stores them as per-shot V/H base plus power scaling."
+    }
+  ],
+  "tests": [
+    "tools/extract_club_table.py",
+    "engine/tests/recovered_math_tests.cpp: club table anchors"
+  ],
+  "notes": "Exact display names/order for indices 0-11 remain unverified; index 12 is supported as putter by the special zero-vertical ground path."
+}

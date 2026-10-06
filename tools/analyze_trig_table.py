@@ -16,7 +16,7 @@ def va_to_offset(va,image_base,sections):
                 return off
     raise ValueError(f"VA {va:#x} is not file-backed")
 
-def candidate_values(count, func, quant):
+def candidate_values(count, func, quant, clamp_negative_peak=False):
     out=[]
     for i in range(count):
         x=func(2*math.pi*i/4096.0)*16384.0
@@ -25,10 +25,19 @@ def candidate_values(count, func, quant):
         elif quant=="floor": v=math.floor(x)
         elif quant=="ceil": v=math.ceil(x)
         else: raise ValueError(quant)
-        # signed 16-bit clamp/wrap shouldn't be needed, but normalize.
+        if clamp_negative_peak and v < -16383:
+            v=-16383
         v=((int(v)+32768)&0xffff)-32768
         out.append(v)
     return out
+
+def compare(actual,vals):
+    mismatch_indices=[i for i,(a,b) in enumerate(zip(actual,vals)) if a!=b]
+    return {
+        "mismatches":len(mismatch_indices),
+        "max_abs_error":max(abs(a-b) for a,b in zip(actual,vals)),
+        "first_mismatch_indices":mismatch_indices[:16],
+    }
 
 def main():
     ap=argparse.ArgumentParser()
@@ -48,15 +57,13 @@ def main():
     for fname,func in (("sin",math.sin),("cos",math.cos)):
         for quant in ("round","trunc","floor","ceil"):
             vals=candidate_values(args.count,func,quant)
-            mismatches=sum(a!=b for a,b in zip(actual,vals))
-            max_error=max(abs(a-b) for a,b in zip(actual,vals))
-            candidates[f"{fname}-{quant}"]={
-                "mismatches":mismatches,"max_abs_error":max_error
-            }
+            candidates[f"{fname}-{quant}"]=compare(actual,vals)
+
+    exact_candidate=candidate_values(args.count,math.sin,"trunc",clamp_negative_peak=True)
+    candidates["sin-trunc-clamp-negative-peak"]=compare(actual,exact_candidate)
 
     samples={str(i):actual[i] for i in [0,1,2,256,512,768,1024,1536,2048,3072,4095,4096,5119] if i < len(actual)}
     periodic_4096=all(actual[i]==actual[i+4096] for i in range(min(1024,args.count-4096))) if args.count>4096 else None
-    quarter_relation=all(actual[i+1024] == actual[1024+i] for i in range(min(3072,args.count-1024)))
 
     report={
         "base_va":base,
@@ -64,6 +71,7 @@ def main():
         "samples":samples,
         "candidate_matches":candidates,
         "periodic_4096_for_extra_quarter":periodic_4096,
+        "exact_regeneration_candidate":"int(sin(2*pi*i/4096)*16384), clamped to minimum -16383",
         "sha256_note":"Raw table bytes are not emitted; only reproducibility metrics and selected samples are reported."
     }
     txt=json.dumps(report,indent=2)+"\n"

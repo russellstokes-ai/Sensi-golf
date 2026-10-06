@@ -87,6 +87,7 @@ jobs:
           if [ -n "$WIN_EXE" ]; then
             python tools/executable_probe.py "$WIN_EXE"               --number 240               -o analysis/private/probes/golfwin-probe.json
             python tools/pe_string_xrefs.py "$WIN_EXE"               --context 10               -o analysis/private/probes/golfwin-debug-xrefs.json
+            python tools/debug_pointer_probe.py "$WIN_EXE"           --context 8                -o analysis/private/probes/golfwin-debug-pointers.json
           fi
 
           if [ -f analysis/private/probes/golfdos-probe.json ] &&              [ -f analysis/private/probes/golfwin-probe.json ]; then

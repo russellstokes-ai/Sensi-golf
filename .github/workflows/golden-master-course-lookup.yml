@@ -1,0 +1,81 @@
+name: Golden Master Course Collision Lookup
+
+on:
+  push:
+    paths:
+      - ".github/workflows/golden-master-course-lookup.yml"
+      - "engine/**"
+      - "tools/original_v1014_course_lookup_oracle.py"
+      - "tools/original_v1014_oracle.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  course-lookup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+
+      - name: Build portable core
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+
+      - name: Exhaustive zero-tolerance MAPI parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          ROOT=analysis/private/step2/extracted/epf
+          OUT=analysis/private/golden-master-course-lookup
+          mkdir -p "$OUT"
+
+          total=0
+          for pair in 1 3 5 7; do
+            next=$((pair+1))
+            a=$(printf "MAPI%02d.RAW" "$pair")
+            b=$(printf "MAPI%02d.RAW" "$next")
+            tag=$(printf "%02d-%02d" "$pair" "$next")
+
+            python tools/original_v1014_course_lookup_oracle.py "$WIN_EXE" \
+              "$ROOT/$a" "$ROOT/$b" -o "$OUT/$tag-original.csv"
+
+            ./build/engine/sensigolf_recovered_course_lookup_probe \
+              "$ROOT/$a" "$ROOT/$b" > "$OUT/$tag-recovered.csv"
+
+            cmp "$OUT/$tag-original.csv" "$OUT/$tag-recovered.csv"
+            cases=$((640*32))
+            total=$((total+cases))
+            echo "$tag zero-tolerance parity: $cases cases"
+          done
+
+          echo "TOTAL_ZERO_TOLERANCE_CASES=$total" | tee "$OUT/summary.txt"
+          test "$total" -eq 81920
+
+      - name: Tests
+        run: |
+          python -m unittest discover -s tests -v
+          ctest --test-dir build --output-on-failure
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-golden-master-course-lookup
+          path: analysis/private/golden-master-course-lookup/
+          retention-days: 14

@@ -177,6 +177,14 @@ GroundStepResult step_controlled_surface(
     result.contact_x = state.x;
     result.contact_y = state.y;
 
+    // Windows v1.014 0x40A730 code-8 terminal branch. It transfers to
+    // hole-completion flow without zeroing the current ball forces here.
+    if (landing_code == 8) {
+        result.holed = true;
+        result.resting = true;
+        return result;
+    }
+
     // Windows v1.014 0x40A692..0x40A72B. Terrain descriptors WATER,
     // NO GO and OUT OF BOUNDS use landing code 0x23. On contact the original
     // zeros H, V and height before leaving the normal bounce branch.

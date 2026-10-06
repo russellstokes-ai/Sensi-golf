@@ -78,7 +78,7 @@ def bounds_for(uc,profile_id):
 
 def setup(uc,club,lie,power,accuracy,direction):
     from unicorn.x86_const import UC_X86_REG_ESI,UC_X86_REG_EDI,UC_X86_REG_ESP
-    if not 0<=club<12: raise ValueError("oracle currently scopes normal clubs 0..11")
+    if not 0<=club<13: raise ValueError("club must be original index 0..12")
     if not 0<=lie<10: raise ValueError("lie must be 0..9")
     if not 0<=power<=105: raise ValueError("power must be 0..105")
 

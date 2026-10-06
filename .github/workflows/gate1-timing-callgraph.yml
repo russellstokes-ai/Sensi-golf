@@ -34,26 +34,37 @@ jobs:
           OUT="analysis/private/gate1-timing-callgraph"
           mkdir -p "$OUT"
 
+          # KERNEL32 FirstThunk RVA 0x38288; GetTickCount is thunk #22,
+          # therefore image-base VA = 0x400000 + 0x38288 + 21*4 = 0x4382DC.
           python tools/pe_va_xrefs.py "$WIN_EXE" \
-            --va 0x40A603 --va 0x42DBE9 --va 0x426004 --va 0x4287F2 \
-            --radius 42 -o "$OUT/timing-xrefs.json"
+            --va 0x40A250 --va 0x40A603 --va 0x42DBE9 --va 0x426004 \
+            --va 0x4287F2 --va 0x4382DC --va 0x402A68 --va 0x40AF3B \
+            --radius 48 -o "$OUT/timing-xrefs.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x402A68 --end-va 0x402B70 -o "$OUT/frame-accumulator.json"
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x407F70 --end-va 0x408075 -o "$OUT/main-logical-loop.json"
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40AF3B --end-va 0x40AF90 -o "$OUT/pre-step-counter.json"
 
           objdump -p "$WIN_EXE" > "$OUT/pe-imports.txt"
           grep -i -B8 -A8 'GetTickCount' "$OUT/pe-imports.txt" > "$OUT/gettickcount-import.txt" || true
 
-          objdump -d -Mintel "$WIN_EXE" | \
-            grep -i -B10 -A12 'GetTickCount' > "$OUT/gettickcount-disasm-grep.txt" || true
-
           python - <<'PY'
-          import json
+          import json,glob,os
           j=json.load(open('analysis/private/gate1-timing-callgraph/timing-xrefs.json'))
           print('xref count',len(j['xrefs']))
           for x in j['xrefs']:
               print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
               for i in x['instructions']:
                   print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
-          print('\n=== GetTickCount import ===')
-          print(open('analysis/private/gate1-timing-callgraph/gettickcount-import.txt').read())
+          for p in sorted(glob.glob('analysis/private/gate1-timing-callgraph/*.json')):
+              if p.endswith('timing-xrefs.json'): continue
+              q=json.load(open(p))
+              print('\n====',os.path.basename(p),'====')
+              for i in q.get('instructions',[]):
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
           PY
       - uses: actions/upload-artifact@v4
         if: always()

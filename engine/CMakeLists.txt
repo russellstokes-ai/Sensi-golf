@@ -95,3 +95,10 @@ add_executable(sensigolf_classic_course_probe
     tools/classic_course_probe.cpp
 )
 target_link_libraries(sensigolf_classic_course_probe PRIVATE sensigolf_core)
+
+
+add_executable(sensigolf_classic_terrain_tests
+    tests/classic_terrain_tests.cpp
+)
+target_link_libraries(sensigolf_classic_terrain_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_classic_terrain_tests COMMAND sensigolf_classic_terrain_tests)

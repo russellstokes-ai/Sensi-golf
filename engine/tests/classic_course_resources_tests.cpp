@@ -59,6 +59,15 @@ int main() {
     assert(a.slope_direction == 0x0200);
     assert(a.slope_magnitude == 1);
 
+    const auto resolved = course.resolve_surface(0, 0, 0, 0);
+    assert(resolved.descriptor_index == 0x34);
+    assert(resolved.landing_code == 4);
+    assert(resolved.profile_slot == 3);
+    assert(resolved.name == "SEMI ROUGH D2");
+    assert(resolved.slope_direction == 0x0200);
+    assert(resolved.slope_magnitude == 1);
+    assert(resolved.product_supported);
+
     const auto b = course.lookup(1, 0, 0, 0);
     assert(b.raw_word == 0x214D);
     assert(b.descriptor_index == 4);

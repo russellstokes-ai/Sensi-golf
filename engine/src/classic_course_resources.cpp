@@ -114,6 +114,27 @@ recovered::CourseLookupResult ClassicCourseResources::lookup(
         y_subcell);
 }
 
+ResolvedCourseSurface ClassicCourseResources::resolve_surface(
+    std::uint16_t map_x,
+    std::uint16_t map_y,
+    std::uint8_t x_subcell,
+    std::uint8_t y_subcell) const {
+    const auto result = lookup(map_x, map_y, x_subcell, y_subcell);
+    const auto& descriptor =
+        classic_terrain_descriptor(result.descriptor_index);
+
+    return ResolvedCourseSurface{
+        result.descriptor_index,
+        descriptor.landing_code,
+        descriptor.variant,
+        descriptor.profile_slot,
+        descriptor.name,
+        result.slope_direction,
+        result.slope_magnitude,
+        descriptor.product_supported,
+    };
+}
+
 RawSptRecord ClassicCourseResources::spt_record(std::size_t index) const {
     if (index >= kSptRecordCount) {
         throw std::out_of_range("SPT record outside recovered five-record file");

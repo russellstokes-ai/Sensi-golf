@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "sensigolf/recovered_course_lookup.hpp"
+#include "sensigolf/classic_terrain.hpp"\n#include "sensigolf/recovered_course_lookup.hpp"
 
 namespace sensigolf {
 

@@ -3,11 +3,11 @@
 A preservation-first modern port/remaster investigation for **Sensible Golf**.
 
 > **Step 2: COMPLETE** — original PC v1.014 identified, fingerprinted and unpacked.  
-> **Gate 1: GO / READY FOR FINAL SIGN-OFF** — the principal gameplay branches now have zero-tolerance original-machine-code parity.
+> **Gate 1: COMPLETE / GO** — consolidated zero-tolerance parity sign-off passed against original Windows v1.014.
 
 ## Project rule
 
-No HD art, mobile UI or enhancement work begins until original gameplay behaviour is recovered and formally signed off.
+Original gameplay behaviour is now recovered and formally signed off. Classic mode must remain locked to the Gate-1 parity evidence while development moves through the faithful desktop harness before modern presentation work.
 
 ## Current recovery state
 
@@ -37,15 +37,20 @@ The logical gameplay timer has also been traced to the Windows wall clock. The o
 
 Original commercial payloads remain outside the public repository.
 
-## Gate 1 remaining sign-off
+## Gate 1 closure
 
-Gate 1 stays formally open until:
+Gate 1 closed on **2026-10-07**.
 
-- the complete current-head parity suite is run as one consolidated sign-off;
-- one end-to-end course/object interaction trace joins the recovered MAPI lookup/activation path to the already parity-tested interaction mutation;
-- the final evidence record is frozen and Issue #1 is closed.
+Final consolidated sign-off:
 
-This is final verification/integration work, not a need to invent or substitute modern golf physics.
+- commit: `34bfa1c0999d2e5e196ce900edc9e2bd563ed3d8`
+- Gate 1 workflow: `37603222703` — **PASS**
+- CI: `37603222791` — **PASS**
+- end-to-end course interaction workflow: `37603087138` — **PASS**
+- course MAPI lookup cases: **81,920**, zero tolerance
+- durable evidence: `analysis/evidence/gate1_final_signoff.json`
+
+**Gate 2 — faithful desktop harness — is now next.**
 
 ## Documentation
 

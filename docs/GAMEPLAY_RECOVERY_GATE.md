@@ -1,6 +1,6 @@
 # Gate 1 — Original Gameplay and Physics Recovery
 
-Status: **GO — ready for final sign-off**
+Status: **COMPLETE — GO**
 
 Canonical current snapshot: [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
@@ -69,12 +69,17 @@ The main gameplay callback is scheduled at `0x3A8` fixed units, approximately 70
 
 This lets the port preserve classic simulation cadence while keeping rendering interpolation independent.
 
-## Gate 1 exit condition
+## Gate 1 closure
 
-Gate 1 may be marked COMPLETE when:
+Gate 1 closed on **2026-10-07**.
 
-- the full current-head golden-master/core test set passes in one consolidated sign-off run;
-- at least one complete lookup -> interaction activation -> state-mutation trace is retained as evidence;
-- the final evidence ledger and Issue #1 are reconciled.
+Final consolidated run `37603222703` passed on commit `34bfa1c0999d2e5e196ce900edc9e2bd563ed3d8`; CI run `37603222791` passed on the same commit.
 
-No modern substitute physics are required or permitted for the recovered classic mode.
+The previously missing integration fixture also passed in run `37603087138`. A real `MAPI01.RAW` / `MAPI02.RAW` cell at tile 137, subcell (0,0) resolves to descriptor 23 / landing code 9 in original v1.014, activates event 11 and produces the same PRNG-driven direction/seed state in the recovered implementation at zero tolerance.
+
+Durable evidence:
+
+- `analysis/evidence/gate1_final_signoff.json`
+- `analysis/evidence/gate1_course_interaction_parity.json`
+
+All Gate-1 exit conditions are satisfied. Classic gameplay/physics recovery is now frozen as the fidelity baseline for Gate 2 and later presentation work.

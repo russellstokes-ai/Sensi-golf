@@ -7,13 +7,13 @@ This is the canonical current-status document for the Sensible Golf Enhanced rec
 ## Executive status
 
 - **Step 2 — original PC acquisition/inventory: COMPLETE**
-- **Gate 1 — original gameplay/physics recovery: GO, ready for final sign-off**
-- **Gate 2 — faithful desktop harness: NOT STARTED**
-- HD/mobile/remaster work remains intentionally blocked until Gate 1 is formally signed off.
+- **Gate 1 — original gameplay/physics recovery: COMPLETE / GO**
+- **Gate 2 — faithful desktop harness: NEXT**
+- Gate 1 is formally signed off. Gate 2 is now the active next phase; HD/mobile/remaster presentation work still follows the roadmap rather than bypassing the faithful desktop harness.
 
 The project-killing feasibility question is now answered positively: the selected Windows v1.014 gameplay engine is recoverable and the portable core reproduces the original machine code at zero tolerance across the principal shot, terrain, hazard, putting and cup branches.
 
-Gate 1 remains formally open only for the final consolidated sign-off pass: run the full current-head parity suite together and preserve one end-to-end course-interaction trace that exercises the recovered collision/interaction activation path rather than only the isolated parity fragments.
+Gate 1 was formally closed on 2026-10-07 after a consolidated current-head sign-off passed all existing parity/core coverage and an end-to-end course-interaction trace joined the real MAPI lookup to code-9 activation and the recovered PRNG mutation.
 
 ## Verified reference build
 
@@ -75,7 +75,9 @@ Representative successful runs:
 - meter/tick closure: `37546007071`
 - final timing/meter dispatch: `37546141205`
 - timer source closure: `37546519169`
-- CI at the documented current head: `37602000960`
+- end-to-end course interaction: `37603087138`
+- consolidated Gate 1 sign-off: `37603222703`
+- CI on the sign-off commit: `37603222791`
 
 ## Important recovered timing result
 
@@ -103,13 +105,31 @@ The course collision path is instead driven by the MAPI course lookup. The recov
 
 Separate post-physics interaction branches use the recovered original PRNG. Their state mutations are parity-tested independently. The final Gate 1 sign-off should preserve at least one end-to-end trace in which the real course/object lookup activates one of these interaction branches.
 
-## Remaining Gate 1 sign-off work
+## Gate 1 closure
 
-1. Run a single consolidated current-head suite covering every existing golden master and core test.
-2. Preserve one end-to-end course/object interaction trace that joins lookup/activation to the already parity-tested interaction mutation.
-3. Reconcile the final evidence record and close GitHub Issue #1 if the suite stays green.
+Final sign-off run `37603222703` passed on commit `34bfa1c0999d2e5e196ce900edc9e2bd563ed3d8`.
 
-These are sign-off tasks, not evidence that the core physics model is still unknown.
+The run rebuilt the portable core from a clean checkout, reran Python and C++ tests, and reran the complete parity matrix against the verified v1.014 executable/data. It recorded:
+
+- 3 launch-to-rest straight/draw/fade cases;
+- 6 ordinary surface cases;
+- 3 hazard cases;
+- 3 putter cases;
+- 3 green-slope cases;
+- 1 hole-capture case;
+- 6 PRNG sequence samples;
+- 3 PRNG-driven interaction branches;
+- 81,920 MAPI collision lookup cases;
+- the real MAPI -> landing-code 9 -> event 11 -> PRNG interaction integration fixture;
+- 20 zero-tolerance comparison files;
+- all unit/core tests passing.
+
+Durable evidence:
+
+- `analysis/evidence/gate1_final_signoff.json`
+- `analysis/evidence/gate1_course_interaction_parity.json`
+
+**Gate 1 is COMPLETE.**
 
 ## Non-gating cleanup
 

@@ -142,3 +142,37 @@ The major gameplay recovery risks are no longer open unknowns. Remaining work is
 3. freeze evidence documentation and close Issue #1.
 
 Do not begin enhancement physics. Classic mode remains defined by the parity-proven original behaviour.
+
+
+## 2026-10-07 — Gate 1 formally closed
+
+### Parity-verified / sign-off
+
+The missing integration fixture passed in workflow `37603087138`.
+
+A real MAPI course cell from `MAPI01.RAW` / `MAPI02.RAW`, tile 137 subcell (0,0), resolved through original v1.014 to descriptor 23 / landing code 9, activated event 11 and executed the original ranged-PRNG deflection. Recovered lookup and interaction state matched exactly at zero tolerance.
+
+The consolidated sign-off workflow `37603222703` then rebuilt from a clean checkout and passed:
+
+- all Python and C++ core tests;
+- 3 launch-to-rest cases;
+- 6 ordinary surface cases;
+- 3 hazard cases;
+- 3 putter cases;
+- 3 green-slope cases;
+- hole capture;
+- PRNG sequence parity;
+- 3 interaction branches;
+- 81,920 MAPI lookup cases;
+- the end-to-end course-interaction fixture.
+
+CI `37603222791` passed on the same sign-off commit.
+
+Durable evidence was committed as:
+
+- `analysis/evidence/gate1_final_signoff.json`
+- `analysis/evidence/gate1_course_interaction_parity.json`
+
+**Gate 1 — Original Gameplay and Physics Recovery: COMPLETE / GO.**
+
+Gate 2 — the faithful desktop harness — is now the next project phase.

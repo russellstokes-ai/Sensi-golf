@@ -4,7 +4,7 @@ Canonical current snapshot: [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
 ## Gate 1 — Recover original gameplay/physics
 
-**Current: GO — ready for final sign-off**
+**COMPLETE — GO**
 
 Completed:
 
@@ -30,15 +30,18 @@ Completed:
 - logical timer source and approximately 70.02 Hz callback cadence;
 - extensive original-machine-code golden masters.
 
-Final sign-off work:
+Closure evidence:
 
-- retain one end-to-end course/object interaction activation trace;
-- run the complete current-head parity/core suite as one sign-off;
-- freeze the final Gate 1 evidence ledger and close Issue #1.
+- end-to-end course interaction run `37603087138` — PASS;
+- consolidated Gate-1 run `37603222703` — PASS;
+- CI on the sign-off commit `37603222791` — PASS;
+- durable evidence stored under `analysis/evidence/`.
 
-Exit: the consolidated suite is green and Issue #1 is closed.
+Exit: **achieved on 2026-10-07**.
 
 ## Gate 2 — Faithful desktop harness
+
+**NEXT / ACTIVE PHASE**
 
 Deliverables:
 

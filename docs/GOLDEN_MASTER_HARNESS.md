@@ -2,7 +2,7 @@
 
 ## Current status
 
-**Broad original-v1.014 zero-tolerance parity is established.**
+**Gate 1 final sign-off passed. Original-v1.014 zero-tolerance parity is established across the recovered classic gameplay scope.**
 
 The harness executes original Sensible Golf Windows v1.014 machine code directly under 32-bit x86 Unicorn and compares it with the independently recovered portable C++17 core.
 
@@ -90,16 +90,32 @@ The gameplay callback interval is `0x3A8` fixed units, about 70.02 Hz.
 
 A modern renderer may interpolate above this layer without changing classic simulation results.
 
-## Final Gate 1 fixture still required
+## Final Gate 1 sign-off
 
-The isolated components are now strongly covered, but one final integration fixture should be retained before formal Gate 1 closure:
+The final integration fixture passed in run `37603087138`:
 
 ```
-real course MAPI lookup
-    -> interaction activation
-    -> original PRNG branch
-    -> recovered state mutation
-    -> continuing ball state
+MAPI01/MAPI02 tile 137 subcell (0,0)
+    -> descriptor 23
+    -> landing code 9
+    -> event 11
+    -> original ranged PRNG
+    -> recovered code-9 state mutation
 ```
 
-After that fixture and a consolidated current-head suite pass, Gate 1 can be formally closed.
+Original and recovered final interaction state matched at zero tolerance:
+
+- direction: 2430;
+- vertical force: -50000;
+- horizontal force: 90000;
+- PRNG seed0: 14957;
+- PRNG seed1: 54758.
+
+The consolidated Gate-1 workflow `37603222703` then reran the full parity matrix and all core/unit tests from a clean checkout and passed.
+
+Durable sign-off records:
+
+- `analysis/evidence/gate1_final_signoff.json`
+- `analysis/evidence/gate1_course_interaction_parity.json`
+
+**Gate 1 is COMPLETE.**

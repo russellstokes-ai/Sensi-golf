@@ -1,6 +1,6 @@
 # Step 3 — Executable Analysis and Physics Recovery
 
-Status: **LATE-STAGE — principal gameplay paths recovered and parity-tested**
+Status: **COMPLETE — Gate 1 recovery closed**
 
 Canonical current snapshot: [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
@@ -77,17 +77,13 @@ and dispatches registered timer callbacks from that fixed-point accumulator.
 
 The main gameplay timer is registered at interval `0x3A8`, equivalent to roughly 70.02 callbacks per second.
 
-## Remaining analysis/sign-off
+## Closure
 
-No major classic shot-physics formula remains to be invented.
+The final end-to-end course interaction fixture passed in workflow `37603087138`.
 
-Before formal Gate 1 closure:
+The consolidated clean-checkout sign-off workflow `37603222703` passed the complete Gate-1 parity matrix, 81,920 MAPI lookup cases, and all Python/C++ tests. CI `37603222791` also passed on the sign-off commit.
 
-- retain an end-to-end course lookup -> interaction activation -> PRNG mutation trace;
-- run the complete current-head parity suite together;
-- consolidate the evidence ledger and close Issue #1.
-
-Additional naming/cross-check work after Gate 1 is allowed so long as it does not silently change parity-proven classic behaviour.
+No major classic shot-physics formula remains open for Gate 1. Further binary naming/cross-check work is non-gating and must not alter parity-proven classic behaviour.
 
 ## Evidence standard
 

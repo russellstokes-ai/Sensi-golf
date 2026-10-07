@@ -232,6 +232,6 @@ Gate 1 no longer depends on inventing a substitute golf model.
 
 ## Gate status
 
-**GO — ready for final sign-off.**
+**COMPLETE — GO.**
 
-Formal closure still requires one consolidated current-head suite and one retained end-to-end lookup/activation/interaction trace.
+The end-to-end lookup/activation/interaction fixture passed in run `37603087138`, and the consolidated Gate-1 suite passed in run `37603222703` with CI `37603222791`. The recovered classic physics model is now the frozen fidelity baseline for subsequent development.

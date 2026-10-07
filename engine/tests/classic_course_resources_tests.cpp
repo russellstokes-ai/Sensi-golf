@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdint>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 #include "sensigolf/classic_course_resources.hpp"
@@ -15,7 +16,6 @@ void be16(std::vector<std::uint8_t>& data, std::size_t off, std::uint16_t value)
 }
 
 ClassicCourseResources fixture() {
-    // Two MAPM cells: tile 0 then tile 1.
     std::vector<std::uint8_t> mapm(0x60 + 4, 0);
     be16(mapm, 0x54, 2);
     be16(mapm, 0x56, 1);
@@ -32,12 +32,10 @@ ClassicCourseResources fixture() {
         }
     }
 
-    // Two eight-byte MAPI tile records. Selector is all zero, so lookup uses
-    // the first big-endian word of each descriptor record.
     std::vector<std::uint8_t> desc(16, 0);
     std::vector<std::uint8_t> sel(16, 0);
-    be16(desc, 0, 0x1234);  // descriptor 0x34, dir 0x200, mag 1
-    be16(desc, 8, 0x214D);  // low byte >=0x4D clamps to descriptor 4
+    be16(desc, 0, 0x1234);
+    be16(desc, 8, 0x214D);
 
     return ClassicCourseResources(
         std::move(mapm), std::move(spt), std::move(desc), std::move(sel));
@@ -68,6 +66,11 @@ int main() {
     assert(resolved.slope_magnitude == 1);
     assert(resolved.product_supported);
 
+    const auto integer_resolved = course.resolve_integer_position(0, 0);
+    const auto raw_resolved = course.resolve_raw_position(0, 0);
+    assert(integer_resolved.descriptor_index == resolved.descriptor_index);
+    assert(raw_resolved.descriptor_index == resolved.descriptor_index);
+
     const auto b = course.lookup(1, 0, 0, 0);
     assert(b.raw_word == 0x214D);
     assert(b.descriptor_index == 4);
@@ -88,13 +91,20 @@ int main() {
 
     threw = false;
     try {
+        (void)course.resolve_integer_position(-1, 0);
+    } catch (const std::out_of_range&) {
+        threw = true;
+    }
+    assert(threw);
+
+    threw = false;
+    try {
         (void)course.spt_record(5);
     } catch (const std::out_of_range&) {
         threw = true;
     }
     assert(threw);
 
-    // Truncated MAPM.
     threw = false;
     try {
         std::vector<std::uint8_t> mapm(0x60, 0);
@@ -109,7 +119,6 @@ int main() {
     }
     assert(threw);
 
-    // MAPM tile outside supplied MAPI bank.
     threw = false;
     try {
         std::vector<std::uint8_t> mapm(0x62, 0);

@@ -59,8 +59,6 @@ void ClassicCourseResources::validate() const {
             "MAPI banks must be non-empty, equal-sized and eight-byte aligned");
     }
 
-    // Fail at load time rather than later during a shot if MAPM references a
-    // tile that the supplied MAPI bank pair cannot resolve.
     const auto tile_count = mapi_tile_count();
     for (std::uint16_t y = 0; y < map_height_; ++y) {
         for (std::uint16_t x = 0; x < map_width_; ++x) {
@@ -133,6 +131,33 @@ ResolvedCourseSurface ClassicCourseResources::resolve_surface(
         result.slope_magnitude,
         descriptor.product_supported,
     };
+}
+
+ResolvedCourseSurface ClassicCourseResources::resolve_integer_position(
+    std::int16_t integer_x,
+    std::int16_t integer_y) const {
+    if (integer_x < 0 || integer_y < 0) {
+        throw std::out_of_range("negative course coordinate outside MAPM");
+    }
+
+    const auto ux = static_cast<std::uint16_t>(integer_x);
+    const auto uy = static_cast<std::uint16_t>(integer_y);
+
+    return resolve_surface(
+        static_cast<std::uint16_t>(ux >> 4),
+        static_cast<std::uint16_t>(uy >> 3),
+        static_cast<std::uint8_t>((ux >> 1) & 7u),
+        static_cast<std::uint8_t>((uy >> 1) & 3u));
+}
+
+ResolvedCourseSurface ClassicCourseResources::resolve_raw_position(
+    std::int32_t x_raw,
+    std::int32_t y_raw) const {
+    const auto ix = static_cast<std::int16_t>(
+        static_cast<std::uint32_t>(x_raw) >> 16);
+    const auto iy = static_cast<std::int16_t>(
+        static_cast<std::uint32_t>(y_raw) >> 16);
+    return resolve_integer_position(ix, iy);
 }
 
 RawSptRecord ClassicCourseResources::spt_record(std::size_t index) const {

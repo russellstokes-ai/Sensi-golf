@@ -13,7 +13,7 @@ This is the canonical current-status document for the Sensible Golf Enhanced rec
 
 The project-killing feasibility question has been answered positively: the selected Windows v1.014 gameplay engine is recoverable and the portable core reproduces the original machine code at zero tolerance across the principal shot, terrain, hazard, putting, cup, PRNG and course-collision branches.
 
-The current Gate-2 checkpoint has now moved beyond shot/hole terminal recovery into **scored-hole and cross-hole round progression**. Cup capture, scored-hole activation and next-hole/round state are deliberately modeled as separate recovered stages, matching the original program rather than collapsing them into one invented event.
+The current Gate-2 checkpoint now includes **scored-hole progression, hazard return-to-play, original next-hole resource selection and a platform-neutral game-session controller**. Cup capture, scoring, resource loading and next-hole/round state remain separate recovered stages, matching the original program rather than collapsing them into platform UI logic.
 
 ## Verified reference build
 
@@ -202,7 +202,13 @@ Successful validation evidence:
 - recovered next-hole ownership and end-of-round condition;
 - cross-hole `ClassicRoundSession` score/progression owner;
 - rejection of stale/duplicate hole results;
-- 18-hole round progression regression coverage.
+- 18-hole round progression regression coverage;
+- single-player hazard recovery handoff back to `ReadyForShot`;
+- original 18-byte hole-order-table resource selection;
+- exact `mapmNN.map` / `mapsNN.map` / `mapmNN.spt` requests;
+- plan-aware par/resource validation;
+- `ClassicGameSession` ownership of resource request -> active hole -> scored-hole commit -> next resource request;
+- real original resource 42 bootstrap at tee `(247,726)` with cup `(414,85)`.
 
 #### Scored-hole boundary now recovered
 
@@ -278,13 +284,18 @@ Durable evidence is recorded in `analysis/evidence/gate2_burst3_round_checkpoint
 
 #### Active remaining Burst-3 work
 
-1. close the post-hazard terminal/gameflow handoff, including terminal-flag release, penalty/turn ownership and return to the playable state;
-2. wire the recovered next-hole index into real next-hole resource/setup selection rather than stopping at progression state;
-3. close remaining unsupported/special green continuations and prove any required non-putter scored-hole continuation;
-4. move original PRNG seed ownership into the session where required for complete deterministic hole replay;
-5. prove a complete **real-course** hole from original SPT tee through cup, scoring and next-hole setup using the original resource bundle.
+1. close remaining unsupported/special-green continuations and prove any required non-putter scored-hole continuation;
+2. move original PRNG seed/state ownership into the session where required for deterministic complete-hole replay;
+3. prove a complete **real-course** hole from original SPT tee through shots, cup, scoring and actual next-hole activation.
 
-Current hazard-gameflow recovery work is already being traced on `main` through the dedicated Gate-2 workflow; the trace has been extended through the post-hazard handoff, terminal flag release and presentation-timer ownership.
+New durable checkpoints:
+- hazard handoff integration: `31c238565a8f6fa89f1d9fd82e6065e32e2ddcc5`;
+- next-hole resource selection merge: `da6cae84ab86e24d9dd3f96a160039e959c989df`;
+- platform-neutral game-session merge: `0e03b81a64a621ee82e68f18e729f9e0f4c90693`;
+- next-hole evidence: `analysis/evidence/gate2_next_hole_resource_checkpoint.json`;
+- controller/bootstrap evidence: `analysis/evidence/gate2_classic_game_session_checkpoint.json`.
+
+The first original order-slot transition is verified as resource 42 (par 4) -> resource 50 (par 4), and the real resource-42 game session bootstraps at SPT tee `(247,726)` with cup `(414,85)`.
 
 Burst 3 remains **IN PROGRESS** until those paths are closed. The mobile host should not begin reimplementing any of them independently.
 

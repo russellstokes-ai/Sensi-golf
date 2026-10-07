@@ -61,34 +61,37 @@ std::unique_ptr<Candidate> try_shot(
 
     try {
         trial->begin_shot(request);
+
+        int ticks = 0;
+        while (trial->phase() == HoleSessionPhase::ShotActive
+               && ticks++ < 4096) {
+            trial->step();
+        }
+        if (ticks >= 4096) {
+            return nullptr;
+        }
+
+        if (trial->phase() == HoleSessionPhase::CupTerminal) {
+            trial->step();
+        }
+
+        if (trial->phase() != HoleSessionPhase::ReadyForShot
+            && trial->phase() != HoleSessionPhase::HoleScored) {
+            return nullptr;
+        }
+
+        auto out = std::make_unique<Candidate>();
+        out->shot = choice;
+        out->distance = trial->distance_to_hole();
+        out->scored = trial->phase() == HoleSessionPhase::HoleScored;
+        out->session = std::move(trial);
+        return out;
     } catch (...) {
+        // Search-only candidates may leave the finite MAPM grid or hit a
+        // not-yet-integrated terrain rule. They are invalid routes, not a
+        // fatal error for the deterministic search.
         return nullptr;
     }
-
-    int ticks = 0;
-    while (trial->phase() == HoleSessionPhase::ShotActive
-           && ticks++ < 4096) {
-        trial->step();
-    }
-    if (ticks >= 4096) {
-        return nullptr;
-    }
-
-    if (trial->phase() == HoleSessionPhase::CupTerminal) {
-        trial->step();
-    }
-
-    if (trial->phase() != HoleSessionPhase::ReadyForShot
-        && trial->phase() != HoleSessionPhase::HoleScored) {
-        return nullptr;
-    }
-
-    auto out = std::make_unique<Candidate>();
-    out->shot = choice;
-    out->distance = trial->distance_to_hole();
-    out->scored = trial->phase() == HoleSessionPhase::HoleScored;
-    out->session = std::move(trial);
-    return out;
 }
 
 void retain_best(

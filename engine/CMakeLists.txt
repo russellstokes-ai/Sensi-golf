@@ -11,6 +11,7 @@ add_library(sensigolf_core
     src/recovered_prng.cpp
     src/recovered_interactions.cpp
     src/recovered_course_lookup.cpp
+    src/recovered_distance.cpp
 )
 
 target_include_directories(sensigolf_core
@@ -137,3 +138,10 @@ add_executable(sensigolf_recovered_hazard_recovery_probe
     tools/recovered_hazard_recovery_probe.cpp
 )
 target_link_libraries(sensigolf_recovered_hazard_recovery_probe PRIVATE sensigolf_core)
+
+
+add_executable(sensigolf_recovered_distance_tests
+    tests/recovered_distance_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_distance_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_distance_tests COMMAND sensigolf_recovered_distance_tests)

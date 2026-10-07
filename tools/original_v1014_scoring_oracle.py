@@ -24,6 +24,7 @@ from unicorn.x86_const import (
 
 from original_v1014_oracle import (
     BALL,
+    GREEN_MODE_VA,
     LIVE_LAUNCH_VA,
     PLAYER,
     SENTINEL,
@@ -45,6 +46,9 @@ UI_GATE_VA = 0x41D64B
 GAME_MODE_VA = 0x42558E
 PAR_TABLE_VA = 0x41E603
 ORDER_POINTER_TABLE_VA = 0x41E64C
+TERRAIN_LOOKUP_VA = 0x409535
+PUTTER_TICK_VA = 0x40A581
+TICK_END_VA = 0x40AA78
 
 
 def skip_call(uc) -> int:
@@ -129,6 +133,108 @@ def sequential_case(exe: Path, terrain_index: int, label: str) -> dict:
     }
 
 
+
+
+def run_putter_tick_existing(uc, terrain_index: int) -> dict:
+    """Run one real original club-12 update with a controlled terrain lookup."""
+    stop_reason = None
+    transition = None
+    events: list[int] = []
+
+    def hook(machine, address, size, user_data):
+        nonlocal stop_reason, transition
+        if address == TERRAIN_LOOKUP_VA:
+            sp = machine.reg_read(UC_X86_REG_ESP)
+            ret = struct.unpack("<I", bytes(machine.mem_read(sp, 4)))[0]
+            ebx = machine.reg_read(UC_X86_REG_EBX)
+            machine.reg_write(
+                UC_X86_REG_EBX,
+                (ebx & 0xFFFF0000) | (terrain_index & 0xFFFF),
+            )
+            machine.reg_write(UC_X86_REG_ESP, sp + 4)
+            machine.reg_write(UC_X86_REG_EIP, ret)
+        elif address == VISUAL_HELPER_VA:
+            machine.reg_write(UC_X86_REG_EIP, skip_call(machine))
+        elif address == EVENT_DISPATCH_VA:
+            events.append(machine.reg_read(UC_X86_REG_EDX) & 0xFFFFFFFF)
+            machine.reg_write(UC_X86_REG_EIP, skip_call(machine))
+        elif address == CODE9_10_TRANSITION_VA:
+            transition = "special"
+            stop_reason = "transition"
+            machine.emu_stop()
+        elif address == CODE8_TRANSITION_VA:
+            transition = "hole"
+            stop_reason = "transition"
+            machine.emu_stop()
+        elif address == TICK_END_VA:
+            stop_reason = "done"
+            machine.emu_stop()
+
+    token = uc.hook_add(UC_HOOK_CODE, hook)
+    try:
+        uc.reg_write(UC_X86_REG_ESI, PLAYER)
+        uc.reg_write(UC_X86_REG_EDI, BALL)
+        uc.reg_write(UC_X86_REG_ESP, STACK + 0xF000)
+        uc.emu_start(PUTTER_TICK_VA, SENTINEL, count=30000)
+    finally:
+        uc.hook_del(token)
+
+    if stop_reason not in ("done", "transition"):
+        raise RuntimeError(
+            f"putter tick stopped unexpectedly at "
+            f"{uc.reg_read(UC_X86_REG_EIP):#x}"
+        )
+
+    return {
+        "stop_reason": stop_reason,
+        "transition": transition,
+        "events": events,
+        "counter_52": ru16(uc, PLAYER + 0x52),
+        "counter_56": ru16(uc, PLAYER + 0x56),
+    }
+
+
+def real_putter_to_cup_case(exe: Path) -> dict:
+    uc, digest = build_uc(exe)
+    setup(uc, 12, 6, 30, 63, 0)
+    w16(uc, PLAYER + 0x52, 0)
+    w16(uc, PLAYER + 0x56, 0)
+
+    uc.emu_start(LIVE_LAUNCH_VA, SENTINEL, count=5000)
+    w16(uc, BALL + 0x1C, 100)
+    w16(uc, GREEN_MODE_VA, 1)
+
+    trace = [{
+        "stage": "after_launch",
+        "counter_52": ru16(uc, PLAYER + 0x52),
+        "counter_56": ru16(uc, PLAYER + 0x56),
+    }]
+
+    for tick in range(1, 4):
+        row = run_putter_tick_existing(uc, 31)
+        trace.append({
+            "stage": f"green_tick_{tick}",
+            "counter_52": row["counter_52"],
+            "counter_56": row["counter_56"],
+            "stop_reason": row["stop_reason"],
+        })
+
+    terminal = run_putter_tick_existing(uc, 7)
+    trace.append({
+        "stage": "code8_tick",
+        "counter_52": terminal["counter_52"],
+        "counter_56": terminal["counter_56"],
+        "stop_reason": terminal["stop_reason"],
+        "transition": terminal["transition"],
+        "events": terminal["events"],
+    })
+
+    return {
+        "case": "real_putter_ticks_to_code8",
+        "build_sha256": digest,
+        "trace": trace,
+    }
+
 def dump_static_tables(exe: Path) -> dict:
     uc, _ = build_uc(exe)
 
@@ -178,9 +284,20 @@ def main() -> int:
     assert rows[2]["after_launch"] == [1, 1]
     assert rows[2]["terminal_delta"] == [0, 0]
 
+    real_putter = real_putter_to_cup_case(args.exe)
+    assert real_putter["trace"][0]["counter_52"] == 1
+    assert real_putter["trace"][0]["counter_56"] == 1
+    for row in real_putter["trace"][1:4]:
+        assert row["counter_52"] == 1, row
+        assert row["counter_56"] == 1, row
+    assert real_putter["trace"][4]["counter_52"] == 2
+    assert real_putter["trace"][4]["counter_56"] == 2
+    assert real_putter["trace"][4]["transition"] == "hole"
+
     report = {
         "reference": "Sensible Golf Windows v1.014",
         "continuous_cases": rows,
+        "real_putter_to_cup": real_putter,
         "static_tables": dump_static_tables(args.exe),
     }
 

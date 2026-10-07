@@ -1,0 +1,99 @@
+name: Gate 2 Real Game Session Bootstrap
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate2-real-game-session-bootstrap.yml"
+      - "engine/include/sensigolf/classic_game_session.hpp"
+      - "engine/src/classic_game_session.cpp"
+      - "engine/tools/classic_game_session_probe.cpp"
+      - "engine/include/sensigolf/classic_hole_plan.hpp"
+      - "engine/src/classic_hole_plan.cpp"
+      - "engine/include/sensigolf/classic_course_resources.hpp"
+      - "engine/src/classic_course_resources.cpp"
+      - "engine/CMakeLists.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+      - name: Fetch verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Build core
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+          ctest --test-dir build --output-on-failure
+      - name: Bootstrap first real original hole through game session
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="analysis/private/step2/extracted/epf"
+          OUT="analysis/private/gate2-real-game-session-bootstrap"
+          mkdir -p "$OUT"
+
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          python tools/original_v1014_next_hole_resources.py "$WIN_EXE" \
+            -o "$OUT/original-resource-metadata.json"
+
+          python - "$OUT/original-resource-metadata.json" "$OUT/selected.json" <<'PY'
+          import json,sys
+          src=json.load(open(sys.argv[1]))
+          order=next(x["hole_ids"] for x in src["orders"] if x["slot"]==0)
+          rid=order[0]
+          par=src["par_by_resource_id"][rid]
+          out={"resource_id":rid,"par":par}
+          open(sys.argv[2],"w").write(json.dumps(out,indent=2)+"\n")
+          print(out)
+          PY
+
+          RID="$(python -c 'import json; print(json.load(open("'"$OUT/selected.json"'"))["resource_id"])')"
+          PAR="$(python -c 'import json; print(json.load(open("'"$OUT/selected.json"'"))["par"])')"
+          NN="$(printf '%02d' "$RID")"
+
+          ./build/engine/sensigolf_classic_game_session_probe \
+            "$RID" "$PAR" \
+            "$ROOT/MAPM${NN}.MAP" "$ROOT/MAPM${NN}.SPT" \
+            "$ROOT/MAPI01.RAW" "$ROOT/MAPI02.RAW" 0 \
+            | tee "$OUT/session.json"
+
+          python - "$OUT/session.json" "$RID" "$PAR" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          rid=int(sys.argv[2]); par=int(sys.argv[3])
+          assert j["resource_id"]==rid
+          assert j["metadata_resource_id"]==rid
+          assert j["par"]==par and j["metadata_par"]==par
+          assert j["round_index"]==0
+          assert j["ready"] is True
+          assert j["ball_x_raw"] == j["tee_x"] << 16
+          assert j["ball_y_raw"] == j["tee_y"] << 16
+          assert (j["tee_x"],j["tee_y"]) == (247,726),j
+          assert (j["cup_x"],j["cup_y"]) == (414,85),j
+          assert j["mapm_map"]=="mapm42.map"
+          assert j["maps_map"]=="maps42.map"
+          assert j["mapm_spt"]=="mapm42.spt"
+          print("real game-session bootstrap passed:",j)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate2-real-game-session-bootstrap
+          path: analysis/private/gate2-real-game-session-bootstrap/
+          retention-days: 30

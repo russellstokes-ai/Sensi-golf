@@ -18,8 +18,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install analysis dependency
-        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Install analysis dependencies
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6 unicorn
       - name: Fetch verified v1.014
         run: |
           curl -fL --retry 3 --retry-delay 2 \
@@ -65,6 +65,10 @@ jobs:
             --va 0x42952B --va 0x425580 --va 0x41E64C --va 0x41E603 \
             --va 0x41EF04 --va 0x41EF0F --va 0x41EF1A \
             --radius 120 -o "$OUT/xrefs.json"
+
+          python tools/original_v1014_next_hole_resources.py "$WIN_EXE" \
+            -o "$OUT/resource-metadata.json"
+          cat "$OUT/resource-metadata.json"
 
           python - <<'PY'
           import json

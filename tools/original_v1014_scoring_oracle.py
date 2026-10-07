@@ -34,6 +34,7 @@ from original_v1014_oracle import (
     ru32,
     setup,
     w16,
+    wu32,
 )
 
 TERMINAL_START_VA = 0x40A5A2
@@ -46,6 +47,9 @@ UI_GATE_VA = 0x41D64B
 GAME_MODE_VA = 0x42558E
 PAR_TABLE_VA = 0x41E603
 ORDER_POINTER_TABLE_VA = 0x41E64C
+PLAYER_COUNT_VA = 0x429527
+TURN_ADJUST_VA = 0x40C005
+TURN_ADJUST_EXIT_VA = 0x40BEF4
 TERRAIN_LOOKUP_VA = 0x409535
 PUTTER_TICK_VA = 0x40A581
 TICK_END_VA = 0x40AA78
@@ -235,6 +239,59 @@ def real_putter_to_cup_case(exe: Path) -> dict:
         "trace": trace,
     }
 
+
+
+def post_hole_turn_adjust_case(exe: Path) -> dict:
+    """Exercise original code8 putt then the single-player turn-adjust branch."""
+    uc, digest = build_uc(exe)
+    setup(uc, 12, 6, 30, 63, 0)
+    w16(uc, PLAYER + 0x52, 0)
+    w16(uc, PLAYER + 0x56, 0)
+
+    uc.emu_start(LIVE_LAUNCH_VA, SENTINEL, count=5000)
+    w16(uc, BALL + 0x1C, 100)
+    w16(uc, GREEN_MODE_VA, 1)
+    for _ in range(3):
+        run_putter_tick_existing(uc, 31)
+    terminal = run_putter_tick_existing(uc, 7)
+
+    before_adjust = {
+        "counter_52": ru16(uc, PLAYER + 0x52),
+        "counter_56": ru16(uc, PLAYER + 0x56),
+        "ball_state_18": ru32(uc, BALL + 0x18),
+    }
+
+    # Original single-player turn-selection path.
+    uc.mem_write(GAME_MODE_VA, b"\x01")
+    wu32(uc, PLAYER_COUNT_VA, 1)
+    uc.reg_write(UC_X86_REG_ESP, STACK + 0xF000)
+
+    reached_exit = False
+
+    def hook(machine, address, size, user_data):
+        nonlocal reached_exit
+        if address == TURN_ADJUST_EXIT_VA:
+            reached_exit = True
+            machine.emu_stop()
+
+    token = uc.hook_add(UC_HOOK_CODE, hook)
+    try:
+        uc.emu_start(TURN_ADJUST_VA, SENTINEL, count=20000)
+    finally:
+        uc.hook_del(token)
+
+    return {
+        "case": "post_code8_single_player_turn_adjust",
+        "build_sha256": digest,
+        "terminal": terminal,
+        "before_adjust": before_adjust,
+        "after_adjust": {
+            "counter_52": ru16(uc, PLAYER + 0x52),
+            "counter_56": ru16(uc, PLAYER + 0x56),
+        },
+        "reached_turn_adjust_exit": reached_exit,
+    }
+
 def dump_static_tables(exe: Path) -> dict:
     uc, _ = build_uc(exe)
 
@@ -294,10 +351,18 @@ def main() -> int:
     assert real_putter["trace"][4]["counter_56"] == 2
     assert real_putter["trace"][4]["transition"] == "hole"
 
+    post_hole_adjust = post_hole_turn_adjust_case(args.exe)
+    assert post_hole_adjust["before_adjust"]["counter_52"] == 2
+    assert post_hole_adjust["before_adjust"]["counter_56"] == 2
+    assert post_hole_adjust["reached_turn_adjust_exit"] is True
+    assert post_hole_adjust["after_adjust"]["counter_52"] == 1, post_hole_adjust
+    assert post_hole_adjust["after_adjust"]["counter_56"] == 1, post_hole_adjust
+
     report = {
         "reference": "Sensible Golf Windows v1.014",
         "continuous_cases": rows,
         "real_putter_to_cup": real_putter,
+        "post_hole_turn_adjust": post_hole_adjust,
         "static_tables": dump_static_tables(args.exe),
     }
 

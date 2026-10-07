@@ -48,6 +48,16 @@ void ClassicShotModel::set_surface_context(
     surface_ = context;
 }
 
+void ClassicShotModel::update_surface_context_for_tick(
+    const ClassicSurfaceContext& context) {
+    if (!active_) {
+        throw std::logic_error(
+            "tick surface context requires an active shot");
+    }
+    surface_ = context;
+    public_.surface_index = context.landing_code;
+}
+
 const ClassicSurfaceContext& ClassicShotModel::surface_context() const noexcept {
     return surface_;
 }

@@ -3,6 +3,7 @@ add_library(sensigolf_core
     src/classic_shot_model.cpp
     src/classic_course_resources.cpp
     src/classic_terrain.cpp
+    src/classic_hole_session.cpp
     src/recovered_flight.cpp
     src/recovered_ground.cpp
     src/recovered_prng.cpp
@@ -103,3 +104,10 @@ add_executable(sensigolf_classic_terrain_tests
 )
 target_link_libraries(sensigolf_classic_terrain_tests PRIVATE sensigolf_core)
 add_test(NAME sensigolf_classic_terrain_tests COMMAND sensigolf_classic_terrain_tests)
+
+
+add_executable(sensigolf_classic_hole_session_tests
+    tests/classic_hole_session_tests.cpp
+)
+target_link_libraries(sensigolf_classic_hole_session_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_classic_hole_session_tests COMMAND sensigolf_classic_hole_session_tests)

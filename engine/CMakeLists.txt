@@ -1,5 +1,6 @@
 add_library(sensigolf_core
     src/trace.cpp
+    src/classic_shot_model.cpp
     src/recovered_flight.cpp
     src/recovered_ground.cpp
     src/recovered_prng.cpp
@@ -74,3 +75,10 @@ add_executable(sensigolf_recovered_course_lookup_probe
     tools/recovered_course_lookup_probe.cpp
 )
 target_link_libraries(sensigolf_recovered_course_lookup_probe PRIVATE sensigolf_core)
+
+
+add_executable(sensigolf_classic_shot_model_tests
+    tests/classic_shot_model_tests.cpp
+)
+target_link_libraries(sensigolf_classic_shot_model_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_classic_shot_model_tests COMMAND sensigolf_classic_shot_model_tests)

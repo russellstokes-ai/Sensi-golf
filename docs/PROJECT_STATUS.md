@@ -8,8 +8,8 @@ This is the canonical current-status document for the Sensible Golf Enhanced rec
 
 - **Step 2 — original PC acquisition/inventory: COMPLETE**
 - **Gate 1 — original gameplay/physics recovery: COMPLETE / GO**
-- **Gate 2 — faithful desktop harness: NEXT**
-- Gate 1 is formally signed off. Gate 2 is now the active next phase; HD/mobile/remaster presentation work still follows the roadmap rather than bypassing the faithful desktop harness.
+- **Gate 2 — complete classic game/core integration: IN PROGRESS**
+- Gate 1 is formally signed off. Gate 2 now builds the complete platform-neutral classic game/session layer for the mobile product. Android is the first actual playable product target; desktop executables are optional developer/test utilities only.
 
 The project-killing feasibility question is now answered positively: the selected Windows v1.014 gameplay engine is recoverable and the portable core reproduces the original machine code at zero tolerance across the principal shot, terrain, hazard, putting and cup branches.
 
@@ -140,12 +140,22 @@ These items may continue after Gate 1 without threatening gameplay fidelity:
 - additional course/hole regression fixtures;
 - packaging the recovered timing/meter logic behind the future desktop/mobile input layer.
 
-## Next project phase after Gate 1
+## Active phase — Gate 2
 
-Gate 2 is a faithful desktop harness:
+Gate 2 is **Complete classic game/core integration**, not a desktop product.
 
-- compile the recovered classic implementation outside the legacy runtime;
-- load an original course through the importer;
-- play a complete hole/round with classic rules;
-- add deterministic input replay and save/load;
-- only then begin modern presentation work.
+The target architecture is:
+
+```
+parity-proven C++ classic simulation
+        ↓
+platform-neutral course / hole / session layer
+        ↓
+Android NDK/JNI host
+        ↓
+mobile input + rendering + audio
+```
+
+Current burst plan is recorded in `docs/GATE2_MOBILE_INTEGRATION.md`.
+
+A desktop executable may be used internally for tests/debugging, but it is not a product milestone.

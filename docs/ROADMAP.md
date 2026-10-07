@@ -39,45 +39,48 @@ Closure evidence:
 
 Exit: **achieved on 2026-10-07**.
 
-## Gate 2 — Faithful desktop harness
+## Gate 2 — Complete classic game/core integration
 
-**NEXT / ACTIVE PHASE**
-
-Deliverables:
-
-- recovered classic implementation compiled outside DOS/Windows legacy runtime;
-- one full original hole/course path through importer;
-- original-resolution reference renderer;
-- classic input/meter layer using the recovered timing semantics;
-- input replay and deterministic save/load tests.
-
-Exit: a full round can be played with classic behaviour.
-
-## Gate 3 — Modern renderer
+**ACTIVE PHASE**
 
 Deliverables:
 
-- resolution-independent coordinates;
-- widescreen composition;
-- 60/90/120 Hz presentation interpolation above the classic simulation cadence;
-- scalable asset pipeline;
-- original-vs-enhanced visual toggle.
+- platform-neutral `IClassicModel` backed only by Gate-1 recovered mechanics;
+- original course/resource importer and validated data model;
+- complete hole/session state machine;
+- classic Welly/input timing contract;
+- deterministic PRNG/session ownership;
+- input replay and versioned save/resume.
 
-Exit: modern visuals do not alter simulation results.
+Exit: a complete original hole can be played deterministically through the platform-neutral game layer.
 
-## Gate 4 — Android playable
+## Gate 3 — Android playable classic build
 
 Deliverables:
 
-- landscape mobile shell;
-- touch aiming and three-click controls;
+- Android NDK/JNI host for the C++ classic game layer;
+- landscape-first touch UI;
+- three-click Welly controls and aiming;
 - gamepad support;
-- saves/resume;
-- all classic gameplay paths.
+- original-course rendering;
+- saves/resume and deterministic replay;
+- complete round on real Android hardware.
 
-Exit: complete round playable on real Android hardware with parity intact.
+Exit: a complete classic round is playable on Android with Gate-1 parity intact.
 
-## Gate 5 — HD remaster
+## Gate 4 — Modern / HD presentation
+
+Deliverables:
+
+- resolution-independent widescreen composition;
+- 60/90/120 Hz rendering interpolation above the ~70.02 Hz classic simulation;
+- scalable/redrawn asset pipeline;
+- enhanced animation/effects/audio presentation;
+- original-vs-enhanced visual mode where practical.
+
+Exit: modern presentation does not alter simulation results.
+
+## Gate 5 — Full mobile remaster polish
 
 Deliverables:
 
@@ -86,7 +89,7 @@ Deliverables:
 - audio presentation upgrade;
 - polished mobile UX.
 
-## Gate 6 — Full enhanced edition
+## Gate 6 — Enhanced edition
 
 Potentially:
 

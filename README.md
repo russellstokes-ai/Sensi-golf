@@ -7,7 +7,7 @@ A preservation-first modern port/remaster investigation for **Sensible Golf**.
 
 ## Project rule
 
-Original gameplay behaviour is now recovered and formally signed off. Classic mode must remain locked to the Gate-1 parity evidence while development moves through the faithful desktop harness before modern presentation work.
+Original gameplay behaviour is now recovered and formally signed off. Classic mode must remain locked to the Gate-1 parity evidence. Development now moves through a platform-neutral classic game/session layer, with Android as the first actual playable product target.
 
 ## Current recovery state
 
@@ -50,7 +50,7 @@ Final consolidated sign-off:
 - course MAPI lookup cases: **81,920**, zero tolerance
 - durable evidence: `analysis/evidence/gate1_final_signoff.json`
 
-**Gate 2 — faithful desktop harness — is now next.**
+**Gate 2 — complete classic game/core integration — is now in progress. Android is the first playable product target.**
 
 ## Documentation
 
@@ -59,4 +59,5 @@ Final consolidated sign-off:
 - [Golden-master harness and evidence](docs/GOLDEN_MASTER_HARNESS.md)
 - [Recovered v1.014 physics](docs/RECOVERED_PHYSICS_1_014.md)
 - [Executable-analysis record](docs/STEP3_EXECUTABLE_ANALYSIS.md)
+- [Gate 2 mobile integration plan](docs/GATE2_MOBILE_INTEGRATION.md)
 - [Roadmap](docs/ROADMAP.md)

@@ -16,7 +16,9 @@ ClassicHoleSession::ClassicHoleSession(
     : course_(course),
       hole_metadata_(metadata) {
     if (hole_metadata_
-        && (hole_metadata_->hole_index >= 18 || hole_metadata_->par == 0)) {
+        && (hole_metadata_->hole_index >= 18
+            || hole_metadata_->par == 0
+            || hole_metadata_->resource_id >= 100)) {
         throw std::invalid_argument("classic hole metadata outside recovered range");
     }
     reset(start_x_raw, start_y_raw);
@@ -29,7 +31,9 @@ ClassicHoleSession::ClassicHoleSession(
     : course_(course),
       hole_metadata_(metadata) {
     if (hole_metadata_
-        && (hole_metadata_->hole_index >= 18 || hole_metadata_->par == 0)) {
+        && (hole_metadata_->hole_index >= 18
+            || hole_metadata_->par == 0
+            || hole_metadata_->resource_id >= 100)) {
         throw std::invalid_argument("classic hole metadata outside recovered range");
     }
     const auto start = course_.player_start(player_slot);

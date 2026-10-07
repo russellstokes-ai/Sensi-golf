@@ -1,3 +1,4 @@
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <stdexcept>
@@ -67,17 +68,38 @@ int main() {
     auto course = cup_course();
     ClassicRoundSession round;
 
+    std::array<std::uint8_t, kClassicRoundHoleCount> order{};
+    std::array<std::uint8_t, kClassicParTableSize> pars{};
+    for (std::size_t i = 0; i < order.size(); ++i) {
+        order[i] = static_cast<std::uint8_t>(i + 1u);
+        pars[i + 1u] = 4u;
+    }
+    ClassicHolePlan plan(order, pars);
+
     assert(round.state().current_hole_index == 0u);
     assert(!round.state().round_complete);
+    const auto first_request = round.current_hole_request(plan);
+    assert(first_request.has_value());
+    assert(first_request->round_index == 0u);
+    assert(first_request->resource_id == 1u);
+    assert(first_request->par == 4u);
+    assert(first_request->resources.mapm_map == "mapm01.map");
 
     for (std::uint16_t index = 0; index < 18u; ++index) {
+        const auto request = round.current_hole_request(plan);
+        assert(request.has_value());
+        assert(request->round_index == index);
+
         ClassicHoleSession hole(
             course,
             0,
             0,
-            ClassicHoleMetadata{index, 4});
+            ClassicHoleMetadata{
+                index,
+                request->par,
+                request->resource_id});
         score_one_putt_hole(hole);
-        round.accept_scored_hole(hole);
+        round.accept_scored_hole(hole, plan);
 
         assert(round.state().current_hole_index
             == static_cast<std::uint32_t>(index) + 1u);
@@ -92,6 +114,7 @@ int main() {
     assert(round.state().cumulative_par == 72u);
     assert(round.state().relative_to_par == 54);
     assert(round.state().round_complete);
+    assert(!round.current_hole_request(plan).has_value());
 
     // A completed round cannot accept another result.
     ClassicHoleSession extra(
@@ -126,6 +149,40 @@ int main() {
         duplicate_blocked = true;
     }
     assert(duplicate_blocked);
+
+    round.reset();
+
+    // Plan-aware acceptance rejects a correct round index with wrong original
+    // resource metadata instead of silently advancing to the wrong MAPM/MAPS.
+    ClassicHoleSession wrong_resource(
+        course,
+        0,
+        0,
+        ClassicHoleMetadata{0, 4, 2});
+    score_one_putt_hole(wrong_resource);
+    bool wrong_resource_blocked = false;
+    try {
+        round.accept_scored_hole(wrong_resource, plan);
+    } catch (const std::logic_error&) {
+        wrong_resource_blocked = true;
+    }
+    assert(wrong_resource_blocked);
+    assert(round.state().current_hole_index == 0u);
+
+    ClassicHoleSession wrong_par(
+        course,
+        0,
+        0,
+        ClassicHoleMetadata{0, 5, 1});
+    score_one_putt_hole(wrong_par);
+    bool wrong_par_blocked = false;
+    try {
+        round.accept_scored_hole(wrong_par, plan);
+    } catch (const std::logic_error&) {
+        wrong_par_blocked = true;
+    }
+    assert(wrong_par_blocked);
+    assert(round.state().current_hole_index == 0u);
 
     round.reset();
     assert(round.state().current_hole_index == 0u);

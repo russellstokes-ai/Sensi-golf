@@ -22,6 +22,18 @@ void ClassicRoundSession::reset() noexcept {
 
 void ClassicRoundSession::accept_scored_hole(
     const ClassicHoleSession& hole) {
+    accept_scored_hole_impl(hole, nullptr);
+}
+
+void ClassicRoundSession::accept_scored_hole(
+    const ClassicHoleSession& hole,
+    const ClassicHolePlan& plan) {
+    accept_scored_hole_impl(hole, &plan);
+}
+
+void ClassicRoundSession::accept_scored_hole_impl(
+    const ClassicHoleSession& hole,
+    const ClassicHolePlan* plan) {
     if (state_.round_complete) {
         throw std::logic_error("classic round is already complete");
     }
@@ -40,11 +52,25 @@ void ClassicRoundSession::accept_scored_hole(
         throw std::logic_error(
             "scored hole does not match current round hole");
     }
+
+    if (plan != nullptr) {
+        const auto expected = plan->hole(state_.current_hole_index);
+        if (metadata->par != expected.par) {
+            throw std::logic_error(
+                "scored hole par does not match imported original hole plan");
+        }
+        if (metadata->resource_id != 0u
+            && metadata->resource_id != expected.resource_id) {
+            throw std::logic_error(
+                "scored hole resource id does not match imported original hole plan");
+        }
+    }
+
     if (*next != state_.current_hole_index + 1u) {
         throw std::logic_error(
             "scored hole has inconsistent recovered next-hole state");
     }
-    if (hole.round_complete() != (*next == 18u)) {
+    if (hole.round_complete() != (*next == kClassicRoundHoleCount)) {
         throw std::logic_error(
             "scored hole has inconsistent recovered round-complete state");
     }
@@ -55,9 +81,6 @@ void ClassicRoundSession::accept_scored_hole(
             "scored hole has unexpected completion counter");
     }
 
-    // A ClassicHoleSession is reset for one physical hole. Aggregate its
-    // recovered score contribution into the cross-hole state using original
-    // 16-bit arithmetic.
     state_.total_strokes = static_cast<std::uint16_t>(
         state_.total_strokes + counters.player_56);
     state_.cumulative_par = static_cast<std::uint16_t>(
@@ -68,10 +91,17 @@ void ClassicRoundSession::accept_scored_hole(
     state_.holes_completed = static_cast<std::uint16_t>(
         state_.holes_completed + 1u);
 
-    // The physical hole session already executed the recovered 0x40935B
-    // ownership rule. Preserve that exact result at round scope.
     state_.current_hole_index = *next;
     state_.round_complete = hole.round_complete();
+}
+
+std::optional<ClassicHolePlanEntry>
+ClassicRoundSession::current_hole_request(
+    const ClassicHolePlan& plan) const {
+    if (state_.round_complete) {
+        return std::nullopt;
+    }
+    return plan.hole(state_.current_hole_index);
 }
 
 const ClassicRoundState& ClassicRoundSession::state() const noexcept {

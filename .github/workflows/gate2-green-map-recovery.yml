@@ -73,6 +73,66 @@ jobs:
           print(json.dumps(rows,indent=2))
           PY
 
+          python - "$ROOT/MAPM42.MAP" "$ROOT/MAPS42.MAP" "$ROOT/MAPM42.SPT" "$OUT/green-origin.json" <<'PY'
+          import json,struct,sys
+
+          main=open(sys.argv[1],"rb").read()
+          green=open(sys.argv[2],"rb").read()
+          spt=open(sys.argv[3],"rb").read()
+
+          width=struct.unpack(">H",main[0x54:0x56])[0]
+          height=struct.unpack(">H",main[0x56:0x58])[0]
+          markers=[]
+          off=0x60
+          for y in range(height):
+              for x in range(width):
+                  word=struct.unpack(">H",main[off:off+2])[0]
+                  off+=2
+                  # v1.014 0x409687 records MAPM entries whose first byte
+                  # has top bits 111, storing x<<4 / y<<3.
+                  first=(word>>8)&0xff
+                  if (first & 0xe0)==0xe0:
+                      markers.append({
+                          "tile_x":x,
+                          "tile_y":y,
+                          "world_x":x<<4,
+                          "world_y":y<<3,
+                          "word":word,
+                      })
+
+          assert markers, "no v1.014 green-origin markers found"
+          origin_x=markers[0]["world_x"]
+          origin_y=markers[0]["world_y"]
+          cup_x,cup_y=struct.unpack(">HH",spt[44:48])
+          local_cup_x=(cup_x-origin_x)*2
+          local_cup_y=(cup_y-origin_y)*2
+
+          gw=struct.unpack(">H",green[0x54:0x56])[0]
+          gh=struct.unpack(">H",green[0x56:0x58])[0]
+          def green_tile(x,y):
+              tx=x>>4; ty=y>>3
+              assert 0<=tx<gw and 0<=ty<gh,(x,y,tx,ty,gw,gh)
+              p=0x60+(ty*gw+tx)*2
+              return struct.unpack(">H",green[p:p+2])[0] & 0x3ff
+
+          report={
+              "markers":markers,
+              "origin_x":origin_x,
+              "origin_y":origin_y,
+              "cup_main":[cup_x,cup_y],
+              "cup_green_raw_integer":[local_cup_x,local_cup_y],
+              "maps_dimensions":[gw,gh],
+              "cup_green_tile_ref":green_tile(local_cup_x,local_cup_y),
+              "single_player_enter_bounds_main":[
+                  origin_x+8,origin_x+0x70,
+                  origin_y+8,origin_y+0x54
+              ],
+              "single_player_stay_bounds_green":[16,226,16,170],
+          }
+          open(sys.argv[4],"w").write(json.dumps(report,indent=2)+"\n")
+          print(json.dumps(report,indent=2))
+          PY
+
           python tools/pe_va_xrefs.py "$WIN_EXE" \
             --va 0x40AB1B --va 0x40AB97 --va 0x40C33C --va 0x40C3FE --va 0x40C40D \
             --radius 160 -o "$OUT/green-transition-xrefs.json"

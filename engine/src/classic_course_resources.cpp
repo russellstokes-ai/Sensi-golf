@@ -160,6 +160,21 @@ ResolvedCourseSurface ClassicCourseResources::resolve_raw_position(
     return resolve_integer_position(ix, iy);
 }
 
+ClassicCoursePoint ClassicCourseResources::player_start(
+    std::size_t player_slot) const {
+    if (player_slot >= 4) {
+        throw std::out_of_range(
+            "player SPT start slot outside recovered 0..3 range");
+    }
+    const auto row = spt_record(player_slot);
+    return ClassicCoursePoint{row.words[2], row.words[3]};
+}
+
+ClassicCoursePoint ClassicCourseResources::hole_position() const {
+    const auto row = spt_record(4);
+    return ClassicCoursePoint{row.words[2], row.words[3]};
+}
+
 RawSptRecord ClassicCourseResources::spt_record(std::size_t index) const {
     if (index >= kSptRecordCount) {
         throw std::out_of_range("SPT record outside recovered five-record file");

@@ -81,6 +81,16 @@ int main() {
     assert(spt.words[0] == 300);
     assert(spt.words[4] == 304);
 
+    const auto start = course.player_start(0);
+    assert(start.x == 2);
+    assert(start.y == 3);
+    assert(start.x_raw() == (2 << 16));
+    assert(start.y_raw() == (3 << 16));
+
+    const auto cup = course.hole_position();
+    assert(cup.x == 402);
+    assert(cup.y == 403);
+
     bool threw = false;
     try {
         (void)course.map_tile(2, 0);

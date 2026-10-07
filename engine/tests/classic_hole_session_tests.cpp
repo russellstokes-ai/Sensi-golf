@@ -56,7 +56,11 @@ void run_active(ClassicHoleSession& session, int max_ticks = 1024) {
 int main() {
     // Fairway shot returns to ReadyForShot and counts exactly one stroke.
     auto fairway = uniform_course(1);
-    ClassicHoleSession session(fairway, 0, 0);
+    ClassicHoleSession session(fairway, 0);
+    assert(session.ball_x_raw() == 0);
+    assert(session.ball_y_raw() == 0);
+    assert(session.hole_position().x == 0);
+    assert(session.hole_position().y == 0);
     ClassicShotRequest drive{};
     drive.club_index = 0;
     drive.power_tick = 105;

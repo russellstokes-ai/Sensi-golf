@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 
@@ -30,6 +31,10 @@ public:
         std::int32_t start_x_raw,
         std::int32_t start_y_raw);
 
+    ClassicHoleSession(
+        const ClassicCourseResources& course,
+        std::size_t player_slot);
+
     void reset(
         std::int32_t start_x_raw,
         std::int32_t start_y_raw);
@@ -44,6 +49,7 @@ public:
     const BallState& ball_state() const noexcept;
 
     ResolvedCourseSurface current_surface() const;
+    ClassicCoursePoint hole_position() const;
     std::optional<std::uint16_t> unsupported_descriptor() const noexcept;
 
 private:

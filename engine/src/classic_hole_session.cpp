@@ -13,6 +13,14 @@ ClassicHoleSession::ClassicHoleSession(
     reset(start_x_raw, start_y_raw);
 }
 
+ClassicHoleSession::ClassicHoleSession(
+    const ClassicCourseResources& course,
+    std::size_t player_slot)
+    : course_(course) {
+    const auto start = course_.player_start(player_slot);
+    reset(start.x_raw(), start.y_raw());
+}
+
 void ClassicHoleSession::reset(
     std::int32_t start_x_raw,
     std::int32_t start_y_raw) {
@@ -157,6 +165,10 @@ ResolvedCourseSurface ClassicHoleSession::current_surface() const {
             static_cast<std::int32_t>(state.y_raw));
     }
     return course_.resolve_raw_position(ball_x_raw_, ball_y_raw_);
+}
+
+ClassicCoursePoint ClassicHoleSession::hole_position() const {
+    return course_.hole_position();
 }
 
 std::optional<std::uint16_t>

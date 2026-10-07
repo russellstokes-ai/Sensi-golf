@@ -15,6 +15,21 @@ struct RawSptRecord {
     std::array<std::uint16_t, 5> words{};
 };
 
+struct ClassicCoursePoint {
+    std::uint16_t x = 0;
+    std::uint16_t y = 0;
+
+    std::int32_t x_raw() const noexcept {
+        return static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(x) << 16);
+    }
+
+    std::int32_t y_raw() const noexcept {
+        return static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(y) << 16);
+    }
+};
+
 struct ResolvedCourseSurface {
     std::uint16_t descriptor_index = 0;
     std::uint16_t landing_code = 0;
@@ -69,7 +84,13 @@ public:
         std::int32_t x_raw,
         std::int32_t y_raw) const;
 
-    // SPT semantics stay deliberately raw until separately evidenced.
+    // Recovered original hole setup semantics:
+    // records 0..3 words 2/3 are player tee/start coordinates;
+    // record 4 words 2/3 are the cup/hole coordinates.
+    ClassicCoursePoint player_start(std::size_t player_slot) const;
+    ClassicCoursePoint hole_position() const;
+
+    // Other SPT words remain deliberately raw until separately evidenced.
     RawSptRecord spt_record(std::size_t index) const;
 
 private:

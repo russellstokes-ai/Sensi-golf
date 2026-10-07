@@ -38,6 +38,9 @@ int main(int argc, char** argv) {
             read_file(argv[4]));
 
         const auto top_left = course.lookup(0, 0, 0, 0);
+        const auto tee0 = course.player_start(0);
+        const auto hole = course.hole_position();
+
         std::cout
             << "{\"width\":" << course.map_width()
             << ",\"height\":" << course.map_height()
@@ -47,6 +50,10 @@ int main(int argc, char** argv) {
             << ",\"top_left_slope_direction\":" << top_left.slope_direction
             << ",\"top_left_slope_magnitude\":" << top_left.slope_magnitude
             << ",\"spt_records\":5"
+            << ",\"tee0_x\":" << tee0.x
+            << ",\"tee0_y\":" << tee0.y
+            << ",\"hole_x\":" << hole.x
+            << ",\"hole_y\":" << hole.y
             << "}\n";
         return 0;
     } catch (const std::exception& e) {

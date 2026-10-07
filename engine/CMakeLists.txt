@@ -7,6 +7,7 @@ add_library(sensigolf_core
     src/recovered_flight.cpp
     src/recovered_ground.cpp
     src/recovered_putter_terminal.cpp
+    src/recovered_hazard_recovery.cpp
     src/recovered_prng.cpp
     src/recovered_interactions.cpp
     src/recovered_course_lookup.cpp
@@ -124,3 +125,15 @@ add_executable(sensigolf_recovered_putter_terminal_probe
     tools/recovered_putter_terminal_probe.cpp
 )
 target_link_libraries(sensigolf_recovered_putter_terminal_probe PRIVATE sensigolf_core)
+
+
+add_executable(sensigolf_recovered_hazard_recovery_tests
+    tests/recovered_hazard_recovery_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_hazard_recovery_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_hazard_recovery_tests COMMAND sensigolf_recovered_hazard_recovery_tests)
+
+add_executable(sensigolf_recovered_hazard_recovery_probe
+    tools/recovered_hazard_recovery_probe.cpp
+)
+target_link_libraries(sensigolf_recovered_hazard_recovery_probe PRIVATE sensigolf_core)

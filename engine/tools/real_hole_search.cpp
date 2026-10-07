@@ -243,11 +243,88 @@ int main(int argc, char** argv) {
 
         const auto tee = course.player_start(0);
         const auto cup = course.hole_position();
+
+        struct SurfaceNearCup {
+            std::uint16_t code = 0;
+            int x = 0;
+            int y = 0;
+            std::uint64_t squared = std::numeric_limits<std::uint64_t>::max();
+            bool found = false;
+        };
+        std::array<SurfaceNearCup, 4> targets{{
+            {1u, 0, 0, std::numeric_limits<std::uint64_t>::max(), false},
+            {8u, 0, 0, std::numeric_limits<std::uint64_t>::max(), false},
+            {9u, 0, 0, std::numeric_limits<std::uint64_t>::max(), false},
+            {10u, 0, 0, std::numeric_limits<std::uint64_t>::max(), false},
+        }};
+
+        for (int y = static_cast<int>(cup.y) - 128;
+             y <= static_cast<int>(cup.y) + 128;
+             ++y) {
+            for (int x = static_cast<int>(cup.x) - 128;
+                 x <= static_cast<int>(cup.x) + 128;
+                 ++x) {
+                if (x < std::numeric_limits<std::int16_t>::min()
+                    || x > std::numeric_limits<std::int16_t>::max()
+                    || y < std::numeric_limits<std::int16_t>::min()
+                    || y > std::numeric_limits<std::int16_t>::max()) {
+                    continue;
+                }
+                try {
+                    const auto surface = course.resolve_integer_position(
+                        static_cast<std::int16_t>(x),
+                        static_cast<std::int16_t>(y));
+                    for (auto& target : targets) {
+                        if (surface.landing_code != target.code) continue;
+                        const auto dx = static_cast<std::int64_t>(x)
+                            - static_cast<std::int64_t>(cup.x);
+                        const auto dy = static_cast<std::int64_t>(y)
+                            - static_cast<std::int64_t>(cup.y);
+                        const auto squared = static_cast<std::uint64_t>(
+                            dx * dx + dy * dy);
+                        if (!target.found || squared < target.squared) {
+                            target.found = true;
+                            target.x = x;
+                            target.y = y;
+                            target.squared = squared;
+                        }
+                    }
+                } catch (...) {
+                    // Outside the finite MAPM-backed course region.
+                }
+            }
+        }
+
         std::cout
             << "START tee=(" << tee.x << "," << tee.y << ")"
             << " cup=(" << cup.x << "," << cup.y << ")"
             << " distance=" << session->distance_to_hole()
             << "\n";
+        try {
+            const auto cup_surface = course.resolve_integer_position(
+                static_cast<std::int16_t>(cup.x),
+                static_cast<std::int16_t>(cup.y));
+            std::cout
+                << "CUP_SURFACE code=" << cup_surface.landing_code
+                << " descriptor=" << cup_surface.descriptor_index
+                << "\n";
+        } catch (const std::exception& e) {
+            std::cout << "CUP_SURFACE error=" << e.what() << "\n";
+        }
+        for (const auto& target : targets) {
+            if (target.found) {
+                std::cout
+                    << "NEAREST_SURFACE code=" << target.code
+                    << " pos=(" << target.x << "," << target.y << ")"
+                    << " squared=" << target.squared
+                    << "\n";
+            } else {
+                std::cout
+                    << "NEAREST_SURFACE code=" << target.code
+                    << " not_found"
+                    << "\n";
+            }
+        }
 
         constexpr int kMaxShots = 12;
         for (int stroke = 1; stroke <= kMaxShots; ++stroke) {

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "project": "Sensible Golf Enhanced",
+  "date": "2026-10-07",
+  "gate": 2,
+  "burst": 3,
+  "scope": "platform-neutral classic game-session orchestration",
+  "base_next_hole_merge": "da6cae84ab86e24d9dd3f96a160039e959c989df",
+  "implementation": [
+    "ClassicGameSession owns round and active-hole lifecycle",
+    "platform supplies requested original resources but does not own scoring or progression",
+    "resource id is validated before a hole can be activated",
+    "active hole metadata is derived from the authoritative ClassicHolePlan",
+    "scored-hole commit advances the authoritative ClassicRoundSession",
+    "old hole resources are released before the next resource request is exposed",
+    "complete 18-hole synthetic controller lifecycle is covered"
+  ],
+  "real_bootstrap": {
+    "order_slot": 0,
+    "resource_id": 42,
+    "par": 4,
+    "tee": [
+      247,
+      726
+    ],
+    "cup": [
+      414,
+      85
+    ],
+    "state": "ReadyForShot",
+    "filenames": [
+      "mapm42.map",
+      "maps42.map",
+      "mapm42.spt"
+    ],
+    "workflow_run": 37687404791,
+    "result": "PASS"
+  },
+  "verification": {
+    "controller_ci": 37687404758,
+    "full_matrix_checkpoint": "710d060bf315979749bd05b4a73eec81211f5e58",
+    "full_matrix_runs": [
+      37687204999,
+      37687205160,
+      37687205152,
+      37687205122,
+      37687205028,
+      37687205104,
+      37687205094,
+      37687205132,
+      37687205064,
+      37687205009,
+      37687205029,
+      37687205144,
+      37687205043,
+      37687205083,
+      37687205084
+    ],
+    "result": "PASS"
+  },
+  "next_blocker": "deterministic real-course tee-to-cup replay through the controller"
+}

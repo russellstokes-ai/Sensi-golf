@@ -1,0 +1,82 @@
+name: Gate 2 Real Hole Shot Search
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate2-real-hole-shot-search.yml"
+      - "engine/tools/real_hole_search.cpp"
+      - "engine/CMakeLists.txt"
+      - "engine/src/**"
+      - "engine/include/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Build recovered core and search tool
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+          ctest --test-dir build --output-on-failure
+      - name: Search real original resource 42
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="analysis/private/step2/extracted/epf"
+          OUT="analysis/private/gate2-real-hole-shot-search"
+          mkdir -p "$OUT"
+
+          ./build/engine/sensigolf_real_hole_search \
+            "$ROOT/MAPM42.MAP" "$ROOT/MAPM42.SPT" \
+            "$ROOT/MAPI01.RAW" "$ROOT/MAPI02.RAW" \
+            | tee "$OUT/search.txt"
+
+          python - "$OUT/search.txt" "$OUT/result.json" <<'PY'
+          import json, re, sys
+          lines=open(sys.argv[1]).read().splitlines()
+          shots=[]
+          for line in lines:
+              m=re.match(
+                  r"SHOT (\d+) club=(\d+) power=(\d+) aim=(\d+) "
+                  r"from_distance=(\d+) to_distance=(\d+) "
+                  r"pos=\((-?\d+),(-?\d+)\) phase=(\d+)",
+                  line)
+              if m:
+                  shots.append({
+                      "stroke":int(m.group(1)),
+                      "club":int(m.group(2)),
+                      "power":int(m.group(3)),
+                      "aim":int(m.group(4)),
+                      "from_distance":int(m.group(5)),
+                      "to_distance":int(m.group(6)),
+                      "x":int(m.group(7)),
+                      "y":int(m.group(8)),
+                      "phase":int(m.group(9)),
+                  })
+          found=any(line.startswith("FOUND ") for line in lines)
+          result={"found":found,"shots":shots,"raw":lines}
+          open(sys.argv[2],"w").write(json.dumps(result,indent=2)+"\n")
+          print(json.dumps(result,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate2-real-hole-shot-search
+          path: analysis/private/gate2-real-hole-shot-search/
+          retention-days: 30

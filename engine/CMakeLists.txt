@@ -160,3 +160,9 @@ add_executable(sensigolf_classic_hole_plan_tests
 )
 target_link_libraries(sensigolf_classic_hole_plan_tests PRIVATE sensigolf_core)
 add_test(NAME sensigolf_classic_hole_plan_tests COMMAND sensigolf_classic_hole_plan_tests)
+
+
+add_executable(sensigolf_classic_hole_plan_probe
+    tools/classic_hole_plan_probe.cpp
+)
+target_link_libraries(sensigolf_classic_hole_plan_probe PRIVATE sensigolf_core)

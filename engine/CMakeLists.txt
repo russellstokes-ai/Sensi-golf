@@ -1,6 +1,7 @@
 add_library(sensigolf_core
     src/trace.cpp
     src/classic_shot_model.cpp
+    src/classic_course_resources.cpp
     src/recovered_flight.cpp
     src/recovered_ground.cpp
     src/recovered_prng.cpp
@@ -82,3 +83,15 @@ add_executable(sensigolf_classic_shot_model_tests
 )
 target_link_libraries(sensigolf_classic_shot_model_tests PRIVATE sensigolf_core)
 add_test(NAME sensigolf_classic_shot_model_tests COMMAND sensigolf_classic_shot_model_tests)
+
+
+add_executable(sensigolf_classic_course_resources_tests
+    tests/classic_course_resources_tests.cpp
+)
+target_link_libraries(sensigolf_classic_course_resources_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_classic_course_resources_tests COMMAND sensigolf_classic_course_resources_tests)
+
+add_executable(sensigolf_classic_course_probe
+    tools/classic_course_probe.cpp
+)
+target_link_libraries(sensigolf_classic_course_probe PRIVATE sensigolf_core)

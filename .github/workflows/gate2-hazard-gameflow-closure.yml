@@ -59,10 +59,16 @@ jobs:
             --start-va 0x40D330 --end-va 0x40D430 \
             -o "$OUT/terminal-ui-setup.json"
 
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40A1F0 --end-va 0x40A250 \
+            -o "$OUT/terminal-helper-40a22b.json"
+
           python - "$WIN_EXE" "$OUT/initial-terminal-state.json" <<'PY'
           import json,sys
-          from tools.original_v1014_oracle import build_uc,ru16
-          uc,digest=build_uc(__import__('pathlib').Path(sys.argv[1]))
+          from pathlib import Path
+          sys.path.insert(0,'tools')
+          from original_v1014_oracle import build_uc,ru16
+          uc,digest=build_uc(Path(sys.argv[1]))
           report={
               'build_sha256':digest,
               'terminal_timer_41f881':ru16(uc,0x41F881),

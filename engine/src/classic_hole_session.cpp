@@ -3,6 +3,7 @@
 #include <limits>
 #include <stdexcept>
 
+#include "sensigolf/recovered_distance.hpp"
 #include "sensigolf/recovered_hazard_recovery.hpp"
 
 namespace sensigolf {
@@ -10,15 +11,27 @@ namespace sensigolf {
 ClassicHoleSession::ClassicHoleSession(
     const ClassicCourseResources& course,
     std::int32_t start_x_raw,
-    std::int32_t start_y_raw)
-    : course_(course) {
+    std::int32_t start_y_raw,
+    std::optional<ClassicHoleMetadata> metadata)
+    : course_(course),
+      hole_metadata_(metadata) {
+    if (hole_metadata_
+        && (hole_metadata_->hole_index >= 18 || hole_metadata_->par == 0)) {
+        throw std::invalid_argument("classic hole metadata outside recovered range");
+    }
     reset(start_x_raw, start_y_raw);
 }
 
 ClassicHoleSession::ClassicHoleSession(
     const ClassicCourseResources& course,
-    std::size_t player_slot)
-    : course_(course) {
+    std::size_t player_slot,
+    std::optional<ClassicHoleMetadata> metadata)
+    : course_(course),
+      hole_metadata_(metadata) {
+    if (hole_metadata_
+        && (hole_metadata_->hole_index >= 18 || hole_metadata_->par == 0)) {
+        throw std::invalid_argument("classic hole metadata outside recovered range");
+    }
     const auto start = course_.player_start(player_slot);
     reset(start.x_raw(), start.y_raw());
 }
@@ -37,6 +50,8 @@ void ClassicHoleSession::reset(
     safe_anchor_valid_ = false;
     hazard_pause_remaining_ = 0;
     recovered_counters_ = {};
+    next_hole_index_.reset();
+    round_complete_ = false;
     unsupported_descriptor_.reset();
 }
 
@@ -106,7 +121,52 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
     unsupported_descriptor_.reset();
 }
 
+void ClassicHoleSession::complete_scored_putter_hole() {
+    if (!hole_metadata_) {
+        return;
+    }
+
+    // Original single-player flow corrects the transient code-8 putter
+    // terminal increment before the zero-distance scored-hole update.
+    recovered_counters_.player_52 = static_cast<std::uint16_t>(
+        recovered_counters_.player_52 - 1u);
+    recovered_counters_.player_56 = static_cast<std::uint16_t>(
+        recovered_counters_.player_56 - 1u);
+
+    recovered_counters_.player_58 = static_cast<std::uint16_t>(
+        recovered_counters_.player_58 + hole_metadata_->par);
+
+    const auto relative_raw = static_cast<std::uint16_t>(
+        recovered_counters_.player_58 - recovered_counters_.player_56);
+    recovered_counters_.player_48 =
+        (relative_raw & 0x8000u)
+        ? static_cast<std::int16_t>(
+            static_cast<std::int32_t>(relative_raw) - 0x10000)
+        : static_cast<std::int16_t>(relative_raw);
+
+    recovered_counters_.player_70 = static_cast<std::uint16_t>(
+        recovered_counters_.player_70 + 1u);
+
+    const auto next = static_cast<std::uint16_t>(
+        hole_metadata_->hole_index + 1u);
+    next_hole_index_ = next;
+    round_complete_ = next == 18u;
+    phase_ = HoleSessionPhase::HoleScored;
+}
+
 void ClassicHoleSession::step() {
+    if (phase_ == HoleSessionPhase::CupTerminal) {
+        // v1.014 scores the hole in the later zero-distance pre-update branch,
+        // not in the landing-code-8 terminal itself. The full single-player
+        // counter adjustment is currently proven for the putter path.
+        if (active_club_ == 12
+            && hole_metadata_
+            && distance_to_hole() == 0) {
+            complete_scored_putter_hole();
+        }
+        return;
+    }
+
     if (phase_ == HoleSessionPhase::HazardStopped) {
         if (hazard_pause_remaining_ > 0) {
             --hazard_pause_remaining_;
@@ -265,6 +325,29 @@ std::uint16_t ClassicHoleSession::hazard_pause_remaining() const noexcept {
 const ClassicRecoveredCounters&
 ClassicHoleSession::recovered_counters() const noexcept {
     return recovered_counters_;
+}
+
+std::uint32_t ClassicHoleSession::distance_to_hole() const noexcept {
+    const auto hole = course_.hole_position();
+    // The platform-neutral session keeps authoritative positions in course
+    // coordinate space, so it uses the non-green-coordinate form of the
+    // recovered helper. Presentation may use a separate green camera space.
+    return recovered::distance_to_hole(
+        ball_x_raw_, ball_y_raw_, hole.x, hole.y, false);
+}
+
+std::optional<ClassicHoleMetadata>
+ClassicHoleSession::hole_metadata() const noexcept {
+    return hole_metadata_;
+}
+
+std::optional<std::uint16_t>
+ClassicHoleSession::next_hole_index() const noexcept {
+    return next_hole_index_;
+}
+
+bool ClassicHoleSession::round_complete() const noexcept {
+    return round_complete_;
 }
 
 } // namespace sensigolf

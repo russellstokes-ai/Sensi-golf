@@ -21,10 +21,17 @@ enum class HoleSessionPhase : std::uint8_t {
 };
 
 struct ClassicRecoveredCounters {
-    // Original v1.014 player fields. Human-readable semantic names remain
-    // intentionally deferred until the lifecycle/score-transfer work closes.
-    std::uint16_t player_52 = 0;
-    std::uint16_t player_56 = 0;
+    // Original v1.014 player fields with their now-proven single-player roles.
+    std::uint16_t player_52 = 0; // current-hole stroke counter
+    std::uint16_t player_56 = 0; // cumulative stroke total
+    std::uint16_t player_58 = 0; // cumulative par
+    std::int16_t player_48 = 0;  // cumulative par - cumulative strokes
+    std::uint16_t player_70 = 0; // completed-hole counter
+};
+
+struct ClassicHoleMetadata {
+    std::uint16_t hole_index = 0; // original zero-based 0..17 index
+    std::uint16_t par = 0;
 };
 
 struct ClassicShotRequest {
@@ -39,11 +46,13 @@ public:
     ClassicHoleSession(
         const ClassicCourseResources& course,
         std::int32_t start_x_raw,
-        std::int32_t start_y_raw);
+        std::int32_t start_y_raw,
+        std::optional<ClassicHoleMetadata> metadata = std::nullopt);
 
     ClassicHoleSession(
         const ClassicCourseResources& course,
-        std::size_t player_slot);
+        std::size_t player_slot,
+        std::optional<ClassicHoleMetadata> metadata = std::nullopt);
 
     void reset(
         std::int32_t start_x_raw,
@@ -63,12 +72,17 @@ public:
     std::optional<std::uint16_t> unsupported_descriptor() const noexcept;
     std::uint16_t hazard_pause_remaining() const noexcept;
     const ClassicRecoveredCounters& recovered_counters() const noexcept;
+    std::uint32_t distance_to_hole() const noexcept;
+    std::optional<ClassicHoleMetadata> hole_metadata() const noexcept;
+    std::optional<std::uint16_t> next_hole_index() const noexcept;
+    bool round_complete() const noexcept;
 
 private:
     bool surface_supported_for_active_shot(
         const ResolvedCourseSurface& surface) const noexcept;
     ClassicSurfaceContext to_context(
         const ResolvedCourseSurface& surface) const noexcept;
+    void complete_scored_putter_hole();
 
     const ClassicCourseResources& course_;
     ClassicShotModel shot_;
@@ -82,6 +96,9 @@ private:
     bool safe_anchor_valid_ = false;
     std::uint16_t hazard_pause_remaining_ = 0;
     ClassicRecoveredCounters recovered_counters_{};
+    std::optional<ClassicHoleMetadata> hole_metadata_{};
+    std::optional<std::uint16_t> next_hole_index_{};
+    bool round_complete_ = false;
     std::optional<std::uint16_t> unsupported_descriptor_{};
 };
 

@@ -15,7 +15,10 @@ void be16(std::vector<std::uint8_t>& data, std::size_t off, std::uint16_t value)
     data[off + 1] = static_cast<std::uint8_t>(value & 0xFF);
 }
 
-ClassicCourseResources uniform_course(std::uint16_t descriptor_index) {
+ClassicCourseResources uniform_course(
+    std::uint16_t descriptor_index,
+    std::uint16_t hole_x = 0,
+    std::uint16_t hole_y = 0) {
     constexpr std::uint16_t width = 4;
     constexpr std::uint16_t height = 128;
 
@@ -33,6 +36,10 @@ ClassicCourseResources uniform_course(std::uint16_t descriptor_index) {
     }
 
     std::vector<std::uint8_t> spt(50, 0);
+    // SPT record 4, words 2/3 are the recovered cup coordinates.
+    be16(spt, 44, hole_x);
+    be16(spt, 46, hole_y);
+
     std::vector<std::uint8_t> desc(8, 0);
     std::vector<std::uint8_t> sel(8, 0);
     be16(desc, 0, descriptor_index);
@@ -144,6 +151,49 @@ int main() {
     assert(cup_putt.ball_state().holed);
     assert(cup_putt.recovered_counters().player_52 == 2);
     assert(cup_putt.recovered_counters().player_56 == 2);
+
+    // With recovered hole metadata, the next session tick models the original
+    // zero-distance scored-hole branch and its single-player turn adjustment.
+    ClassicHoleSession scored_putt(
+        cup, 0, 0, ClassicHoleMetadata{0, 4});
+    scored_putt.begin_shot(putter_request());
+    run_active(scored_putt);
+    assert(scored_putt.phase() == HoleSessionPhase::CupTerminal);
+    assert(scored_putt.distance_to_hole() == 0);
+    scored_putt.step();
+    assert(scored_putt.phase() == HoleSessionPhase::HoleScored);
+    assert(scored_putt.strokes() == 1);
+    assert(scored_putt.recovered_counters().player_52 == 1);
+    assert(scored_putt.recovered_counters().player_56 == 1);
+    assert(scored_putt.recovered_counters().player_58 == 4);
+    assert(scored_putt.recovered_counters().player_48 == 3);
+    assert(scored_putt.recovered_counters().player_70 == 1);
+    assert(scored_putt.next_hole_index().has_value());
+    assert(*scored_putt.next_hole_index() == 1);
+    assert(!scored_putt.round_complete());
+
+    // Landing code 8 alone must not be promoted to scored-hole state when the
+    // original recovered distance helper is non-zero.
+    auto distant_cup = uniform_course(7, 20, 20);
+    ClassicHoleSession distant_scored(
+        distant_cup, 0, 0, ClassicHoleMetadata{0, 4});
+    distant_scored.begin_shot(putter_request());
+    run_active(distant_scored);
+    assert(distant_scored.phase() == HoleSessionPhase::CupTerminal);
+    assert(distant_scored.distance_to_hole() > 0);
+    distant_scored.step();
+    assert(distant_scored.phase() == HoleSessionPhase::CupTerminal);
+
+    // Original zero-based hole index increments to 18 at end-of-round.
+    ClassicHoleSession last_hole(
+        cup, 0, 0, ClassicHoleMetadata{17, 4});
+    last_hole.begin_shot(putter_request());
+    run_active(last_hole);
+    last_hole.step();
+    assert(last_hole.phase() == HoleSessionPhase::HoleScored);
+    assert(last_hole.next_hole_index().has_value());
+    assert(*last_hole.next_hole_index() == 18);
+    assert(last_hole.round_complete());
 
     // GREEN H3/code 9 and GREEN H2/code 10 terminate through the original
     // event-11 path. They are known terminal outcomes but the subsequent

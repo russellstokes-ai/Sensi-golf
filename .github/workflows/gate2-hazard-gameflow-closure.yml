@@ -47,6 +47,14 @@ jobs:
             --offset 0x60 --offset 0x70 --radius 36 \
             -o "$OUT/player-fields.json"
 
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x41F883 --va 0x41D64B --va 0x40CF66 \
+            --radius 88 -o "$OUT/terminal-state-xrefs.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40CF60 --end-va 0x40D180 \
+            -o "$OUT/terminal-ui-tail.json"
+
           python - <<'PY'
           import json
           j=json.load(open('analysis/private/gate2-hazard-gameflow/gameflow-40ce09.json'))
@@ -55,6 +63,12 @@ jobs:
               print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
           print('\n=== callers ===')
           j=json.load(open('analysis/private/gate2-hazard-gameflow/callers.json'))
+          for x in j['xrefs']:
+              print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
+              for i in x['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          print('\n=== terminal state xrefs ===')
+          j=json.load(open('analysis/private/gate2-hazard-gameflow/terminal-state-xrefs.json'))
           for x in j['xrefs']:
               print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
               for i in x['instructions']:

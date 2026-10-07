@@ -2,6 +2,7 @@ add_library(sensigolf_core
     src/trace.cpp
     src/classic_shot_model.cpp
     src/classic_course_resources.cpp
+    src/classic_terrain.cpp
     src/recovered_flight.cpp
     src/recovered_ground.cpp
     src/recovered_prng.cpp

@@ -174,3 +174,9 @@ add_executable(sensigolf_classic_game_session_tests
 )
 target_link_libraries(sensigolf_classic_game_session_tests PRIVATE sensigolf_core)
 add_test(NAME sensigolf_classic_game_session_tests COMMAND sensigolf_classic_game_session_tests)
+
+
+add_executable(sensigolf_classic_game_session_probe
+    tools/classic_game_session_probe.cpp
+)
+target_link_libraries(sensigolf_classic_game_session_probe PRIVATE sensigolf_core)

@@ -15,7 +15,10 @@ void be16(std::vector<std::uint8_t>& data, std::size_t off, std::uint16_t value)
     data[off + 1] = static_cast<std::uint8_t>(value & 0xFF);
 }
 
-ClassicCourseResources uniform_course(std::uint16_t descriptor_index) {
+ClassicCourseResources uniform_course(
+    std::uint16_t descriptor_index,
+    std::uint16_t hole_x = 0,
+    std::uint16_t hole_y = 0) {
     constexpr std::uint16_t width = 4;
     constexpr std::uint16_t height = 128;
 
@@ -33,6 +36,9 @@ ClassicCourseResources uniform_course(std::uint16_t descriptor_index) {
     }
 
     std::vector<std::uint8_t> spt(50, 0);
+    // SPT record 4, words 2/3 are the recovered cup coordinates.
+    be16(spt, 44, hole_x);
+    be16(spt, 46, hole_y);
     std::vector<std::uint8_t> desc(8, 0);
     std::vector<std::uint8_t> sel(8, 0);
     be16(desc, 0, descriptor_index);
@@ -144,6 +150,46 @@ int main() {
     assert(cup_putt.ball_state().holed);
     assert(cup_putt.recovered_counters().player_52 == 2);
     assert(cup_putt.recovered_counters().player_56 == 2);
+
+    // The original scored-hole branch is a second transition, gated by the
+    // recovered distance helper reaching exactly zero. The single-player
+    // post-code8 adjustment removes the putter terminal's transient extra
+    // counter increment before the original score update.
+    assert(cup_putt.distance_to_hole(false) == 0u);
+    assert(cup_putt.scored_hole_ready(false));
+    cup_putt.activate_scored_hole(4, false);
+    assert(cup_putt.phase() == HoleSessionPhase::HoleScored);
+    assert(cup_putt.strokes() == 1u);
+    assert(cup_putt.recovered_counters().player_52 == 1u);
+    assert(cup_putt.recovered_counters().player_56 == 1u);
+    assert(cup_putt.recovered_counters().player_58 == 4u);
+    assert(cup_putt.recovered_counters().player_48 == 3);
+    assert(cup_putt.recovered_counters().player_70 == 1u);
+
+    bool rescore_blocked = false;
+    try {
+        cup_putt.activate_scored_hole(4, false);
+    } catch (const std::logic_error&) {
+        rescore_blocked = true;
+    }
+    assert(rescore_blocked);
+
+    // Code 8 alone is not sufficient: with the SPT cup elsewhere the session
+    // remains CupTerminal and the score transition is correctly rejected.
+    auto distant_cup = uniform_course(7, 10, 10);
+    ClassicHoleSession distant_putt(distant_cup, 0, 0);
+    distant_putt.begin_shot(putter_request());
+    run_active(distant_putt);
+    assert(distant_putt.phase() == HoleSessionPhase::CupTerminal);
+    assert(distant_putt.distance_to_hole(false) != 0u);
+    assert(!distant_putt.scored_hole_ready(false));
+    bool nonzero_score_blocked = false;
+    try {
+        distant_putt.activate_scored_hole(4, false);
+    } catch (const std::logic_error&) {
+        nonzero_score_blocked = true;
+    }
+    assert(nonzero_score_blocked);
 
     // GREEN H3/code 9 and GREEN H2/code 10 terminate through the original
     // event-11 path. They are known terminal outcomes but the subsequent

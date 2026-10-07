@@ -23,9 +23,9 @@ They must not independently calculate golf physics, terrain results, collision, 
 
 ## Current checkpoint
 
-Current merged integration checkpoint: `53c27378cd66c68c6037fbe228a169ab375d2f45`.
+Current merged integration checkpoint: `0e03b81a64a621ee82e68f18e729f9e0f4c90693`.
 
-Round-progression implementation was verified on `9aababcd85b4ca89c0d675351787de0dc7f66a1c` before merge.
+This includes the recovered scoring/round layer, hazard handoff, original next-hole resource selection and the platform-neutral `ClassicGameSession` controller.
 
 ### Burst 1 — platform-neutral shot-model bridge
 
@@ -91,7 +91,13 @@ Evidence:
 - recovered zero-based next-hole increment and 18-hole finish rule;
 - cross-hole `ClassicRoundSession` state;
 - stale/duplicate scored-hole rejection;
-- 18-hole synthetic round progression regression.
+- 18-hole synthetic round progression regression;
+- hazard recovery acknowledgement back to playable state;
+- original order-table-driven next-hole resource requests;
+- exact `mapmNN.map`, `mapsNN.map`, `mapmNN.spt` filename templates;
+- plan-aware par/resource validation;
+- `ClassicGameSession` round/hole orchestration;
+- real original resource-42 bootstrap through the controller.
 
 Key implementation checkpoints:
 
@@ -168,13 +174,19 @@ Durable record: `analysis/evidence/gate2_burst3_round_checkpoint.json`.
 
 #### Remaining Burst-3 work
 
-1. **Hazard gameflow closure:** finish the post-hazard terminal handoff, terminal-flag release, penalty/turn ownership and transition back to playable state.
-2. **Real next-hole setup:** connect the recovered next-hole index to original course/resource/setup selection and prove that handoff.
-3. **Remaining terminal continuations:** close unsupported/special green continuations and any non-putter scored-hole completion path required by the original.
-4. **Session PRNG ownership:** move the original seed/state ownership into the session where required for deterministic complete-hole replay.
-5. **Real-course end-to-end proof:** run one original hole from its real SPT tee, through real MAPI terrain and gameplay, into cup/scoring and the next-hole setup.
+1. **Remaining terminal continuations:** close unsupported/special-green continuations and any non-putter scored-hole completion path required by the original.
+2. **Session PRNG ownership:** move the original seed/state ownership into the session where required for deterministic complete-hole replay.
+3. **Real-course end-to-end proof:** complete resource 42 from its real SPT tee through recovered shots/cup/scoring, commit it through `ClassicGameSession`, and activate the original next request (resource 50).
 
-The current hazard-analysis workflow on `main` is already tracing item 1 through the post-hazard handoff, terminal flag release and presentation-timer source.
+Recent merged checkpoints:
+- `31c238565a8f6fa89f1d9fd82e6065e32e2ddcc5` — single-player hazard handoff;
+- `da6cae84ab86e24d9dd3f96a160039e959c989df` — original next-hole resource selection;
+- `0e03b81a64a621ee82e68f18e729f9e0f4c90693` — platform-neutral game-session controller.
+
+Real-resource evidence:
+- workflow `37686556999` proves original slot-0 resource transition 42 -> 50;
+- workflow `37687404791` proves resource 42/par 4 bootstraps through the controller at tee `(247,726)`, cup `(414,85)`, ready for input;
+- all controller/core and Gate-1 golden-master checks remained green.
 
 ### Burst 4 — save/replay contract
 

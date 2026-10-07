@@ -1,6 +1,8 @@
 # Recovered Physics — Windows v1.014
 
-Status: **substantial static recovery complete; runtime golden-master parity still required**
+Status: **principal gameplay mechanics recovered and runtime parity-proven**
+
+Canonical current snapshot: [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
 Reference executable:
 
@@ -13,7 +15,7 @@ All addresses below refer to that exact build.
 
 ## Ball state structure
 
-Embedded debug descriptors point directly at the live ball structure. Base for the first observed slot is `0x4287D6`; slots use a `0x2C` (44-byte) stride.
+The live ball record uses a `0x2C` / 44-byte stride.
 
 | Offset | Recovered field |
 |---:|---|
@@ -24,28 +26,24 @@ Embedded debug descriptors point directly at the live ball structure. Base for t
 | +0x10 | direction, dword |
 | +0x14 | height, dword |
 | +0x18 | distance to hole, dword |
-| +0x1C | pause, dword |
+| +0x1C | pause/timing field, dword |
 | +0x1E | terrain/surface id, word |
 | +0x26 | terrain/slope direction-like value |
 | +0x2A | terrain/slope magnitude-like word |
 
-`DWball x position` and `DWball y position` point at X+2/Y+2. Code also shifts X/Y by 16 before map/distance operations, establishing a 32-bit fixed-point-style representation with integer map coordinates in the high word.
+X/Y are 32-bit fixed-point-style values with integer map coordinates in the upper word.
 
-## Direction and exact trigonometry
+## Direction and trigonometry
 
 Direction is masked with `0xFFF`: **4096 angular units per circle**.
 
-The original lookup at `0x41A670` is signed Q14 sine. The orthogonal component indexes 1024 entries later.
-
-The table is reproduced exactly by:
+The original signed Q14 sine table is regenerated exactly by:
 
 ```
 trunc(sin(2*pi*i/4096) * 16384)
 ```
 
 with the negative peak clamped to `-16383`.
-
-A 5120-entry comparison against the executable produced **zero mismatches**.
 
 Horizontal integration:
 
@@ -56,11 +54,11 @@ X += dx
 Y += dy
 ```
 
-The new core's lookup header is mathematically generated from this formula, not copied from the original table bytes.
+The generated table matches the executable exactly.
 
 ## Club physics
 
-Routine around `0x40A1C1` indexes 13 records at `0x41F108`, each 12 bytes:
+The 13 records at `0x41F108` contain:
 
 ```
 raw vertical base : int32
@@ -68,7 +66,7 @@ raw horizontal base : int32
 power scale : int32
 ```
 
-Vertical and horizontal bases are divided by two when loaded.
+The first two values are halved when loaded.
 
 | Index | Loaded V | Loaded H | Power scale |
 |---:|---:|---:|---:|
@@ -86,43 +84,37 @@ Vertical and horizontal bases are divided by two when loaded.
 | 11 | 131,072 | 40,960 | 2,112 |
 | 12 | 0 | 8,192 | 1,536 |
 
-Index 12 follows a special ground path and has zero vertical base, supporting its identification as the putter. The binary-string search did **not** yield trustworthy names for indices 0–11; names remain unpromoted rather than guessed.
+Index 12 is the special putter path and is now runtime parity-tested.
 
-## Shot initialization
+## Welly-o-meter and launch power
 
-Around `0x40C84F`:
+The original raw captured-power range is **0..105**.
 
-```
-ball.direction = shot.direction
-power_component = club.power_scale * DropPower
-ball.V = club.loaded_vertical_base + power_component
-ball.H = club.loaded_horizontal_base + power_component
-```
+The rising meter counter caps at `0x69` / 105. The descending branch starts from 70 and applies the original conversion that also reaches 105 at the top.
 
-`DropPower` is an unsigned word at `0x41D59E`.
+The meter tail, dispatcher and logical timer producer are now traced through the Windows scheduler rather than treating `DropPower` as an unexplained external input.
 
-The exact meter-to-`DropPower` mapping remains open, so the portable kernel takes raw `DropPower` as an input.
-
-## Accuracy / draw-fade profiles
-
-The one-time direction rule around `0x40A96F` is:
+For the live normal-shot launch:
 
 ```
-ball.direction -= 2 * swing_adjuster
-ball.direction &= 0xFFF
+error = accuracy_tick - 63
+adjusted_power = max(0, captured_power - abs(error))
+direction = (player_direction - error * 16) & 0xFFF
+swing_adjuster = selected_profile[evenized(error)]
+
+V = club.vertical_base + club.power_scale * adjusted_power
+H = club.horizontal_base + club.power_scale * adjusted_power
 ```
 
-A further static pass recovered **11 profile tables** starting at `0x41F204`, each 28 bytes = 14 signed 16-bit slots. The launch path selects signed values around a zero centre using even accuracy-error offsets.
+## Accuracy / draw / fade
 
-Examples:
+The executable contains an exact 13x10 club/lie profile selector and 11 signed swing profiles.
 
-- profiles 0–2: `... -4, -4, -4, -2, 0, 2, 4, 4, 4 ...`
-- profiles 3–6: progressively gentler `... -4, -2, -1, -1, 0, 1, 1, 2, 4 ...`
-- later profiles introduce a wider zero/dead zone.
+The recovered portable core reproduces selected profile, accuracy bounds, power loss from off-centre timing, initial direction change and per-tick direction change from the swing adjuster.
 
-This is strong evidence for club/profile-specific accuracy sensitivity. The remaining task is to prove the exact profile-selection mapping and whether draw/fade also changes direction continuously during flight. The portable core therefore accepts a recovered `swing_adjuster` but does not invent a meter/profile selector or continuous curve.
+Straight, draw and fade launch-to-rest cases match original v1.014 machine code at zero tolerance.
 
-## Vertical flight
+## Airborne flight
 
 Normal airborne update:
 
@@ -133,27 +125,11 @@ if height < 0:
     height = 0
 ```
 
-Gravity: **8448 raw units per logical update**.
+Normal horizontal drag is `0xF00`.
 
-Logical tick frequency is still open.
+The original zero-crossing branch is preserved: if positive H crosses below zero during a drag step, v1.014 ends that tick before the direction/movement step.
 
-## Rolling drag and green mode
-
-```
-drag = 0xF00
-if green_mode:
-    drag = 0x780
-H = max(0, H - drag)
-```
-
-Green mode is explicit state at `0x41EE7A`. Entry/exit code compares integer ball X/Y against:
-
-- x1 `0x41E5EC`
-- x2 `0x41E5EE`
-- y1 `0x41E5F0`
-- y2 `0x41E5F2`
-
-## Bounce
+## Landing, bounce and roll
 
 Recovered ground-contact response:
 
@@ -165,41 +141,97 @@ if H <= 0:
     V = 0
 ```
 
-## Terrain / slope
+Launch-to-rest golden masters match the original complete state trajectory at zero tolerance.
 
-Terrain lookup writes direction/magnitude-like values at ball +0x26/+0x2A. Routine `0x40B965` projects them through the same Q14 trig system to X/Y adjustments used by movement under relevant conditions.
+## Ordinary surfaces and hazards
 
-The exact semantic labels and all surface IDs remain provisional until map/terrain records are decoded.
+Named ordinary descriptor classes parity-tested:
 
-## Distance to hole
+- skirt;
+- fairway;
+- semi rough;
+- rough;
+- very rough;
+- sand.
 
-Routine `0x40B998` derives integer X/Y, handles green coordinate scaling, computes Euclidean distance to the hole, multiplies by six and divides by ten, then stores the result at ball +0x18.
+Hazard/terminal paths parity-tested:
+
+- water;
+- NO GO;
+- out-of-bounds.
+
+## Putting and green slope
+
+Green rolling drag is `0x780`.
+
+Club 12 follows the special putter path. Flat-green putter movement and controlled slope projection are runtime parity-tested.
+
+The slope adjustment uses the recovered terrain direction/magnitude fields and the same Q14 projection machinery.
+
+## Cup / hole capture
+
+The original code-8 terminal hole branch has been isolated, implemented and zero-tolerance parity-tested.
+
+## Course collision lookup
+
+The authoritative course lookup is the MAPI path, not the `WOOD*.BIN` graphics resources.
+
+The portable MAPI lookup is exhaustively compared with original v1.014 machine code over **81,920 cases** with zero mismatches in the successful sign-off run.
+
+## Original PRNG and shot interactions
+
+The original game uses a recovered 16-bit ranged PRNG.
+
+Its output and seed evolution are parity-tested independently.
+
+Three shot-state mutation fragments are also parity-tested against original machine code:
+
+- code-9 low-height deflection;
+- near-hole lip deflection;
+- flag-coordinate deflection.
+
+These preserve the original bit-width, wrap and shift behaviour rather than replacing it with a modern random generator.
+
+The final Gate 1 integration fixture should join the real course lookup/activation path to one of these already-verified mutations.
+
+## Logical timing
+
+The Windows timing layer reads `GetTickCount` and converts elapsed milliseconds to 16.16 seconds:
+
+```
+elapsed_fixed = (elapsed_ms << 16) / 1000
+```
+
+The gameplay timer callback is registered with interval:
+
+```
+0x3A8 = 936
+```
+
+fixed units.
+
+That is approximately:
+
+```
+65536 / 936 = 70.02 callbacks/second
+```
+
+Classic simulation should preserve this logical cadence. Rendering refresh belongs above the simulation layer.
 
 ## Wind-labelled state
 
-Wind-named debug variables and a wind-vector calculation exist. Static xrefs show the computed wind X/Y result globals being written but not otherwise read in this Windows build.
+Wind-named debug globals and a wind-vector calculation exist, but the computed wind X/Y result is not consumed by the released Windows shot path found in the xref analysis.
 
-That is consistent with wind not being active in released gameplay. Classification: **vestigial/debug state unless runtime evidence proves otherwise**.
+Classification remains **vestigial/debug unless contradictory runtime evidence appears**.
 
-## Portable kernel boundary
+## Portable core boundary
 
-`recovered_math` now implements only statically evidenced mechanics:
+The recovered portable implementation now contains parity-evidenced mechanics for direction/trig, club launch data, power and accuracy launch logic, swing curvature, airborne flight, ground contact/bounce/roll, ordinary surfaces/hazards, putting/slope, cup capture, original PRNG, interaction state mutations and course MAPI collision lookup.
 
-- 4096-step direction wrapping;
-- exact clean-generated Q14 trig;
-- x86-compatible signed Q14 projection;
-- all 13 club parameter rows;
-- raw `DropPower` launch formula;
-- recovered swing-adjuster heading rule;
-- gravity/height integration;
-- normal/green rolling drag;
-- bounce transfer;
-- horizontal X/Y integration.
-
-It intentionally excludes unresolved terrain/hazard/cup rules, meter timing, profile selection, tick frequency, and possible continuous curvature.
+Gate 1 no longer depends on inventing a substitute golf model.
 
 ## Gate status
 
-The central feasibility question is now answered strongly in favour of **GO**: the original ball engine is compact deterministic fixed-point/integer logic and its major state/tables/update arithmetic are recoverable.
+**GO — ready for final sign-off.**
 
-Gate 1 remains open until at least one **runtime golden-master shot** from the original build is reproduced numerically from launch through final rest.
+Formal closure still requires one consolidated current-head suite and one retained end-to-end lookup/activation/interaction trace.

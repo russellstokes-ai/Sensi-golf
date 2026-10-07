@@ -1,100 +1,144 @@
 # Analysis Log
 
-Use this file for durable findings. Distinguish **observed**, **verified**, and **hypothesis**.
+This is a durable chronological record. For the latest status, use [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
 ## 2026-10-05 — Repository bootstrap
 
 ### Verified
-- Recovery is treated as a hard project gate before enhancement work.
-- EPF inventory parser and unit tests are present.
-- Public repository excludes original commercial binaries/assets by policy.
 
-## 2026-10-05 — Step 2 external PC inventory
+- Recovery is a hard gate before enhancement work.
+- Public repository excludes original commercial binaries/assets.
 
-### Verified from independent public metadata
-- Internet Archive item identifier: `msdos_Sensible_Golf_1994`.
-- Internet Archive emulator start path: `SensGolf/golfdos.exe`.
-- A TDC reference build exists as id `5865.0`.
-- Reference metadata established likely PC files and hashes before local ingestion.
+## 2026-10-05 — External reference preparation
 
-### Verified from original/manual descriptions
-- The released gameplay is described without active wind.
-- Ball lie can reduce shot distance.
-- 1 Wood maximum-power example is 240 yards.
-- Draw/fade is controlled by the lower Welly-o-meter timing zone.
-- Woods travel far/low; irons can provide higher trajectory.
-- Putting is surface-bound and green slope affects direction/speed.
+### Verified
 
-## 2026-10-06 — Original PC payload successfully ingested
+- Internet Archive preservation item identified.
+- TDC reference metadata recorded for independent comparison.
+- Original manual/behaviour notes captured as behavioural constraints rather than physics formulas.
 
-### Verified input identity
-The public preservation PC archive was fetched on a disposable GitHub Actions runner and analyzed without committing original payloads.
+## 2026-10-06 — Original PC payload ingested
 
-- `GOLFDOS.EXE`
-  - size 582895
-  - CRC-32 `45bcac33`
-  - SHA-256 `14c049b2456cda9bc7f54ce1c999fac815879775baf2807a76ef889559d0e1ed`
-- `GOLFWIN.EXE`
-  - size 239616
-  - CRC-32 `23c300b4`
-  - SHA-256 `3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8`
-  - internal strings identify version 1.014
-- `GOLF.EPF`
-  - size 833273
-  - CRC-32 `fbd76014`
-  - SHA-256 `58955f2ef89ad1757998b3ceee661a8ab7edcbd88e00bc1c6683009aa123ab1e`
-  - 277 entries, 250 compressed, all 277 extracted successfully.
+### Verified reference
 
-This resolves the earlier 582895-vs-582975 DOS executable discrepancy: the selected parity/reference package contains the 582895-byte DOS build.
+- Windows `GOLFWIN.EXE` v1.014 identified and fingerprinted.
+- DOS companion executable identified.
+- `GOLF.EPF` extracted successfully: **277/277 entries**.
+- Original commercial payload remains outside the public repository.
 
-## 2026-10-06 — Windows v1.014 physics recovery
+## 2026-10-06 — Static physics recovery
 
-Detailed record: `docs/RECOVERED_PHYSICS_1_014.md`.
+### Verified
 
-### Observed
-- Ball structure stride is `0x2C` bytes.
-- Ball X/Y are dword fixed-point-style coordinates; high words are used as integer map coordinates.
-- Ball fields recovered: X, Y, vertical force, horizontal force, direction, height, distance-to-hole, pause, plus terrain-tail fields.
-- Direction is masked to 12 bits: 4096 angular units/circle.
-- Horizontal projection uses signed Q14 trig.
-- Original sine lookup is regenerated exactly by `trunc(sin(2*pi*i/4096)*16384)` with minimum clamped to -16383; 5120 compared entries produced zero mismatches.
-- Club physics table contains 13 records, 12 bytes each, at Windows VA `0x41F108`.
-- Club record contains vertical base, horizontal base and power scale; first two are halved when loaded.
-- Club index 12 uses the special zero-vertical putter path.
-- Launch force uses `loaded_base + power_scale * DropPower`.
-- Direction adjustment uses `direction -= 2 * swing_adjuster`, masked to `0xFFF`.
-- 11 swing/accuracy profile tables were extracted at `0x41F204`, 28 bytes each, with signed symmetric adjustment values around a zero centre.
-- Normal airborne gravity is `0x2100` raw force units per logical update.
-- Normal rolling drag is `0xF00`; green rolling drag is `0x780`.
-- Green mode is an explicit state determined by recovered green bounds.
-- Bounce reverses/halves vertical force and transfers half of that rebound into horizontal force.
-- Terrain lookup supplies direction/magnitude-like fields that are projected with the same Q14 trig machinery for slope movement.
-- Wind-named debug globals exist and X/Y wind values are computed, but static xref analysis finds those X/Y values written and not otherwise read in this Windows build. Treat them as vestigial/debug unless runtime evidence contradicts this.
+Recovered from Windows v1.014:
 
-### Still open
-- user-facing meter timing -> raw `DropPower`;
-- exact club display-name mapping for indices 0–11;
-- exact mapping of club/player state to the 11 swing profiles;
-- whether draw/fade has any additional per-tick curvature beyond recovered launch-direction adjustment;
-- original logical tick frequency;
-- meanings/effects of all terrain IDs and lie classes;
-- cup-capture/special near-hole branch semantics;
-- runtime golden-master trace and numerical parity.
+- 44-byte ball state;
+- fixed-point X/Y;
+- 4096-step heading;
+- exact Q14 sine table;
+- 13 club physics rows;
+- live launch path;
+- Welly raw power range;
+- 11 swing/accuracy profiles;
+- gravity, drag, bounce and roll;
+- green/slope data;
+- terrain descriptor structure;
+- distance-to-hole path.
 
-### Rule
-Do not promote static recovery to `parity-verified` until a runtime original-game trace is reproduced by the portable core.
-
-## 2026-10-06 — Live launch-to-rest golden-master parity
+## 2026-10-06 — Zero-tolerance live shot parity
 
 ### Parity-verified
-GitHub Actions run `37523005402` executed original Windows v1.014 live-player machine code under Unicorn and compared it with the portable recovered core at zero tolerance on a controlled generic flat surface.
 
-- straight 1W: 153 samples, 0 mismatches
-- draw mid shot: 131 samples, 0 mismatches
-- fade high shot: 111 samples, 0 mismatches
+Run `37523005402` matched three original live-player shots from launch through final rest:
 
-Compared X/Y, height, vertical force, horizontal force, direction, swing adjuster and adjusted power at every logical sample. Landing and final-rest events also matched exactly.
+- straight 1W: 153 samples;
+- draw mid: 131 samples;
+- fade high: 111 samples.
 
-The draw case exposed and fixed a subtle original branch: when positive horizontal force is reduced below zero by drag during an airborne tick, the original sets H=0 and ends that tick without applying the direction/curve update. The portable core now preserves that behavior.
+All compared state fields and landing/rest events matched exactly.
 
-Scope limitation: terrain lookup was controlled to generic surface code 0. Real terrain, hazards, putting/green and cup-capture branches remain to be parity-verified.
+The exercise exposed and fixed the original one-tick H-drag zero-crossing quirk.
+
+## 2026-10-06 — Terrain and terminal branches
+
+### Parity-verified
+
+The golden-master suite was expanded to:
+
+- skirt;
+- fairway;
+- semi rough;
+- rough;
+- very rough;
+- sand;
+- water;
+- NO GO;
+- out-of-bounds;
+- club-12 putter;
+- green slope;
+- code-8 hole/cup capture.
+
+Representative successful runs are listed in [PROJECT_STATUS.md](PROJECT_STATUS.md).
+
+## 2026-10-06 — Collision-path investigation
+
+### Verified
+
+`WOOD1.BIN` through `WOOD4.BIN` are used by graphics-copy/rendering code and are not the authoritative ball collision data path.
+
+The actual course lookup is the MAPI path.
+
+The portable MAPI implementation was compared with original v1.014 machine code across four MAPI bank pairs and **81,920 cases** at zero tolerance.
+
+Successful workflow: `37545810759`.
+
+## 2026-10-06 — PRNG and interaction recovery
+
+### Verified / parity-verified
+
+The internal 16-bit ranged PRNG was recovered and implemented independently.
+
+Original-machine-code parity now covers:
+
+- PRNG output/seed evolution;
+- code-9 low-height deflection;
+- near-hole lip deflection;
+- flag-coordinate deflection.
+
+The mutation fragments are exact. Their final lookup-to-activation integration is the remaining Gate 1 end-to-end fixture.
+
+## 2026-10-06 — Welly/timing closure
+
+### Verified
+
+The meter tail and dispatcher were traced through the platform timer system.
+
+The Windows scheduler obtains elapsed time from `GetTickCount`, converts milliseconds to 16.16 seconds using:
+
+```
+(elapsed_ms << 16) / 1000
+```
+
+and dispatches timer callbacks.
+
+The gameplay callback interval is `0x3A8` fixed units, approximately **70.02 Hz**.
+
+Successful analysis runs:
+
+- meter/tick closure: `37546007071`
+- timing/meter dispatcher: `37546141205`
+- timer source closure: `37546519169`
+
+## 2026-10-07 — Current checkpoint
+
+### Status
+
+Gate 1 is **GO and ready for final sign-off**.
+
+The major gameplay recovery risks are no longer open unknowns. Remaining work is consolidation:
+
+1. one end-to-end real course lookup -> interaction activation -> PRNG mutation trace;
+2. one full current-head sign-off run across all existing parity/core suites;
+3. freeze evidence documentation and close Issue #1.
+
+Do not begin enhancement physics. Classic mode remains defined by the parity-proven original behaviour.

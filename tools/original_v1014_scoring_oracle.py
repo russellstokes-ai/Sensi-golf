@@ -329,6 +329,101 @@ def post_hole_turn_adjust_case(exe: Path) -> dict:
         "reached_turn_adjust_exit": reached_exit,
     }
 
+
+
+def hazard_counter_case(exe: Path, terrain_index: int = 6) -> dict:
+    """Run original launch -> hazard terminal -> recovery with one emulator."""
+    from original_v1014_flat_oracle import prepare_surface, run_tick
+
+    HAZARD_RECOVERY_VA = 0x40A7E0
+    HAZARD_RECOVERY_STOP_VA = 0x40A8D6
+    X_EXTENT_VA = 0x41EE1A
+    Y_EXTENT_VA = 0x41EE1E
+    RECOVERY_HELPERS = {0x4094F0, 0x40C2F8, 0x40B791, 0x40B998}
+
+    uc, digest = build_uc(exe)
+    surface = prepare_surface(uc, terrain_index)
+    lie = int(surface["profile_slot"])
+    setup(uc, 5, lie, 83, 63, 777)
+    w16(uc, PLAYER + 0x52, 0)
+    w16(uc, PLAYER + 0x56, 0)
+
+    uc.emu_start(LIVE_LAUNCH_VA, SENTINEL, count=5000)
+    after_launch = [
+        ru16(uc, PLAYER + 0x52),
+        ru16(uc, PLAYER + 0x56),
+    ]
+    w16(uc, BALL + 0x1C, 100)
+
+    landing = None
+    terminal_tick = None
+    for tick in range(1, 512):
+        landing, _ = run_tick(uc, tick, landing, terrain_index)
+        height = ru32(uc, BALL + 0x14)
+        vforce = ru32(uc, BALL + 0x08)
+        hforce = ru32(uc, BALL + 0x0C)
+        if height == 0 and vforce == 0 and hforce == 0:
+            terminal_tick = tick
+            break
+    if terminal_tick is None:
+        raise RuntimeError("hazard case did not reach stopped state")
+
+    after_terminal = [
+        ru16(uc, PLAYER + 0x52),
+        ru16(uc, PLAYER + 0x56),
+    ]
+
+    # Enter the recovered post-pause branch with permissive course extents;
+    # this check is about counter ownership, not position geometry (which has
+    # its own zero-tolerance recovery oracle).
+    w16(uc, BALL + 0x1C, 0)
+    wu32(uc, X_EXTENT_VA, 0x7FFF)
+    wu32(uc, Y_EXTENT_VA, 0x7FFF)
+    uc.reg_write(UC_X86_REG_ESI, PLAYER)
+    uc.reg_write(UC_X86_REG_EDI, BALL)
+    uc.reg_write(UC_X86_REG_ESP, STACK + 0xF000)
+
+    reached_recovery_stop = False
+
+    def recovery_hook(machine, address, size, user_data):
+        nonlocal reached_recovery_stop
+        if address == TERRAIN_LOOKUP_VA:
+            ret = skip_call(machine)
+            ebx = machine.reg_read(UC_X86_REG_EBX)
+            machine.reg_write(
+                UC_X86_REG_EBX,
+                (ebx & 0xFFFF0000) | (terrain_index & 0xFFFF),
+            )
+            machine.reg_write(UC_X86_REG_EIP, ret)
+        elif address in RECOVERY_HELPERS:
+            machine.reg_write(UC_X86_REG_EIP, skip_call(machine))
+        elif address == HAZARD_RECOVERY_STOP_VA:
+            reached_recovery_stop = True
+            machine.emu_stop()
+
+    token = uc.hook_add(UC_HOOK_CODE, recovery_hook)
+    try:
+        uc.emu_start(HAZARD_RECOVERY_VA, SENTINEL, count=30000)
+    finally:
+        uc.hook_del(token)
+
+    after_recovery = [
+        ru16(uc, PLAYER + 0x52),
+        ru16(uc, PLAYER + 0x56),
+    ]
+
+    return {
+        "case": "water_hazard_counter_lifecycle",
+        "build_sha256": digest,
+        "terrain_index": terrain_index,
+        "surface_name": surface["name"],
+        "after_launch": after_launch,
+        "terminal_tick": terminal_tick,
+        "after_terminal": after_terminal,
+        "after_recovery": after_recovery,
+        "reached_recovery_stop": reached_recovery_stop,
+    }
+
 def dump_static_tables(exe: Path) -> dict:
     uc, _ = build_uc(exe)
 
@@ -395,11 +490,18 @@ def main() -> int:
     assert post_hole_adjust["after_adjust"]["counter_52"] == 1, post_hole_adjust
     assert post_hole_adjust["after_adjust"]["counter_56"] == 1, post_hole_adjust
 
+    hazard = hazard_counter_case(args.exe)
+    assert hazard["after_launch"] == [1, 1], hazard
+    assert hazard["after_terminal"] == [2, 2], hazard
+    assert hazard["reached_recovery_stop"] is True, hazard
+    assert hazard["after_recovery"] == [2, 2], hazard
+
     report = {
         "reference": "Sensible Golf Windows v1.014",
         "continuous_cases": rows,
         "real_putter_to_cup": real_putter,
         "post_hole_turn_adjust": post_hole_adjust,
+        "hazard_counter_lifecycle": hazard,
         "static_tables": dump_static_tables(args.exe),
     }
 

@@ -1,0 +1,156 @@
+name: Golden Master Course Interaction Integration
+
+on:
+  push:
+    paths:
+      - ".github/workflows/golden-master-course-interaction.yml"
+      - "tools/select_course_interaction_case.py"
+      - "tools/original_v1014_course_interaction_oracle.py"
+      - "engine/src/recovered_course_lookup.cpp"
+      - "engine/src/recovered_interactions.cpp"
+      - "engine/src/recovered_prng.cpp"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+
+      - name: Build portable core
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+
+      - name: Select a real course code-9 interaction cell
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          ROOT="analysis/private/step2/extracted/epf"
+          OUT="analysis/private/golden-master-course-interaction"
+          mkdir -p "$OUT"
+          echo "WIN_EXE=$WIN_EXE" >> "$GITHUB_ENV"
+          echo "ROOT=$ROOT" >> "$GITHUB_ENV"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+
+          found=0
+          for pair in 1 3 5 7; do
+            next=$((pair+1))
+            a=$(printf "MAPI%02d.RAW" "$pair")
+            b=$(printf "MAPI%02d.RAW" "$next")
+            if python tools/select_course_interaction_case.py "$WIN_EXE" \
+                "$ROOT/$a" "$ROOT/$b" --landing-code 9 \
+                -o "$OUT/case.json"; then
+              echo "DESC_BANK=$ROOT/$a" >> "$GITHUB_ENV"
+              echo "SEL_BANK=$ROOT/$b" >> "$GITHUB_ENV"
+              found=1
+              break
+            fi
+          done
+          test "$found" -eq 1
+          cat "$OUT/case.json"
+
+      - name: Execute original lookup through code-9 activation and PRNG mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          read tile x y < <(python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/golden-master-course-interaction/case.json'))
+          print(j['tile'],j['x_subcell'],j['y_subcell'])
+          PY
+          )
+
+          python tools/original_v1014_course_interaction_oracle.py "$WIN_EXE" \
+            "$DESC_BANK" "$SEL_BANK" \
+            --tile "$tile" --x "$x" --y "$y" \
+            --seed0 0x1234 --seed1 0xABCD \
+            --direction 777 --vforce -50000 --hforce 90000 --height 0x40000 \
+            -o "$OUT/original.json"
+          cat "$OUT/original.json"
+
+      - name: Compose the recovered lookup and interaction paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./build/engine/sensigolf_recovered_course_lookup_probe \
+            "$DESC_BANK" "$SEL_BANK" > "$OUT/recovered-course.csv"
+
+          ./build/engine/sensigolf_recovered_interactions_probe \
+            code9 0x1234 0xABCD 777 -50000 90000 \
+            > "$OUT/recovered-interaction.json"
+
+          python - <<'PY'
+          import csv,json
+          from pathlib import Path
+
+          out=Path('analysis/private/golden-master-course-interaction')
+          case=json.load(open(out/'case.json'))
+          original=json.load(open(out/'original.json'))
+          interaction=json.load(open(out/'recovered-interaction.json'))
+
+          wanted=(case['tile'],case['x_subcell'],case['y_subcell'])
+          selected=None
+          with open(out/'recovered-course.csv',newline='') as fh:
+              for row in csv.DictReader(fh):
+                  key=(int(row['tile']),int(row['x']),int(row['y']))
+                  if key==wanted:
+                      selected={k:int(v) for k,v in row.items()}
+                      break
+          assert selected is not None, wanted
+          assert selected['descriptor']==case['descriptor_index'], (selected,case)
+          assert original['descriptor_index']==case['descriptor_index'], (original,case)
+          assert original['landing_code']==9, original
+          assert original['code9_activated'] is True, original
+          assert 11 in original['events'], original
+
+          for field in ('direction','vertical_force','horizontal_force','seed0','seed1'):
+              assert int(original[field])==int(interaction[field]), (field,original[field],interaction[field])
+
+          report={
+              'pass':True,
+              'tolerance':0,
+              'case':case,
+              'original_event_ids':original['events'],
+              'original':{
+                  k:original[k] for k in (
+                      'descriptor_index','landing_code','direction',
+                      'vertical_force','horizontal_force','seed0','seed1')
+              },
+              'recovered_lookup':selected,
+              'recovered_interaction':interaction,
+          }
+          (out/'comparison.json').write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps(report,indent=2))
+          PY
+
+      - name: Core tests
+        run: |
+          python -m unittest discover -s tests -v
+          ctest --test-dir build --output-on-failure
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-golden-master-course-interaction
+          path: analysis/private/golden-master-course-interaction/
+          retention-days: 30

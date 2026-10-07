@@ -86,7 +86,7 @@ int main() {
     approach.aim_raw = 0;
     hole_session.begin_shot(approach);
     run_active(hole_session);
-    assert(hole_session.phase() == HoleSessionPhase::HoleComplete);
+    assert(hole_session.phase() == HoleSessionPhase::CupTerminal);
     assert(hole_session.ball_state().holed);
 
     auto water = uniform_course(6);
@@ -134,11 +134,13 @@ int main() {
     assert(putt_session.phase() == HoleSessionPhase::ReadyForShot);
 
     // GREEN H1/code 8 is the parity-proven cup terminal for a putter.
+    // It is intentionally not HoleScored: original v1.014 performs scored-hole
+    // activation in the separate zero-distance pre-update branch.
     auto cup = uniform_course(7);
     ClassicHoleSession cup_putt(cup, 0, 0);
     cup_putt.begin_shot(putter_request());
     run_active(cup_putt);
-    assert(cup_putt.phase() == HoleSessionPhase::HoleComplete);
+    assert(cup_putt.phase() == HoleSessionPhase::CupTerminal);
     assert(cup_putt.ball_state().holed);
     assert(cup_putt.recovered_counters().player_52 == 2);
     assert(cup_putt.recovered_counters().player_56 == 2);

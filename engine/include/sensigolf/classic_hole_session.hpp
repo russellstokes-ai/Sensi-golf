@@ -15,7 +15,8 @@ enum class HoleSessionPhase : std::uint8_t {
     HazardStopped,
     HazardRecovered,
     SpecialGreenStopped,
-    HoleComplete,
+    CupTerminal,
+    HoleScored,
     UnsupportedTerrain,
 };
 

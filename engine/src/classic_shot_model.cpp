@@ -120,7 +120,7 @@ void ClassicShotModel::step() {
             if (terminal.kind
                 == recovered::PutterTerminalKind::Holed) {
                 public_.holed = true;
-                outcome_ = ClassicShotOutcome::Holed;
+                outcome_ = ClassicShotOutcome::CupTerminal;
             } else {
                 outcome_ = ClassicShotOutcome::SpecialGreenStop;
             }
@@ -151,7 +151,7 @@ void ClassicShotModel::step() {
     }
     if (result.holed) {
         public_.holed = true;
-        outcome_ = ClassicShotOutcome::Holed;
+        outcome_ = ClassicShotOutcome::CupTerminal;
     }
     if (result.resting) {
         active_ = false;

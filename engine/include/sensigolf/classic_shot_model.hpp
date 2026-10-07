@@ -17,6 +17,7 @@ enum class ClassicShotOutcome : std::uint8_t {
     None = 0,
     Rest,
     Hazard,
+    CupTerminal,
     Holed,
     SpecialGreenStop,
 };

@@ -189,7 +189,7 @@ void ClassicHoleSession::step() {
     ball_y_raw_ = static_cast<std::int32_t>(final.y_raw);
 
     switch (shot_.outcome()) {
-    case ClassicShotOutcome::Holed:
+    case ClassicShotOutcome::CupTerminal:
         // Scoped original putter code-8 terminal increments both counters
         // once more. Non-putter cup counter semantics remain separately scoped.
         if (active_club_ == 12) {
@@ -198,7 +198,10 @@ void ClassicHoleSession::step() {
             recovered_counters_.player_56 = static_cast<std::uint16_t>(
                 recovered_counters_.player_56 + 1u);
         }
-        phase_ = HoleSessionPhase::HoleComplete;
+        phase_ = HoleSessionPhase::CupTerminal;
+        break;
+    case ClassicShotOutcome::Holed:
+        phase_ = HoleSessionPhase::HoleScored;
         break;
     case ClassicShotOutcome::Hazard:
         phase_ = HoleSessionPhase::HazardStopped;

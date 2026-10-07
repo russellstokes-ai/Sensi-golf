@@ -36,6 +36,7 @@ void ClassicHoleSession::reset(
     safe_anchor_y_raw_ = 0;
     safe_anchor_valid_ = false;
     hazard_pause_remaining_ = 0;
+    recovered_counters_ = {};
     unsupported_descriptor_.reset();
 }
 
@@ -93,6 +94,13 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
     input.lie_index = surface.profile_slot;
 
     shot_.begin_shot(input);
+
+    // Original live launch increments both recovered player counters.
+    recovered_counters_.player_52 = static_cast<std::uint16_t>(
+        recovered_counters_.player_52 + 1u);
+    recovered_counters_.player_56 = static_cast<std::uint16_t>(
+        recovered_counters_.player_56 + 1u);
+
     ++strokes_;
     phase_ = HoleSessionPhase::ShotActive;
     unsupported_descriptor_.reset();
@@ -182,6 +190,14 @@ void ClassicHoleSession::step() {
 
     switch (shot_.outcome()) {
     case ClassicShotOutcome::Holed:
+        // Scoped original putter code-8 terminal increments both counters
+        // once more. Non-putter cup counter semantics remain separately scoped.
+        if (active_club_ == 12) {
+            recovered_counters_.player_52 = static_cast<std::uint16_t>(
+                recovered_counters_.player_52 + 1u);
+            recovered_counters_.player_56 = static_cast<std::uint16_t>(
+                recovered_counters_.player_56 + 1u);
+        }
         phase_ = HoleSessionPhase::HoleComplete;
         break;
     case ClassicShotOutcome::Hazard:
@@ -241,6 +257,11 @@ ClassicHoleSession::unsupported_descriptor() const noexcept {
 
 std::uint16_t ClassicHoleSession::hazard_pause_remaining() const noexcept {
     return hazard_pause_remaining_;
+}
+
+const ClassicRecoveredCounters&
+ClassicHoleSession::recovered_counters() const noexcept {
+    return recovered_counters_;
 }
 
 } // namespace sensigolf

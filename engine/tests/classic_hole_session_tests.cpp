@@ -71,6 +71,8 @@ int main() {
     drive.aim_raw = 0;
     session.begin_shot(drive);
     assert(session.strokes() == 1);
+    assert(session.recovered_counters().player_52 == 1);
+    assert(session.recovered_counters().player_56 == 1);
     run_active(session);
     assert(session.phase() == HoleSessionPhase::ReadyForShot);
     assert(session.ball_y_raw() > 0);
@@ -138,6 +140,8 @@ int main() {
     run_active(cup_putt);
     assert(cup_putt.phase() == HoleSessionPhase::HoleComplete);
     assert(cup_putt.ball_state().holed);
+    assert(cup_putt.recovered_counters().player_52 == 2);
+    assert(cup_putt.recovered_counters().player_56 == 2);
 
     // GREEN H3/code 9 and GREEN H2/code 10 terminate through the original
     // event-11 path. They are known terminal outcomes but the subsequent
@@ -149,6 +153,8 @@ int main() {
         run_active(special_putt);
         assert(special_putt.phase() == HoleSessionPhase::SpecialGreenStopped);
         assert(!special_putt.ball_state().holed);
+        assert(special_putt.recovered_counters().player_52 == 1);
+        assert(special_putt.recovered_counters().player_56 == 1);
     }
 
     // GREEN D2/code 50 remains unsupported for club 12 until its specific

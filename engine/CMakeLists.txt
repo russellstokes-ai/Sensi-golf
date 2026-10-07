@@ -14,6 +14,7 @@ add_library(sensigolf_core
     src/recovered_course_lookup.cpp
     src/classic_round_session.cpp
     src/classic_hole_plan.cpp
+    src/classic_game_session.cpp
 )
 
 target_include_directories(sensigolf_core
@@ -166,3 +167,10 @@ add_executable(sensigolf_classic_hole_plan_probe
     tools/classic_hole_plan_probe.cpp
 )
 target_link_libraries(sensigolf_classic_hole_plan_probe PRIVATE sensigolf_core)
+
+
+add_executable(sensigolf_classic_game_session_tests
+    tests/classic_game_session_tests.cpp
+)
+target_link_libraries(sensigolf_classic_game_session_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_classic_game_session_tests COMMAND sensigolf_classic_game_session_tests)

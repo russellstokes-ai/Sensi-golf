@@ -29,8 +29,22 @@ struct Candidate {
     ShotChoice shot{};
     std::unique_ptr<ClassicHoleSession> session{};
     std::uint32_t distance = std::numeric_limits<std::uint32_t>::max();
+    std::uint16_t landing_code = 0;
     bool scored = false;
 };
+
+std::uint32_t route_cost(const Candidate& candidate) {
+    if (candidate.scored) return 0;
+
+    // Close to the cup, a normal green lie is strategically more useful than
+    // a numerically closer fairway/rough lie because club 12 is the recovered
+    // finishing path. This prevents the search from parking beside the cup on
+    // a non-putter surface.
+    const auto lie_penalty =
+        candidate.distance <= 100u && candidate.landing_code != 1u
+        ? 500u : 0u;
+    return candidate.distance + lie_penalty;
+}
 
 std::vector<std::uint8_t> read_file(const char* path) {
     std::ifstream in(path, std::ios::binary);
@@ -84,6 +98,9 @@ std::unique_ptr<Candidate> try_shot(
         out->shot = choice;
         out->distance = trial->distance_to_hole();
         out->scored = trial->phase() == HoleSessionPhase::HoleScored;
+        out->landing_code = out->scored
+            ? 8u
+            : trial->current_surface().landing_code;
         out->session = std::move(trial);
         return out;
     } catch (...) {
@@ -105,6 +122,9 @@ void retain_best(
         best.end(),
         [](const auto& a, const auto& b) {
             if (a->scored != b->scored) return a->scored > b->scored;
+            const auto ac = route_cost(*a);
+            const auto bc = route_cost(*b);
+            if (ac != bc) return ac < bc;
             return a->distance < b->distance;
         });
     if (best.size() > limit) best.resize(limit);
@@ -249,6 +269,8 @@ int main(int argc, char** argv) {
                 << " to_distance=" << best->distance
                 << " pos=(" << x << "," << y << ")"
                 << " phase=" << static_cast<int>(best->session->phase())
+                << " surface=" << best->landing_code
+                << " route_cost=" << route_cost(*best)
                 << "\n";
 
             session = std::move(best->session);
@@ -258,7 +280,11 @@ int main(int argc, char** argv) {
                 return 0;
             }
 
-            if (session->distance_to_hole() >= before) {
+            // Allow a modest distance increase when it purchases a proper
+            // green lie; otherwise stop obvious non-progress loops.
+            const auto current_surface = session->current_surface();
+            if (session->distance_to_hole() >= before
+                && current_surface.landing_code != 1u) {
                 std::cout
                     << "STALLED distance=" << session->distance_to_hole()
                     << "\n";

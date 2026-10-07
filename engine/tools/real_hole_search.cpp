@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
             read_file(argv[3]),
             read_file(argv[4]));
 
-        ClassicHoleSession session(
+        auto session = std::make_unique<ClassicHoleSession>(
             course,
             0u,
             ClassicHoleMetadata{0u, 4u, 42u});
@@ -223,13 +223,13 @@ int main(int argc, char** argv) {
         std::cout
             << "START tee=(" << tee.x << "," << tee.y << ")"
             << " cup=(" << cup.x << "," << cup.y << ")"
-            << " distance=" << session.distance_to_hole()
+            << " distance=" << session->distance_to_hole()
             << "\n";
 
         constexpr int kMaxShots = 12;
         for (int stroke = 1; stroke <= kMaxShots; ++stroke) {
-            const auto before = session.distance_to_hole();
-            auto best = best_next_shot(session);
+            const auto before = session->distance_to_hole();
+            auto best = best_next_shot(*session);
             if (!best) {
                 std::cout << "NO_CANDIDATE stroke=" << stroke << "\n";
                 break;
@@ -248,24 +248,24 @@ int main(int argc, char** argv) {
                 << " phase=" << static_cast<int>(best->session->phase())
                 << "\n";
 
-            session = *best->session;
+            session = std::move(best->session);
 
-            if (session.phase() == HoleSessionPhase::HoleScored) {
+            if (session->phase() == HoleSessionPhase::HoleScored) {
                 std::cout << "FOUND strokes=" << stroke << "\n";
                 return 0;
             }
 
-            if (session.distance_to_hole() >= before) {
+            if (session->distance_to_hole() >= before) {
                 std::cout
-                    << "STALLED distance=" << session.distance_to_hole()
+                    << "STALLED distance=" << session->distance_to_hole()
                     << "\n";
                 break;
             }
         }
 
         std::cout
-            << "NOT_FOUND final_distance=" << session.distance_to_hole()
-            << " strokes=" << session.strokes()
+            << "NOT_FOUND final_distance=" << session->distance_to_hole()
+            << " strokes=" << session->strokes()
             << "\n";
         return 0;
     } catch (const std::exception& e) {

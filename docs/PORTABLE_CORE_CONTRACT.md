@@ -1,103 +1,66 @@
 # Portable Classic-Core Contract
 
-Status: **CHASSIS COMPLETE — NO GAME PHYSICS IMPLEMENTED YET**
+Status: **GATE 1 PHYSICS COMPLETE; GATE 2 PRODUCT BRIDGE IN PROGRESS**
 
-## Why this exists now
+## Purpose
 
-The recovered model needs somewhere stable to land as individual routines and tables are identified. Creating that boundary now prevents reverse-engineering discoveries from being mixed directly into Android UI/rendering code.
+The classic core is the single authoritative implementation of recovered Sensible Golf behaviour.
 
-The chassis is deliberately behaviour-free. It does **not** guess Sensible Golf physics.
-
-## Language
-
-The classic core is currently defined in portable **C++17** because it can be compiled for:
-- Android NDK;
-- iOS;
-- desktop analysis/test harnesses;
-- future rendering engines via a narrow native interface.
-
-The platform choice can still change above the core without changing recovered gameplay behaviour.
+It is portable **C++17** so the same deterministic game logic can be hosted by Android NDK, optional future iOS code and developer/test executables without duplicating physics or rules.
 
 ## Core rules
 
-### 1. Raw units until proven
+### 1. Gate-1 parity is immutable by default
 
-Coordinates and velocities are `RawScalar` integer values.
+Changes to recovered shot, terrain, hazard, putting, PRNG, collision or cup behaviour require new original-game evidence and must keep the zero-tolerance Gate-1 suites green.
 
-We do not yet assert that original Sensible Golf uses:
-- pixels;
-- yards;
-- metres;
-- floating point;
-- 16.16 fixed point;
-- any particular scaling.
+### 2. Fixed logical simulation
 
-Once native representation is recovered, the raw-value meaning will be documented and tests updated.
+`IClassicModel::step()` advances exactly one original logical update.
 
-### 2. Fixed logical ticks
+The recovered Windows scheduler uses interval `0x3A8` in 16.16-second units, approximately 70.02 callbacks/second. Rendering frequency is independent and may interpolate at the display refresh rate.
 
-`IClassicModel::step()` advances exactly one original logical simulation tick.
+### 3. Platform shells do not own gameplay
 
-The renderer may later interpolate those states at 60/90/120 fps. Rendering frequency must never change shot results.
-
-### 3. No approximate default engine
-
-`IClassicModel` is an interface. There is intentionally no fallback implementation with invented gravity, drag or friction.
-
-A real classic implementation is introduced only after its rules are evidenced.
+Android may provide touch/gamepad input, rendering, audio, files and lifecycle handling. It must not calculate ball flight, surfaces, collision, PRNG outcomes, putting or hole rules.
 
 ### 4. Authoritative state is renderer-independent
 
-The core owns:
-- ball state;
-- shot phase;
-- surface/hazard/holed state;
-- later: club/lie/rules parameters and any deterministic PRNG.
+The C++ game layer owns ball state, shot phase, terrain/hazard/hole results and deterministic random/session state.
 
-The renderer and mobile input layer consume or produce inputs; they do not mutate physics behind the core.
+### 5. Original data remains external
 
-### 5. Evidence travels with recovery work
+Licensed/original commercial files are loaded through the import layer and are not committed to the public repository unless redistribution rights explicitly permit it.
 
-`EvidenceAnchor` records where a recovered fact came from:
-- executable offset;
-- data-file offset;
-- black-box trace;
-- manual constraint.
+## Gate-2 bridge
 
-Recovered constants/formulas should not enter the classic core without an evidence record.
+`ClassicShotModel` is the first production implementation of `IClassicModel`.
 
-## Current files
+It:
+
+- wraps the Gate-1 parity-proven launch/flight/ground/putter routines;
+- accepts original 0..4095 aim units;
+- preserves the exact scheduler interval constant `0x3A8`;
+- exposes deterministic `BallState` snapshots;
+- surfaces hazard and holed terminal state;
+- prevents terrain context changes during a live shot.
+
+This class is a bridge, not a second physics implementation.
+
+## Next layers
+
+The remaining Gate-2 architecture is:
 
 ```
-engine/
-  include/sensigolf/
-    classic_model.hpp
-    evidence.hpp
-    trace.hpp
-    types.hpp
-  src/
-    trace.cpp
-  tests/
-    core_contract_tests.cpp
+ClassicShotModel
+      ↓
+course/resource model
+      ↓
+hole/session state machine
+      ↓
+save/replay contract
+      ↓
+Android NDK/JNI host
 ```
 
-## What the current test proves
-
-The contract test proves:
-- the core compiles as C++17;
-- state equality is exact;
-- traces preserve ordered logical ticks;
-- duplicate/non-increasing ticks are rejected;
-- a model can be stepped independent of any renderer.
-
-The mock movement in the test is **not Sensible Golf physics** and must never be used as such.
-
-## Next implementation milestone
-
-After the original PC executable is ingested:
-
-1. resolve original tick rate/units;
-2. implement recovered shot initialization;
-3. implement one recovered per-tick path;
-4. record one original golden-master shot;
-5. require the C++ core to match that shot before expanding to other clubs/lies.
+See [GATE2_MOBILE_INTEGRATION.md](GATE2_MOBILE_INTEGRATION.md).

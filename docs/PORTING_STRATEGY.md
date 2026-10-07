@@ -22,7 +22,7 @@ Simulation state snapshots
         ↓
 Platform-independent presentation API
        ↙ ↘
- Android  iOS/Desktop test harness
+ Android  optional iOS / developer test harness
 ```
 
 ## Separation rules
@@ -54,6 +54,10 @@ May interpolate visual positions between simulation ticks. It must never alter a
 
 ### Import layer
 Reads licensed original files and converts them into a documented internal representation. Original commercial assets remain external to the public repo.
+
+## Product direction
+
+Android is the first playable product target. Desktop executables may exist only as developer/test utilities; they are not a release milestone and must not acquire gameplay logic that belongs in the portable core.
 
 ## First executable to analyse
 

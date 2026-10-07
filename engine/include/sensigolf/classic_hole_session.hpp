@@ -21,10 +21,13 @@ enum class HoleSessionPhase : std::uint8_t {
 };
 
 struct ClassicRecoveredCounters {
-    // Original v1.014 player fields. Human-readable semantic names remain
-    // intentionally deferred until the lifecycle/score-transfer work closes.
+    // Original Windows v1.014 per-player fields. Offset names remain explicit
+    // until all game-mode ownership is closed.
+    std::int16_t player_48 = 0;
     std::uint16_t player_52 = 0;
     std::uint16_t player_56 = 0;
+    std::uint16_t player_58 = 0;
+    std::uint16_t player_70 = 0;
 };
 
 struct ClassicShotRequest {
@@ -51,6 +54,15 @@ public:
 
     void begin_shot(const ClassicShotRequest& request);
     void step();
+
+    // Recovered v1.014 scored-hole boundary. CupTerminal is deliberately a
+    // distinct state: the original game only activates scoring when its
+    // distance-to-hole state reaches zero.
+    std::uint32_t distance_to_hole(bool green_mode = false) const noexcept;
+    bool scored_hole_ready(bool green_mode = false) const noexcept;
+    void activate_scored_hole(
+        std::uint16_t par,
+        bool green_mode = false);
 
     HoleSessionPhase phase() const noexcept;
     std::uint32_t strokes() const noexcept;

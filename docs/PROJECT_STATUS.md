@@ -197,19 +197,33 @@ Implemented:
 - explicit `UnsupportedTerrain` stop instead of invented rules;
 - real SPT tee/cup initialization.
 
-Current special-rule recovery:
-- special-green dispatcher analysis `37616408565`;
-- special landing-tail analysis `37616542794`;
-- zero-tolerance non-putter ball-state parity for codes 10, 50 and 60 in `37616747731`;
-- terrain variant/profile-field analysis `37617022417`.
+Current Burst-3 recovery/integration:
 
-Important current boundary:
-- code 8 cup capture is parity-proven;
-- code 9 PRNG-driven near-hole/deflection behaviour is parity-proven as an interaction fragment;
-- code 1 flat green/putter path is parity-proven;
-- normal-shot trajectory for codes 10/50/60 is zero-tolerance parity-proven;
-- putter-specific code 9/10/50/60 control-flow/state semantics are still being integrated;
-- hazard recovery/drop/penalty semantics and next-hole/scoring transitions remain open.
+- putter code-8/9/10 terminal oracle and product integration complete;
+- code 8 maps to the cup terminal outcome;
+- codes 9 and 10 map to the original special-green stop outcome rather than being approximated as ordinary green roll;
+- original hazard terminal pause of 100 logical ticks is integrated;
+- original post-hazard position recovery is integrated, including the safe-anchor path and recovered course extents;
+- normal-shot trajectory for codes 10/50/60 remains zero-tolerance parity-proven;
+- original per-player scoring/stroke fields are now traced further, but final semantic naming/next-hole ownership is not yet promoted.
+
+New evidence:
+- putter terminal integration commit `0f83c2f89e0db324d0fbad0304088d26104eb7bd`;
+- hazard recovery integration commit `37e2f16cbf1420f4a83b59072f08c0915b68f45e`;
+- scoring-state analysis `37623146366`;
+- stroke-counter trace `37623430352`;
+- hole-completion semantic check `37623654428`;
+- CI on current head `37623654112` — PASS.
+
+Important scoring/completion boundary:
+
+- both recovered per-player counters at offsets `+0x52` and `+0x56` increment on a normal shot launch;
+- the scoped code-8 putter terminal increments those counters again, while code-9/10 special terminals do not;
+- original score-transfer code subtracts `+0x52` from `+0x56` and clears `+0x52`;
+- hole-result presentation uses the current stroke field or mode-specific score source and compares it with course par, clamped to the original display range;
+- cup capture/terminal state and the later full hole-completion/score/next-state routines are separate original flows.
+
+The session therefore must not equate “ball entered cup” with “all scoring/next-hole state has already advanced.”
 
 Current burst plan is recorded in `docs/GATE2_MOBILE_INTEGRATION.md`.
 

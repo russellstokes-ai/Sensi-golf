@@ -242,3 +242,53 @@ Normal non-putter ball trajectory for landing codes 10, 50 and 60 matches origin
 The putter-specific branches for codes 9/10/50/60 and the full session side effects are still being integrated. Hazard recovery/drop/penalty and next-hole/scoring state remain open.
 
 No unsupported branch is approximated.
+
+
+## 2026-10-07 — Gate 2 Burst 3: putter terminals and hazard recovery
+
+### Implemented / verified
+
+The product session now integrates the recovered club-12 terminal family:
+
+- landing code 8 -> cup/holed shot outcome;
+- landing codes 9 and 10 -> original special-green terminal outcome;
+- normal code-1 green remains the rolling putter path.
+
+Primary implementation commit: `0f83c2f89e0db324d0fbad0304088d26104eb7bd`.
+
+Hazard flow now includes:
+
+- original 100-logical-tick pause;
+- safe-anchor capture from valid playable terrain;
+- original post-hazard relocation;
+- recovered course extents used by the recovery path.
+
+Primary implementation commit: `37e2f16cbf1420f4a83b59072f08c0915b68f45e`.
+
+The full Gate-1 golden-master set and course-resource validation remained green after hazard integration.
+
+## 2026-10-07 — Gate 2 Burst 3: scoring/stroke ownership checkpoint
+
+### Original-machine-code observations
+
+Successful workflows:
+
+- scoring-state analysis `37623146366`;
+- stroke-counter trace `37623430352`;
+- hole-completion semantic check `37623654428`;
+- current-head CI `37623654112`.
+
+Two per-player 16-bit fields at offsets `+0x52` and `+0x56` both increment on shot launch in controlled original execution.
+
+The scoped code-8 putter cup terminal increments both again; code-9/10 special terminals do not.
+
+A later score-transfer routine performs:
+
+```
+player+0x56 -= player+0x52
+player+0x52 = 0
+```
+
+The hole-result path compares the relevant stroke/score source against course par and clamps the displayed relative score to the original -3..+8 range.
+
+The original also keeps cup terminal detection separate from later hole-completion/result/next-state routines. The portable session will preserve that separation rather than treating a cup hit as automatic next-hole advancement.

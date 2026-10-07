@@ -52,7 +52,7 @@ Final consolidated sign-off:
 
 **Gate 2 — complete classic game/core integration — is in progress. Android is the first playable product target.**
 
-Current Gate-2 progress includes the production `ClassicShotModel`, real MAPM/MAPI/SPT course loading, recovered per-player tee/cup coordinates and the first platform-neutral hole/session state machine. Special putter/cup-edge rules and hazard recovery semantics are the current integration focus.
+Current Gate-2 progress includes the production `ClassicShotModel`, real MAPM/MAPI/SPT course loading, recovered per-player tee/cup coordinates and the first platform-neutral hole/session state machine. Putter cup-edge terminal rules and original hazard position recovery are now integrated. The current focus is the remaining score/stroke ownership and the distinction between cup capture, completed/scored hole state and next-hole transition.
 
 ## Documentation
 

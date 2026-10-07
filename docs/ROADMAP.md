@@ -51,10 +51,12 @@ Progress:
 - [x] moving-ball terrain lookup from recovered 16.16 coordinates;
 - [x] initial hole/session lifecycle and stroke counter;
 - [x] explicit unsupported-rule boundary;
-- [ ] putter/cup-edge special branches;
+- [x] putter/cup-edge code-8/9/10 terminal branches;
 - [ ] deterministic PRNG/session ownership;
-- [ ] hazard recovery/drop/penalty;
-- [ ] scoring and next-hole transition;
+- [x] hazard pause and original position recovery;
+- [ ] hazard penalty/scoring ownership where applicable;
+- [~] scoring/stroke ownership traced; session integration in progress;
+- [ ] completed-hole and next-hole transition;
 - [ ] input replay and versioned save/resume.
 
 Exit: a complete original hole can be played deterministically through the platform-neutral game layer.

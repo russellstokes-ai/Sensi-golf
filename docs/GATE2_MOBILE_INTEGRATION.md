@@ -23,7 +23,7 @@ They must not independently calculate golf physics, terrain results, collision, 
 
 ## Current checkpoint
 
-Current recovery/integration head: `ddbde48870f6a6a02864592825a18d6860fcb02e`.
+Current recovery/integration head: `b9f6aaaca958d5c9479745423c16f3af5a43e461`.
 
 ### Burst 1 — platform-neutral shot-model bridge
 
@@ -66,47 +66,75 @@ Evidence:
 
 ### Burst 3 — hole/session state machine
 
-**IN PROGRESS**
+**IN PROGRESS — MAJOR TERMINAL/RECOVERY PATHS INTEGRATED**
 
-Already delivered:
+Delivered:
 
-- real SPT tee initialization;
-- real SPT cup coordinate exposure;
+- real SPT tee initialization and cup coordinates;
 - tee -> aim/club/input -> shot -> moving terrain lookup -> rest lifecycle;
-- stroke counting;
-- per-tick terrain refresh from the authoritative ball position;
-- hazard terminal state;
-- hole terminal state;
+- stroke counting at the portable session layer;
+- per-tick terrain refresh from authoritative ball position;
+- normal rest and continuation;
 - flat-green putter path;
-- explicit `UnsupportedTerrain` state instead of fallback/guessed rules.
+- code-8 putter cup terminal;
+- code-9 and code-10 putter special-green terminals;
+- explicit shot outcomes: rest / hazard / holed / special-green-stop;
+- original hazard pause of 100 logical ticks;
+- recovered safe-anchor tracking;
+- recovered post-hazard position relocation using original course extents;
+- explicit unsupported state where a rule is still not integrated.
 
-Current recovery evidence:
+Key implementation checkpoints:
 
-- `37616408565` — special-green dispatcher analysis;
-- `37616542794` — special landing-tail analysis;
-- `37616747731` — zero-tolerance non-putter trajectory parity for landing codes 10, 50 and 60;
-- `37617022417` — terrain variant/profile-field xref analysis.
+- `0f83c2f89e0db324d0fbad0304088d26104eb7bd` — putter cup-edge terminal integration;
+- `37e2f16cbf1420f4a83b59072f08c0915b68f45e` — hazard pause/position recovery integration.
 
-Current rule boundary:
+Key analysis/parity evidence:
 
-| Landing code | Known role | Product integration |
-|---:|---|---|
-| 1 | normal GREEN H4 / flat putter path | supported |
-| 2..7 | ordinary playable surfaces | supported |
-| 8 | cup/hole terminal | supported for recovered non-putter terminal path |
-| 9 | special near-hole / PRNG interaction path | interaction arithmetic proven; full putter/session control flow pending |
-| 10 | special green terminal/event path for putter; normal-shot trajectory parity proven | putter/session integration pending |
-| 35 | immediate-stop hazard family | terminal physics supported; recovery/drop/penalty pending |
-| 50 | special green/down-state family; normal-shot trajectory parity proven | putter/state integration pending |
-| 60 | mud/down-state family; normal-shot trajectory parity proven | putter/state integration pending |
+- `37616408565` — special-green dispatcher;
+- `37616542794` — special landing tail;
+- `37616747731` — code 10/50/60 non-putter trajectory parity;
+- `37617022417` — terrain profile/variant analysis;
+- putter code-8/9/10 parity was added before product integration;
+- post-hazard recovery was parity-tested before product integration;
+- `37623146366` — scoring/stroke-state analysis;
+- `37623430352` — original stroke-counter ownership trace;
+- `37623654428` — actual hole-completion semantic check;
+- current-head CI `37623654112` — PASS.
 
-Remaining Burst-3 work:
+#### Recovered score/stroke facts
 
-1. parity-test and integrate the putter-specific code 8/9/10/50/60 branches;
-2. move original PRNG seed ownership into the session;
-3. recover hazard recovery/drop/penalty semantics;
-4. recover scoring/hole-completion and next-hole transition state;
-5. prove a complete original hole through the platform-neutral session layer.
+The original player structure has two counters at `+0x52` and `+0x56`.
+
+Controlled original-machine-code evidence shows:
+
+- both change from 0 -> 1 on both a normal iron launch and a putter launch;
+- in the scoped putter terminal oracle, code-8/cup changes initial 7/11 -> 8/12;
+- code-9 and code-10 special terminals leave 7/11 unchanged;
+- score-transfer code executes `player+0x56 -= player+0x52` and then clears `player+0x52`;
+- hole-result flow compares a stroke/score source with the course par and clamps the displayed relative result to the original range -3..+8.
+
+These observations are strong enough to structure the next session work, but the counters will not receive stronger human-readable names until the remaining lifecycle xrefs are closed.
+
+#### Cup capture versus hole completion
+
+The original code separates:
+
+1. ball/cup terminal detection;
+2. terminal presentation/event state;
+3. score/result calculation;
+4. full hole/session completion and next-state flow.
+
+Therefore `ClassicShotOutcome::Holed` currently means the recovered ball/cup outcome. The session still needs a separate completed-hole/scoring transition before it can advance to the next hole.
+
+#### Remaining Burst-3 work
+
+1. finalize session-level ownership of the two recovered shot/score counters;
+2. implement score/result state using the original par comparison rules;
+3. distinguish cup terminal from completed/scored hole state;
+4. recover and implement next-hole transition ownership;
+5. move original PRNG seed ownership into the session where needed by full-hole replay;
+6. prove one complete original hole from SPT tee through scored completion.
 
 ### Burst 4 — save/replay contract
 

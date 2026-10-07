@@ -50,7 +50,9 @@ Final consolidated sign-off:
 - course MAPI lookup cases: **81,920**, zero tolerance
 - durable evidence: `analysis/evidence/gate1_final_signoff.json`
 
-**Gate 2 — complete classic game/core integration — is now in progress. Android is the first playable product target.**
+**Gate 2 — complete classic game/core integration — is in progress. Android is the first playable product target.**
+
+Current Gate-2 progress includes the production `ClassicShotModel`, real MAPM/MAPI/SPT course loading, recovered per-player tee/cup coordinates and the first platform-neutral hole/session state machine. Special putter/cup-edge rules and hazard recovery semantics are the current integration focus.
 
 ## Documentation
 

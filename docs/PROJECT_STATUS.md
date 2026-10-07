@@ -2,7 +2,7 @@
 
 Last updated: **2026-10-07**
 
-This is the canonical current-status document for the Sensible Golf Enhanced recovery/port project. Specialist documents contain deeper technical detail, but this page is the authoritative summary of what is complete, what is parity-proven, and what remains before the project moves beyond Gate 1.
+This is the canonical current-status document for the Sensible Golf Enhanced recovery/port project. Specialist documents contain deeper technical detail, but this page is the authoritative summary of what is complete, what is parity-proven, and what remains in the active mobile-first integration work.
 
 ## Executive status
 
@@ -103,7 +103,7 @@ The recovered simulation should therefore preserve original logical update caden
 
 The course collision path is instead driven by the MAPI course lookup. The recovered portable lookup matches original v1.014 machine code over **81,920 cases at zero tolerance**.
 
-Separate post-physics interaction branches use the recovered original PRNG. Their state mutations are parity-tested independently. The final Gate 1 sign-off should preserve at least one end-to-end trace in which the real course/object lookup activates one of these interaction branches.
+Separate post-physics interaction branches use the recovered original PRNG. Their state mutations were parity-tested independently and then joined to the real course/object lookup in the final Gate-1 end-to-end fixture.
 
 ## Gate 1 closure
 
@@ -155,6 +155,61 @@ Android NDK/JNI host
         ↓
 mobile input + rendering + audio
 ```
+
+### Gate 2 progress
+
+**Burst 1 — platform-neutral shot-model bridge: COMPLETE**
+
+- production `ClassicShotModel` implements `IClassicModel`;
+- original 0..4095 direction units preserved;
+- exact scheduler interval `0x3A8` exposed;
+- normal shot, putter and hazard terminal paths covered;
+- Gate-1 golden masters stayed green.
+
+Primary commit: `8000141a11f8e34d5ad99879a4003507a82552ee`.
+
+**Burst 2 — course/resource model: COMPLETE**
+
+- real MAPM/MAPI/SPT bundle loader;
+- MAPM dimensions and tile lookup;
+- parity-proven MAPI subcell lookup from recovered 16.16 ball coordinates;
+- 77 original terrain descriptors available;
+- SPT records 0..3 recovered as per-player tee/start coordinates;
+- SPT record 4 recovered as cup/hole coordinates;
+- original commercial files remain external;
+- real v1.014 course-resource validation passes.
+
+Validated checkpoint: `97c89e13ca0f829b9977ff6b887ef7217235d0f8`.
+
+Successful validation evidence:
+- Gate-2 course resource validation `37616105293`;
+- CI `37616105377`;
+- all Gate-1 golden masters green on the same checkpoint.
+
+**Burst 3 — hole/session state machine: IN PROGRESS**
+
+Implemented:
+- tee -> shot -> moving terrain lookup -> rest lifecycle;
+- stroke counting;
+- hazard terminal state;
+- hole terminal state;
+- flat-green club-12 session path;
+- explicit `UnsupportedTerrain` stop instead of invented rules;
+- real SPT tee/cup initialization.
+
+Current special-rule recovery:
+- special-green dispatcher analysis `37616408565`;
+- special landing-tail analysis `37616542794`;
+- zero-tolerance non-putter ball-state parity for codes 10, 50 and 60 in `37616747731`;
+- terrain variant/profile-field analysis `37617022417`.
+
+Important current boundary:
+- code 8 cup capture is parity-proven;
+- code 9 PRNG-driven near-hole/deflection behaviour is parity-proven as an interaction fragment;
+- code 1 flat green/putter path is parity-proven;
+- normal-shot trajectory for codes 10/50/60 is zero-tolerance parity-proven;
+- putter-specific code 9/10/50/60 control-flow/state semantics are still being integrated;
+- hazard recovery/drop/penalty semantics and next-hole/scoring transitions remain open.
 
 Current burst plan is recorded in `docs/GATE2_MOBILE_INTEGRATION.md`.
 

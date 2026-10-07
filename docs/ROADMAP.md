@@ -43,14 +43,19 @@ Exit: **achieved on 2026-10-07**.
 
 **ACTIVE PHASE**
 
-Deliverables:
+Progress:
 
-- platform-neutral `IClassicModel` backed only by Gate-1 recovered mechanics;
-- original course/resource importer and validated data model;
-- complete hole/session state machine;
-- classic Welly/input timing contract;
-- deterministic PRNG/session ownership;
-- input replay and versioned save/resume.
+- [x] platform-neutral `IClassicModel` backed only by Gate-1 recovered mechanics;
+- [x] original MAPM/MAPI/SPT course/resource model;
+- [x] per-player tee and cup coordinates from original SPT data;
+- [x] moving-ball terrain lookup from recovered 16.16 coordinates;
+- [x] initial hole/session lifecycle and stroke counter;
+- [x] explicit unsupported-rule boundary;
+- [ ] putter/cup-edge special branches;
+- [ ] deterministic PRNG/session ownership;
+- [ ] hazard recovery/drop/penalty;
+- [ ] scoring and next-hole transition;
+- [ ] input replay and versioned save/resume.
 
 Exit: a complete original hole can be played deterministically through the platform-neutral game layer.
 

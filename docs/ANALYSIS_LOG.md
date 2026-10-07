@@ -175,4 +175,70 @@ Durable evidence was committed as:
 
 **Gate 1 — Original Gameplay and Physics Recovery: COMPLETE / GO.**
 
-Gate 2 — the faithful desktop harness — is now the next project phase.
+Gate 2 — complete platform-neutral classic game/core integration for the mobile product — is now the next project phase.
+
+
+## 2026-10-07 — Gate 2 Burst 1: production classic shot bridge
+
+### Implemented
+
+`ClassicShotModel` now implements the production `IClassicModel` boundary using only the Gate-1 recovered mechanics.
+
+It preserves original direction units, exposes the exact `0x3A8` logical timer interval and gives platform shells deterministic snapshots without duplicating physics.
+
+Primary commit: `8000141a11f8e34d5ad99879a4003507a82552ee`.
+
+Gate-1 golden masters remained green.
+
+## 2026-10-07 — Gate 2 Burst 2: original course/resource model
+
+### Implemented / verified
+
+The portable core now loads the original MAPM/MAPI/SPT course bundle without committing commercial payloads.
+
+Recovered and integrated:
+
+- MAPM width/height and 10-bit tile references;
+- MAPI descriptor/selector banks;
+- original 16.16 ball-coordinate -> MAPM/MAPI subcell decomposition;
+- all 77 terrain descriptor records;
+- SPT records 0..3 words 2/3 as player tee/start coordinates;
+- SPT record 4 words 2/3 as cup/hole coordinates.
+
+Validated checkpoint: `97c89e13ca0f829b9977ff6b887ef7217235d0f8`.
+
+Successful evidence:
+- course-resource validation `37616105293`;
+- CI `37616105377`;
+- all Gate-1 golden masters green.
+
+## 2026-10-07 — Gate 2 Burst 3 checkpoint: hole/session state and special surfaces
+
+### Implemented
+
+`ClassicHoleSession` now owns:
+
+- tee/start position;
+- shot lifecycle;
+- stroke count;
+- authoritative moving-ball terrain refresh;
+- normal rest;
+- hazard terminal state;
+- hole terminal state;
+- flat-green putter;
+- explicit unsupported-rule state.
+
+### Special-rule analysis
+
+Successful workflows:
+
+- special-green dispatcher: `37616408565`;
+- special landing tail: `37616542794`;
+- special-surface zero-tolerance trajectory parity: `37616747731`;
+- terrain variant/profile-field analysis: `37617022417`.
+
+Normal non-putter ball trajectory for landing codes 10, 50 and 60 matches original v1.014 at zero tolerance.
+
+The putter-specific branches for codes 9/10/50/60 and the full session side effects are still being integrated. Hazard recovery/drop/penalty and next-hole/scoring state remain open.
+
+No unsupported branch is approximated.

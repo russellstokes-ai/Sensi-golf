@@ -1,0 +1,68 @@
+name: Gate 2 Stroke Counter Trace
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate2-stroke-counter-trace.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+      - name: Fetch verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip             --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace counters
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT=analysis/private/gate2-stroke-counter
+          mkdir -p "$OUT"
+          python - "$WIN_EXE" "$OUT/result.json" <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,'tools')
+          from original_v1014_oracle import build_uc,setup,LIVE_LAUNCH_VA,SENTINEL,PLAYER,ru16
+          from original_v1014_putter_terminal_oracle import run as run_terminal
+
+          exe=Path(sys.argv[1])
+          rows=[]
+          for label,club,lie in [('iron',5,4),('putter',12,6)]:
+              uc,digest=build_uc(exe)
+              setup(uc,club,lie,30,63,0)
+              before=(ru16(uc,PLAYER+0x52),ru16(uc,PLAYER+0x56))
+              uc.emu_start(LIVE_LAUNCH_VA,SENTINEL,count=5000)
+              after=(ru16(uc,PLAYER+0x52),ru16(uc,PLAYER+0x56))
+              rows.append({'case':label,'before':before,'after_launch':after})
+
+          for terrain in (7,23,15):
+              r=run_terminal(exe,terrain)
+              rows.append({
+                  'case':f'terminal_{terrain}',
+                  'terminal_counter_52':r['counter_52'],
+                  'terminal_counter_56':r['counter_56'],
+                  'transition':r['transition'],
+                  'events':r['events'],
+              })
+
+          report={'build_sha256':digest,'rows':rows}
+          Path(sys.argv[2]).write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps(report,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-gate2-stroke-counter-trace
+          path: analysis/private/gate2-stroke-counter/
+          retention-days: 30

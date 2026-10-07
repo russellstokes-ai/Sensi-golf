@@ -3,6 +3,7 @@
 #include <limits>
 #include <stdexcept>
 
+#include "sensigolf/recovered_distance.hpp"
 #include "sensigolf/recovered_hazard_recovery.hpp"
 
 namespace sensigolf {
@@ -215,6 +216,67 @@ void ClassicHoleSession::step() {
         phase_ = HoleSessionPhase::ReadyForShot;
         break;
     }
+}
+
+std::uint32_t ClassicHoleSession::distance_to_hole(
+    bool green_mode) const noexcept {
+    const auto hole = course_.hole_position();
+    return recovered::distance_to_hole(
+        ball_x_raw_,
+        ball_y_raw_,
+        hole.x,
+        hole.y,
+        green_mode);
+}
+
+bool ClassicHoleSession::scored_hole_ready(bool green_mode) const noexcept {
+    return phase_ == HoleSessionPhase::CupTerminal
+        && distance_to_hole(green_mode) == 0u;
+}
+
+void ClassicHoleSession::activate_scored_hole(
+    std::uint16_t par,
+    bool green_mode) {
+    if (phase_ != HoleSessionPhase::CupTerminal) {
+        throw std::logic_error(
+            "scored-hole activation requires the cup terminal state");
+    }
+    if (distance_to_hole(green_mode) != 0u) {
+        throw std::logic_error(
+            "original scored-hole branch requires zero distance to cup");
+    }
+
+    // In the recovered single-player flow the putter code-8 terminal first
+    // adds an extra +1 to +0x52/+0x56, then the turn-adjust path removes that
+    // transient increment before the scoring update. Preserve that ordering
+    // here so the score state records the actual stroke count.
+    if (active_club_ == 12) {
+        if (recovered_counters_.player_52 == 0
+            || recovered_counters_.player_56 == 0) {
+            throw std::logic_error(
+                "putter terminal counters cannot be adjusted below zero");
+        }
+        --recovered_counters_.player_52;
+        --recovered_counters_.player_56;
+    }
+
+    // Original 0x4125AB score update:
+    //   +0x58 += current-hole par
+    //   +0x48  = +0x58 - +0x56
+    recovered_counters_.player_58 = static_cast<std::uint16_t>(
+        recovered_counters_.player_58 + par);
+    const auto relative_raw = static_cast<std::uint16_t>(
+        recovered_counters_.player_58 - recovered_counters_.player_56);
+    const auto relative_signed =
+        (relative_raw & 0x8000u) != 0u
+        ? static_cast<std::int32_t>(relative_raw) - 0x10000
+        : static_cast<std::int32_t>(relative_raw);
+    recovered_counters_.player_48 =
+        static_cast<std::int16_t>(relative_signed);
+    recovered_counters_.player_70 = static_cast<std::uint16_t>(
+        recovered_counters_.player_70 + 1u);
+
+    phase_ = HoleSessionPhase::HoleScored;
 }
 
 HoleSessionPhase ClassicHoleSession::phase() const noexcept {

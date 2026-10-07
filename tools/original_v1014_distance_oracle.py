@@ -27,6 +27,7 @@ def original(exe:Path,x_raw:int,y_raw:int,hx:int,hy:int,green:int)->dict:
     w16(uc,HOLE_Y_VA,hy)
     w16(uc,GREEN_MODE_VA,green)
     uc.reg_write(UC_X86_REG_ESI,PLAYER)
+    uc.mem_write(STACK+0xF000, int(SENTINEL).to_bytes(4,"little"))
     uc.reg_write(UC_X86_REG_ESP,STACK+0xF000)
     uc.emu_start(DISTANCE_VA,SENTINEL,count=5000)
     return {"distance":ru32(uc,BALL+0x18),"build_sha256":digest}

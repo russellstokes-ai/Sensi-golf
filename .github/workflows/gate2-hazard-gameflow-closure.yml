@@ -55,6 +55,23 @@ jobs:
             --start-va 0x40CF60 --end-va 0x40D180 \
             -o "$OUT/terminal-ui-tail.json"
 
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40D330 --end-va 0x40D430 \
+            -o "$OUT/terminal-ui-setup.json"
+
+          python - "$WIN_EXE" "$OUT/initial-terminal-state.json" <<'PY'
+          import json,sys
+          from tools.original_v1014_oracle import build_uc,ru16
+          uc,digest=build_uc(__import__('pathlib').Path(sys.argv[1]))
+          report={
+              'build_sha256':digest,
+              'terminal_timer_41f881':ru16(uc,0x41F881),
+              'terminal_flag_41f883':ru16(uc,0x41F883),
+          }
+          open(sys.argv[2],'w').write(json.dumps(report,indent=2)+'\n')
+          print(report)
+          PY
+
           python - <<'PY'
           import json
           j=json.load(open('analysis/private/gate2-hazard-gameflow/gameflow-40ce09.json'))

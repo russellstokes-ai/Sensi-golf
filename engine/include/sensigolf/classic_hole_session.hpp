@@ -61,6 +61,11 @@ public:
     void begin_shot(const ClassicShotRequest& request);
     void step();
 
+    // The original clears the post-hazard terminal flag when its presentation
+    // objects finish. Rendering/presentation owns that timing in the port;
+    // this explicit handoff releases the recovered gameplay state for input.
+    void acknowledge_hazard_recovery();
+
     HoleSessionPhase phase() const noexcept;
     std::uint32_t strokes() const noexcept;
     std::int32_t ball_x_raw() const noexcept;

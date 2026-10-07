@@ -123,8 +123,11 @@ int main() {
     assert(water_session.ball_y_raw() == hazard_y);
     assert(!water_session.ball_state().hazard);
 
-    // Penalty/scoring semantics are not yet promoted, so recovered hazard
-    // position is deliberately not ReadyForShot.
+    // The original code-35 stop/recovery fragment does not add another
+    // single-player stroke. Presentation completion clears the terminal gate
+    // separately, so the platform host explicitly acknowledges that boundary.
+    assert(water_session.recovered_counters().player_52 == 1);
+    assert(water_session.recovered_counters().player_56 == 1);
     bool hazard_replay_blocked = false;
     try {
         water_session.begin_shot(water_shot);
@@ -132,6 +135,13 @@ int main() {
         hazard_replay_blocked = true;
     }
     assert(hazard_replay_blocked);
+
+    water_session.acknowledge_hazard_recovery();
+    assert(water_session.phase() == HoleSessionPhase::ReadyForShot);
+    water_session.begin_shot(water_shot);
+    assert(water_session.strokes() == 2);
+    assert(water_session.recovered_counters().player_52 == 2);
+    assert(water_session.recovered_counters().player_56 == 2);
 
     // Normal GREEN H4/code 1 putter path.
     auto green = uniform_course(31);

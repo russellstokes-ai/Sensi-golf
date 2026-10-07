@@ -154,6 +154,19 @@ void ClassicHoleSession::complete_scored_putter_hole() {
     phase_ = HoleSessionPhase::HoleScored;
 }
 
+void ClassicHoleSession::acknowledge_hazard_recovery() {
+    if (phase_ != HoleSessionPhase::HazardRecovered) {
+        throw std::logic_error(
+            "hazard recovery can only be acknowledged after relocation");
+    }
+
+    // v1.014 has not changed the single-player stroke counters through the
+    // code-35 stop/recovery fragment. Terminal presentation completion clears
+    // the UI/game-flow gate separately; the recovered ball position is already
+    // authoritative at this point.
+    phase_ = HoleSessionPhase::ReadyForShot;
+}
+
 void ClassicHoleSession::step() {
     if (phase_ == HoleSessionPhase::CupTerminal) {
         // v1.014 scores the hole in the later zero-distance pre-update branch,

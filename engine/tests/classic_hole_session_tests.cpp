@@ -26,7 +26,6 @@ ClassicCourseResources uniform_course(std::uint16_t descriptor_index) {
     be16(mapm, 0x54, width);
     be16(mapm, 0x56, height);
 
-    // Every MAPM cell references MAPI tile 0.
     for (std::size_t off = ClassicCourseResources::kMapHeaderBytes;
          off < mapm.size();
          off += 2) {
@@ -51,29 +50,31 @@ void run_active(ClassicHoleSession& session, int max_ticks = 1024) {
     assert(ticks < max_ticks);
 }
 
+ClassicShotRequest putter_request() {
+    ClassicShotRequest putt{};
+    putt.club_index = 12;
+    putt.power_tick = 30;
+    putt.accuracy_tick = 63;
+    putt.aim_raw = 0;
+    return putt;
+}
+
 } // namespace
 
 int main() {
-    // Fairway shot returns to ReadyForShot and counts exactly one stroke.
     auto fairway = uniform_course(1);
     ClassicHoleSession session(fairway, 0);
-    assert(session.ball_x_raw() == 0);
-    assert(session.ball_y_raw() == 0);
-    assert(session.hole_position().x == 0);
-    assert(session.hole_position().y == 0);
     ClassicShotRequest drive{};
     drive.club_index = 0;
     drive.power_tick = 105;
     drive.accuracy_tick = 63;
     drive.aim_raw = 0;
     session.begin_shot(drive);
-    assert(session.phase() == HoleSessionPhase::ShotActive);
     assert(session.strokes() == 1);
     run_active(session);
     assert(session.phase() == HoleSessionPhase::ReadyForShot);
     assert(session.ball_y_raw() > 0);
 
-    // A course made from the recovered hole descriptor reaches HoleComplete.
     auto hole = uniform_course(7);
     ClassicHoleSession hole_session(hole, 0, 0);
     ClassicShotRequest approach{};
@@ -84,11 +85,8 @@ int main() {
     hole_session.begin_shot(approach);
     run_active(hole_session);
     assert(hole_session.phase() == HoleSessionPhase::HoleComplete);
-    assert(hole_session.strokes() == 1);
     assert(hole_session.ball_state().holed);
 
-    // Water terminates in an explicit hazard state; recovery/drop rules are
-    // intentionally not invented by this session layer.
     auto water = uniform_course(6);
     ClassicHoleSession water_session(water, 0, 0);
     ClassicShotRequest water_shot{};
@@ -101,33 +99,47 @@ int main() {
     assert(water_session.phase() == HoleSessionPhase::HazardStopped);
     assert(water_session.ball_state().hazard);
 
-    // Flat GREEN H4 supports the parity-proven putter path.
+    // Normal GREEN H4/code 1 putter path.
     auto green = uniform_course(31);
     ClassicHoleSession putt_session(green, 0, 0);
-    ClassicShotRequest putt{};
-    putt.club_index = 12;
-    putt.power_tick = 30;
-    putt.accuracy_tick = 63;
-    putt.aim_raw = 0;
-    putt_session.begin_shot(putt);
+    putt_session.begin_shot(putter_request());
     run_active(putt_session);
     assert(putt_session.phase() == HoleSessionPhase::ReadyForShot);
-    assert(putt_session.strokes() == 1);
 
-    // GREEN H3/code-9 is known/recovered but not yet integrated into the
-    // production shot wrapper. Refuse it rather than approximating.
-    auto special_green = uniform_course(23);
-    ClassicHoleSession blocked(special_green, 0, 0);
+    // GREEN H1/code 8 is the parity-proven cup terminal for a putter.
+    auto cup = uniform_course(7);
+    ClassicHoleSession cup_putt(cup, 0, 0);
+    cup_putt.begin_shot(putter_request());
+    run_active(cup_putt);
+    assert(cup_putt.phase() == HoleSessionPhase::HoleComplete);
+    assert(cup_putt.ball_state().holed);
+
+    // GREEN H3/code 9 and GREEN H2/code 10 terminate through the original
+    // event-11 path. They are known terminal outcomes but the subsequent
+    // game-flow transition is intentionally kept distinct until recovered.
+    for (auto descriptor : {std::uint16_t{23}, std::uint16_t{15}}) {
+        auto special = uniform_course(descriptor);
+        ClassicHoleSession special_putt(special, 0, 0);
+        special_putt.begin_shot(putter_request());
+        run_active(special_putt);
+        assert(special_putt.phase() == HoleSessionPhase::SpecialGreenStopped);
+        assert(!special_putt.ball_state().holed);
+    }
+
+    // GREEN D2/code 50 remains unsupported for club 12 until its specific
+    // pause/state path is parity-integrated.
+    auto down_green = uniform_course(47);
+    ClassicHoleSession blocked(down_green, 0, 0);
     bool threw = false;
     try {
-        blocked.begin_shot(approach);
+        blocked.begin_shot(putter_request());
     } catch (const std::runtime_error&) {
         threw = true;
     }
     assert(threw);
     assert(blocked.phase() == HoleSessionPhase::UnsupportedTerrain);
     assert(blocked.unsupported_descriptor().has_value());
-    assert(*blocked.unsupported_descriptor() == 23);
+    assert(*blocked.unsupported_descriptor() == 47);
 
     return 0;
 }

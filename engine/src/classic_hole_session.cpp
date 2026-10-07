@@ -44,19 +44,18 @@ ClassicSurfaceContext ClassicHoleSession::to_context(
 
 bool ClassicHoleSession::surface_supported_for_active_shot(
     const ResolvedCourseSurface& surface) const noexcept {
+    if (active_club_ == 12) {
+        return surface.landing_code == 1
+            || surface.landing_code == 8
+            || surface.landing_code == 9
+            || surface.landing_code == 10;
+    }
+
     if (!surface.product_supported) {
         return false;
     }
 
-    // Gate-1 putter parity currently covers the GREEN H4 / code-1 path.
-    // Entering the hole/special-green descriptors while putting is not yet
-    // wired into ClassicShotModel, so stop explicitly rather than approximate.
-    if (active_club_ == 12) {
-        return surface.landing_code == 1;
-    }
-
-    // Conversely, the non-putter path has not yet been parity-integrated with
-    // GREEN H4's green-specific drag/slope semantics.
+    // GREEN H4 uses putter-specific green drag/slope semantics.
     return surface.landing_code != 1;
 }
 
@@ -127,12 +126,20 @@ void ClassicHoleSession::step() {
     ball_x_raw_ = static_cast<std::int32_t>(final.x_raw);
     ball_y_raw_ = static_cast<std::int32_t>(final.y_raw);
 
-    if (final.holed) {
+    switch (shot_.outcome()) {
+    case ClassicShotOutcome::Holed:
         phase_ = HoleSessionPhase::HoleComplete;
-    } else if (final.hazard) {
+        break;
+    case ClassicShotOutcome::Hazard:
         phase_ = HoleSessionPhase::HazardStopped;
-    } else {
+        break;
+    case ClassicShotOutcome::SpecialGreenStop:
+        phase_ = HoleSessionPhase::SpecialGreenStopped;
+        break;
+    case ClassicShotOutcome::Rest:
+    case ClassicShotOutcome::None:
         phase_ = HoleSessionPhase::ReadyForShot;
+        break;
     }
 }
 
@@ -159,7 +166,8 @@ const BallState& ClassicHoleSession::ball_state() const noexcept {
 ResolvedCourseSurface ClassicHoleSession::current_surface() const {
     const auto& state = shot_.state();
     if (phase_ == HoleSessionPhase::ShotActive
-        || phase_ == HoleSessionPhase::UnsupportedTerrain) {
+        || phase_ == HoleSessionPhase::UnsupportedTerrain
+        || phase_ == HoleSessionPhase::SpecialGreenStopped) {
         return course_.resolve_raw_position(
             static_cast<std::int32_t>(state.x_raw),
             static_cast<std::int32_t>(state.y_raw));

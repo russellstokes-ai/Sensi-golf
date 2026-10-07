@@ -13,6 +13,14 @@ struct ClassicSurfaceContext {
     std::uint16_t slope_magnitude = 0;
 };
 
+enum class ClassicShotOutcome : std::uint8_t {
+    None = 0,
+    Rest,
+    Hazard,
+    Holed,
+    SpecialGreenStop,
+};
+
 class ClassicShotModel final : public IClassicModel {
 public:
     static constexpr std::uint32_t kTimerInterval16_16 = 0x03A8;
@@ -29,17 +37,16 @@ public:
         return kTimerInterval16_16;
     }
 
-    // Pre-shot/test configuration.
     void set_surface_context(const ClassicSurfaceContext& context);
-
-    // Course/session integration refreshes the terrain under the ball before
-    // each original logical tick.
     void update_surface_context_for_tick(
         const ClassicSurfaceContext& context);
-
     const ClassicSurfaceContext& surface_context() const noexcept;
 
     void set_ball_origin(std::int32_t x_raw, std::int32_t y_raw) noexcept;
+
+    ClassicShotOutcome outcome() const noexcept {
+        return outcome_;
+    }
 
 private:
     void sync_public_state();
@@ -50,6 +57,7 @@ private:
     std::int32_t origin_x_ = 0;
     std::int32_t origin_y_ = 0;
     std::uint16_t active_club_ = 0;
+    ClassicShotOutcome outcome_ = ClassicShotOutcome::None;
     bool active_ = false;
 };
 

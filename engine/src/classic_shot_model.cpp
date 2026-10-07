@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "sensigolf/recovered_ground.hpp"
+#include "sensigolf/recovered_putter_terminal.hpp"
 
 namespace sensigolf {
 namespace {
@@ -37,6 +38,7 @@ void ClassicShotModel::reset() {
     origin_x_ = 0;
     origin_y_ = 0;
     active_club_ = 0;
+    outcome_ = ClassicShotOutcome::None;
     active_ = false;
 }
 
@@ -91,6 +93,7 @@ void ClassicShotModel::begin_shot(const ShotInput& input) {
 
     flight_ = recovered::launch_normal_shot(launch);
     active_club_ = input.club_index;
+    outcome_ = ClassicShotOutcome::None;
     active_ = true;
 
     public_ = {};
@@ -109,9 +112,25 @@ void ClassicShotModel::step() {
 
     recovered::GroundStepResult result{};
     if (active_club_ == 12) {
+        recovered::PutterTerminalState terminal{};
+        if (recovered::apply_putter_terminal(
+                surface_.landing_code, terminal)) {
+            active_ = false;
+            public_.phase = ShotPhase::Complete;
+            if (terminal.kind
+                == recovered::PutterTerminalKind::Holed) {
+                public_.holed = true;
+                outcome_ = ClassicShotOutcome::Holed;
+            } else {
+                outcome_ = ClassicShotOutcome::SpecialGreenStop;
+            }
+            sync_public_state();
+            return;
+        }
+
         if (surface_.landing_code != 1) {
             throw std::logic_error(
-                "recovered club-12 model requires green landing code 1");
+                "club-12 surface is not yet product-integrated");
         }
         result = recovered::step_green_putt(
             flight_,
@@ -128,13 +147,18 @@ void ClassicShotModel::step() {
     }
     if (result.hazard_stop) {
         public_.hazard = true;
+        outcome_ = ClassicShotOutcome::Hazard;
     }
     if (result.holed) {
         public_.holed = true;
+        outcome_ = ClassicShotOutcome::Holed;
     }
     if (result.resting) {
         active_ = false;
         public_.phase = ShotPhase::Complete;
+        if (outcome_ == ClassicShotOutcome::None) {
+            outcome_ = ClassicShotOutcome::Rest;
+        }
     }
 
     sync_public_state();

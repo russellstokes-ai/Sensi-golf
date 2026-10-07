@@ -13,6 +13,7 @@ enum class HoleSessionPhase : std::uint8_t {
     ReadyForShot = 0,
     ShotActive,
     HazardStopped,
+    SpecialGreenStopped,
     HoleComplete,
     UnsupportedTerrain,
 };

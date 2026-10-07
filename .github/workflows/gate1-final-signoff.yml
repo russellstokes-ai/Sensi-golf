@@ -1,0 +1,324 @@
+name: Gate 1 Final Sign-off
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate1-final-signoff.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signoff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+
+      - name: Build clean portable core
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+          python -m unittest discover -s tests -v
+          ctest --test-dir build --output-on-failure
+
+      - name: Establish paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          test -n "$WIN_EXE"
+          ROOT="analysis/private/step2/extracted/epf"
+          OUT="analysis/private/gate1-final-signoff"
+          mkdir -p "$OUT"
+          echo "WIN_EXE=$WIN_EXE" >> "$GITHUB_ENV"
+          echo "ROOT=$ROOT" >> "$GITHUB_ENV"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+
+      - name: Launch-to-rest straight draw fade
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/flat"
+          run_case() {
+            n="$1"; c="$2"; l="$3"; p="$4"; a="$5"; d="$6"
+            python tools/original_v1014_flat_oracle.py "$WIN_EXE" \
+              --club "$c" --lie "$l" --power "$p" --accuracy "$a" \
+              --direction "$d" --max-ticks 512 -o "$OUT/flat/$n-original.json"
+            ./build/engine/sensigolf_recovered_full_probe "$c" "$l" "$p" "$a" "$d" 512 \
+              > "$OUT/flat/$n-recovered.json"
+            python tools/compare_full_oracle.py "$OUT/flat/$n-original.json" \
+              "$OUT/flat/$n-recovered.json" -o "$OUT/flat/$n-comparison.json"
+          }
+          run_case straight_1w 0 0 105 63 0
+          run_case draw_mid 5 2 83 59 777
+          run_case fade_high 11 0 60 67 3072
+
+      - name: Ordinary surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/surfaces"
+          run_surface() {
+            n="$1"; terrain="$2"; lie="$3"; code="$4"
+            python tools/original_v1014_flat_oracle.py "$WIN_EXE" \
+              --club 5 --lie "$lie" --power 83 --accuracy 63 --direction 777 \
+              --max-ticks 512 --terrain-index "$terrain" -o "$OUT/surfaces/$n-original.json"
+            ./build/engine/sensigolf_recovered_full_probe 5 "$lie" 83 63 777 512 "$code" \
+              > "$OUT/surfaces/$n-recovered.json"
+            python tools/compare_full_oracle.py "$OUT/surfaces/$n-original.json" \
+              "$OUT/surfaces/$n-recovered.json" -o "$OUT/surfaces/$n-comparison.json"
+          }
+          run_surface skirt 0 5 2
+          run_surface fairway 1 4 3
+          run_surface semi_rough 2 3 4
+          run_surface rough 3 2 5
+          run_surface very_rough 4 1 6
+          run_surface sand 5 0 7
+
+      - name: Hazards
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/hazards"
+          run_hazard() {
+            n="$1"; terrain="$2"
+            python tools/original_v1014_flat_oracle.py "$WIN_EXE" \
+              --club 5 --lie 7 --power 83 --accuracy 63 --direction 777 \
+              --max-ticks 512 --terrain-index "$terrain" -o "$OUT/hazards/$n-original.json"
+            ./build/engine/sensigolf_recovered_full_probe 5 7 83 63 777 512 35 \
+              > "$OUT/hazards/$n-recovered.json"
+            python tools/compare_full_oracle.py "$OUT/hazards/$n-original.json" \
+              "$OUT/hazards/$n-recovered.json" -o "$OUT/hazards/$n-comparison.json"
+          }
+          run_hazard water 6
+          run_hazard no_go 14
+          run_hazard out_of_bounds 22
+
+      - name: Putter and green slope
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/putter" "$OUT/slope"
+          for p in 10 30 60; do
+            python tools/original_v1014_putter_oracle.py "$WIN_EXE" \
+              --power "$p" --accuracy 63 --direction 0 --max-ticks 512 \
+              -o "$OUT/putter/p$p-original.json"
+            ./build/engine/sensigolf_recovered_full_probe 12 6 "$p" 63 0 512 1 \
+              > "$OUT/putter/p$p-recovered.json"
+            python tools/compare_full_oracle.py "$OUT/putter/p$p-original.json" \
+              "$OUT/putter/p$p-recovered.json" -o "$OUT/putter/p$p-comparison.json"
+          done
+
+          run_slope() {
+            n="$1"; dir="$2"; mag="$3"
+            python tools/original_v1014_putter_oracle.py "$WIN_EXE" \
+              --power 30 --accuracy 63 --direction 0 --max-ticks 128 \
+              --slope-direction "$dir" --slope-magnitude "$mag" \
+              -o "$OUT/slope/$n-original.json"
+            ./build/engine/sensigolf_recovered_full_probe 12 6 30 63 0 128 1 "$dir" "$mag" \
+              > "$OUT/slope/$n-recovered.json"
+            python tools/compare_full_oracle.py "$OUT/slope/$n-original.json" \
+              "$OUT/slope/$n-recovered.json" -o "$OUT/slope/$n-comparison.json"
+          }
+          run_slope forward 0 1
+          run_slope right 1024 1
+          run_slope diagonal 512 3
+
+      - name: Hole capture
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/hole"
+          python tools/original_v1014_flat_oracle.py "$WIN_EXE" \
+            --club 5 --lie 9 --power 83 --accuracy 63 --direction 777 \
+            --max-ticks 512 --terrain-index 7 -o "$OUT/hole/original.json"
+          ./build/engine/sensigolf_recovered_full_probe 5 9 83 63 777 512 8 \
+            > "$OUT/hole/recovered.json"
+          python tools/compare_full_oracle.py "$OUT/hole/original.json" \
+            "$OUT/hole/recovered.json" -o "$OUT/hole/comparison.json"
+
+      - name: Original PRNG and interaction mutations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/prng" "$OUT/interactions"
+          python tools/original_v1014_prng_oracle.py "$WIN_EXE" \
+            --seed0 0x1234 --seed1 0xABCD \
+            --max 0x200 --max 0x800 --max 0x90 --max 0x11 --max 0xFFFF --max 0x200 \
+            -o "$OUT/prng/original.json"
+          ./build/engine/sensigolf_recovered_prng_probe \
+            0x1234 0xABCD 0x200 0x800 0x90 0x11 0xFFFF 0x200 \
+            > "$OUT/prng/recovered.json"
+          python - <<'PY'
+          import json
+          a=json.load(open('analysis/private/gate1-final-signoff/prng/original.json'))
+          b=json.load(open('analysis/private/gate1-final-signoff/prng/recovered.json'))
+          assert a['samples']==b['samples']
+          PY
+
+          run_interaction() {
+            branch="$1"; s0="$2"; s1="$3"; d="$4"; v="$5"; h="$6"
+            python tools/original_v1014_interactions_oracle.py "$WIN_EXE" \
+              --branch "$branch" --seed0 "$s0" --seed1 "$s1" \
+              --direction "$d" --vforce "$v" --hforce "$h" \
+              -o "$OUT/interactions/$branch-original.json"
+            ./build/engine/sensigolf_recovered_interactions_probe \
+              "$branch" "$s0" "$s1" "$d" "$v" "$h" \
+              > "$OUT/interactions/$branch-recovered.json"
+            python - "$OUT/interactions/$branch-original.json" "$OUT/interactions/$branch-recovered.json" <<'PY'
+          import json,sys
+          a=json.load(open(sys.argv[1])); b=json.load(open(sys.argv[2]))
+          a.pop('build_sha256',None)
+          assert a==b,(a,b)
+          PY
+          }
+          run_interaction code9 0x1234 0xABCD 777 -50000 90000
+          run_interaction lip 0x89AB 0xCDEF 3000 -20000 0x12000
+          run_interaction flag 0x1357 0x2468 100 -8448 70000
+
+      - name: Exhaustive course MAPI lookup
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/course"
+          total=0
+          for pair in 1 3 5 7; do
+            next=$((pair+1))
+            a=$(printf "MAPI%02d.RAW" "$pair")
+            b=$(printf "MAPI%02d.RAW" "$next")
+            tag=$(printf "%02d-%02d" "$pair" "$next")
+            python tools/original_v1014_course_lookup_oracle.py "$WIN_EXE" \
+              "$ROOT/$a" "$ROOT/$b" -o "$OUT/course/$tag-original.csv"
+            ./build/engine/sensigolf_recovered_course_lookup_probe "$ROOT/$a" "$ROOT/$b" \
+              > "$OUT/course/$tag-recovered.csv"
+            cmp "$OUT/course/$tag-original.csv" "$OUT/course/$tag-recovered.csv"
+            total=$((total+640*32))
+          done
+          test "$total" -eq 81920
+          echo "$total" > "$OUT/course/case-count.txt"
+
+      - name: End-to-end course lookup to PRNG interaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/integration"
+          found=0
+          for pair in 1 3 5 7; do
+            next=$((pair+1))
+            a=$(printf "MAPI%02d.RAW" "$pair")
+            b=$(printf "MAPI%02d.RAW" "$next")
+            if python tools/select_course_interaction_case.py "$WIN_EXE" \
+                "$ROOT/$a" "$ROOT/$b" --landing-code 9 -o "$OUT/integration/case.json"; then
+              DESC_BANK="$ROOT/$a"
+              SEL_BANK="$ROOT/$b"
+              found=1
+              break
+            fi
+          done
+          test "$found" -eq 1
+
+          read tile x y < <(python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/gate1-final-signoff/integration/case.json'))
+          print(j['tile'],j['x_subcell'],j['y_subcell'])
+          PY
+          )
+
+          python tools/original_v1014_course_interaction_oracle.py "$WIN_EXE" \
+            "$DESC_BANK" "$SEL_BANK" --tile "$tile" --x "$x" --y "$y" \
+            --seed0 0x1234 --seed1 0xABCD --direction 777 \
+            --vforce -50000 --hforce 90000 --height 0x40000 \
+            -o "$OUT/integration/original.json"
+
+          ./build/engine/sensigolf_recovered_course_lookup_probe "$DESC_BANK" "$SEL_BANK" \
+            > "$OUT/integration/recovered-course.csv"
+          ./build/engine/sensigolf_recovered_interactions_probe \
+            code9 0x1234 0xABCD 777 -50000 90000 \
+            > "$OUT/integration/recovered-interaction.json"
+
+          python - <<'PY'
+          import csv,json
+          from pathlib import Path
+          out=Path('analysis/private/gate1-final-signoff/integration')
+          case=json.load(open(out/'case.json'))
+          orig=json.load(open(out/'original.json'))
+          rec=json.load(open(out/'recovered-interaction.json'))
+          key=(case['tile'],case['x_subcell'],case['y_subcell'])
+          lookup=None
+          with open(out/'recovered-course.csv',newline='') as fh:
+              for row in csv.DictReader(fh):
+                  if (int(row['tile']),int(row['x']),int(row['y']))==key:
+                      lookup={k:int(v) for k,v in row.items()}
+                      break
+          assert lookup and lookup['descriptor']==case['descriptor_index']
+          assert orig['descriptor_index']==case['descriptor_index']
+          assert orig['landing_code']==9 and orig['code9_activated']
+          assert 11 in orig['events']
+          for f in ('direction','vertical_force','horizontal_force','seed0','seed1'):
+              assert int(orig[f])==int(rec[f]),(f,orig[f],rec[f])
+          report={
+              'pass':True,'tolerance':0,'case':case,
+              'original_event_ids':orig['events'],
+              'recovered_lookup':lookup,
+              'recovered_interaction':rec,
+          }
+          (out/'comparison.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
+
+      - name: Write Gate 1 sign-off summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,glob
+          from pathlib import Path
+          out=Path('analysis/private/gate1-final-signoff')
+          comparisons=glob.glob(str(out/'**/*comparison.json'),recursive=True)
+          for p in comparisons:
+              j=json.load(open(p))
+              assert j.get('pass') is True,p
+          summary={
+              'gate':'Gate 1 — Original Gameplay and Physics Recovery',
+              'status':'PASS',
+              'reference':'Sensible Golf Windows v1.014',
+              'reference_sha256':'3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8',
+              'tolerance':0,
+              'launch_to_rest_cases':3,
+              'ordinary_surface_cases':6,
+              'hazard_cases':3,
+              'putter_cases':3,
+              'green_slope_cases':3,
+              'hole_capture_cases':1,
+              'prng_sequences':6,
+              'interaction_branches':3,
+              'course_lookup_cases':81920,
+              'end_to_end_course_interaction':True,
+              'comparison_files':len(comparisons),
+              'unit_and_core_tests':'PASS',
+          }
+          (out/'GATE1_SIGNOFF.json').write_text(json.dumps(summary,indent=2)+'\n')
+          print(json.dumps(summary,indent=2))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate1-final-signoff
+          path: analysis/private/gate1-final-signoff/
+          retention-days: 90

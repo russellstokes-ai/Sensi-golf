@@ -19,11 +19,13 @@ Android, future iOS code and any developer desktop test executable are platform 
 - play audio;
 - persist opaque game/session state.
 
-They must not independently calculate golf physics, terrain results, collision, putting, PRNG outcomes, hazards, cup rules or scoring transitions.
+They must not independently calculate golf physics, terrain results, collision, putting, PRNG outcomes, hazards, cup rules, scoring transitions or hole progression.
 
 ## Current checkpoint
 
-Current recovery/integration head: `b9f6aaaca958d5c9479745423c16f3af5a43e461`.
+Current merged integration checkpoint: `53c27378cd66c68c6037fbe228a169ab375d2f45`.
+
+Round-progression implementation was verified on `9aababcd85b4ca89c0d675351787de0dc7f66a1c` before merge.
 
 ### Burst 1 — platform-neutral shot-model bridge
 
@@ -60,15 +62,16 @@ Delivered:
 Validated checkpoint: `97c89e13ca0f829b9977ff6b887ef7217235d0f8`.
 
 Evidence:
+
 - resource validation `37616105293` — PASS;
 - CI `37616105377` — PASS;
 - all existing Gate-1 golden masters — PASS.
 
-### Burst 3 — hole/session state machine
+### Burst 3 — hole/session/round state machine
 
-**IN PROGRESS — MAJOR TERMINAL/RECOVERY PATHS INTEGRATED**
+**IN PROGRESS — SCORED-HOLE AND ROUND PROGRESSION INTEGRATED**
 
-Delivered:
+#### Delivered
 
 - real SPT tee initialization and cup coordinates;
 - tee -> aim/club/input -> shot -> moving terrain lookup -> rest lifecycle;
@@ -82,59 +85,96 @@ Delivered:
 - original hazard pause of 100 logical ticks;
 - recovered safe-anchor tracking;
 - recovered post-hazard position relocation using original course extents;
-- explicit unsupported state where a rule is still not integrated.
+- exact recovered distance-to-hole helper;
+- explicit separation between cup terminal and scored-hole state;
+- recovered single-player par-relative score update;
+- recovered zero-based next-hole increment and 18-hole finish rule;
+- cross-hole `ClassicRoundSession` state;
+- stale/duplicate scored-hole rejection;
+- 18-hole synthetic round progression regression.
 
 Key implementation checkpoints:
 
 - `0f83c2f89e0db324d0fbad0304088d26104eb7bd` — putter cup-edge terminal integration;
-- `37e2f16cbf1420f4a83b59072f08c0915b68f45e` — hazard pause/position recovery integration.
-
-Key analysis/parity evidence:
-
-- `37616408565` — special-green dispatcher;
-- `37616542794` — special landing tail;
-- `37616747731` — code 10/50/60 non-putter trajectory parity;
-- `37617022417` — terrain profile/variant analysis;
-- putter code-8/9/10 parity was added before product integration;
-- post-hazard recovery was parity-tested before product integration;
-- `37623146366` — scoring/stroke-state analysis;
-- `37623430352` — original stroke-counter ownership trace;
-- `37623654428` — actual hole-completion semantic check;
-- current-head CI `37623654112` — PASS.
+- `37e2f16cbf1420f4a83b59072f08c0915b68f45e` — hazard pause/position recovery integration;
+- `d42a9e1b8c380cd7358c6205b4a1d51d9ce99c7a` — scored-hole integration;
+- `53c27378cd66c68c6037fbe228a169ab375d2f45` — merged cross-hole round progression.
 
 #### Recovered score/stroke facts
 
-The original player structure has two counters at `+0x52` and `+0x56`.
+For the currently proven single-player path:
 
-Controlled original-machine-code evidence shows:
+- `+0x52` is the current-hole stroke counter;
+- `+0x56` is the stroke total used by the original score update;
+- `+0x58` accumulates par;
+- `+0x48` is `cumulative par - cumulative strokes`;
+- `+0x70` counts completed holes;
+- a code-8 putter terminal transiently increments `+0x52/+0x56` again;
+- the recovered single-player turn-adjust path removes that transient increment before the score update.
 
-- both change from 0 -> 1 on both a normal iron launch and a putter launch;
-- in the scoped putter terminal oracle, code-8/cup changes initial 7/11 -> 8/12;
-- code-9 and code-10 special terminals leave 7/11 unchanged;
-- score-transfer code executes `player+0x56 -= player+0x52` and then clears `player+0x52`;
-- hole-result flow compares a stroke/score source with the course par and clamps the displayed relative result to the original range -3..+8.
+The portable per-hole session starts its recovered counters from zero. `ClassicRoundSession` owns the cross-hole aggregate that must survive between physical hole sessions.
 
-These observations are strong enough to structure the next session work, but the counters will not receive stronger human-readable names until the remaining lifecycle xrefs are closed.
+#### Cup capture versus scored-hole completion
 
-#### Cup capture versus hole completion
+The original flow is now represented as separate stages:
 
-The original code separates:
+1. code-8 cup terminal detection;
+2. terminal/presentation state;
+3. later distance-to-hole pre-update;
+4. scored-hole counter/par update;
+5. next-hole progression.
 
-1. ball/cup terminal detection;
-2. terminal presentation/event state;
-3. score/result calculation;
-4. full hole/session completion and next-state flow.
+The exact Windows v1.014 distance helper at `0x40B998` has been recovered and parity-tested. A cup terminal is not promoted merely because landing code 8 occurred; the currently proven single-player putter completion path requires the later recovered distance value to be zero.
 
-Therefore `ClassicShotOutcome::Holed` currently means the recovered ball/cup outcome. The session still needs a separate completed-hole/scoring transition before it can advance to the next hole.
+`ClassicHoleMetadata` supplies the zero-based hole index and par to the portable hole session. The session exposes the recovered next-hole index and round-complete result.
+
+#### Cross-hole round state
+
+`ClassicRoundSession` now:
+
+- accepts only `HoleScored` results;
+- validates that hole metadata matches the current round index;
+- validates the recovered next-hole index;
+- validates the recovered 18-hole completion state;
+- accumulates strokes/par and relative-to-par using original-width arithmetic;
+- rejects stale/duplicate results;
+- preserves the round state across separate physical hole-session instances.
+
+The regression suite walks all 18 holes and verifies that the round becomes complete only when the zero-based hole index reaches 18.
+
+#### Verification
+
+Checkpoint `9aababcd85b4ca89c0d675351787de0dc7f66a1c`:
+
+- CI push `37672902841` — PASS;
+- CI PR `37672942401` — PASS;
+- course resource validation `37672902177` — PASS;
+- hazard recovery parity `37672902138` — PASS;
+- putter terminal parity `37672902332` — PASS;
+- putter golden master `37672902330` — PASS;
+- live-player golden master `37672902586` — PASS;
+- normal-surface golden master `37672902230` — PASS;
+- hazard golden master `37672902392` — PASS;
+- flat landing/rest golden master `37672902517` — PASS;
+- hole-capture golden master `37672902350` — PASS;
+- green-slope golden master `37672902256` — PASS;
+- PRNG golden master `37672902219` — PASS;
+- PRNG-interaction golden master `37672902119` — PASS;
+- course-collision golden master `37672902433` — PASS.
+
+No Gate-1 parity regression was introduced.
+
+Durable record: `analysis/evidence/gate2_burst3_round_checkpoint.json`.
 
 #### Remaining Burst-3 work
 
-1. finalize session-level ownership of the two recovered shot/score counters;
-2. implement score/result state using the original par comparison rules;
-3. distinguish cup terminal from completed/scored hole state;
-4. recover and implement next-hole transition ownership;
-5. move original PRNG seed ownership into the session where needed by full-hole replay;
-6. prove one complete original hole from SPT tee through scored completion.
+1. **Hazard gameflow closure:** finish the post-hazard terminal handoff, terminal-flag release, penalty/turn ownership and transition back to playable state.
+2. **Real next-hole setup:** connect the recovered next-hole index to original course/resource/setup selection and prove that handoff.
+3. **Remaining terminal continuations:** close unsupported/special green continuations and any non-putter scored-hole completion path required by the original.
+4. **Session PRNG ownership:** move the original seed/state ownership into the session where required for deterministic complete-hole replay.
+5. **Real-course end-to-end proof:** run one original hole from its real SPT tee, through real MAPI terrain and gameplay, into cup/scoring and the next-hole setup.
+
+The current hazard-analysis workflow on `main` is already tracing item 1 through the post-hazard handoff, terminal flag release and presentation-timer source.
 
 ### Burst 4 — save/replay contract
 
@@ -163,6 +203,6 @@ Deliverables:
 
 ## Gate 2 exit
 
-A complete original hole can be played deterministically through the platform-neutral game/session layer, with no Android-specific gameplay logic and with unsupported original rules resolved rather than approximated.
+Gate 2 exits only when a complete **real original hole** can be played deterministically through the platform-neutral game/session layer, including terminal, scoring and next-hole handoff, with no Android-specific gameplay logic and with unsupported original rules resolved rather than approximated.
 
 Android then becomes the first actual playable product build.

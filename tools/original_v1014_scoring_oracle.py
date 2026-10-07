@@ -47,6 +47,10 @@ UI_GATE_VA = 0x41D64B
 GAME_MODE_VA = 0x42558E
 PAR_TABLE_VA = 0x41E603
 ORDER_POINTER_TABLE_VA = 0x41E64C
+CURRENT_ORDER_VA = 0x425580
+CURRENT_HOLE_INDEX_VA = 0x42952B
+SCORE_UPDATE_VA = 0x4125AB
+SCORE_UPDATE_STATE_DONE_VA = 0x4125D5
 PLAYER_COUNT_VA = 0x429527
 CANONICAL_PLAYER_VA = 0x425FE2
 CANONICAL_BALL_VA = 0x4287D6
@@ -424,6 +428,62 @@ def hazard_counter_case(exe: Path, terrain_index: int = 6) -> dict:
         "reached_recovery_stop": reached_recovery_stop,
     }
 
+
+
+def score_update_case(
+    exe: Path,
+    hole_index: int,
+    total_strokes: int,
+    cumulative_par_before: int,
+) -> dict:
+    """Execute original 0x4125AB through its authoritative state writes."""
+    uc, digest = build_uc(exe)
+    setup(uc, 5, 4, 30, 63, 0)
+
+    order_ptr = ru32(uc, ORDER_POINTER_TABLE_VA)
+    if not (0x400000 <= order_ptr < 0x500000):
+        raise RuntimeError(f"invalid recovered order pointer {order_ptr:#x}")
+    if not 0 <= hole_index < 18:
+        raise ValueError("hole_index must be 0..17")
+
+    hole_id = bytes(uc.mem_read(order_ptr + hole_index, 1))[0]
+    par = bytes(uc.mem_read(PAR_TABLE_VA + hole_id, 1))[0]
+
+    wu32(uc, CURRENT_ORDER_VA, order_ptr)
+    wu32(uc, CURRENT_HOLE_INDEX_VA, hole_index)
+    w16(uc, PLAYER + 0x52, total_strokes)
+    w16(uc, PLAYER + 0x56, total_strokes)
+    w16(uc, PLAYER + 0x58, cumulative_par_before)
+    w16(uc, PLAYER + 0x48, 0x7FFF)
+
+    uc.emu_start(
+        SCORE_UPDATE_VA,
+        SCORE_UPDATE_STATE_DONE_VA,
+        count=5000,
+    )
+
+    cumulative_after = ru16(uc, PLAYER + 0x58)
+    relative_raw = ru16(uc, PLAYER + 0x48)
+    relative_signed = (
+        relative_raw - 0x10000
+        if relative_raw & 0x8000
+        else relative_raw
+    )
+
+    return {
+        "case": "original_score_update",
+        "build_sha256": digest,
+        "hole_index": hole_index,
+        "hole_id": hole_id,
+        "par": par,
+        "total_strokes": total_strokes,
+        "cumulative_par_before": cumulative_par_before,
+        "cumulative_par_after": cumulative_after,
+        "relative_to_par": relative_signed,
+        "counter_52_unchanged": ru16(uc, PLAYER + 0x52),
+        "counter_56_unchanged": ru16(uc, PLAYER + 0x56),
+    }
+
 def dump_static_tables(exe: Path) -> dict:
     uc, _ = build_uc(exe)
 
@@ -499,12 +559,31 @@ def main() -> int:
     assert hazard["reached_recovery_stop"] is True, hazard
     assert hazard["after_recovery"] == [1, 1], hazard
 
+    score_first = score_update_case(
+        args.exe, hole_index=0, total_strokes=3, cumulative_par_before=0)
+    assert score_first["cumulative_par_after"] == score_first["par"]
+    assert score_first["relative_to_par"] == score_first["par"] - 3
+    assert score_first["counter_52_unchanged"] == 3
+    assert score_first["counter_56_unchanged"] == 3
+
+    score_second = score_update_case(
+        args.exe,
+        hole_index=1,
+        total_strokes=7,
+        cumulative_par_before=score_first["par"],
+    )
+    assert score_second["cumulative_par_after"] == (
+        score_first["par"] + score_second["par"])
+    assert score_second["relative_to_par"] == (
+        score_second["cumulative_par_after"] - 7)
+
     report = {
         "reference": "Sensible Golf Windows v1.014",
         "continuous_cases": rows,
         "real_putter_to_cup": real_putter,
         "post_hole_turn_adjust": post_hole_adjust,
         "hazard_counter_lifecycle": hazard,
+        "score_update_cases": [score_first, score_second],
         "static_tables": dump_static_tables(args.exe),
     }
 

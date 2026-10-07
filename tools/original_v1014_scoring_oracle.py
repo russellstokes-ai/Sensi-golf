@@ -48,6 +48,8 @@ GAME_MODE_VA = 0x42558E
 PAR_TABLE_VA = 0x41E603
 ORDER_POINTER_TABLE_VA = 0x41E64C
 PLAYER_COUNT_VA = 0x429527
+CANONICAL_PLAYER_VA = 0x425FE2
+CANONICAL_BALL_VA = 0x4287D6
 TURN_ADJUST_VA = 0x40C005
 TURN_ADJUST_EXIT_VA = 0x40BEF4
 TERRAIN_LOOKUP_VA = 0x409535
@@ -261,15 +263,43 @@ def post_hole_turn_adjust_case(exe: Path) -> dict:
         "ball_state_18": ru32(uc, BALL + 0x18),
     }
 
+    # The shot oracle executes with scratch PLAYER/BALL addresses, while the
+    # original turn-selection routine hardcodes the production arrays at
+    # 0x425FE2 / 0x4287D6. Copy the exact resulting state back into those
+    # canonical arrays before entering game-flow code.
+    uc.mem_write(
+        CANONICAL_PLAYER_VA,
+        bytes(uc.mem_read(PLAYER, 0x86)),
+    )
+    uc.mem_write(
+        CANONICAL_BALL_VA,
+        bytes(uc.mem_read(BALL, 0x2C)),
+    )
+
     # Original single-player turn-selection path.
     uc.mem_write(GAME_MODE_VA, b"\x01")
     wu32(uc, PLAYER_COUNT_VA, 1)
     uc.reg_write(UC_X86_REG_ESP, STACK + 0xF000)
 
+    branch_trace = []
+    watch = {
+        0x40C022, 0x40C026, 0x40C033, 0x40C03A, 0x40C03E,
+        0x40C04F, 0x40C051, 0x40C065, 0x40C06A, 0x40C06C,
+        0x40C070, 0x40C074, 0x40C07F, 0x40C083, 0x40C087,
+        0x40C08C, 0x40C098, TURN_ADJUST_EXIT_VA,
+    }
     reached_exit = False
 
     def hook(machine, address, size, user_data):
         nonlocal reached_exit
+        if address in watch:
+            branch_trace.append({
+                "address": address,
+                "counter_52": ru16(machine, CANONICAL_PLAYER_VA + 0x52),
+                "counter_56": ru16(machine, CANONICAL_PLAYER_VA + 0x56),
+                "player_5e": ru16(machine, CANONICAL_PLAYER_VA + 0x5E),
+                "ball_18": ru32(machine, CANONICAL_BALL_VA + 0x18),
+            })
         if address == TURN_ADJUST_EXIT_VA:
             reached_exit = True
             machine.emu_stop()
@@ -285,10 +315,17 @@ def post_hole_turn_adjust_case(exe: Path) -> dict:
         "build_sha256": digest,
         "terminal": terminal,
         "before_adjust": before_adjust,
-        "after_adjust": {
-            "counter_52": ru16(uc, PLAYER + 0x52),
-            "counter_56": ru16(uc, PLAYER + 0x56),
+        "canonical_before_adjust": {
+            "counter_52": ru16(uc, CANONICAL_PLAYER_VA + 0x52)
+                if not reached_exit else branch_trace[0]["counter_52"],
+            "counter_56": ru16(uc, CANONICAL_PLAYER_VA + 0x56)
+                if not reached_exit else branch_trace[0]["counter_56"],
         },
+        "after_adjust": {
+            "counter_52": ru16(uc, CANONICAL_PLAYER_VA + 0x52),
+            "counter_56": ru16(uc, CANONICAL_PLAYER_VA + 0x56),
+        },
+        "branch_trace": branch_trace,
         "reached_turn_adjust_exit": reached_exit,
     }
 

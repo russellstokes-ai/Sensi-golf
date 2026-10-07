@@ -45,8 +45,10 @@ jobs:
             -o "$OUT/resource-loader.json"
 
           python tools/pe_va_xrefs.py "$WIN_EXE" \
-            --va 0x41EE7A --va 0x41EE22 --va 0x41EE06 \
-            --va 0x41EE1A --va 0x41EE1E \
+            --va 0x41EE7A --va 0x41EE22 --va 0x41EE26 \
+            --va 0x41EE06 --va 0x41EE0A --va 0x41EE0E --va 0x41EE12 \
+            --va 0x41EE1A --va 0x41EE1E --va 0x41EE2A \
+            --va 0x41E5EC --va 0x41E5EE --va 0x41E5F0 --va 0x41E5F2 \
             --va 0x41EF00 --va 0x41EF0B --va 0x41EF16 \
             --radius 128 -o "$OUT/green-map-xrefs.json"
 
@@ -71,6 +73,10 @@ jobs:
           print(json.dumps(rows,indent=2))
           PY
 
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x40AB1B --va 0x40AB97 --va 0x40C33C --va 0x40C3FE --va 0x40C40D \
+            --radius 160 -o "$OUT/green-transition-xrefs.json"
+
           echo "=== course lookup ==="
           python - "$OUT/course-lookup.json" <<'PY'
           import json,sys
@@ -83,6 +89,15 @@ jobs:
           import json,sys
           for i in json.load(open(sys.argv[1]))["instructions"]:
               print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+
+          echo "=== green transition xrefs ==="
+          python - "$OUT/green-transition-xrefs.json" <<'PY'
+          import json,sys
+          for x in json.load(open(sys.argv[1]))["xrefs"]:
+              print("\nXREF",hex(x["xref_va"]),[hex(v) for v in x["targets"]])
+              for i in x["instructions"]:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
           PY
 
           echo "=== green/map xrefs ==="

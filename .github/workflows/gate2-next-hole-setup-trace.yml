@@ -51,9 +51,19 @@ jobs:
             --start-va 0x40AA70 --end-va 0x40AB20 \
             -o "$OUT/post-advance-40aa84.json"
 
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x4089E0 --end-va 0x408B20 \
+            -o "$OUT/resource-load-408a29.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x409E90 --end-va 0x40A080 \
+            -o "$OUT/hole-setup-409efe.json"
+
           python tools/pe_va_xrefs.py "$WIN_EXE" \
             --va 0x40935B --va 0x409BF4 --va 0x40AB97 --va 0x40AA84 \
+            --va 0x408A29 --va 0x409EFE \
             --va 0x42952B --va 0x425580 --va 0x41E64C --va 0x41E603 \
+            --va 0x41EF04 --va 0x41EF0F --va 0x41EF1A \
             --radius 120 -o "$OUT/xrefs.json"
 
           python - <<'PY'
@@ -63,6 +73,8 @@ jobs:
               'setup-409bf4.json',
               'pre-advance-40ab97.json',
               'post-advance-40aa84.json',
+              'resource-load-408a29.json',
+              'hole-setup-409efe.json',
           ):
               print('\n===',name,'===')
               j=json.load(open('analysis/private/gate2-next-hole-setup/'+name))

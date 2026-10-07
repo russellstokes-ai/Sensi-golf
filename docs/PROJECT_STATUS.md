@@ -75,7 +75,7 @@ Representative successful runs:
 - meter/tick closure: `37546007071`
 - final timing/meter dispatch: `37546141205`
 - timer source closure: `37546519169`
-- CI at the current recovery head: `37546519165`
+- CI at the documented current head: `37602000960`
 
 ## Important recovered timing result
 

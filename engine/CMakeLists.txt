@@ -12,6 +12,7 @@ add_library(sensigolf_core
     src/recovered_prng.cpp
     src/recovered_interactions.cpp
     src/recovered_course_lookup.cpp
+    src/classic_round_session.cpp
 )
 
 target_include_directories(sensigolf_core
@@ -144,3 +145,10 @@ add_executable(sensigolf_recovered_distance_tests
 )
 target_link_libraries(sensigolf_recovered_distance_tests PRIVATE sensigolf_core)
 add_test(NAME sensigolf_recovered_distance_tests COMMAND sensigolf_recovered_distance_tests)
+
+
+add_executable(sensigolf_classic_round_session_tests
+    tests/classic_round_session_tests.cpp
+)
+target_link_libraries(sensigolf_classic_round_session_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_classic_round_session_tests COMMAND sensigolf_classic_round_session_tests)

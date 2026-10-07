@@ -180,6 +180,29 @@ void ClassicShotModel::sync_public_state() {
     public_.surface_index = surface_.landing_code;
 }
 
+void ClassicShotModel::relocate_inactive_ball(
+    std::int32_t x_raw,
+    std::int32_t y_raw,
+    std::uint16_t surface_index) {
+    if (active_) {
+        throw std::logic_error("cannot relocate an active shot");
+    }
+
+    flight_.x = x_raw;
+    flight_.y = y_raw;
+    flight_.height = 0;
+    flight_.vertical_force = 0;
+    flight_.horizontal_force = 0;
+    origin_x_ = x_raw;
+    origin_y_ = y_raw;
+
+    public_.hazard = false;
+    public_.holed = false;
+    public_.surface_index = surface_index;
+    public_.phase = ShotPhase::Complete;
+    sync_public_state();
+}
+
 const BallState& ClassicShotModel::state() const {
     return public_;
 }

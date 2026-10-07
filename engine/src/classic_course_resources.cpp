@@ -82,6 +82,14 @@ std::size_t ClassicCourseResources::mapi_tile_count() const noexcept {
     return mapi_descriptor_.size() / 8u;
 }
 
+std::int32_t ClassicCourseResources::recovery_x_extent() const noexcept {
+    return static_cast<std::int32_t>(map_width_) * 16 - 0x100;
+}
+
+std::int32_t ClassicCourseResources::recovery_y_extent() const noexcept {
+    return static_cast<std::int32_t>(map_height_) * 8 - 0xD0;
+}
+
 std::uint16_t ClassicCourseResources::map_tile(
     std::uint16_t map_x,
     std::uint16_t map_y) const {

@@ -48,6 +48,14 @@ public:
         return outcome_;
     }
 
+    // Synchronize an original game-flow relocation after the shot has ended.
+    // This does not calculate physics; it updates the authoritative snapshot
+    // to a recovered position supplied by the session layer.
+    void relocate_inactive_ball(
+        std::int32_t x_raw,
+        std::int32_t y_raw,
+        std::uint16_t surface_index);
+
 private:
     void sync_public_state();
 

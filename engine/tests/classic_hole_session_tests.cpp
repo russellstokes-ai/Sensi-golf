@@ -98,6 +98,31 @@ int main() {
     run_active(water_session);
     assert(water_session.phase() == HoleSessionPhase::HazardStopped);
     assert(water_session.ball_state().hazard);
+    assert(water_session.hazard_pause_remaining() == 100);
+    const auto hazard_x = water_session.ball_x_raw();
+    const auto hazard_y = water_session.ball_y_raw();
+
+    // Original branch decrements 100..0 and recovers on the following tick.
+    for (int i = 0; i < 100; ++i) {
+        water_session.step();
+    }
+    assert(water_session.phase() == HoleSessionPhase::HazardStopped);
+    assert(water_session.hazard_pause_remaining() == 0);
+    water_session.step();
+    assert(water_session.phase() == HoleSessionPhase::HazardRecovered);
+    assert(water_session.ball_x_raw() == hazard_x);
+    assert(water_session.ball_y_raw() == hazard_y);
+    assert(!water_session.ball_state().hazard);
+
+    // Penalty/scoring semantics are not yet promoted, so recovered hazard
+    // position is deliberately not ReadyForShot.
+    bool hazard_replay_blocked = false;
+    try {
+        water_session.begin_shot(water_shot);
+    } catch (const std::logic_error&) {
+        hazard_replay_blocked = true;
+    }
+    assert(hazard_replay_blocked);
 
     // Normal GREEN H4/code 1 putter path.
     auto green = uniform_course(31);

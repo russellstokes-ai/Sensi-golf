@@ -57,6 +57,12 @@ public:
     std::uint16_t map_height() const noexcept;
     std::size_t mapi_tile_count() const noexcept;
 
+    // Exact globals written by the original MAPM loader:
+    // x_extent = width*16 - 0x100
+    // y_extent = height*8 - 0xD0
+    std::int32_t recovery_x_extent() const noexcept;
+    std::int32_t recovery_y_extent() const noexcept;
+
     std::uint16_t map_tile(
         std::uint16_t map_x,
         std::uint16_t map_y) const;

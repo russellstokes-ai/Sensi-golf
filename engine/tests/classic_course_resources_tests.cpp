@@ -48,6 +48,8 @@ int main() {
     assert(course.map_width() == 2);
     assert(course.map_height() == 1);
     assert(course.mapi_tile_count() == 2);
+    assert(course.recovery_x_extent() == -224);
+    assert(course.recovery_y_extent() == -200);
     assert(course.map_tile(0, 0) == 0);
     assert(course.map_tile(1, 0) == 1);
 

@@ -13,6 +13,7 @@ enum class HoleSessionPhase : std::uint8_t {
     ReadyForShot = 0,
     ShotActive,
     HazardStopped,
+    HazardRecovered,
     SpecialGreenStopped,
     HoleComplete,
     UnsupportedTerrain,
@@ -52,6 +53,7 @@ public:
     ResolvedCourseSurface current_surface() const;
     ClassicCoursePoint hole_position() const;
     std::optional<std::uint16_t> unsupported_descriptor() const noexcept;
+    std::uint16_t hazard_pause_remaining() const noexcept;
 
 private:
     bool surface_supported_for_active_shot(
@@ -66,6 +68,10 @@ private:
     std::int32_t ball_x_raw_ = 0;
     std::int32_t ball_y_raw_ = 0;
     std::uint16_t active_club_ = 0;
+    std::int32_t safe_anchor_x_raw_ = 0;
+    std::int32_t safe_anchor_y_raw_ = 0;
+    bool safe_anchor_valid_ = false;
+    std::uint16_t hazard_pause_remaining_ = 0;
     std::optional<std::uint16_t> unsupported_descriptor_{};
 };
 

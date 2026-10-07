@@ -3,6 +3,8 @@
 #include <limits>
 #include <stdexcept>
 
+#include "sensigolf/recovered_hazard_recovery.hpp"
+
 namespace sensigolf {
 
 ClassicHoleSession::ClassicHoleSession(
@@ -30,6 +32,10 @@ void ClassicHoleSession::reset(
     ball_x_raw_ = start_x_raw;
     ball_y_raw_ = start_y_raw;
     active_club_ = 0;
+    safe_anchor_x_raw_ = 0;
+    safe_anchor_y_raw_ = 0;
+    safe_anchor_valid_ = false;
+    hazard_pause_remaining_ = 0;
     unsupported_descriptor_.reset();
 }
 
@@ -93,6 +99,43 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
 }
 
 void ClassicHoleSession::step() {
+    if (phase_ == HoleSessionPhase::HazardStopped) {
+        if (hazard_pause_remaining_ > 0) {
+            --hazard_pause_remaining_;
+            return;
+        }
+
+        recovered::HazardRecoveryInput input{};
+        input.ball_x = ball_x_raw_;
+        input.ball_y = ball_y_raw_;
+        input.safe_anchor_x = safe_anchor_x_raw_;
+        input.safe_anchor_y = safe_anchor_y_raw_;
+        input.x_extent = course_.recovery_x_extent();
+        input.y_extent = course_.recovery_y_extent();
+        input.green_mode = false;
+
+        const auto recovered_state =
+            recovered::recover_hazard_position(input);
+
+        if (recovered_state.used_safe_anchor && !safe_anchor_valid_) {
+            phase_ = HoleSessionPhase::UnsupportedTerrain;
+            return;
+        }
+
+        ball_x_raw_ = recovered_state.ball_x;
+        ball_y_raw_ = recovered_state.ball_y;
+
+        const auto recovered_surface = course_.resolve_raw_position(
+            ball_x_raw_, ball_y_raw_);
+        shot_.relocate_inactive_ball(
+            ball_x_raw_,
+            ball_y_raw_,
+            recovered_surface.landing_code);
+
+        phase_ = HoleSessionPhase::HazardRecovered;
+        return;
+    }
+
     if (phase_ != HoleSessionPhase::ShotActive) {
         return;
     }
@@ -108,6 +151,17 @@ void ClassicHoleSession::step() {
     const auto surface = course_.resolve_raw_position(
         static_cast<std::int32_t>(state.x_raw),
         static_cast<std::int32_t>(state.y_raw));
+
+    // Original 0x40A43B..0x40A453 refreshes the safe recovery anchor whenever
+    // the current landing code is <= 6. The stored value is ball position -15
+    // integer units in recovered 16.16 coordinates.
+    if (surface.landing_code <= 6) {
+        safe_anchor_x_raw_ = static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(state.x_raw) - 0x000F0000u);
+        safe_anchor_y_raw_ = static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(state.y_raw) - 0x000F0000u);
+        safe_anchor_valid_ = true;
+    }
 
     if (!surface_supported_for_active_shot(surface)) {
         unsupported_descriptor_ = surface.descriptor_index;
@@ -132,6 +186,7 @@ void ClassicHoleSession::step() {
         break;
     case ClassicShotOutcome::Hazard:
         phase_ = HoleSessionPhase::HazardStopped;
+        hazard_pause_remaining_ = 100;
         break;
     case ClassicShotOutcome::SpecialGreenStop:
         phase_ = HoleSessionPhase::SpecialGreenStopped;
@@ -182,6 +237,10 @@ ClassicCoursePoint ClassicHoleSession::hole_position() const {
 std::optional<std::uint16_t>
 ClassicHoleSession::unsupported_descriptor() const noexcept {
     return unsupported_descriptor_;
+}
+
+std::uint16_t ClassicHoleSession::hazard_pause_remaining() const noexcept {
+    return hazard_pause_remaining_;
 }
 
 } // namespace sensigolf

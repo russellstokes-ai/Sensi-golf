@@ -21,17 +21,17 @@ enum class HoleSessionPhase : std::uint8_t {
 };
 
 struct ClassicRecoveredCounters {
-    // Original v1.014 player fields with their now-proven single-player roles.
-    std::uint16_t player_52 = 0; // current-hole stroke counter
-    std::uint16_t player_56 = 0; // cumulative stroke total
-    std::uint16_t player_58 = 0; // cumulative par
-    std::int16_t player_48 = 0;  // cumulative par - cumulative strokes
-    std::uint16_t player_70 = 0; // completed-hole counter
+    std::uint16_t player_52 = 0;
+    std::uint16_t player_56 = 0;
+    std::uint16_t player_58 = 0;
+    std::int16_t player_48 = 0;
+    std::uint16_t player_70 = 0;
 };
 
 struct ClassicHoleMetadata {
-    std::uint16_t hole_index = 0; // original zero-based 0..17 index
+    std::uint16_t hole_index = 0;
     std::uint16_t par = 0;
+    std::uint16_t resource_id = 0;
 };
 
 struct ClassicShotRequest {
@@ -60,10 +60,6 @@ public:
 
     void begin_shot(const ClassicShotRequest& request);
     void step();
-
-    // The original clears the post-hazard terminal flag when its presentation
-    // objects finish. Rendering/presentation owns that timing in the port;
-    // this explicit handoff releases the recovered gameplay state for input.
     void acknowledge_hazard_recovery();
 
     HoleSessionPhase phase() const noexcept;

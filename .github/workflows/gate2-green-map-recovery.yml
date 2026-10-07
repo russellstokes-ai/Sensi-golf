@@ -1,0 +1,114 @@
+name: Gate 2 Green Map Recovery
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate2-green-map-recovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install analysis dependencies
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6 unicorn
+      - name: Fetch verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace green/main map ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          ROOT="analysis/private/step2/extracted/epf"
+          OUT="analysis/private/gate2-green-map-recovery"
+          mkdir -p "$OUT"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x4094D0 --end-va 0x4096C0 \
+            -o "$OUT/course-lookup.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x4089D0 --end-va 0x408C20 \
+            -o "$OUT/resource-loader.json"
+
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x41EE7A --va 0x41EE22 --va 0x41EE06 \
+            --va 0x41EE1A --va 0x41EE1E \
+            --va 0x41EF00 --va 0x41EF0B --va 0x41EF16 \
+            --radius 128 -o "$OUT/green-map-xrefs.json"
+
+          python - "$ROOT/MAPM42.MAP" "$ROOT/MAPS42.MAP" "$ROOT/MAPM42.SPT" "$OUT/resource-headers.json" <<'PY'
+          import hashlib,json,struct,sys
+          rows={}
+          for label,path in [("MAPM42",sys.argv[1]),("MAPS42",sys.argv[2])]:
+              b=open(path,"rb").read()
+              rows[label]={
+                  "size":len(b),
+                  "sha256":hashlib.sha256(b).hexdigest(),
+                  "width_be":struct.unpack(">H",b[0x54:0x56])[0] if len(b)>=0x58 else None,
+                  "height_be":struct.unpack(">H",b[0x56:0x58])[0] if len(b)>=0x58 else None,
+                  "header_0x50_0x60":b[0x50:0x60].hex() if len(b)>=0x60 else None,
+              }
+          s=open(sys.argv[3],"rb").read()
+          rows["SPT42"]={
+              "size":len(s),
+              "records":[list(struct.unpack(">5H",s[i:i+10])) for i in range(0,len(s),10)]
+          }
+          open(sys.argv[4],"w").write(json.dumps(rows,indent=2)+"\n")
+          print(json.dumps(rows,indent=2))
+          PY
+
+          echo "=== course lookup ==="
+          python - "$OUT/course-lookup.json" <<'PY'
+          import json,sys
+          for i in json.load(open(sys.argv[1]))["instructions"]:
+              print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+
+          echo "=== resource loader ==="
+          python - "$OUT/resource-loader.json" <<'PY'
+          import json,sys
+          for i in json.load(open(sys.argv[1]))["instructions"]:
+              print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+
+          echo "=== green/map xrefs ==="
+          python - "$OUT/green-map-xrefs.json" <<'PY'
+          import json,sys
+          for x in json.load(open(sys.argv[1]))["xrefs"]:
+              print("\nXREF",hex(x["xref_va"]),[hex(v) for v in x["targets"]])
+              for i in x["instructions"]:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+
+          set +e
+          ./build/engine/sensigolf_classic_course_probe \
+            "$ROOT/MAPS42.MAP" "$ROOT/MAPM42.SPT" \
+            "$ROOT/MAPI01.RAW" "$ROOT/MAPI02.RAW" \
+            > "$OUT/maps42-course-probe.json" 2> "$OUT/maps42-course-probe.err"
+          echo $? > "$OUT/maps42-course-probe.exit"
+          set -e
+          cat "$OUT/maps42-course-probe.json" || true
+          cat "$OUT/maps42-course-probe.err" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate2-green-map-recovery
+          path: analysis/private/gate2-green-map-recovery/
+          retention-days: 30

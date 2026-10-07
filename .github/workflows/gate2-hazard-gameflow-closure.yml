@@ -48,7 +48,7 @@ jobs:
             -o "$OUT/player-fields.json"
 
           python tools/pe_va_xrefs.py "$WIN_EXE" \
-            --va 0x41F883 --va 0x41D64B --va 0x40CF66 \
+            --va 0x41F881 --va 0x41F883 --va 0x41D64B --va 0x40CF66 \
             --radius 88 -o "$OUT/terminal-state-xrefs.json"
 
           python tools/pe_disasm_range.py "$WIN_EXE" \

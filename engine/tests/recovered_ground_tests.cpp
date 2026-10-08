@@ -87,6 +87,32 @@ int main() {
     assert(state.vertical_force == 0);
     assert(state.horizontal_force == 0);
 
+    // Original v1.014 non-green club-12 oracle: SKIRT descriptor,
+    // landing code 2, profile slot 5, green mode 0, power 10.
+    input.lie_index = 5;
+    input.captured_power = 10;
+    state = launch_normal_shot(input);
+    assert(state.height == 0);
+    assert(state.vertical_force == 15360);
+    assert(state.horizontal_force == 23552);
+
+    rest_tick = -1;
+    for (int tick = 1; tick <= 32; ++tick) {
+        const auto step = step_non_green_putt(state);
+        if (step.resting) {
+            rest_tick = tick;
+            break;
+        }
+    }
+    assert(rest_tick == 7);
+    assert(state.x == 0);
+    assert(state.y == 60672);
+    assert(state.vertical_force == 0);
+    assert(state.horizontal_force == 0);
+
+    // Restore the normal green profile for the remaining green anchors.
+    input.lie_index = 6;
+
     // Power 30 is a second exact oracle anchor.
     input.captured_power = 30;
     state = launch_normal_shot(input);

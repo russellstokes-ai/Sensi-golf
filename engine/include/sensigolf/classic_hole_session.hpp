@@ -6,6 +6,7 @@
 
 #include "sensigolf/classic_course_resources.hpp"
 #include "sensigolf/classic_shot_model.hpp"
+#include "sensigolf/recovered_prng.hpp"
 
 namespace sensigolf {
 
@@ -47,12 +48,14 @@ public:
         const ClassicCourseResources& course,
         std::int32_t start_x_raw,
         std::int32_t start_y_raw,
-        std::optional<ClassicHoleMetadata> metadata = std::nullopt);
+        std::optional<ClassicHoleMetadata> metadata = std::nullopt,
+        recovered::OriginalPrng16* prng = nullptr);
 
     ClassicHoleSession(
         const ClassicCourseResources& course,
         std::size_t player_slot,
-        std::optional<ClassicHoleMetadata> metadata = std::nullopt);
+        std::optional<ClassicHoleMetadata> metadata = std::nullopt,
+        recovered::OriginalPrng16* prng = nullptr);
 
     void reset(
         std::int32_t start_x_raw,
@@ -79,6 +82,9 @@ public:
     std::optional<ClassicHoleMetadata> hole_metadata() const noexcept;
     std::optional<std::uint16_t> next_hole_index() const noexcept;
     bool round_complete() const noexcept;
+    bool has_prng_state() const noexcept;
+    recovered::OriginalPrng16& prng_state();
+    const recovered::OriginalPrng16& prng_state() const;
 
 private:
     bool surface_supported_for_active_shot(
@@ -104,6 +110,7 @@ private:
     std::optional<std::uint16_t> next_hole_index_{};
     bool round_complete_ = false;
     std::optional<std::uint16_t> unsupported_descriptor_{};
+    recovered::OriginalPrng16* prng_ = nullptr;
 };
 
 } // namespace sensigolf

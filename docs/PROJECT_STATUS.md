@@ -285,7 +285,7 @@ Durable evidence is recorded in `analysis/evidence/gate2_burst3_round_checkpoint
 #### Active remaining Burst-3 work
 
 1. close remaining unsupported/special-green continuations and prove any required non-putter scored-hole continuation;
-2. move original PRNG seed/state ownership into the session where required for deterministic complete-hole replay;
+2. feed the session-owned recovered PRNG state into the already parity-proven interaction branches required by complete-hole replay;
 3. prove a complete **real-course** hole from original SPT tee through shots, cup, scoring and actual next-hole activation.
 
 New durable checkpoints:

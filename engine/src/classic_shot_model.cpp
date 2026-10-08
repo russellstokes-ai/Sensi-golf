@@ -207,6 +207,34 @@ void ClassicShotModel::relocate_inactive_ball(
     sync_public_state();
 }
 
+void ClassicShotModel::enter_green_coordinates(
+    std::int32_t origin_x_raw,
+    std::int32_t origin_y_raw) {
+    // Original 0x40AB3C..0x40AB5C uses 32-bit SUB then SHL 1.
+    flight_.x = static_cast<std::int32_t>(
+        (static_cast<std::uint32_t>(flight_.x)
+         - static_cast<std::uint32_t>(origin_x_raw)) << 1);
+    flight_.y = static_cast<std::int32_t>(
+        (static_cast<std::uint32_t>(flight_.y)
+         - static_cast<std::uint32_t>(origin_y_raw)) << 1);
+    sync_public_state();
+}
+
+void ClassicShotModel::leave_green_coordinates(
+    std::int32_t origin_x_raw,
+    std::int32_t origin_y_raw) {
+    // Original 0x40ABB8..0x40ABD8 uses arithmetic SAR 1 then ADD origin.
+    const auto half_x = sar_floor(flight_.x, 1);
+    const auto half_y = sar_floor(flight_.y, 1);
+    flight_.x = static_cast<std::int32_t>(
+        static_cast<std::uint32_t>(half_x)
+        + static_cast<std::uint32_t>(origin_x_raw));
+    flight_.y = static_cast<std::int32_t>(
+        static_cast<std::uint32_t>(half_y)
+        + static_cast<std::uint32_t>(origin_y_raw));
+    sync_public_state();
+}
+
 const BallState& ClassicShotModel::state() const {
     return public_;
 }

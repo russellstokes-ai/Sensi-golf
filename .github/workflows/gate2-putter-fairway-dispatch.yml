@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - ".github/workflows/gate2-putter-fairway-dispatch.yml"
+      - "tools/original_v1014_putter_oracle.py"
   workflow_dispatch:
 
 permissions:
@@ -64,6 +65,26 @@ jobs:
               print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
               for i in x['instructions']:
                   print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+
+      - name: Run original fairway putter oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT=analysis/private/gate2-putter-fairway-dispatch
+          python tools/original_v1014_putter_oracle.py "$WIN_EXE"             --power 10 --accuracy 63 --direction 0 --max-ticks 128             --terrain-index 0 --green-mode 0             -o "$OUT/fairway-putt-power10.json"
+          python - "$OUT/fairway-putt-power10.json" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          print("FAIRWAY_PUTT_ORACLE", json.dumps({
+              "surface":j["surface_name"],
+              "surface_code":j["surface_code"],
+              "profile_slot":j["profile_slot"],
+              "green_mode":j["green_mode"],
+              "initial":j["samples"][0],
+              "rest":j["events"]["rest"],
+          }, sort_keys=True))
           PY
 
       - uses: actions/upload-artifact@v4

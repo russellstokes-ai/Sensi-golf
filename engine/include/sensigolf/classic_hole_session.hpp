@@ -61,6 +61,7 @@ public:
     void begin_shot(const ClassicShotRequest& request);
     void step();
     void acknowledge_hazard_recovery();
+    void acknowledge_special_green_stop();
 
     HoleSessionPhase phase() const noexcept;
     std::uint32_t strokes() const noexcept;
@@ -72,6 +73,7 @@ public:
     ClassicCoursePoint hole_position() const;
     std::optional<std::uint16_t> unsupported_descriptor() const noexcept;
     std::uint16_t hazard_pause_remaining() const noexcept;
+    std::uint16_t special_green_pause_remaining() const noexcept;
     const ClassicRecoveredCounters& recovered_counters() const noexcept;
     std::uint32_t distance_to_hole() const noexcept;
     std::optional<ClassicHoleMetadata> hole_metadata() const noexcept;
@@ -96,6 +98,7 @@ private:
     std::int32_t safe_anchor_y_raw_ = 0;
     bool safe_anchor_valid_ = false;
     std::uint16_t hazard_pause_remaining_ = 0;
+    std::uint16_t special_green_pause_remaining_ = 0;
     ClassicRecoveredCounters recovered_counters_{};
     std::optional<ClassicHoleMetadata> hole_metadata_{};
     std::optional<std::uint16_t> next_hole_index_{};

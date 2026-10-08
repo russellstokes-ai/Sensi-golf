@@ -69,7 +69,7 @@ jobs:
 
           ./build/engine/sensigolf_classic_game_session_probe \
             "$RID" "$PAR" \
-            "$ROOT/MAPM${NN}.MAP" "$ROOT/MAPM${NN}.SPT" \
+            "$ROOT/MAPM${NN}.MAP" "$ROOT/MAPS${NN}.MAP" "$ROOT/MAPM${NN}.SPT" \
             "$ROOT/MAPI01.RAW" "$ROOT/MAPI02.RAW" 0 \
             | tee "$OUT/session.json"
 

@@ -76,7 +76,9 @@ ClassicSurfaceContext ClassicHoleSession::to_context(
 bool ClassicHoleSession::surface_supported_for_active_shot(
     const ResolvedCourseSurface& surface) const noexcept {
     if (active_club_ == 12) {
-        return surface.landing_code == 1
+        return (surface.product_supported
+                && surface.landing_code >= 1
+                && surface.landing_code <= 7)
             || surface.landing_code == 8
             || surface.landing_code == 9
             || surface.landing_code == 10;

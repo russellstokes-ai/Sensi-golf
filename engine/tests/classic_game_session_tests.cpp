@@ -158,6 +158,10 @@ int main() {
     seeded.load_current_hole(
         seeded_request->resource_id,
         cup_course());
+    assert(seeded.active_hole().has_prng_state());
+    assert(&seeded.active_hole().prng_state() == &seeded.prng_state());
+    assert(seeded.active_hole().prng_state().seed0 == advanced_seed0);
+    assert(seeded.active_hole().prng_state().seed1 == advanced_seed1);
     score_active_hole(seeded);
     seeded.commit_scored_hole();
     assert(seeded.prng_state().seed0 == advanced_seed0);

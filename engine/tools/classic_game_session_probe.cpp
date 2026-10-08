@@ -66,6 +66,10 @@ int main(int argc, char** argv) {
             read_file(argv[6]));
         const auto tee = course.player_start(player_slot);
         const auto cup = course.hole_position();
+        std::array<sensigolf::RawSptRecord, sensigolf::ClassicCourseResources::kSptRecordCount> spt_rows{};
+        for (std::size_t i = 0; i < spt_rows.size(); ++i) {
+            spt_rows[i] = course.spt_record(i);
+        }
 
         game.load_current_hole(resource_id, std::move(course));
         const auto metadata = game.active_hole().hole_metadata();
@@ -89,6 +93,18 @@ int main(int argc, char** argv) {
             << ",\"ball_y_raw\":" << game.active_hole().ball_y_raw()
             << ",\"metadata_resource_id\":" << metadata->resource_id
             << ",\"metadata_par\":" << metadata->par
+            << ",\"spt_records\":[";
+        for (std::size_t i = 0; i < spt_rows.size(); ++i) {
+            if (i != 0) std::cout << ",";
+            std::cout << "[";
+            for (std::size_t j = 0; j < spt_rows[i].words.size(); ++j) {
+                if (j != 0) std::cout << ",";
+                std::cout << spt_rows[i].words[j];
+            }
+            std::cout << "]";
+        }
+        std::cout
+            << "]"
             << ",\"ready\":"
             << (game.active_hole().phase() == sensigolf::HoleSessionPhase::ReadyForShot
                 ? "true" : "false")

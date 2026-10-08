@@ -284,7 +284,7 @@ Durable evidence is recorded in `analysis/evidence/gate2_burst3_round_checkpoint
 
 #### Active remaining Burst-3 work
 
-1. close the remaining unsupported terminal cases and prove any required non-putter scored-hole continuation; code-9/code-10 special-green replay gating is now integrated with the recovered 100-tick pause;
+1. close the remaining unsupported terminal cases; code-9/code-10 special-green replay gating is integrated with the recovered 100-tick pause, and zero-distance scored-hole continuation now works for non-putter cup terminals as well as the putter path;
 2. feed the session-owned recovered PRNG state into the already parity-proven interaction branches required by complete-hole replay;
 3. prove a complete **real-course** hole from original SPT tee through shots, cup, scoring and actual next-hole activation.
 

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "sensigolf/classic_game_session.hpp"
+#include "sensigolf/recovered_prng.hpp"
 
 using namespace sensigolf;
 
@@ -137,6 +138,36 @@ int main() {
         after_round_blocked = true;
     }
     assert(after_round_blocked);
+
+
+    // The game session owns the captured original PRNG state across hole
+    // boundaries. This keeps deterministic classic randomness in the core
+    // rather than in a platform host.
+    ClassicGameSession seeded(
+        plan(), 0, recovered::OriginalPrng16{0x1234u, 0xABCDu});
+    assert(seeded.has_prng_state());
+    assert(seeded.prng_state().seed0 == 0x1234u);
+    assert(seeded.prng_state().seed1 == 0xABCDu);
+    const auto first_random = seeded.prng_state().next(0x0200u);
+    assert(first_random == 0x0075u);
+    const auto advanced_seed0 = seeded.prng_state().seed0;
+    const auto advanced_seed1 = seeded.prng_state().seed1;
+
+    auto seeded_request = seeded.resource_request();
+    assert(seeded_request.has_value());
+    seeded.load_current_hole(
+        seeded_request->resource_id,
+        cup_course());
+    score_active_hole(seeded);
+    seeded.commit_scored_hole();
+    assert(seeded.prng_state().seed0 == advanced_seed0);
+    assert(seeded.prng_state().seed1 == advanced_seed1);
+
+    // Starting the same session again restores the captured deterministic
+    // baseline instead of inheriting platform/global random state.
+    seeded.reset();
+    assert(seeded.prng_state().seed0 == 0x1234u);
+    assert(seeded.prng_state().seed1 == 0xABCDu);
 
     game.reset();
     assert(!game.round_state().round_complete);

@@ -58,6 +58,24 @@ int main() {
     run_until_complete(model);
     assert(model.state().z_raw == 0);
 
+    // Original club-12 SKIRT/code-2 path uses full drag with green
+    // mode clear. Exact v1.014 oracle: profile slot 5, power 10 -> tick 7,
+    // y=60672 raw.
+    model.reset();
+    model.set_surface_context({2, 0, 0});
+    ShotInput fringe_putt{};
+    fringe_putt.club_index = 12;
+    fringe_putt.lie_index = 5;
+    fringe_putt.power_tick = 10;
+    fringe_putt.accuracy_tick = 63;
+    fringe_putt.aim_raw = 0;
+    model.begin_shot(fringe_putt);
+    run_until_complete(model);
+    assert(model.state().tick == 7);
+    assert(model.state().x_raw == 0);
+    assert(model.state().y_raw == 60672);
+    assert(model.state().z_raw == 0);
+
     // Hazard termination is surfaced to the platform-neutral game layer.
     model.reset();
     model.set_surface_context({0x23, 0, 0});

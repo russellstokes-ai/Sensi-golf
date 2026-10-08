@@ -182,11 +182,11 @@ void apply_shot(
 } // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 10) {
+    if (argc != 11) {
         std::cerr
             << "usage: sensigolf_real_hole_solver_probe "
             << "<resource-id> <par> <next-resource-id> <next-par> "
-            << "<mapm> <spt> <mapi-desc> <mapi-select> <player-slot>\n";
+            << "<mapm> <maps> <spt> <mapi-desc> <mapi-select> <player-slot>\n";
         return 2;
     }
 
@@ -200,15 +200,17 @@ int main(int argc, char** argv) {
         const auto next_par = static_cast<std::uint8_t>(
             std::stoul(argv[4], nullptr, 0));
         const auto player_slot = static_cast<std::size_t>(
-            std::stoul(argv[9], nullptr, 0));
+            std::stoul(argv[10], nullptr, 0));
 
         const auto mapm = read_file(argv[5]);
-        const auto spt = read_file(argv[6]);
-        const auto desc = read_file(argv[7]);
-        const auto sel = read_file(argv[8]);
+        const auto maps = read_file(argv[6]);
+        const auto spt = read_file(argv[7]);
+        const auto desc = read_file(argv[8]);
+        const auto sel = read_file(argv[9]);
 
         auto make_course = [&]() {
-            return sensigolf::ClassicCourseResources(mapm, spt, desc, sel);
+            return sensigolf::ClassicCourseResources(
+                mapm, spt, desc, sel, maps);
         };
 
         auto search_course = make_course();

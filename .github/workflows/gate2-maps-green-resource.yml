@@ -50,7 +50,21 @@ jobs:
               print("HEX0_128",b[:128].hex())
               print("BE16_0_96",[struct.unpack_from(">H",b,i)[0] for i in range(0,min(96,len(b)-1),2)])
               if len(b) >= 0x58:
-                  print("WORDS_54_56",struct.unpack_from(">HH",b,0x54))
+                  w,h=struct.unpack_from(">HH",b,0x54)
+                  print("WORDS_54_56",(w,h))
+                  if Path(fn).name.startswith("MAPM") and Path(fn).suffix.upper()==".MAP":
+                      markers=[]
+                      for y in range(h):
+                          for x in range(w):
+                              word=struct.unpack_from(">H",b,0x60+2*(y*w+x))[0]
+                              if (word & 0xE000)==0xE000:
+                                  markers.append({
+                                      "cell":[x,y],
+                                      "course":[x<<4,y<<3],
+                                      "word":hex(word),
+                                      "tile":word & 0x03ff,
+                                  })
+                      print("GREEN_MARKERS",markers)
           PY
 
           python - <<'PY'

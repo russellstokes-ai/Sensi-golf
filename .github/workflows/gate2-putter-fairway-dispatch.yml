@@ -44,12 +44,16 @@ jobs:
             --radius 96 -o "$OUT/green-mode-xrefs.json"
 
           python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40A7D0 --end-va 0x40AAA0 \
+            -o "$OUT/putter-tail.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
             --start-va 0x40AC80 --end-va 0x40AE00 \
             -o "$OUT/launch-dispatch.json"
 
           python - <<'PY'
           import json
-          for fn in ('putter-dispatch','launch-dispatch'):
+          for fn in ('putter-dispatch','putter-tail','launch-dispatch'):
               print('\n===',fn,'===')
               j=json.load(open(f'analysis/private/gate2-putter-fairway-dispatch/{fn}.json'))
               for i in j['instructions']:

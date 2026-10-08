@@ -90,11 +90,12 @@ ShotChoice choose_shot(
         static_cast<std::int32_t>(cup.x) << 16,
         static_cast<std::int32_t>(cup.y) << 16);
 
-    static constexpr std::array<int, 13> offsets{{
-        0, -16, 16, -32, 32, -64, 64, -128, 128, -256, 256, -384, 384
+    static constexpr std::array<int, 21> offsets{{
+        0, -16, 16, -32, 32, -64, 64, -128, 128, -256, 256,
+        -384, 384, -512, 512, -768, 768, -1024, 1024, -1536, 1536
     }};
-    static constexpr std::array<int, 10> powers{{
-        105, 95, 85, 75, 65, 55, 45, 35, 25, 15
+    static constexpr std::array<int, 12> powers{{
+        105, 95, 85, 75, 65, 55, 45, 35, 25, 15, 10, 5
     }};
 
     std::vector<std::uint16_t> clubs;
@@ -229,14 +230,34 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("solver found no legal improving shot");
             }
 
+            std::cerr
+                << "solver stroke " << (stroke + 1)
+                << " before=" << before
+                << " club=" << choice.request.club_index
+                << " power=" << choice.request.power_tick
+                << " aim=" << choice.request.aim_raw
+                << " predicted=" << choice.resulting_distance
+                << " predicted_phase=" << static_cast<unsigned>(choice.phase)
+                << "\n";
+
+            const auto old_x = search.ball_x_raw();
+            const auto old_y = search.ball_y_raw();
             apply_shot(search, choice.request);
             shots.push_back(choice.request);
 
             if (search.phase() != sensigolf::HoleSessionPhase::HoleScored) {
                 const auto after = search.distance_to_hole();
-                if (after >= before && stroke >= 2) {
+                std::cerr
+                    << "solver result " << (stroke + 1)
+                    << " after=" << after
+                    << " x_raw=" << search.ball_x_raw()
+                    << " y_raw=" << search.ball_y_raw()
+                    << " phase=" << static_cast<unsigned>(search.phase())
+                    << "\n";
+                if (search.ball_x_raw() == old_x
+                    && search.ball_y_raw() == old_y) {
                     throw std::runtime_error(
-                        "solver stopped making progress toward real cup");
+                        "solver selected a shot with no positional progress");
                 }
             }
         }

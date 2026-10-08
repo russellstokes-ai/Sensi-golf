@@ -7,9 +7,12 @@ namespace sensigolf {
 
 ClassicGameSession::ClassicGameSession(
     ClassicHolePlan plan,
-    std::size_t player_slot)
+    std::size_t player_slot,
+    std::optional<recovered::OriginalPrng16> initial_prng)
     : plan_(std::move(plan)),
-      player_slot_(player_slot) {
+      player_slot_(player_slot),
+      initial_prng_(initial_prng),
+      prng_(initial_prng) {
     if (player_slot_ >= 4u) {
         throw std::invalid_argument(
             "classic player SPT slot outside recovered 0..3 range");
@@ -24,6 +27,26 @@ ClassicGameSession::round_state() const noexcept {
 std::optional<ClassicHolePlanEntry>
 ClassicGameSession::resource_request() const {
     return round_.current_hole_request(plan_);
+}
+
+bool ClassicGameSession::has_prng_state() const noexcept {
+    return prng_.has_value();
+}
+
+recovered::OriginalPrng16& ClassicGameSession::prng_state() {
+    if (!prng_) {
+        throw std::logic_error(
+            "classic game session has no captured original PRNG state");
+    }
+    return *prng_;
+}
+
+const recovered::OriginalPrng16& ClassicGameSession::prng_state() const {
+    if (!prng_) {
+        throw std::logic_error(
+            "classic game session has no captured original PRNG state");
+    }
+    return *prng_;
 }
 
 bool ClassicGameSession::has_active_hole() const noexcept {
@@ -95,6 +118,7 @@ void ClassicGameSession::reset() {
     hole_.reset();
     course_.reset();
     round_.reset();
+    prng_ = initial_prng_;
 }
 
 } // namespace sensigolf

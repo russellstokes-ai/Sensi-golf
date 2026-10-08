@@ -128,14 +128,18 @@ void ClassicShotModel::step() {
             return;
         }
 
-        if (surface_.landing_code != 1) {
+        if (surface_.landing_code == 1) {
+            result = recovered::step_green_putt(
+                flight_,
+                surface_.slope_direction,
+                surface_.slope_magnitude);
+        } else if (surface_.landing_code >= 2
+                   && surface_.landing_code <= 7) {
+            result = recovered::step_non_green_putt(flight_);
+        } else {
             throw std::logic_error(
                 "club-12 surface is not yet product-integrated");
         }
-        result = recovered::step_green_putt(
-            flight_,
-            surface_.slope_direction,
-            surface_.slope_magnitude);
     } else {
         result = recovered::step_controlled_surface(
             flight_,

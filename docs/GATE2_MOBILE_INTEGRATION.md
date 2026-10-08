@@ -175,7 +175,7 @@ Durable record: `analysis/evidence/gate2_burst3_round_checkpoint.json`.
 #### Remaining Burst-3 work
 
 1. **Remaining terminal continuations:** close unsupported/special-green continuations and any non-putter scored-hole completion path required by the original.
-2. **Session PRNG ownership:** move the original seed/state ownership into the session where required for deterministic complete-hole replay.
+2. **Session PRNG integration:** the game session now owns an optional captured original seed/state across hole transitions and restores that deterministic baseline on reset; next feed it into the parity-proven interaction branches required by complete-hole replay.
 3. **Real-course end-to-end proof:** complete resource 42 from its real SPT tee through recovered shots/cup/scoring, commit it through `ClassicGameSession`, and activate the original next request (resource 50).
 
 Recent merged checkpoints:

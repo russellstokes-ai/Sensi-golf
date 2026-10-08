@@ -80,15 +80,36 @@ void finish_replay_gate(sensigolf::ClassicHoleSession& hole) {
 
 ShotChoice choose_shot(
     const sensigolf::ClassicCourseResources& course,
-    std::int32_t x,
-    std::int32_t y) {
-    sensigolf::ClassicHoleSession position(course, x, y);
-    const auto surface = position.current_surface();
-    const auto cup = position.hole_position();
+    const sensigolf::ClassicHoleSession& current) {
+    const auto surface = current.current_surface();
+    const auto cup = current.hole_position();
+
+    std::int32_t target_x =
+        static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(cup.x) << 16);
+    std::int32_t target_y =
+        static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(cup.y) << 16);
+
+    if (current.green_mode()) {
+        const auto region = course.green_region();
+        if (!region) {
+            throw std::runtime_error(
+                "green-mode solver state missing recovered green region");
+        }
+        target_x = static_cast<std::int32_t>(
+            (static_cast<std::uint32_t>(cup.x - region->origin_x) << 16)
+            << 1);
+        target_y = static_cast<std::int32_t>(
+            (static_cast<std::uint32_t>(cup.y - region->origin_y) << 16)
+            << 1);
+    }
+
     const auto target = direction_to(
-        x, y,
-        static_cast<std::int32_t>(cup.x) << 16,
-        static_cast<std::int32_t>(cup.y) << 16);
+        current.ball_x_raw(),
+        current.ball_y_raw(),
+        target_x,
+        target_y);
 
     static constexpr std::array<int, 51> offsets{{
         0,
@@ -119,7 +140,7 @@ ShotChoice choose_shot(
     for (const auto club : clubs) {
         for (const auto power : powers) {
             for (const auto offset : offsets) {
-                sensigolf::ClassicHoleSession trial(course, x, y);
+                auto trial = current;
                 sensigolf::ClassicShotRequest request{};
                 request.club_index = club;
                 request.power_tick = power;
@@ -231,8 +252,7 @@ int main(int argc, char** argv) {
             const auto before = search.distance_to_hole();
             const auto choice = choose_shot(
                 search_course,
-                search.ball_x_raw(),
-                search.ball_y_raw());
+                search);
             if (!choice.valid) {
                 throw std::runtime_error("solver found no legal improving shot");
             }

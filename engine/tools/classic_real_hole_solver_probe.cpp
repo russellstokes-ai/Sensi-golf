@@ -90,12 +90,17 @@ ShotChoice choose_shot(
         static_cast<std::int32_t>(cup.x) << 16,
         static_cast<std::int32_t>(cup.y) << 16);
 
-    static constexpr std::array<int, 21> offsets{{
-        0, -16, 16, -32, 32, -64, 64, -128, 128, -256, 256,
-        -384, 384, -512, 512, -768, 768, -1024, 1024, -1536, 1536
+    static constexpr std::array<int, 51> offsets{{
+        0,
+        -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7, -8, 8,
+        -12, 12, -16, 16, -24, 24, -32, 32, -48, 48, -64, 64,
+        -96, 96, -128, 128, -192, 192, -256, 256, -384, 384,
+        -512, 512, -768, 768, -1024, 1024, -1280, 1280,
+        -1536, 1536, -1792, 1792
     }};
-    static constexpr std::array<int, 12> powers{{
-        105, 95, 85, 75, 65, 55, 45, 35, 25, 15, 10, 5
+    static constexpr std::array<int, 23> powers{{
+        105, 95, 85, 75, 65, 55, 45, 35, 25,
+        20, 18, 16, 14, 12, 10, 8, 6, 5, 4, 3, 2, 1, 0
     }};
 
     std::vector<std::uint16_t> clubs;
@@ -230,9 +235,12 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("solver found no legal improving shot");
             }
 
+            const auto current_surface = search.current_surface();
             std::cerr
                 << "solver stroke " << (stroke + 1)
                 << " before=" << before
+                << " surface_code=" << current_surface.landing_code
+                << " descriptor=" << current_surface.descriptor_index
                 << " club=" << choice.request.club_index
                 << " power=" << choice.request.power_tick
                 << " aim=" << choice.request.aim_raw

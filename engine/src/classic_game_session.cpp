@@ -94,7 +94,8 @@ void ClassicGameSession::load_current_hole(
             ClassicHoleMetadata{
                 request->round_index,
                 request->par,
-                request->resource_id});
+                request->resource_id},
+            prng_ ? &*prng_ : nullptr);
     } catch (...) {
         course_.reset();
         throw;

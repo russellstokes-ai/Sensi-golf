@@ -110,7 +110,7 @@ ShotChoice choose_shot(
         || surface.landing_code == 10) {
         clubs.push_back(12);
     } else {
-        for (std::uint16_t club = 0; club <= 11; ++club) {
+        for (std::uint16_t club = 0; club <= 12; ++club) {
             clubs.push_back(club);
         }
     }

@@ -82,6 +82,7 @@ public:
     std::optional<ClassicHoleMetadata> hole_metadata() const noexcept;
     std::optional<std::uint16_t> next_hole_index() const noexcept;
     bool round_complete() const noexcept;
+    bool green_mode() const noexcept;
     bool has_prng_state() const noexcept;
     recovered::OriginalPrng16& prng_state();
     const recovered::OriginalPrng16& prng_state() const;
@@ -92,6 +93,8 @@ private:
     ClassicSurfaceContext to_context(
         const ResolvedCourseSurface& surface) const noexcept;
     void complete_scored_hole();
+    void update_green_mode_for_ball();
+    ClassicCoursePoint mode_hole_position() const;
 
     const ClassicCourseResources& course_;
     ClassicShotModel shot_;
@@ -109,6 +112,7 @@ private:
     std::optional<ClassicHoleMetadata> hole_metadata_{};
     std::optional<std::uint16_t> next_hole_index_{};
     bool round_complete_ = false;
+    bool green_mode_ = false;
     std::optional<std::uint16_t> unsupported_descriptor_{};
     recovered::OriginalPrng16* prng_ = nullptr;
 };

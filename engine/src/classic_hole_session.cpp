@@ -53,6 +53,7 @@ void ClassicHoleSession::reset(
     safe_anchor_y_raw_ = 0;
     safe_anchor_valid_ = false;
     hazard_pause_remaining_ = 0;
+    special_green_pause_remaining_ = 0;
     recovered_counters_ = {};
     next_hole_index_.reset();
     round_complete_ = false;
@@ -158,6 +159,19 @@ void ClassicHoleSession::complete_scored_putter_hole() {
     phase_ = HoleSessionPhase::HoleScored;
 }
 
+void ClassicHoleSession::acknowledge_special_green_stop() {
+    if (phase_ != HoleSessionPhase::SpecialGreenStopped) {
+        throw std::logic_error(
+            "special-green stop can only be acknowledged from terminal state");
+    }
+    if (special_green_pause_remaining_ != 0) {
+        throw std::logic_error(
+            "special-green terminal pause has not completed");
+    }
+
+    phase_ = HoleSessionPhase::ReadyForShot;
+}
+
 void ClassicHoleSession::acknowledge_hazard_recovery() {
     if (phase_ != HoleSessionPhase::HazardRecovered) {
         throw std::logic_error(
@@ -172,6 +186,13 @@ void ClassicHoleSession::acknowledge_hazard_recovery() {
 }
 
 void ClassicHoleSession::step() {
+    if (phase_ == HoleSessionPhase::SpecialGreenStopped) {
+        if (special_green_pause_remaining_ > 0) {
+            --special_green_pause_remaining_;
+        }
+        return;
+    }
+
     if (phase_ == HoleSessionPhase::CupTerminal) {
         // v1.014 scores the hole in the later zero-distance pre-update branch,
         // not in the landing-code-8 terminal itself. The full single-player
@@ -286,6 +307,7 @@ void ClassicHoleSession::step() {
         break;
     case ClassicShotOutcome::SpecialGreenStop:
         phase_ = HoleSessionPhase::SpecialGreenStopped;
+        special_green_pause_remaining_ = 100;
         break;
     case ClassicShotOutcome::Rest:
     case ClassicShotOutcome::None:
@@ -337,6 +359,10 @@ ClassicHoleSession::unsupported_descriptor() const noexcept {
 
 std::uint16_t ClassicHoleSession::hazard_pause_remaining() const noexcept {
     return hazard_pause_remaining_;
+}
+
+std::uint16_t ClassicHoleSession::special_green_pause_remaining() const noexcept {
+    return special_green_pause_remaining_;
 }
 
 const ClassicRecoveredCounters&

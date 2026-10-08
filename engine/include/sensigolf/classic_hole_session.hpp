@@ -91,7 +91,7 @@ private:
         const ResolvedCourseSurface& surface) const noexcept;
     ClassicSurfaceContext to_context(
         const ResolvedCourseSurface& surface) const noexcept;
-    void complete_scored_putter_hole();
+    void complete_scored_hole();
 
     const ClassicCourseResources& course_;
     ClassicShotModel shot_;

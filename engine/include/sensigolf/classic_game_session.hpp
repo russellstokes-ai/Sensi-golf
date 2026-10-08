@@ -9,6 +9,7 @@
 #include "sensigolf/classic_hole_plan.hpp"
 #include "sensigolf/classic_hole_session.hpp"
 #include "sensigolf/classic_round_session.hpp"
+#include "sensigolf/recovered_prng.hpp"
 
 namespace sensigolf {
 
@@ -22,10 +23,15 @@ class ClassicGameSession {
 public:
     explicit ClassicGameSession(
         ClassicHolePlan plan,
-        std::size_t player_slot = 0);
+        std::size_t player_slot = 0,
+        std::optional<recovered::OriginalPrng16> initial_prng = std::nullopt);
 
     const ClassicRoundState& round_state() const noexcept;
     std::optional<ClassicHolePlanEntry> resource_request() const;
+
+    bool has_prng_state() const noexcept;
+    recovered::OriginalPrng16& prng_state();
+    const recovered::OriginalPrng16& prng_state() const;
 
     bool has_active_hole() const noexcept;
     ClassicHoleSession& active_hole();
@@ -45,6 +51,8 @@ private:
     ClassicHolePlan plan_;
     std::size_t player_slot_ = 0;
     ClassicRoundSession round_{};
+    std::optional<recovered::OriginalPrng16> initial_prng_{};
+    std::optional<recovered::OriginalPrng16> prng_{};
     std::unique_ptr<ClassicCourseResources> course_{};
     std::unique_ptr<ClassicHoleSession> hole_{};
 };

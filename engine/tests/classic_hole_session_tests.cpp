@@ -161,6 +161,18 @@ int main() {
     assert(water_session.recovered_counters().player_52 == 2);
     assert(water_session.recovered_counters().player_56 == 2);
 
+    // SKIRT/code 2 is a parity-proven original club-12 path. It must
+    // remain playable at the session layer rather than being rejected as
+    // unsupported terrain.
+    auto skirt = uniform_course(0);
+    ClassicHoleSession fringe_putt(skirt, 0, 0);
+    auto short_putt = putter_request();
+    short_putt.power_tick = 10;
+    fringe_putt.begin_shot(short_putt);
+    run_active(fringe_putt);
+    assert(fringe_putt.phase() == HoleSessionPhase::ReadyForShot);
+    assert(fringe_putt.strokes() == 1);
+
     // Normal GREEN H4/code 1 putter path.
     auto green = uniform_course(31);
     ClassicHoleSession putt_session(green, 0, 0);

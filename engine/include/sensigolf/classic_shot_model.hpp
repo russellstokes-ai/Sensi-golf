@@ -57,6 +57,14 @@ public:
         std::int32_t y_raw,
         std::uint16_t surface_index);
 
+    // Exact v1.014 0x40AB1B / 0x40AB97 ball-coordinate transforms.
+    void enter_green_coordinates(
+        std::int32_t origin_x_raw,
+        std::int32_t origin_y_raw);
+    void leave_green_coordinates(
+        std::int32_t origin_x_raw,
+        std::int32_t origin_y_raw);
+
 private:
     void sync_public_state();
 

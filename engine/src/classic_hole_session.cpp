@@ -130,17 +130,20 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
     unsupported_descriptor_.reset();
 }
 
-void ClassicHoleSession::complete_scored_putter_hole() {
+void ClassicHoleSession::complete_scored_hole() {
     if (!hole_metadata_) {
         return;
     }
 
-    // Original single-player flow corrects the transient code-8 putter
-    // terminal increment before the zero-distance scored-hole update.
-    recovered_counters_.player_52 = static_cast<std::uint16_t>(
-        recovered_counters_.player_52 - 1u);
-    recovered_counters_.player_56 = static_cast<std::uint16_t>(
-        recovered_counters_.player_56 - 1u);
+    // The original zero-distance pre-update branch scores the hole regardless
+    // of club. Only the club-12/code-8 terminal path has the extra transient
+    // counter increment that must be corrected before scoring.
+    if (active_club_ == 12) {
+        recovered_counters_.player_52 = static_cast<std::uint16_t>(
+            recovered_counters_.player_52 - 1u);
+        recovered_counters_.player_56 = static_cast<std::uint16_t>(
+            recovered_counters_.player_56 - 1u);
+    }
 
     recovered_counters_.player_58 = static_cast<std::uint16_t>(
         recovered_counters_.player_58 + hole_metadata_->par);
@@ -201,10 +204,8 @@ void ClassicHoleSession::step() {
         // v1.014 scores the hole in the later zero-distance pre-update branch,
         // not in the landing-code-8 terminal itself. The full single-player
         // counter adjustment is currently proven for the putter path.
-        if (active_club_ == 12
-            && hole_metadata_
-            && distance_to_hole() == 0) {
-            complete_scored_putter_hole();
+        if (hole_metadata_ && distance_to_hole() == 0) {
+            complete_scored_hole();
         }
         return;
     }

@@ -44,7 +44,7 @@ jobs:
             --radius 96 -o "$OUT/green-mode-xrefs.json"
 
           python tools/pe_disasm_range.py "$WIN_EXE" \
-            --start-va 0x40A7D0 --end-va 0x40AAA0 \
+            --start-va 0x40A7E0 --end-va 0x40AAA0 \
             -o "$OUT/putter-tail.json"
 
           python tools/pe_disasm_range.py "$WIN_EXE" \

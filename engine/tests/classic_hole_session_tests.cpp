@@ -217,6 +217,26 @@ int main() {
         assert(!special_putt.ball_state().holed);
         assert(special_putt.recovered_counters().player_52 == 1);
         assert(special_putt.recovered_counters().player_56 == 1);
+        assert(special_putt.special_green_pause_remaining() == 100);
+
+        bool early_ack_blocked = false;
+        try {
+            special_putt.acknowledge_special_green_stop();
+        } catch (const std::logic_error&) {
+            early_ack_blocked = true;
+        }
+        assert(early_ack_blocked);
+
+        for (int i = 0; i < 100; ++i) {
+            special_putt.step();
+        }
+        assert(special_putt.phase() == HoleSessionPhase::SpecialGreenStopped);
+        assert(special_putt.special_green_pause_remaining() == 0);
+
+        special_putt.acknowledge_special_green_stop();
+        assert(special_putt.phase() == HoleSessionPhase::ReadyForShot);
+        special_putt.begin_shot(putter_request());
+        assert(special_putt.strokes() == 2);
     }
 
     // GREEN D2/code 50 remains unsupported for club 12 until its specific

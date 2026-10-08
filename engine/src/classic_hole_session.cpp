@@ -61,6 +61,7 @@ void ClassicHoleSession::reset(
     recovered_counters_ = {};
     next_hole_index_.reset();
     round_complete_ = false;
+    green_mode_ = false;
     unsupported_descriptor_.reset();
 }
 
@@ -98,7 +99,7 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
     }
 
     const auto surface = course_.resolve_raw_position(
-        ball_x_raw_, ball_y_raw_);
+        ball_x_raw_, ball_y_raw_, green_mode_);
 
     active_club_ = request.club_index;
     if (!surface_supported_for_active_shot(surface)) {
@@ -225,7 +226,7 @@ void ClassicHoleSession::step() {
         input.safe_anchor_y = safe_anchor_y_raw_;
         input.x_extent = course_.recovery_x_extent();
         input.y_extent = course_.recovery_y_extent();
-        input.green_mode = false;
+        input.green_mode = green_mode_;
 
         const auto recovered_state =
             recovered::recover_hazard_position(input);
@@ -239,7 +240,7 @@ void ClassicHoleSession::step() {
         ball_y_raw_ = recovered_state.ball_y;
 
         const auto recovered_surface = course_.resolve_raw_position(
-            ball_x_raw_, ball_y_raw_);
+            ball_x_raw_, ball_y_raw_, green_mode_);
         shot_.relocate_inactive_ball(
             ball_x_raw_,
             ball_y_raw_,
@@ -253,6 +254,7 @@ void ClassicHoleSession::step() {
         return;
     }
 
+    update_green_mode_for_ball();
     const auto& state = shot_.state();
     if (state.x_raw < std::numeric_limits<std::int32_t>::min()
         || state.x_raw > std::numeric_limits<std::int32_t>::max()
@@ -263,7 +265,8 @@ void ClassicHoleSession::step() {
 
     const auto surface = course_.resolve_raw_position(
         static_cast<std::int32_t>(state.x_raw),
-        static_cast<std::int32_t>(state.y_raw));
+        static_cast<std::int32_t>(state.y_raw),
+        green_mode_);
 
     // Original 0x40A43B..0x40A453 refreshes the safe recovery anchor whenever
     // the current landing code is <= 6. The stored value is ball position -15
@@ -284,6 +287,12 @@ void ClassicHoleSession::step() {
 
     shot_.update_surface_context_for_tick(to_context(surface));
     shot_.step();
+
+    // The original transition dispatcher can switch coordinate spaces as the
+    // ball crosses the green window. Re-evaluate after movement so a shot that
+    // comes to rest inside the window is already in MAPS space for the next
+    // input.
+    update_green_mode_for_ball();
 
     if (shot_.shot_active()) {
         return;
@@ -350,9 +359,11 @@ ResolvedCourseSurface ClassicHoleSession::current_surface() const {
         || phase_ == HoleSessionPhase::SpecialGreenStopped) {
         return course_.resolve_raw_position(
             static_cast<std::int32_t>(state.x_raw),
-            static_cast<std::int32_t>(state.y_raw));
+            static_cast<std::int32_t>(state.y_raw),
+            green_mode_);
     }
-    return course_.resolve_raw_position(ball_x_raw_, ball_y_raw_);
+    return course_.resolve_raw_position(
+        ball_x_raw_, ball_y_raw_, green_mode_);
 }
 
 ClassicCoursePoint ClassicHoleSession::hole_position() const {
@@ -378,12 +389,9 @@ ClassicHoleSession::recovered_counters() const noexcept {
 }
 
 std::uint32_t ClassicHoleSession::distance_to_hole() const noexcept {
-    const auto hole = course_.hole_position();
-    // The platform-neutral session keeps authoritative positions in course
-    // coordinate space, so it uses the non-green-coordinate form of the
-    // recovered helper. Presentation may use a separate green camera space.
+    const auto hole = mode_hole_position();
     return recovered::distance_to_hole(
-        ball_x_raw_, ball_y_raw_, hole.x, hole.y, false);
+        ball_x_raw_, ball_y_raw_, hole.x, hole.y, green_mode_);
 }
 
 std::optional<ClassicHoleMetadata>
@@ -398,6 +406,63 @@ ClassicHoleSession::next_hole_index() const noexcept {
 
 bool ClassicHoleSession::round_complete() const noexcept {
     return round_complete_;
+}
+
+bool ClassicHoleSession::green_mode() const noexcept {
+    return green_mode_;
+}
+
+void ClassicHoleSession::update_green_mode_for_ball() {
+    const auto region = course_.green_region();
+    if (!region) {
+        return;
+    }
+
+    const auto& state = shot_.state();
+    const auto ix = static_cast<std::int16_t>(
+        static_cast<std::uint32_t>(state.x_raw) >> 16);
+    const auto iy = static_cast<std::int16_t>(
+        static_cast<std::uint32_t>(state.y_raw) >> 16);
+
+    if (!green_mode_) {
+        if (!region->contains_course(ix, iy)) {
+            return;
+        }
+        shot_.enter_green_coordinates(
+            static_cast<std::int32_t>(
+                static_cast<std::uint32_t>(region->origin_x) << 16),
+            static_cast<std::int32_t>(
+                static_cast<std::uint32_t>(region->origin_y) << 16));
+        green_mode_ = true;
+        return;
+    }
+
+    if (region->contains_green(ix, iy)) {
+        return;
+    }
+
+    shot_.leave_green_coordinates(
+        static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(region->origin_x) << 16),
+        static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(region->origin_y) << 16));
+    green_mode_ = false;
+}
+
+ClassicCoursePoint ClassicHoleSession::mode_hole_position() const {
+    const auto hole = course_.hole_position();
+    if (!green_mode_) {
+        return hole;
+    }
+
+    const auto region = course_.green_region();
+    if (!region) {
+        return hole;
+    }
+
+    return ClassicCoursePoint{
+        static_cast<std::uint16_t>(hole.x - region->origin_x),
+        static_cast<std::uint16_t>(hole.y - region->origin_y)};
 }
 
 bool ClassicHoleSession::has_prng_state() const noexcept {

@@ -69,6 +69,7 @@ def run_putter_tick(
     terrain_index: int,
     landing_code: int,
     slope_active: bool = False,
+    green_mode: int = 1,
 ) -> None:
     stop_reason = None
 
@@ -83,7 +84,7 @@ def run_putter_tick(
 
     token = uc.hook_add(UC_HOOK_CODE, hook)
     try:
-        w16(uc, GREEN_MODE_VA, 1)
+        w16(uc, GREEN_MODE_VA, green_mode)
         w16(uc, SPECIAL_MODE_VA, 2 if slope_active else landing_code)
         if not slope_active:
             wi32(uc, ADJ_X_VA, 0)
@@ -120,6 +121,7 @@ def run_putter(
     terrain_index: int = DEFAULT_GREEN_TERRAIN_INDEX,
     slope_direction: int = 0,
     slope_magnitude: int = 0,
+    green_mode: int = 1,
 ) -> dict:
     uc, digest = build_uc(exe)
     surface = descriptor_info(uc, terrain_index)
@@ -138,9 +140,11 @@ def run_putter(
 
     uc.emu_start(LIVE_LAUNCH_VA, SENTINEL, count=5000)
 
-    # The update branch treats the ball as already on the green surface.
+    # The original club-12 dispatcher supports normal terrain codes below 8.
+    # Green mode controls the half-drag/coordinate variant; mode 0 retains
+    # ordinary course coordinates and the full 0xF00 drag.
     w16(uc, BALL + 0x1C, 100)
-    w16(uc, GREEN_MODE_VA, 1)
+    w16(uc, GREEN_MODE_VA, green_mode)
 
     slope_active = slope_magnitude != 0
     if slope_active:
@@ -160,6 +164,7 @@ def run_putter(
             terrain_index=terrain_index,
             landing_code=int(surface["landing_code"]),
             slope_active=slope_active,
+            green_mode=green_mode,
         )
         row = sample(uc, tick)
         samples.append(row)
@@ -187,6 +192,7 @@ def run_putter(
             "adj_x_raw": adj_x,
             "adj_y_raw": adj_y,
         },
+        "green_mode": green_mode,
         "input": {
             "club": club,
             "lie": lie,
@@ -212,6 +218,7 @@ def main() -> int:
     ap.add_argument("--terrain-index", type=int, default=DEFAULT_GREEN_TERRAIN_INDEX)
     ap.add_argument("--slope-direction", type=int, default=0)
     ap.add_argument("--slope-magnitude", type=int, default=0)
+    ap.add_argument("--green-mode", type=int, choices=(0, 1), default=1)
     ap.add_argument("-o", "--output", type=Path)
     args = ap.parse_args()
 
@@ -224,6 +231,7 @@ def main() -> int:
         args.terrain_index,
         args.slope_direction,
         args.slope_magnitude,
+        args.green_mode,
     )
     text = json.dumps(report, indent=2) + "\n"
     if args.output:

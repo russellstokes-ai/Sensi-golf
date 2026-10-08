@@ -24,10 +24,10 @@ std::vector<std::uint8_t> read_file(const char* path) {
 } // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 8) {
+    if (argc != 9) {
         std::cerr
             << "usage: sensigolf_classic_game_session_probe "
-            << "<resource-id> <par> <mapm> <spt> <mapi-desc> <mapi-select> "
+            << "<resource-id> <par> <mapm> <maps> <spt> <mapi-desc> <mapi-select> "
             << "<player-slot>\n";
         return 2;
     }
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     try {
         const auto resource_raw = std::stoul(argv[1], nullptr, 0);
         const auto par_raw = std::stoul(argv[2], nullptr, 0);
-        const auto player_slot = std::stoul(argv[7], nullptr, 0);
+        const auto player_slot = std::stoul(argv[8], nullptr, 0);
         if (resource_raw == 0u || resource_raw >= 100u
             || par_raw == 0u || par_raw > 255u
             || player_slot >= 4u) {
@@ -61,9 +61,10 @@ int main(int argc, char** argv) {
 
         sensigolf::ClassicCourseResources course(
             read_file(argv[3]),
-            read_file(argv[4]),
             read_file(argv[5]),
-            read_file(argv[6]));
+            read_file(argv[6]),
+            read_file(argv[7]),
+            read_file(argv[4]));
         const auto tee = course.player_start(player_slot);
         const auto cup = course.hole_position();
         std::array<sensigolf::RawSptRecord, sensigolf::ClassicCourseResources::kSptRecordCount> spt_rows{};

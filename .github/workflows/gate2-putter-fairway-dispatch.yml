@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install disassembler
-        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6 unicorn
       - name: Fetch verified v1.014
         run: |
           curl -fL --retry 3 --retry-delay 2 \

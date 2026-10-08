@@ -12,9 +12,11 @@ ClassicHoleSession::ClassicHoleSession(
     const ClassicCourseResources& course,
     std::int32_t start_x_raw,
     std::int32_t start_y_raw,
-    std::optional<ClassicHoleMetadata> metadata)
+    std::optional<ClassicHoleMetadata> metadata,
+    recovered::OriginalPrng16* prng)
     : course_(course),
-      hole_metadata_(metadata) {
+      hole_metadata_(metadata),
+      prng_(prng) {
     if (hole_metadata_
         && (hole_metadata_->hole_index >= 18
             || hole_metadata_->par == 0
@@ -27,9 +29,11 @@ ClassicHoleSession::ClassicHoleSession(
 ClassicHoleSession::ClassicHoleSession(
     const ClassicCourseResources& course,
     std::size_t player_slot,
-    std::optional<ClassicHoleMetadata> metadata)
+    std::optional<ClassicHoleMetadata> metadata,
+    recovered::OriginalPrng16* prng)
     : course_(course),
-      hole_metadata_(metadata) {
+      hole_metadata_(metadata),
+      prng_(prng) {
     if (hole_metadata_
         && (hole_metadata_->hole_index >= 18
             || hole_metadata_->par == 0
@@ -391,6 +395,26 @@ ClassicHoleSession::next_hole_index() const noexcept {
 
 bool ClassicHoleSession::round_complete() const noexcept {
     return round_complete_;
+}
+
+bool ClassicHoleSession::has_prng_state() const noexcept {
+    return prng_ != nullptr;
+}
+
+recovered::OriginalPrng16& ClassicHoleSession::prng_state() {
+    if (!prng_) {
+        throw std::logic_error(
+            "classic hole session has no authoritative PRNG state");
+    }
+    return *prng_;
+}
+
+const recovered::OriginalPrng16& ClassicHoleSession::prng_state() const {
+    if (!prng_) {
+        throw std::logic_error(
+            "classic hole session has no authoritative PRNG state");
+    }
+    return *prng_;
 }
 
 } // namespace sensigolf

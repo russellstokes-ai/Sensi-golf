@@ -78,7 +78,7 @@ jobs:
 
           ./build/engine/sensigolf_real_hole_solver_probe \
             "$RID" "$PAR" "$NEXT_RID" "$NEXT_PAR" \
-            "$ROOT/MAPM${NN}.MAP" "$ROOT/MAPM${NN}.SPT" \
+            "$ROOT/MAPM${NN}.MAP" "$ROOT/MAPS${NN}.MAP" "$ROOT/MAPM${NN}.SPT" \
             "$ROOT/MAPI01.RAW" "$ROOT/MAPI02.RAW" 0 \
             | tee "$OUT/result.json"
 

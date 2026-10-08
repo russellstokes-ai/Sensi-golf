@@ -115,6 +115,38 @@ GreenSlopeAdjustment green_slope_adjustment(
     };
 }
 
+GroundStepResult step_non_green_putt(FlightState& state) {
+    GroundStepResult result{};
+
+    // Original v1.014 club-12 branch at 0x40A581 handles ordinary terrain
+    // codes below 8 without gravity. With green mode clear, 0x40A634 uses the
+    // full 0xF00 horizontal drag rather than the green half-drag 0x780.
+    state.height = 0;
+
+    if (state.horizontal_force <= 0) {
+        state.horizontal_force = 0;
+        state.vertical_force = 0;
+        result.resting = true;
+        return result;
+    }
+
+    const auto after =
+        static_cast<std::int64_t>(state.horizontal_force)
+        - kHorizontalDragPerTick;
+
+    if (after < 0) {
+        state.horizontal_force = 0;
+        state.vertical_force = 0;
+        result.resting = true;
+        return result;
+    }
+
+    state.horizontal_force =
+        checked_i32(after, "non-green putter H overflow");
+    move_after_drag(state);
+    return result;
+}
+
 GroundStepResult step_green_putt(
     FlightState& state,
     std::uint16_t slope_direction,

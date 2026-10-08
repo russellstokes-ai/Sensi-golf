@@ -39,6 +39,11 @@ GroundStepResult step_green_putt(
     std::uint16_t slope_direction,
     std::uint16_t slope_magnitude);
 
+// Original club-12 path on ordinary non-green terrain codes below 8.
+// It bypasses gravity like a putt but uses full 0xF00 drag because green mode
+// is clear. No green slope adjustment is applied.
+GroundStepResult step_non_green_putt(FlightState& state);
+
 inline GroundStepResult step_flat_green_putt(FlightState& state) {
     return step_green_putt(state, 0, 0);
 }

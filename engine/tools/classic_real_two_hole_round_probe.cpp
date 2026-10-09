@@ -97,10 +97,10 @@ void complete_original_hole(
 } // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 9) {
+    if (argc != 9 && argc != 11) {
         std::cerr << "usage: sensigolf_real_two_hole_round_probe "
                   << "<original-epf-root> <id1> <par1> <id2> <par2> "
-                  << "<id3> <par3> <player-slot>\n";
+                  << "<id3> <par3> [<id4> <par4>] <player-slot>\n";
         return 2;
     }
     try {
@@ -111,10 +111,17 @@ int main(int argc, char** argv) {
         const auto second_par = static_cast<std::uint8_t>(std::stoul(argv[5]));
         const auto third = static_cast<std::uint8_t>(std::stoul(argv[6]));
         const auto third_par = static_cast<std::uint8_t>(std::stoul(argv[7]));
-        const auto player_slot = static_cast<std::size_t>(std::stoul(argv[8]));
+        const bool include_third_hole = argc == 11;
+        const auto fourth = include_third_hole
+            ? static_cast<std::uint8_t>(std::stoul(argv[8])) : third;
+        const auto fourth_par = include_third_hole
+            ? static_cast<std::uint8_t>(std::stoul(argv[9])) : third_par;
+        const auto player_slot = static_cast<std::size_t>(
+            std::stoul(argv[argc - 1]));
         if (first != 42 || second != 50 || third != 58
             || first_par != 4 || second_par != 4 || third_par != 3
-            || player_slot != 0) {
+            || player_slot != 0
+            || (include_third_hole && (fourth != 38 || fourth_par != 4))) {
             throw std::runtime_error(
                 "fixture must use recovered Windows v1.014 slot-0 sequence 42/50/58");
         }
@@ -126,10 +133,12 @@ int main(int argc, char** argv) {
         order[0] = first;
         order[1] = second;
         order[2] = third;
+        if (include_third_hole) order[3] = fourth;
         std::array<std::uint8_t, sensigolf::kClassicParTableSize> pars{};
         pars[first] = first_par;
         pars[second] = second_par;
         pars[third] = third_par;
+        if (include_third_hole) pars[fourth] = fourth_par;
         sensigolf::ClassicGameSession game(
             sensigolf::ClassicHolePlan(order, pars), player_slot);
 
@@ -145,7 +154,7 @@ int main(int argc, char** argv) {
         game.load_current_hole(first, load_original_course(
             root, first, descriptors, selection));
 
-        // Two independently recovered original-physics paths are replayed
+        // Independently recovered original-physics paths are replayed
         // here in ONE authoritative game session. No independent restart.
         constexpr std::array<sensigolf::ClassicShotRequest, 3> first_shots{{
             {1882, 105, 63, 0},
@@ -190,6 +199,60 @@ int main(int argc, char** argv) {
             || game.active_hole().ball_y_raw() != tee.y_raw()
             || tee.x != 370 || tee.y != 383 || cup.x != 138 || cup.y != 96) {
             throw std::runtime_error("third original course failed to load at its actual tee");
+        }
+
+
+        if (include_third_hole) {
+            // Original resource 58's recovered hole-in-one was independently
+            // verified by the strict third-hole solver audit. Preserve the
+            // SAME round state through this third scored-hole transition.
+            constexpr std::array<sensigolf::ClassicShotRequest, 1> third_shots{{
+                {2491, 105, 63, 0},
+            }};
+            complete_original_hole(game, third, 2u, third_shots);
+            expected_request(fourth, 3u, fourth_par);
+            const auto& full_score = game.round_state();
+            if (full_score.holes_completed != 3u
+                || full_score.current_hole_index != 3u
+                || full_score.total_strokes != 8u
+                || full_score.cumulative_par != 11u
+                || full_score.relative_to_par != 3
+                || full_score.round_complete) {
+                throw std::runtime_error("three-hole continuous scorecard is wrong");
+            }
+
+            auto fourth_course = load_original_course(
+                root, fourth, descriptors, selection);
+            const auto fourth_tee = fourth_course.player_start(player_slot);
+            const auto fourth_cup = fourth_course.hole_position();
+            game.load_current_hole(fourth, std::move(fourth_course));
+            const auto fourth_meta = game.active_hole().hole_metadata();
+            if (!fourth_meta || fourth_meta->hole_index != 3u
+                || fourth_meta->resource_id != fourth
+                || game.active_hole().phase()
+                    != sensigolf::HoleSessionPhase::ReadyForShot
+                || game.active_hole().ball_x_raw() != fourth_tee.x_raw()
+                || game.active_hole().ball_y_raw() != fourth_tee.y_raw()
+                || fourth_tee.x != 310 || fourth_tee.y != 766
+                || fourth_cup.x != 282 || fourth_cup.y != 154) {
+                throw std::runtime_error(
+                    "fourth original course not loaded at recovered tee");
+            }
+            std::cout << "{\"resources\":["
+                      << static_cast<unsigned>(first) << ","
+                      << static_cast<unsigned>(second) << ","
+                      << static_cast<unsigned>(third) << ","
+                      << static_cast<unsigned>(fourth)
+                      << "],\"completed_strokes\":[3,4,1],\"holes_completed\":"
+                      << full_score.holes_completed << ",\"total_strokes\":"
+                      << full_score.total_strokes << ",\"cumulative_par\":"
+                      << full_score.cumulative_par << ",\"relative_to_par\":"
+                      << full_score.relative_to_par
+                      << ",\"next_loaded\":true,\"next_tee\":["
+                      << fourth_tee.x << "," << fourth_tee.y
+                      << "],\"next_cup\":["
+                      << fourth_cup.x << "," << fourth_cup.y << "]}\n";
+            return 0;
         }
 
         std::cout << "{\"resources\":["

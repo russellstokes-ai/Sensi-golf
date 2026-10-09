@@ -13,7 +13,7 @@ This is the canonical current-status document for the Sensible Golf Enhanced rec
 
 The project-killing feasibility question has been answered positively: the selected Windows v1.014 gameplay engine is recoverable and the portable core reproduces the original machine code at zero tolerance across the principal shot, terrain, hazard, putting, cup, PRNG and course-collision branches.
 
-The current Gate-2 checkpoint now includes **scored-hole progression, hazard return-to-play, original next-hole resource selection, a platform-neutral game-session controller, and two original holes (resources 42 and 50) scored consecutively in one game session with original resource 58 physically loaded next**. Cup capture, scoring, resource loading and next-hole/round state remain separate recovered stages, matching the original program rather than collapsing them into platform UI logic.
+The current Gate-2 checkpoint now includes **scored-hole progression, hazard return-to-play, original next-hole resource selection, a platform-neutral game-session controller, and **three** original holes (resources 42, 50 and 58) scored consecutively in one game session with original resource 38 physically loaded next**. Cup capture, scoring, resource loading and next-hole/round state remain separate recovered stages, matching the original program rather than collapsing them into platform UI logic.
 
 ## Verified reference build
 
@@ -398,3 +398,37 @@ original round has not been proven, and the Android playable host is
 not yet built. The multi-shot solver is a development/audit utility,
 not shipping gameplay AI. Never fabricate an original terminal drop or
 reposition to force passing tests.
+
+### Three-hole continuous original round — latest checkpoint (2026-10-09)
+
+**PASS: original 42 → 50 → 58 scored in one authoritative
+`ClassicGameSession`, then original resource 38 physically loaded.**
+
+- Original hole 42 (par 4): **3 strokes**.
+- Original hole 50 (par 4): **4 strokes**.
+- Original hole 58 (par 3): **1 stroke** (hole-in-one, recovered
+  original physics; club 0, power 105, accuracy 63, aim 2491).
+- After three scored holes: **8 total strokes / cumulative par 11**,
+  recovered par-minus-strokes **+3** (three under par), next round index 3,
+  round incomplete.
+- Original fourth hole 38 (par 4) loaded from genuine MAPM/MAPS/SPT,
+  actual SPT tee **(310,766)**, cup **(282,154)**; phase
+  `ReadyForShot`.
+- Strict passing continuous workflow:
+  [37963036059](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37963036059).
+  Same-commit core
+  [CI 37963035978](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37963035978)
+  **PASS**.
+- Independent hole-58 solver proof:
+  [37962765890](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37962765890)
+  **PASS**. The existing two-hole continuous workflow remains
+  [green 37963002776](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37963002776).
+  Ten individual Gate-1 golden-master workflows **all passed** on the
+  continuous-fixture extension commit `a40e14b`.
+
+Durable fixture and explicit limitations:
+`analysis/evidence/gate2_continuous_three_hole_round_checkpoint.json`.
+The original commercial assets remain outside the public repo. This is a
+**3/18-hole real-resource integration proof** and not final Gate-2 signoff:
+code-9/code-10 event-11 post-stop continuation and complete original-round
+behaviour remain outstanding; the Android playable build is not yet started.

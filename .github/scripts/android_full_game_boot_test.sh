@@ -28,6 +28,43 @@ adb shell pidof "$PKG" | tee "$OUT/later-pid.txt"
 adb exec-out screencap -p > "$OUT/intro-32s.png"
 test -s "$OUT/intro-32s.png"
 
+# The original intro can last substantially longer under software rendering.
+# Verify later progression and one *real* Android touchscreen action rather
+# than interpreting a live process as a playable full game.
+sleep 48
+adb shell pidof "$PKG" | tee "$OUT/pid-80s.txt"
+adb exec-out screencap -p > "$OUT/intro-80s.png"
+test -s "$OUT/intro-80s.png"
+
+sleep 48
+adb shell pidof "$PKG" | tee "$OUT/pid-128s.txt"
+adb exec-out screencap -p > "$OUT/intro-128s.png"
+test -s "$OUT/intro-128s.png"
+
+# Touch the game's visible centre inside the 4:3 fitted viewport; if the
+# intro is skippable or menu is displayed, this exercises core pointer wiring.
+# adb emulates a screen tap; it is NOT proof of real-finger timing/accuracy.
+adb shell input tap 1200 540
+sleep 3
+adb exec-out screencap -p > "$OUT/after-tap-131s.png"
+test -s "$OUT/after-tap-131s.png"
+adb shell input tap 1200 540
+sleep 8
+adb exec-out screencap -p > "$OUT/after-tap-139s.png"
+test -s "$OUT/after-tap-139s.png"
+
+python - "$OUT" <<'PY'
+import hashlib,json,sys
+from pathlib import Path
+root=Path(sys.argv[1])
+names=["intro-8s.png","intro-32s.png","intro-80s.png","intro-128s.png",
+       "after-tap-131s.png","after-tap-139s.png"]
+hashes={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in names}
+(root/"visual-progression-sha256.json").write_text(json.dumps(hashes,indent=2)+"\\n")
+assert len(set(hashes.values()))>1,"All game frames identical; no visual progress"
+print("GAME VIDEO FRAMES CHANGED between samples (does NOT establish menu or play).")
+PY
+
 adb shell dumpsys activity activities > "$OUT/activity-state.txt"
 grep -q "$PKG" "$OUT/activity-state.txt"
 adb logcat -d -s AndroidRuntime:E libretrodroid:E > "$OUT/android-errors.txt"
@@ -38,4 +75,4 @@ if grep -Eq 'FATAL EXCEPTION|UnsatisfiedLinkError|Unable to start activity' "$OU
 fi
 
 echo "ANDROID ACTIVITY SMOKE PASS: process remains alive; original game launch screenshots captured."
-echo "NOTICE: these checks do NOT automatically verify that the main menu was reached or that all 25 courses work."
+echo "NOTICE: Activity + changing frames + simulated tap are not evidence of playable menus, original input, audio or 25-course coverage."

@@ -13,7 +13,7 @@ This is the canonical current-status document for the Sensible Golf Enhanced rec
 
 The project-killing feasibility question has been answered positively: the selected Windows v1.014 gameplay engine is recoverable and the portable core reproduces the original machine code at zero tolerance across the principal shot, terrain, hazard, putting, cup, PRNG and course-collision branches.
 
-The current Gate-2 checkpoint now includes **scored-hole progression, hazard return-to-play, original next-hole resource selection, a platform-neutral game-session controller, and the first verified real-original-hole end-to-end completion with actual second-hole resource loading**. Cup capture, scoring, resource loading and next-hole/round state remain separate recovered stages, matching the original program rather than collapsing them into platform UI logic.
+The current Gate-2 checkpoint now includes **scored-hole progression, hazard return-to-play, original next-hole resource selection, a platform-neutral game-session controller, and two original holes (resources 42 and 50) scored consecutively in one game session with original resource 58 physically loaded next**. Cup capture, scoring, resource loading and next-hole/round state remain separate recovered stages, matching the original program rather than collapsing them into platform UI logic.
 
 ## Verified reference build
 
@@ -353,3 +353,48 @@ resource **58** (par 3). The second-hole replay is **NOT yet proven**.
 Evidence: `analysis/evidence/gate2_second_hole_audit.json`.
 
 The **first real-hole success stands**; Gate 2 remains **IN PROGRESS**.
+
+## Continuous real-original-hole proof — 2026-10-09
+
+**PASS: two original holes, one actual `ClassicGameSession`, cumulative scorecard,
+then real third-hole loading.** This supersedes the earlier isolated-hole
+proof as the strongest Gate-2 gameplay checkpoint.
+
+| Actual original slot-0 order | Replayed strokes | Par | Verification |
+|---|---:|---:|---|
+| Resource 42; original tee (247,726), cup (414,85) | 3 | 4 | Scored and committed |
+| Resource 50; original tee (401,855), cup (88,97) | 4 | 4 | Scored and committed in the **same** game session |
+| Resource 58; original tee (370,383), cup (138,96) | Not played | 3 | Loaded original MAPM/MAPS/SPT, ready for shot |
+
+- Cumulative **7 strokes**, **8 par**, original par-minus-strokes
+  score **+1** (one under par); two holes completed, next index 2,
+  round not finished.
+- Original Windows v1.014 order `42,50,58` and par `4,4,3`
+  are independently extracted/validated by the workflow. The two
+  known deterministic shot paths use the unchanged recovered simulation.
+- New strict continuous-round workflow:
+  [37962471601](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37962471601)
+  **PASS**; same-commit [CI 37962471478](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37962471478)
+  **PASS**.
+- The independent original resource-50 solver audit
+  [37961865206](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37961865206)
+  **PASS**: a bounded spatially diverse multi-shot beam found a four-stroke
+  solution and replayed it through the authoritative game session.
+  Earlier greedy shot selection stalled at original distance 135.
+- After integrating the continuous probe's CMake build registration, the
+  10 individual Gate-1 golden-master workflows **all passed** on commit
+  `635cf90fb576bf20e4e4dd5b98cbc4d7726ea90d`.
+  Transient Internet Archive HTTP 502 and partial-download errors were
+  observed in earlier parallel workflow attempts; no original
+  physics constants were modified to clear those errors.
+
+Evidence:
+`analysis/evidence/gate2_continuous_two_hole_round_checkpoint.json`,
+`analysis/evidence/gate2_second_hole_audit.json`.
+
+**Gate 2 is still IN PROGRESS.** The original code-9/code-10 event-11
+post-stop continuation has not been fully recovered, the full 18-hole
+original round has not been proven, and the Android playable host is
+not yet built. The multi-shot solver is a development/audit utility,
+not shipping gameplay AI. Never fabricate an original terminal drop or
+reposition to force passing tests.

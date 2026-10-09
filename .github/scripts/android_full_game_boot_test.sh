@@ -9,6 +9,27 @@ PKG="com.russellstokes.sensigolf"
 ACT="$PKG/com.russellstokes.sensigolf.fullgame.FullGameActivity"
 mkdir -p "$OUT"
 
+# ALWAYS preserve the underlying Android failure. The previous test stopped
+# after a failed pidof call eight seconds into boot and lost the exception.
+# Capture logcat, activity/process state, and a last screenshot before exit.
+boot_failure_diagnostics() {
+  local status=$?
+  trap - ERR
+  echo "::error::Android original-game boot gate failed (exit ${status}); collecting underlying runtime diagnostics."
+  adb logcat -d -v threadtime -t 2200 > "$OUT/boot-failure-logcat.txt" 2>&1 || true
+  adb shell dumpsys activity activities > "$OUT/boot-failure-activity.txt" 2>&1 || true
+  adb shell dumpsys activity processes > "$OUT/boot-failure-processes.txt" 2>&1 || true
+  adb shell pidof "$PKG" > "$OUT/boot-failure-pid.txt" 2>&1 || true
+  adb exec-out screencap -p > "$OUT/boot-failure-screen.png" 2>/dev/null || true
+  echo "--- Relevant Android fatal/native/runtime lines ---"
+  grep -Ei -B 6 -A 25 "FATAL EXCEPTION|Fatal signal|Process: $PKG|UnsatisfiedLinkError|AndroidRuntime|linker.*(failed|cannot)|SIGSEGV|SIGABRT|libretrodroid|dosbox_pure|Core could not be loaded|failed to load core" "$OUT/boot-failure-logcat.txt" | tail -n 240 || true
+  echo "--- Activity/process state ---"
+  grep -Ei -m 18 "mResumed|ResumedActivity|mCurrentFocus|$PKG|crash|ANR" "$OUT/boot-failure-activity.txt" || true
+  echo "All forensic output retained in original-full-game-android-poc-boot-evidence."
+  exit "$status"
+}
+trap boot_failure_diagnostics ERR
+
 test -s "$APK"
 adb install -r "$APK"
 

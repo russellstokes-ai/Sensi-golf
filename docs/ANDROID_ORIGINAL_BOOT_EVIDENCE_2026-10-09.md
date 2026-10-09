@@ -31,3 +31,13 @@
 - `android-full/app/src/main/java/com/russellstokes/sensigolf/fullgame/FullGameActivity.kt` — original executable host and no-settings fixed smoothing.
 
 **Release statement: not finished.** All original assets/modes and control fidelity need to be verified before presenting this to the user as a complete playable Android port. One screenshot of a demo hole is a genuine technical milestone, not 100% product readiness.
+
+## Follow-up false-positive resolved: timed menu taps were actually in Demo Mode
+
+- [Extended tap run #37995161511](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37995161511) is **CI PASS**, and showed real original Singapore Demo Mode frames at nominal 149s and 156/159/164s. It did **not** select Play Round: the scripted touch events happened while the original course was still playing autonomously.
+- Comparing original menu frame from run #37994141628 with same-time Singapore demo from #37995161511 proves the original title/demo timing is **not deterministic** at a fixed 149-second delay.
+- The previous smoke test's green result only established original game process viability, native course-art rendering and changing screenshots. It never proved touch selection.
+- The corrected test first observes the actual screen, looking for the original brown central buttons and absence of bright green playing-course terrain; only *after* main-menu confirmation does it send touches.
+- Verifiable sample metrics (2400×1080 screenshots; central fixed emulator ROI): **confirmed menu** brown fraction 0.436, green 0.000; **Singapore demo** brown 0.052, green 0.363; original early intro/title brown 0.034. Detector criteria brown >=0.18 and green <=0.15; these are **test-image classification heuristics**, not OCR nor general-purpose UI recognition.
+- Reference implementation: `tools/detect_sensible_main_menu.py` and `.github/scripts/android_full_game_boot_test.sh`. Image comparison validated locally against actual run screenshot artifacts from both original-menu and demo-mode traces.
+- A new full Android CI run with that gate is required before claiming menu-touch tests have even begun; **a confirmed menu still does not mean a successful menu tap**, which requires manual image review of the post-tap screen.

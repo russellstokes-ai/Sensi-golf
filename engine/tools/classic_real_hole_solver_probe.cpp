@@ -49,6 +49,7 @@ struct ShotChoice {
     std::uint32_t resulting_distance = std::numeric_limits<std::uint32_t>::max();
     sensigolf::HoleSessionPhase phase = sensigolf::HoleSessionPhase::UnsupportedTerrain;
     bool valid = false;
+    std::uint64_t ranking_score = std::numeric_limits<std::uint64_t>::max();
 };
 
 void run_until_terminal(sensigolf::ClassicHoleSession& hole) {
@@ -168,7 +169,7 @@ ShotChoice choose_shot(
                     trial.step();
                     if (trial.phase() == sensigolf::HoleSessionPhase::HoleScored) {
                         return ShotChoice{
-                            request, 0, sensigolf::HoleSessionPhase::HoleScored, true};
+                            request, 0, sensigolf::HoleSessionPhase::HoleScored, true, 0};
                     }
                 }
 
@@ -177,15 +178,18 @@ ShotChoice choose_shot(
                 const auto penalty =
                     phase == sensigolf::HoleSessionPhase::SpecialGreenStopped
                     ? 8u : 0u;
-                const auto score = distance > std::numeric_limits<std::uint32_t>::max() - penalty
-                    ? distance
-                    : distance + penalty;
-
-                const auto best_score =
-                    best.resulting_distance
-                    + (best.phase == sensigolf::HoleSessionPhase::SpecialGreenStopped ? 8u : 0u);
-                if (!best.valid || score < best_score) {
-                    best = ShotChoice{request, distance, phase, true};
+                // Analysis-only planning heuristic: a slightly closer
+                // landing in severe rough can trap greedy search in 1-unit
+                // oscillations. Prefer reachable cleaner lies without changing
+                // any simulation/terrain physics or scoring rules.
+                const auto landing_code = trial.current_surface().landing_code;
+                const auto severe_rough_penalty =
+                    landing_code == 7u ? 100u : 0u;
+                const std::uint64_t score =
+                    static_cast<std::uint64_t>(distance)
+                    + penalty + severe_rough_penalty;
+                if (!best.valid || score < best.ranking_score) {
+                    best = ShotChoice{request, distance, phase, true, score};
                 }
             }
         }

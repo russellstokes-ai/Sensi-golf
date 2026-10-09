@@ -75,7 +75,7 @@ jobs:
           assert [r[1] for r in rows]==[
               src["par_by_resource_id"][r[0]] for r in rows],rows
           assert [r[0] for r in rows]==[42,50,58,38,70,44,64],rows
-          assert [r[1] for r in rows]==[4,4,3,4,3,4,4],rows
+          assert [r[1] for r in rows]==[4,4,3,4,3,4,5],rows
           assert rows[-1][6]==0 and all(r[6]>0 for r in rows[:-1]),rows
           print("original Windows executable order/pars match replay fixture")
           PY

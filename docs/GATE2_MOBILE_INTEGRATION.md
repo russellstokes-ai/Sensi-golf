@@ -248,6 +248,7 @@ Canonical machine-readable record:
 
 This is **not complete Gate-2 exit**: full legacy interaction coverage,
 all remaining terminal/surface rules, full original 18-hole replay and a
-fresh Gate-1 binary-oracle matrix remain necessary before universal
-original-game fidelity can be claimed. Android is still the first planned
+a fresh consolidated Gate-1 final sign-off remain necessary before universal
+original-game fidelity can be claimed. The ten individually triggered Gate-1
+Golden Master workflows all passed at the gameplay-code commit `b1dd77f`. Android is still the first planned
 playable product target; the C++ solver remains a test utility.

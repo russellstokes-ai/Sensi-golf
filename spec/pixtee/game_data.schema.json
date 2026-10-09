@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pixtee Golf independent course, mode, and progression content",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "game_id",
+    "course",
+    "career"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "game_id": {
+      "const": "pixtee-golf"
+    },
+    "course": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "display_name",
+        "author",
+        "licence",
+        "holes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "licence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "holes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 18,
+          "items": {
+            "$ref": "#/$defs/hole"
+          }
+        }
+      }
+    },
+    "career": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tiers",
+        "achievements"
+      ],
+      "properties": {
+        "tiers": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "$ref": "#/$defs/tier"
+          }
+        },
+        "achievements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/achievement"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "polygon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "terrain",
+        "vertices"
+      ],
+      "properties": {
+        "terrain": {
+          "enum": [
+            "tee",
+            "fairway",
+            "semi",
+            "rough",
+            "bunker",
+            "water",
+            "green",
+            "out-of-bounds",
+            "path"
+          ]
+        },
+        "vertices": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/point"
+          }
+        },
+        "friction": {
+          "type": "number",
+          "minimum": 0
+        },
+        "slope_x": {
+          "type": "number"
+        },
+        "slope_y": {
+          "type": "number"
+        }
+      }
+    },
+    "hole": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "par",
+        "tee",
+        "cup",
+        "bounds",
+        "surfaces",
+        "design_provenance"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 18
+        },
+        "par": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 6
+        },
+        "nominal_yards": {
+          "type": "integer",
+          "minimum": 40,
+          "maximum": 750
+        },
+        "tee": {
+          "$ref": "#/$defs/point"
+        },
+        "cup": {
+          "$ref": "#/$defs/point"
+        },
+        "bounds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "width",
+            "height"
+          ],
+          "properties": {
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "surfaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/polygon"
+          }
+        },
+        "design_provenance": {
+          "type": "string",
+          "minLength": 12
+        },
+        "art_pack_id": {
+          "type": "string"
+        },
+        "camera": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "recommended_zoom": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "tee_focus": {
+              "$ref": "#/$defs/point"
+            }
+          }
+        }
+      }
+    },
+    "tier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "events"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "holes",
+              "unlock_points"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "holes": {
+                "enum": [
+                  3,
+                  9,
+                  18
+                ]
+              },
+              "unlock_points": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "prize_cosmetic_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "achievement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "metric",
+        "threshold",
+        "reward_id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "metric": {
+          "enum": [
+            "holes_in_one",
+            "birdies",
+            "eagles",
+            "completed_rounds",
+            "career_titles",
+            "consecutive_pars",
+            "bogey_free_rounds",
+            "course_records"
+          ]
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reward_id": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

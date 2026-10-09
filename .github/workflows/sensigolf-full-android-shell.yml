@@ -55,6 +55,14 @@ jobs:
           for abi in arm64-v8a x86_64; do
             cp "libs/$abi/libretro.so" "../../app/src/main/jniLibs/$abi/libdosbox_pure_libretro_android.so"
           done
+      - name: Prepare private original DOS game for compatibility boot test
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fLSs --retry 3 --connect-timeout 15 --max-time 120             'https://archive.org/download/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/SG-original-reference.zip
+          python tools/build_original_dosz.py /tmp/SG-original-reference.zip
+          unzip -Z1 android-full/app/src/main/assets/game/SensibleGolf.dosz             | grep -Fx GOLFDOS.EXE
+          unzip -Z1 android-full/app/src/main/assets/game/SensibleGolf.dosz             | grep -Fx GOLF.EPF
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
@@ -70,5 +78,35 @@ jobs:
           unzip -l "$APK" | grep lib/x86_64/libdosbox_pure_libretro_android.so
           unzip -l "$APK" | grep lib/arm64-v8a/liblibretrodroid.so
           echo "PASS: frontend and native original DOS runtime compile."
+      - name: Boot original full game in Android x86_64 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-snapshot -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            adb install -r android-full/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -W -n com.russellstokes.sensigolf/com.russellstokes.sensigolf.fullgame.FullGameActivity
+            sleep 12
+            adb shell pidof com.russellstokes.sensigolf
+            mkdir -p analysis/private/android-full-boot
+            adb exec-out screencap -p > analysis/private/android-full-boot/boot.png
+            adb logcat -d -s AndroidRuntime:E libretrodroid:E >> analysis/private/android-full-boot/android-errors.txt
+            if grep -Eq 'FATAL EXCEPTION|UnsatisfiedLinkError|Unable to start activity' analysis/private/android-full-boot/android-errors.txt; then
+              cat analysis/private/android-full-boot/android-errors.txt
+              exit 1
+            fi
+            echo "BOOT SMOKE PASS: original-game APK launched and remains alive."
+      - name: Save boot screenshot (never upload original game binary)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: original-full-game-android-poc-boot-evidence
+          path: analysis/private/android-full-boot/
+          retention-days: 14
       # No APK is uploaded: debug without the private original game copy
       # is not a playable full-game build and must never be presented as one.

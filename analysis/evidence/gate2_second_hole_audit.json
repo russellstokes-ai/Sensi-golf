@@ -1,0 +1,51 @@
+{
+  "schema": "sensigolf.gate2.second_hole_audit.v1",
+  "date": "2026-10-09",
+  "status": "BLOCKED: analysis solver did not complete second original hole; no proven core physics regression",
+  "reference": "Sensible Golf Windows v1.014 original resources",
+  "real_order": [
+    42,
+    50,
+    58
+  ],
+  "hole": {
+    "resource_id": 50,
+    "round_index_in_original_order": 1,
+    "par": 4,
+    "tee": [
+      401,
+      855
+    ],
+    "cup": [
+      88,
+      97
+    ],
+    "following_resource_id": 58,
+    "following_par": 3
+  },
+  "workflows": {
+    "initial": 37959740023,
+    "severe_rough_heuristic": 37959923976,
+    "precise_tie_breaker": 37960119153,
+    "safe_lie_heuristic": 37960274362,
+    "special_terminal_exclusion": 37960397473
+  },
+  "known_facts": [
+    "Real resource50 MAPS green has no landing-code-8 terrain cells in the probe's full green search",
+    "Greedy per-shot distance minimization can strand candidate paths in landing codes 5/6/7 far from the cup",
+    "Selecting code-9 event-11 special-green stop can preserve ball position and trap analysis solver; incomplete original continuation must not be fabricated",
+    "The latest solver-only heuristic reached recovered distance 135 but did not complete the hole within 12 strokes",
+    "First real resource42 hole proof continues to pass, including loading original resource50; core CI passed"
+  ],
+  "limitations": [
+    "Failure of an analysis-only greedy solver is not proof that the original game or recovered physics cannot complete this hole",
+    "Do not claim original resource50 hole complete",
+    "Do not change recovered physics or fabricate reposition/drop behavior to force the test to pass"
+  ],
+  "recommended_next_work": [
+    "Replace greedy one-shot candidate ranking with bounded multi-step/beam search using original physics",
+    "Capture the exact original code-9/code-10 event-11 continuation before integrating terminal return behavior",
+    "Compare chosen real-course shot sequences to original executable trace before broadening the engine",
+    "Keep Gate1 parity and resource42-to-loaded-resource50 workflows green throughout"
+  ]
+}

@@ -133,15 +133,15 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
     unsupported_descriptor_.reset();
 }
 
-void ClassicHoleSession::complete_scored_hole() {
+void ClassicHoleSession::complete_scored_hole(bool correct_putter_code8_terminal) {
     if (!hole_metadata_) {
         return;
     }
 
     // The original zero-distance pre-update branch scores the hole regardless
-    // of club. Only the club-12/code-8 terminal path has the extra transient
-    // counter increment that must be corrected before scoring.
-    if (active_club_ == 12) {
+    // of club. Correct only the extra transient club-12/code-8 increment,
+    // not a normal resting putt that reaches zero recovered distance.
+    if (correct_putter_code8_terminal) {
         recovered_counters_.player_52 = static_cast<std::uint16_t>(
             recovered_counters_.player_52 - 1u);
         recovered_counters_.player_56 = static_cast<std::uint16_t>(
@@ -208,7 +208,19 @@ void ClassicHoleSession::step() {
         // not in the landing-code-8 terminal itself. The full single-player
         // counter adjustment is currently proven for the putter path.
         if (hole_metadata_ && distance_to_hole() == 0) {
-            complete_scored_hole();
+            complete_scored_hole(active_club_ == 12);
+        }
+        return;
+    }
+
+    // The original v1.014 0x40A456 zero-distance pre-update branch is
+    // independent of the landing-code-8 terminal. A normal resting shot can
+    // also have distance zero (the original helper rounds to integer units).
+    // Model that check on the next logical tick, without manufacturing a
+    // code-8 event or altering recovered ball physics.
+    if (phase_ == HoleSessionPhase::ReadyForShot) {
+        if (strokes_ > 0 && hole_metadata_ && distance_to_hole() == 0) {
+            complete_scored_hole(false);
         }
         return;
     }

@@ -13,9 +13,9 @@
 
 ## Rights and release
 
-**Full distribution blocked until verified licence** to distribute original code, EPF, artwork and audio as a complete new Android app. Do not fetch abandonware/Archive.org copies into a publicly distributed artifact in lieu of permission. Runtime GPL licences additionally require appropriate source/notice compliance.
+**Private proof of concept can proceed immediately.** Test using a complete original game copy placed in a local, gitignored build path. Do not place the game archive in this public source repository or publish an APK containing unlicensed third-party game files. Commercial distribution and GPL source/notice compliance remain separate release work.
 
-Licensed packaging (once authorized): `tools/build_original_dosz.py` validates the exact original executables and EPF, creates `app/src/main/assets/game/SensibleGolf.dosz` with only one DOS executable, and the Android Gradle build includes it. No manual extraction on the phone. This file is deliberately gitignored. A Gradle release build without it intentionally fails.
+POC packaging now: `tools/build_original_dosz.py` validates the original DOS executable and EPF, creates `app/src/main/assets/game/SensibleGolf.dosz` with only one DOS executable, and the Android Gradle build includes it. No manual extraction on the phone. This file is deliberately gitignored. A Gradle release build without it intentionally fails; private debug compatibility builds can use an operator-provided original archive.
 
 ## Source pinning
 
@@ -30,6 +30,6 @@ Licensed packaging (once authorized): `tools/build_original_dosz.py` validates t
 - No-start-menu assertion proven from captured video rather than the upstream single-executable documentation
 - Approved launcher art committed to packaged APK
 - 25-course navigation/season/multiplayer/music/stability validation
-- Original distribution rights
+- Commercial distribution rights (not a prerequisite for private compatibility investigation)
 
 CI is allowed to produce **build-verification evidence only**, not a falsely labelled full-game release APK.

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Temporary build resource only. Replace with approved eagle-and-golfer
+     raster art before user distribution. Original generated icon has been
+     retained in conversation at cartoon_eagle_golf_app_icon.png. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="108dp" android:height="108dp"
+        android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#142D40" android:pathData="M0,0h108v108h-108z"/>
+    <path android:fillColor="#78AC3F" android:pathData="M14,55C21,36 57,26 94,39L102,108H6Z"/>
+    <path android:fillColor="#D8C381" android:pathData="M10,94C26,75 55,65 97,78L108,108H0Z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M76,16a20,20 0,1 0,0 40a20,20 0,1 0,0 -40"/>
+    <path android:fillColor="#E1E1E1" android:pathData="M71,23a2,2 0,1 0,0 4a2,2 0,1 0,0 -4M81,31a2,2 0,1 0,0 4a2,2 0,1 0,0 -4M70,40a2,2 0,1 0,0 4a2,2 0,1 0,0 -4M87,43a2,2 0,1 0,0 4a2,2 0,1 0,0 -4"/>
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="2" android:pathData="M32,38L32,65"/>
+    <path android:fillColor="#F23C37" android:pathData="M32,39L48,42L32,48Z"/>
+</vector>

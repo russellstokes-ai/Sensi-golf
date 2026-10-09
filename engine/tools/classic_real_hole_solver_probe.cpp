@@ -209,11 +209,12 @@ void apply_shot(
 } // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 11) {
+    if (argc != 14) {
         std::cerr
             << "usage: sensigolf_real_hole_solver_probe "
             << "<resource-id> <par> <next-resource-id> <next-par> "
-            << "<mapm> <maps> <spt> <mapi-desc> <mapi-select> <player-slot>\n";
+            << "<mapm> <maps> <spt> <mapi-desc> <mapi-select> "
+            << "<next-mapm> <next-maps> <next-spt> <player-slot>\n";
         return 2;
     }
 
@@ -227,7 +228,7 @@ int main(int argc, char** argv) {
         const auto next_par = static_cast<std::uint8_t>(
             std::stoul(argv[4], nullptr, 0));
         const auto player_slot = static_cast<std::size_t>(
-            std::stoul(argv[10], nullptr, 0));
+            std::stoul(argv[13], nullptr, 0));
 
         const auto mapm = read_file(argv[5]);
         const auto maps = read_file(argv[6]);
@@ -371,9 +372,35 @@ int main(int argc, char** argv) {
 
         const auto next = game.resource_request();
         if (!next || next->resource_id != next_resource_id
-            || next->round_index != 1u) {
+            || next->round_index != 1u || next->par != next_par) {
             throw std::runtime_error(
                 "game-session replay did not activate expected next resource");
+        }
+        if (game.has_active_hole() || game.round_state().holes_completed != 1u) {
+            throw std::runtime_error(
+                "scored-hole commit did not release previous hole correctly");
+        }
+
+        // The second hole is now loaded from genuine original MAPM/MAPS/SPT,
+        // not just represented as a filename or round-index request.
+        auto second_course = sensigolf::ClassicCourseResources(
+            read_file(argv[10]), read_file(argv[12]), desc, sel,
+            read_file(argv[11]));
+        const auto second_tee = second_course.player_start(player_slot);
+        const auto second_cup = second_course.hole_position();
+        game.load_current_hole(next_resource_id, std::move(second_course));
+        const auto second_metadata = game.active_hole().hole_metadata();
+        if (!second_metadata
+            || second_metadata->hole_index != 1u
+            || second_metadata->resource_id != next_resource_id
+            || second_metadata->par != next_par
+            || game.active_hole().phase() != sensigolf::HoleSessionPhase::ReadyForShot
+            || game.active_hole().ball_x_raw() != second_tee.x_raw()
+            || game.active_hole().ball_y_raw() != second_tee.y_raw()
+            || game.active_hole().hole_position().x != second_cup.x
+            || game.active_hole().hole_position().y != second_cup.y) {
+            throw std::runtime_error(
+                "second original course did not activate at its recovered SPT tee");
         }
 
         std::cout << "{"
@@ -382,6 +409,11 @@ int main(int argc, char** argv) {
                   << ",\"strokes\":" << shots.size()
                   << ",\"next_resource_id\":" << static_cast<unsigned>(next->resource_id)
                   << ",\"next_round_index\":" << next->round_index
+                  << ",\"next_loaded\":true"
+                  << ",\"next_tee_x\":" << second_tee.x
+                  << ",\"next_tee_y\":" << second_tee.y
+                  << ",\"next_cup_x\":" << second_cup.x
+                  << ",\"next_cup_y\":" << second_cup.y
                   << ",\"shots\":[";
         for (std::size_t i = 0; i < shots.size(); ++i) {
             if (i != 0) std::cout << ",";

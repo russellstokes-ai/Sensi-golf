@@ -29,6 +29,9 @@ jobs:
           git -C android-full/vendor/LibretroDroid submodule update --init --recursive --depth 1
           # This project uses the workflow-managed Gradle; no vendored wrapper binaries.
           rm -rf android-full/vendor/LibretroDroid/gradle/wrapper
+          # Audio submodule ships unrelated sample wrapper jars, one fails trust validation.
+          # We invoke only the pinned root Gradle; remove ALL unused vendor wrappers.
+          find android-full/vendor/LibretroDroid -type f -name gradle-wrapper.jar -delete
           git clone --quiet https://github.com/libretro/dosbox-pure.git android-full/vendor/dosbox-pure
           git -C android-full/vendor/dosbox-pure checkout -q cdaea10ce8cac231bc341ca05d4c5e4e5fe0fbd5
       - uses: actions/setup-java@v4

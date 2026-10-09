@@ -43,10 +43,9 @@
   "limitations": [
     "Failure of an analysis-only greedy solver is not proof that the original game or recovered physics cannot complete this hole",
     "Do not change recovered physics or fabricate reposition/drop behavior to force the test to pass",
-    "Independent resource50 replay is proven; continuous two-hole single-session round verification is a separate audit."
+    "Real resources42 and 50 have now been scored in a continuous same-session round; full 18-hole replay remains open"
   ],
   "recommended_next_work": [
-    "Run a continuous original 42 -> 50 -> loaded 58 single ClassicGameSession regression with cumulative scorecard",
     "Capture the exact original code-9/code-10 event-11 continuation before integrating terminal return behavior",
     "Compare chosen real-course shot sequences to original executable trace before broadening the engine",
     "Keep Gate1 parity and resource42-to-loaded-resource50 workflows green throughout"
@@ -93,5 +92,10 @@
       138,
       96
     ]
+  },
+  "verification": {
+    "continuous_two_hole_round_pass": 37962471601,
+    "continuous_round_checkpoint": "analysis/evidence/gate2_continuous_two_hole_round_checkpoint.json",
+    "continuous_round_result": "Original 42 + 50 scored inside a single ClassicGameSession; loaded real resource58; 7 strokes / 8 par / +1 original par-minus-strokes"
   }
 }

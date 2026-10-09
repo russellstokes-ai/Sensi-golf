@@ -323,5 +323,8 @@ Evidence: `analysis/evidence/gate2_real_hole_full_load_checkpoint.json`.
 
 **Gate 2 is still IN PROGRESS:** this is a passing real-hole pathway, not
 proof of every original surface, PRNG interaction, special terminal, or all 18
-real holes. The full Gate-1 binary-oracle golden-master matrix has **not**
-been rerun for this new checkpoint; normal CI and the 16 core tests passed.
+real holes. Ten individual Gate-1 Golden Master workflows **all passed** at gameplay-code
+commit `b1dd77f` (green slope, PRNG, course collision, live player, hazards,
+PRNG interactions, hole capture, normal surfaces, putter, flat landing/rest).
+Normal CI and 16 core tests passed. A fresh *consolidated* Gate-1 final
+sign-off workflow has not been rerun.

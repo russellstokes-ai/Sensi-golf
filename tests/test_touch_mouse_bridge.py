@@ -41,7 +41,7 @@ class TouchBridgeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             patch("unrecognized upstream source")
         with self.assertRaises(ValueError):
-            patch("case RETRO_DEVICE_MOUSE: {  /* foreign implementation */ }\n" + PINNED_FRAGMENT)
+            patch("        case RETRO_DEVICE_MOUSE: {  /* foreign implementation */ }\n" + PINNED_FRAGMENT)
 
 
 if __name__ == "__main__":

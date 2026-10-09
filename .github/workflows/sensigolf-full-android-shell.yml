@@ -6,6 +6,8 @@ on:
       - 'android-full/**'
       - 'tools/build_original_dosz.py'
       - 'tools/detect_sensible_main_menu.py'
+      - 'tools/patch_libretrodroid_touch_mouse.py'
+      - 'tests/test_touch_mouse_bridge.py'
       - 'tests/test_original_dosz.py'
       - '.github/workflows/sensigolf-full-android-shell.yml'
       - '.github/scripts/android_full_game_boot_test.sh'
@@ -60,6 +62,14 @@ jobs:
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses > /dev/null || true
           "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+      - name: Apply and verify pinned GPL LibretroDroid direct-touch bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_touch_mouse_bridge.py' -v
+          python tools/patch_libretrodroid_touch_mouse.py
+          bash -n .github/scripts/android_full_game_boot_test.sh
+          grep -Fq 'case RETRO_DEVICE_MOUSE: {' android-full/vendor/LibretroDroid/libretrodroid/src/main/cpp/input.cpp
       - name: Compile DOSBox Pure native Android library
         shell: bash
         run: |

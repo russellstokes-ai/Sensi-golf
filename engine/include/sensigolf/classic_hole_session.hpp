@@ -92,7 +92,7 @@ private:
         const ResolvedCourseSurface& surface) const noexcept;
     ClassicSurfaceContext to_context(
         const ResolvedCourseSurface& surface) const noexcept;
-    void complete_scored_hole();
+    void complete_scored_hole(bool correct_putter_code8_terminal);
     void update_green_mode_for_ball();
     ClassicCoursePoint mode_hole_position() const;
 

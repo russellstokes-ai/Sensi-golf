@@ -81,6 +81,16 @@ jobs:
           PY
           ./build/engine/sensigolf_real_round_fixture_probe \
             "$ROOT" "$FIXTURE" 0 | tee "$OUT/result.json"
+          ./build/engine/sensigolf_real_round_fixture_probe \
+            "$ROOT" "$FIXTURE" 0 > "$OUT/replay-result.json"
+          python - "$OUT/result.json" "$OUT/replay-result.json" <<'PY'
+          import json,sys
+          first=json.load(open(sys.argv[1]))
+          second=json.load(open(sys.argv[2]))
+          assert first==second, "independent full-round replay diverged"
+          assert isinstance(first.get("trajectory_hash"),int),first
+          print("deterministic full-round replay state fingerprint:",first["trajectory_hash"])
+          PY
           python - "$OUT/result.json" <<'PY'
           import json,sys
           j=json.load(open(sys.argv[1]))

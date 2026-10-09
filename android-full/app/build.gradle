@@ -39,5 +39,5 @@ dependencies {
 if (gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }) {
     def game = file('src/main/assets/game/SensibleGolf.dosz')
     if (!game.isFile() || game.length() < 100_000L)
-        throw new GradleException('REFUSING FULL-GAME RELEASE: legally cleared full original content is not packaged.')
+        throw new GradleException('Original complete DOS game archive not packaged. Provide your original copy for private POC build.')
 }

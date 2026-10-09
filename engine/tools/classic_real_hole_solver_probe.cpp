@@ -49,7 +49,7 @@ struct ShotChoice {
     std::uint32_t resulting_distance = std::numeric_limits<std::uint32_t>::max();
     sensigolf::HoleSessionPhase phase = sensigolf::HoleSessionPhase::UnsupportedTerrain;
     bool valid = false;
-    std::uint64_t ranking_score = std::numeric_limits<std::uint64_t>::max();
+    double ranking_score = std::numeric_limits<double>::infinity();
 };
 
 void run_until_terminal(sensigolf::ClassicHoleSession& hole) {
@@ -185,9 +185,32 @@ ShotChoice choose_shot(
                 const auto landing_code = trial.current_surface().landing_code;
                 const auto severe_rough_penalty =
                     landing_code == 7u ? 100u : 0u;
-                const std::uint64_t score =
-                    static_cast<std::uint64_t>(distance)
-                    + penalty + severe_rough_penalty;
+
+                // Use original integer distance as the primary objective,
+                // with unrounded course-space distance only to resolve ties.
+                // In the rough, many legal moves share the same integer
+                // value yet differ by a fraction of a course unit; without
+                // this tie-breaker a greedy solver oscillates indefinitely.
+                double course_x =
+                    static_cast<double>(trial.ball_x_raw()) / 65536.0;
+                double course_y =
+                    static_cast<double>(trial.ball_y_raw()) / 65536.0;
+                if (trial.green_mode()) {
+                    const auto region = course.green_region();
+                    if (!region) {
+                        continue;
+                    }
+                    course_x = course_x / 2.0 + region->origin_x;
+                    course_y = course_y / 2.0 + region->origin_y;
+                }
+                const auto original_cup = trial.hole_position();
+                const double precise_distance = std::hypot(
+                    course_x - original_cup.x,
+                    course_y - original_cup.y);
+                const double score =
+                    10000.0 * static_cast<double>(
+                        distance + penalty + severe_rough_penalty)
+                    + precise_distance;
                 if (!best.valid || score < best.ranking_score) {
                     best = ShotChoice{request, distance, phase, true, score};
                 }

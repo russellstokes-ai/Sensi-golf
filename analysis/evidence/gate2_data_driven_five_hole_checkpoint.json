@@ -1,0 +1,74 @@
+{
+  "schema": "sensigolf.gate2.data_driven_five_hole.v1",
+  "date": "2026-10-09",
+  "status": "PASS",
+  "verified_original_build": "Windows v1.014 verified through original ingest tool",
+  "fixture": "engine/tests/fixtures/original_round_first_five.txt",
+  "portable_fixture_driver": "engine/tools/classic_real_round_fixture_probe.cpp",
+  "executable": "sensigolf_real_round_fixture_probe",
+  "workflow": ".github/workflows/gate2-data-driven-five-hole-round.yml",
+  "strict_workflow_run": 37964103361,
+  "core_ci_same_commit": 37964103351,
+  "original_holes": [
+    42,
+    50,
+    58,
+    38,
+    70
+  ],
+  "original_pars": [
+    4,
+    4,
+    3,
+    4,
+    3
+  ],
+  "strokes_by_hole": [
+    3,
+    4,
+    1,
+    2,
+    2
+  ],
+  "results": {
+    "holes_completed": 5,
+    "total_strokes": 12,
+    "cumulative_par": 18,
+    "original_par_minus_strokes": 6,
+    "round_complete": false
+  },
+  "following_original_resource": {
+    "id": 44,
+    "par": 4,
+    "tee": [
+      302,
+      723
+    ],
+    "cup": [
+      148,
+      107
+    ],
+    "loaded": true,
+    "phase": "ReadyForShot"
+  },
+  "verified_properties": [
+    "Original executable's slot-0 order and par independently extracted and matched against every fixture row",
+    "Original MAPM/MAPS/SPT resource physically loaded with matching SPT tee/cup",
+    "Exact input playback through unmodified recovered physics and one continuous ClassicGameSession",
+    "Recovered hole score/aggregate counters checked after every shot sequence and every hole",
+    "Physical sixth original course loaded and playable",
+    "Same reusable runner can represent future recorded course paths and full 18-hole round"
+  ],
+  "caveats": [
+    "Only five out of eighteen original course holes have been scored continuously; the other thirteen are not verified in this fixture",
+    "Original code9/code10 event11 post-stop continuation remains unresolved",
+    "Fixture proves deterministic C++ round replay; does not mean original full Windows UI/playback trace nor shipping Android app",
+    "Original commercial game resource files remain outside public GitHub repository",
+    "Model does not invent collision rules, drops or score adjustments to force route completion"
+  ],
+  "next": [
+    "Independently derive and audit numeric original course44 shot sequence and append fixture row",
+    "Recover original special-green event11 continuation by bounded original machine-code tracing",
+    "Begin versioned save/replay and mobile JNI host after original gameflow gaps are closed"
+  ]
+}

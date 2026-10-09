@@ -1,0 +1,79 @@
+{
+  "schema": "sensigolf.gate2.real_hole_checkpoint.v1",
+  "date": "2026-10-09",
+  "project": "Sensible Golf Enhanced / classic recovery",
+  "reference_build": "Windows v1.014, verified original executable and course resources",
+  "gate": "Gate 2 Burst 3 — real-hole end-to-end checkpoint",
+  "status": "PASS; Gate 2 remains in progress",
+  "proof_commit": "aebed46e03403342b42a155c18ab0af8d54b7323",
+  "proof_workflow_run": 37959306670,
+  "ci_run": 37959306617,
+  "verified": {
+    "resource_first": 42,
+    "par_first": 4,
+    "first_tee": [
+      247,
+      726
+    ],
+    "first_cup": [
+      414,
+      85
+    ],
+    "original_shots": [
+      {
+        "club": 0,
+        "power": 105,
+        "accuracy": 63,
+        "aim": 1882
+      },
+      {
+        "club": 2,
+        "power": 95,
+        "accuracy": 63,
+        "aim": 1882
+      },
+      {
+        "club": 3,
+        "power": 5,
+        "accuracy": 63,
+        "aim": 1756
+      }
+    ],
+    "completed_strokes": 3,
+    "first_hole_scored": true,
+    "game_session_commit": true,
+    "next_resource_requested": 50,
+    "next_resource_loaded_from_real_files": true,
+    "second_round_index": 1,
+    "second_tee": [
+      401,
+      855
+    ],
+    "second_cup": [
+      88,
+      97
+    ],
+    "second_ready_for_shot": true,
+    "core_cpp_tests_passed": 16,
+    "ci_conclusion": "success",
+    "real_hole_workflow_conclusion": "success"
+  },
+  "finding": {
+    "observed_real_resource42_maps_code8_cells": 0,
+    "recovered_distance_helper": "0x40B998; integer-scaled distance can become zero without landing-code-8 terrain",
+    "scored_hole_gate": "v1.014 zero-distance pre-update branch, not solely code-8 cup terminal",
+    "implementation": "general ready-to-shot post-rest zero-distance scoring on next tick, putter code-8 transient counter correction separately guarded",
+    "physics_mutated": false
+  },
+  "limitations": [
+    "Not all original interaction/terrain/terminal branches are integrated",
+    "This proves one original real hole and next resource load, not the full 18-hole original round",
+    "A fresh complete Gate 1 oracle parity matrix has not been rerun on this proof commit; normal CI and 16 portable-core tests passed",
+    "The analysis-only shot solver is not the planned Android/mobile game input implementation"
+  ],
+  "relevant_files": [
+    "engine/src/classic_hole_session.cpp",
+    "engine/tools/classic_real_hole_solver_probe.cpp",
+    ".github/workflows/gate2-real-hole-end-to-end.yml"
+  ]
+}

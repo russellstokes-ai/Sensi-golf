@@ -424,3 +424,46 @@ been completed continuously. The original code9/code10 event11
 post-stop continuation is still unresolved; original multiplayer/full
 round parity and the Android playable app are not yet complete.
 Commercial original assets are never checked into the public repository.
+
+### Full original 18-hole round — strict permanent regression PASS (2026-10-09)
+
+**The original Windows v1.014 slot-0 round is now proved from the
+first original tee through the eighteenth scored hole and completed-round
+terminal state, continuously in one portable `ClassicGameSession`.**
+
+- Complete recovered original hole order:
+  **42 → 50 → 58 → 38 → 70 → 44 → 64 → 48 → 25 → 52 → 40 → 60 →
+  68 → 17 → 66 → 56 → 46 → 72**.
+- **18/18 holes scored, 50 total strokes, cumulative par 74, original
+  par-minus-strokes +24 (24 under par), `round_complete=true`,
+  `next_loaded=false`**. This score is from bounded deterministic
+  solver-selected test inputs, not a representative human play score.
+- The test checks the real original course-order/par table extracted
+  from the verified executable, original MAPM/MAPS/SPT resource
+  loads, original SPT tee/cup coordinates, exact recorded shot inputs,
+  cumulative score after each hole, and no premature end-of-round.
+  The physical gameplay core remains **unchanged**.
+- The numeric-only 18-hole fixture is permanently committed:
+  `engine/tests/fixtures/original_round_all_eighteen.txt`.
+  Its reusable C++ runner is
+  `engine/tools/classic_real_round_fixture_probe.cpp`.
+  The strict CI workflow can be rerun from clean checkout:
+  [full 18-hole regression 37965502008](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37965502008)
+  **PASS**, with [core CI 37965502042](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37965502042)
+  **PASS** on the same commit.
+- The independently repeatable numerical shot-discovery workflow
+  [37965350982](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37965350982)
+  also **PASS**; a previous [discovery 37965216009](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37965216009)
+  independently finished all 18. The ten Gate-1 Golden Masters
+  **all passed** with the full-round fixture code (commit `7dca97a9`).
+- Durable machine-readable sign-off and exact remaining constraints:
+  `analysis/evidence/gate2_full_original_eighteen_hole_checkpoint.json`.
+
+**Important fidelity boundary:** a successfully played 18-hole route
+does **not** prove every original branch, event, hazard state or
+multiplayer variation. **Gate 2 remains IN PROGRESS** until the original
+code-9/code-10 event-11 post-stop continuation has been recovered
+and verified at zero tolerance, with future save/resume model and Android
+host work still pending. No original commercial assets have been
+committed to the public repository. An actual playable Android application
+has not yet been delivered.

@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: **2026-10-07**
+Last updated: **2026-10-09**
 
 This is the canonical current-status document for the Sensible Golf Enhanced recovery/port project. Specialist documents contain deeper technical detail, but this page is the authoritative summary of what is complete, what is parity-proven, and what remains in the active mobile-first integration work.
 
@@ -13,7 +13,7 @@ This is the canonical current-status document for the Sensible Golf Enhanced rec
 
 The project-killing feasibility question has been answered positively: the selected Windows v1.014 gameplay engine is recoverable and the portable core reproduces the original machine code at zero tolerance across the principal shot, terrain, hazard, putting, cup, PRNG and course-collision branches.
 
-The current Gate-2 checkpoint now includes **scored-hole progression, hazard return-to-play, original next-hole resource selection and a platform-neutral game-session controller**. Cup capture, scoring, resource loading and next-hole/round state remain separate recovered stages, matching the original program rather than collapsing them into platform UI logic.
+The current Gate-2 checkpoint now includes **scored-hole progression, hazard return-to-play, original next-hole resource selection, a platform-neutral game-session controller, and the first verified real-original-hole end-to-end completion with actual second-hole resource loading**. Cup capture, scoring, resource loading and next-hole/round state remain separate recovered stages, matching the original program rather than collapsing them into platform UI logic.
 
 ## Verified reference build
 
@@ -208,7 +208,8 @@ Successful validation evidence:
 - exact `mapmNN.map` / `mapsNN.map` / `mapmNN.spt` requests;
 - plan-aware par/resource validation;
 - `ClassicGameSession` ownership of resource request -> active hole -> scored-hole commit -> next resource request;
-- real original resource 42 bootstrap at tee `(247,726)` with cup `(414,85)`.
+- real original resource 42 bootstrap at tee `(247,726)` with cup `(414,85)`;
+- complete real resource-42 hole in 3 shots using recovered physics, score/commit through `ClassicGameSession`, then load original resource-50 MAPM/MAPS/SPT at tee `(401,855)` and cup `(88,97)`.
 
 #### Scored-hole boundary now recovered
 
@@ -286,7 +287,7 @@ Durable evidence is recorded in `analysis/evidence/gate2_burst3_round_checkpoint
 
 1. close the remaining unsupported terminal cases; code-9/code-10 special-green replay gating is integrated with the recovered 100-tick pause, and zero-distance scored-hole continuation now works for non-putter cup terminals as well as the putter path;
 2. feed the session-owned recovered PRNG state into the already parity-proven interaction branches required by complete-hole replay;
-3. prove a complete **real-course** hole from original SPT tee through shots, cup, scoring and actual next-hole activation.
+3. **COMPLETE (real-course checkpoint):** resource 42 scored from its real tee and original resource 50 actually loaded; continue broadening parity and gameplay coverage rather than claiming all original courses are finished.
 
 New durable checkpoints:
 - hazard handoff integration: `31c238565a8f6fa89f1d9fd82e6065e32e2ddcc5`;
@@ -300,3 +301,27 @@ The first original order-slot transition is verified as resource 42 (par 4) -> r
 Burst 3 remains **IN PROGRESS** until those paths are closed. The mobile host should not begin reimplementing any of them independently.
 
 A desktop executable may be used internally for tests/debugging, but it is not a product milestone.
+
+
+#### 2026-10-09 real original hole-to-hole proof — PASS
+
+Workflow [37959306670](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37959306670)
+passed on commit `aebed46e03403342b42a155c18ab0af8d54b7323`,
+with normal CI [37959306617](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37959306617)
+also passing (16 C++ portable-core tests).
+
+- First hole: original resource **42**, par 4, real SPT tee `(247,726)`, cup `(414,85)`.
+- Solver input sequence: club/power/accuracy/aim `0/105/63/1882`, `2/95/63/1882`, `3/5/63/1756`.
+- Original recovered simulation reached scored-hole state in **3 strokes**, and the game session committed the score.
+- Original next request: resource **50** (round index 1, par 4).
+- **Actual second-hole load** from original `MAPM50.MAP`, `MAPS50.MAP`, `MAPM50.SPT` succeeded; the new active hole is ReadyForShot at SPT tee `(401,855)`, cup `(88,97)`.
+- Real MAPS42 diagnostic found **zero landing-code-8 cells**. The original's separately recovered zero-distance pre-update scoring branch must therefore work independently of a code-8 terminal; the portable session now scores a normal resting ball on the next logical tick when the recovered helper returns zero.
+- Code-8 putter terminal transient counter correction remains separate, and additional normal-rest and normal-putt tests guard against applying that correction erroneously.
+- **No recovered shot physics constants were changed.**
+
+Evidence: `analysis/evidence/gate2_real_hole_full_load_checkpoint.json`.
+
+**Gate 2 is still IN PROGRESS:** this is a passing real-hole pathway, not
+proof of every original surface, PRNG interaction, special terminal, or all 18
+real holes. The full Gate-1 binary-oracle golden-master matrix has **not**
+been rerun for this new checkpoint; normal CI and the 16 core tests passed.

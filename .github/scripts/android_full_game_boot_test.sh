@@ -85,6 +85,49 @@ sleep 8
 adb exec-out screencap -p > "$OUT/after-tap-139s.png"
 test -s "$OUT/after-tap-139s.png"
 
+# Regression: rerun 38002246293 reached ORIGINAL Player Select, but the
+# old test mistakenly kept searching for the preceding main menu for ~7 min.
+# Player Select is a stronger milestone. Use the user's real full-game path
+# instead of backing out to attract mode. Coordinates below are the ORIGINAL
+# visible Okay button, measured on a 2400x1080 Android screenshot.
+if python tools/detect_sensible_player_select.py "$OUT/after-tap-139s.png"; then
+  cp "$OUT/after-tap-139s.png" "$OUT/original-player-select-confirmed.png"
+  echo "PASS: original Play Round path reached Player Select page."
+  adb shell input swipe 1260 840 1260 840 180
+  sleep 1
+  adb exec-out screencap -p > "$OUT/after-player-okay-1s.png"
+  sleep 2
+  adb exec-out screencap -p > "$OUT/after-player-okay-3s.png"
+  sleep 4
+  adb exec-out screencap -p > "$OUT/after-player-okay-7s.png"
+  python - "$OUT" <<'PYPLAYER'
+import json,sys,hashlib
+from pathlib import Path
+sys.path.insert(0,"tools")
+from detect_sensible_player_select import is_player_select,signature
+root=Path(sys.argv[1])
+names=["original-player-select-confirmed.png","after-player-okay-1s.png",
+       "after-player-okay-3s.png","after-player-okay-7s.png"]
+frames=[]
+for name in names:
+    p=root/name
+    frames.append({"file":name, "sha256":hashlib.sha256(p.read_bytes()).hexdigest(),
+                   "still_player_select":is_player_select(p),
+                   "blue_brown_green":list(map(lambda x:round(x,4),signature(p)))})
+(root/"player-select-okay-diagnostics.json").write_text(json.dumps({
+  "player_select_proven":True, "touch":"held primary click at (1260,840) 180ms",
+  "next_menu_verified":False,
+  "screenshots":frames},indent=2)+"\n")
+print(json.dumps(frames,indent=2))
+if all(f["still_player_select"] for f in frames[1:]):
+    raise SystemExit("Player Select Okay tap did not visibly advance - NOT PLAYABLE")
+print("Player Select -> later state VISUALLY CHANGED; human review required before gameplay claim.")
+PYPLAYER
+  adb logcat -d -s AndroidRuntime:E libretrodroid:E > "$OUT/android-errors.txt"
+  echo "ORIGINAL PLAYER-SELECT NAVIGATION PROBE FINISHED: screenshots saved."
+  exit 0
+fi
+
 # Once the attract/demo course is active, Escape should return control to
 # the original title/menu if that command is supported. Record actual result.
 adb shell input keyevent 111

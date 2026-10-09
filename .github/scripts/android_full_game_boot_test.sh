@@ -22,8 +22,19 @@ adb shell pidof "$PKG" | tee "$OUT/first-pid.txt"
 adb exec-out screencap -p > "$OUT/intro-8s.png"
 test -s "$OUT/intro-8s.png"
 
-# Allow the original game's intro to reach its menu, without injecting inputs.
-sleep 24
+# Probe classic DOS splash skip keys through the Android->libretro key bridge.
+# The emulator menu is disabled; these must go to the actual game executable.
+adb shell input keyevent 111  # ESCAPE
+sleep 3
+adb exec-out screencap -p > "$OUT/after-escape-11s.png"
+test -s "$OUT/after-escape-11s.png"
+adb shell input keyevent 62   # SPACE
+sleep 5
+adb exec-out screencap -p > "$OUT/after-space-16s.png"
+test -s "$OUT/after-space-16s.png"
+
+# Original baseline snapshot at approximately 32 seconds, after skip-key test.
+sleep 16
 adb shell pidof "$PKG" | tee "$OUT/later-pid.txt"
 adb exec-out screencap -p > "$OUT/intro-32s.png"
 test -s "$OUT/intro-32s.png"
@@ -57,7 +68,8 @@ python - "$OUT" <<'PY'
 import hashlib,json,sys
 from pathlib import Path
 root=Path(sys.argv[1])
-names=["intro-8s.png","intro-32s.png","intro-80s.png","intro-128s.png",
+names=["intro-8s.png","after-escape-11s.png","after-space-16s.png",
+       "intro-32s.png","intro-80s.png","intro-128s.png",
        "after-tap-131s.png","after-tap-139s.png"]
 hashes={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in names}
 (root/"visual-progression-sha256.json").write_text(json.dumps(hashes,indent=2)+"\\n")

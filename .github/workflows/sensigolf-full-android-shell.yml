@@ -109,22 +109,7 @@ jobs:
           profile: pixel_6
           emulator-options: -no-snapshot -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           disable-animations: true
-          script: |
-            # android-emulator-runner invokes this script with /bin/sh, not bash.
-            # POSIX sh supports -e and -u; 'pipefail' is a bash extension.
-            set -eu
-            adb install -r android-full/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -W -n com.russellstokes.sensigolf/com.russellstokes.sensigolf.fullgame.FullGameActivity
-            sleep 12
-            adb shell pidof com.russellstokes.sensigolf
-            mkdir -p analysis/private/android-full-boot
-            adb exec-out screencap -p > analysis/private/android-full-boot/boot.png
-            adb logcat -d -s AndroidRuntime:E libretrodroid:E >> analysis/private/android-full-boot/android-errors.txt
-            if grep -Eq 'FATAL EXCEPTION|UnsatisfiedLinkError|Unable to start activity' analysis/private/android-full-boot/android-errors.txt; then
-              cat analysis/private/android-full-boot/android-errors.txt
-              exit 1
-            fi
-            echo "BOOT SMOKE PASS: original-game APK launched and remains alive."
+          script: bash .github/scripts/android_full_game_boot_test.sh
       - name: Save boot screenshot (never upload original game binary)
         uses: actions/upload-artifact@v4
         if: always()

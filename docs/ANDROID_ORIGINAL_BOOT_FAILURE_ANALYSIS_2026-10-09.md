@@ -18,8 +18,9 @@ Status: **actual original DOS gameplay footage captured in Android emulator; sta
 
 ## Preventing another false negative
 
-- Updated `.github/scripts/android_full_game_boot_test.sh`: 60 menu probes, with the first 30 alternately sending ESC/SPACE, and the following probes observing without pressing buttons so a just-arriving menu is not inadvertently dismissed. A candidate menu requires **two screenshots 3 seconds apart**, not one transient intro frame.
+- Updated `.github/scripts/android_full_game_boot_test.sh`: 60 menu probes, with the first 30 alternately sending ESC/SPACE, and the following probes observing without pressing buttons so a just-arriving menu is not inadvertently dismissed. The initial two-frame stability requirement was later **rejected based on original-game evidence**: the actual visible menu can transition back into Demo Mode before 3 seconds. The current boot script captures the first strong menu image and immediately taps Play Round.
 - Updated `tools/detect_sensible_main_menu.py`: the original detector uses a brown-button high-ratio and low-green condition in a fixed, known 2400x1080 Android emulator crop. On dim-fade frames only (95th-percentile sample peak between 7 and 59), it normalizes brightness *in the analysis*, not in the displayed game. The captured previously rejected `menu-probe-30.png` goes from brown fraction ~0.000, green 0.000 to normalized **brown ~0.199, green 0.000**, exceeding the 0.18/0.15 threshold. Other captured demo frames retain green majority and remain negative.
+- **Later decisive evidence:** [run 37997727471](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37997727471), `menu-probe-46.png`: the original full-size **Sensible GOLF main menu and six buttons** were captured clearly with brown fraction **0.226**, green **0.000**. The follow-up just **3 seconds later** (`menu-confirm-46.png`) was already showing original **Demo Mode on Hole 15**. This falsifies the premise that the original title remains visible for a second screenshot. Do not demand menu stability across 3 seconds: accept a strong frame, **tap Play Round immediately**, then collect the resulting screen for verification.
 - These scripts are only CI instrumentation. **They do not change the original physics, courses, graphics, sound, clock speed or UI.**
 
 ## Caution about apparent successes
@@ -30,7 +31,7 @@ Do not publish an APK labelled "full working Sensible Golf" merely because the n
 
 ## Next evidence gates (in order)
 
-1. **Original menu:** two stable post-fade screenshot signatures and saved `original-main-menu-confirmed.png`.
+1. **Original menu:** an actual strong original-menu screenshot (already evidenced in run 37997727471), copied to `original-main-menu-confirmed.png` on the current test; no false multi-second-stability requirement.
 2. **Android touch:** a touch action in menu that demonstrably selects a game mode; a changed screenshot alone is not enough if it may be an attract/demo frame.
 3. **Playable original round:** select an original 18-hole round, hit three-click shots, finish a hole, see real scorecard and advance, preserve original physics.
 4. **Whole game:** all 25 courses / 72 distinct hole designs (edition mapping verified), tour/season/other competitions, pause/save, audio, and final score flow.

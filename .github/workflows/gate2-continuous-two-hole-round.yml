@@ -27,6 +27,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+
       - name: Fetch and verify original Windows v1.014
         shell: bash
         run: |

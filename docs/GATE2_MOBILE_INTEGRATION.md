@@ -277,3 +277,37 @@ resource **58** (par 3). The second-hole replay is **NOT yet proven**.
 Evidence: `analysis/evidence/gate2_second_hole_audit.json`.
 
 The **first real-hole success stands**; Gate 2 remains **IN PROGRESS**.
+
+### Real continuous round progression — verified 2026-10-09
+
+A new dedicated C++ regression `sensigolf_real_two_hole_round_probe`
+replays original slot-0 resources **42 and 50** through one unchanged
+`ClassicGameSession`, committing the first scored hole before constructing
+the next. It preserves authoritative cumulative score counters and loads
+original resource **58** at its original SPT tee.
+
+- 42: 3 original-physics strokes / par 4.
+- 50: 4 original-physics strokes / par 4.
+- After both: 2 holes completed, 7 strokes, par 8, recovered
+  par-minus-strokes value +1 (one under par).
+- 58: original MAPM/MAPS/SPT loaded, tee (370,383), cup (138,96),
+  ready for play.
+- Strict workflow
+  [37962471601](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37962471601)
+  **PASS**, portable CI
+  [37962471478](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37962471478)
+  **PASS**.
+- Earlier independent second-hole audit
+  [37961865206](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37961865206)
+  **PASS** after adding bounded multi-shot beam planning to the
+  test-only solver; no recovered physics or scoring rules changed.
+
+The exact fixture, original-archive verification, shot requests and score
+checks are recorded in
+`analysis/evidence/gate2_continuous_two_hole_round_checkpoint.json`.
+
+**Remaining before broad parity claims:** recover code-9/code-10 event-11
+continuation precisely; extend real-original-resource course paths; test
+full-round progression without synthetic substitutions; retain Gate-1
+zero-tolerance golden-master checks. Burst-4 versioned save/replay and Burst-5
+Android mobile player have not yet started.

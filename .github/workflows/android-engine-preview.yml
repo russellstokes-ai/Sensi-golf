@@ -56,11 +56,11 @@ jobs:
           test -s "$APK"
           unzip -l "$APK" | grep 'lib/arm64-v8a/libsensigolf_android.so'
           unzip -l "$APK" | grep 'lib/x86_64/libsensigolf_android.so'
-          cp "$APK" android/apk-out/SensiGolf-0.1.0-test-01-OriginalEngine-Android.apk
-          sha256sum android/apk-out/SensiGolf-0.1.0-test-01-OriginalEngine-Android.apk
+          cp "$APK" android/apk-out/SensiGolf-0.1.0-test-02-OriginalEngine-Android.apk
+          sha256sum android/apk-out/SensiGolf-0.1.0-test-02-OriginalEngine-Android.apk
       - uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: SensiGolf-0.1.0-test-01-OriginalEngine-Android-APK
-          path: android/apk-out/SensiGolf-0.1.0-test-01-OriginalEngine-Android.apk
+          name: SensiGolf-0.1.0-test-02-OriginalEngine-Android-APK
+          path: android/apk-out/SensiGolf-0.1.0-test-02-OriginalEngine-Android.apk
           retention-days: 30

@@ -9,3 +9,12 @@ It contains **no commercial original assets**. On first launch the user must sel
 Android debug build uses Gradle 8.9 / Android Gradle Plugin 8.7.3 / SDK35 / pinned NDK 27.2 / CMake 3.22.1.
 
 Install the unique APK from the GitHub workflow artifact; it is `app-debug.apk` internally, with distinct artifact name and package `com.russellstokes.sensigolf.preview`.
+
+## Screen/device and graphics test matrix
+
+- Phone portrait or folded Fold: compact bottom dock; phone landscape: compact sidebar.
+- Open Fold and landscape tablet: expanded side controls and course view; tablet portrait uses bottom dock.
+- All primary touch targets >=48dp. Screen orientation and Fold resize keep the same Activity and native game session.
+- In menu: Classic Pixels (nearest neighbour) / Enhanced 2x (bilinear upscaled course test raster); stored locally.
+- This build does **not** yet render original sprites and scenery; it colours the course from original terrain collision data. Actual hardware Fold and tablet testing is still required.
+- Import extracted original course resources using Android's folder picker. No content is supplied in the APK.

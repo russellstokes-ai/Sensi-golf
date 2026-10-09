@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import com.swordfish.libretrodroid.GLRetroView
 import com.swordfish.libretrodroid.GLRetroViewData
@@ -80,7 +81,27 @@ class FullGameActivity : ComponentActivity() {
                 Gravity.CENTER
             )
         )
+        // Branded launch overlay masks all internal runtime initialization.
+        // The original game and its own menu are the first thing the player sees.
+        val splash = FrameLayout(this).apply { setBackgroundColor(Color.rgb(15, 34, 30)) }
+        val logo = ImageView(this).apply {
+            setImageResource(R.drawable.approved_eagle)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            contentDescription = "Sensible Golf"
+        }
+        val iconSize = (144 * resources.displayMetrics.density).toInt()
+        splash.addView(logo, FrameLayout.LayoutParams(iconSize, iconSize, Gravity.CENTER))
+        frame.addView(splash, FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+        ))
         setContentView(frame)
+        // Runtime screen capture validation must confirm the core has reached the
+        // actual game before uncovering it; this delay alone is NOT that proof.
+        splash.postDelayed({
+            splash.animate().alpha(0f).setDuration(250).withEndAction {
+                frame.removeView(splash)
+            }.start()
+        }, 3200L)
         initialized = true
     }
 

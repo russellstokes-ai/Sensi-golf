@@ -100,25 +100,39 @@ test -s "$OUT/after-demo-space-149s.png"
 # One passing run reached the real menu at 149s; another was still in Demo Mode.
 # Never infer menu presence from elapsed seconds or from changing frames.
 menu_found=0
-for attempt in $(seq 1 30); do
+# Prior failure 37996364852 was a FALSE NEGATIVE: its last screenshot
+# (menu-probe-30) visibly captured the original title/button menu during
+# a black fade. The test stopped precisely as the menu emerged.
+# Allow 60 checks; during the second half stop injecting SPACE/ESC so a
+# successfully reached menu can settle instead of launching another demo.
+for attempt in $(seq 1 60); do
   probe="$OUT/menu-probe-$(printf '%02d' "$attempt").png"
   adb exec-out screencap -p > "$probe"
   test -s "$probe"
   if python tools/detect_sensible_main_menu.py "$probe"; then
-    cp "$probe" "$OUT/original-main-menu-confirmed.png"
-    echo "CONFIRMED: original 1995 main-menu brown buttons, not Demo Mode."
-    menu_found=1
-    break
+    # Confirm a second unmodified stable frame; do not mistake a single
+    # demo transition frame for the real selectable title menu.
+    sleep 3
+    verify="$OUT/menu-confirm-$(printf '%02d' "$attempt").png"
+    adb exec-out screencap -p > "$verify"
+    if python tools/detect_sensible_main_menu.py "$verify"; then
+      cp "$verify" "$OUT/original-main-menu-confirmed.png"
+      echo "CONFIRMED: stable original main-menu brown buttons, not Demo Mode."
+      menu_found=1
+      break
+    fi
   fi
-  if (( attempt % 2 )); then
-    adb shell input keyevent 111  # ESC; may exit Demo Mode
-  else
-    adb shell input keyevent 62   # SPACE; original menus
+  if (( attempt <= 30 )); then
+    if (( attempt % 2 )); then
+      adb shell input keyevent 111  # ESC; may exit Demo Mode
+    else
+      adb shell input keyevent 62   # SPACE; original menus
+    fi
   fi
   sleep 4
 done
 if [ "$menu_found" -ne 1 ]; then
-  echo "::error::Original DOS app ran but main menu could not be verified after 30 probes."
+  echo "::error::Original DOS app ran but stable main menu was not detected after 60 probes."
   exit 1
 fi
 

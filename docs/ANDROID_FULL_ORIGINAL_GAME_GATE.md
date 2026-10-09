@@ -75,4 +75,4 @@ The recovered C++ engine remains a **fallback and test oracle**, not the primary
 
 ## Explicit completion statement
 
-**FULL RELEASE = NO** until every gate above passes and original commercial asset distribution is lawfully authorized. Every test build must state its incompleteness in the name, readme and release description. Stop suggesting practice courses as a replacement for the original.
+**FULL RELEASE = NO** until every gate above passes. A **private proof of concept is authorised to proceed without commercial release clearance**, using the operator's original copy locally; public redistribution of the original game's protected contents remains a separate permission question. Every test build must state its incompleteness in the name, readme and release description. Stop suggesting practice courses as a replacement for the original.

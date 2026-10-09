@@ -75,36 +75,56 @@ sleep 6
 adb exec-out screencap -p > "$OUT/after-demo-space-149s.png"
 test -s "$OUT/after-demo-space-149s.png"
 
-# First original-menu touch probe: Play Round is visibly centered near
-# screen x=1260,y=390 on the 2400x1080 landscape emulator. Screenshot each
-# stage; one tap is not assumed to equal a successful click.
-sleep 3
+# The 1995 executable's intro/demo length fluctuates between emulator boots.
+# One passing run reached the real menu at 149s; another was still in Demo Mode.
+# Never infer menu presence from elapsed seconds or from changing frames.
+menu_found=0
+for attempt in $(seq 1 30); do
+  probe="$OUT/menu-probe-$(printf '%02d' "$attempt").png"
+  adb exec-out screencap -p > "$probe"
+  test -s "$probe"
+  if python tools/detect_sensible_main_menu.py "$probe"; then
+    cp "$probe" "$OUT/original-main-menu-confirmed.png"
+    echo "CONFIRMED: original 1995 main-menu brown buttons, not Demo Mode."
+    menu_found=1
+    break
+  fi
+  if (( attempt % 2 )); then
+    adb shell input keyevent 111  # ESC; may exit Demo Mode
+  else
+    adb shell input keyevent 62   # SPACE; original menus
+  fi
+  sleep 4
+done
+if [ "$menu_found" -ne 1 ]; then
+  echo "::error::Original DOS app ran but main menu could not be verified after 30 probes."
+  exit 1
+fi
+
+# Only NOW test touch on the proven original menu. In touchpad mode, a tap
+# may click at the current cursor rather than jump to absolute screen coords.
+# These frames diagnose actual behaviour; their mere existence does not claim
+# that Play Round was selected or that a human round is playable.
 adb shell input tap 1260 390
 sleep 4
-adb exec-out screencap -p > "$OUT/menu-after-tap-156s.png"
-test -s "$OUT/menu-after-tap-156s.png"
+adb exec-out screencap -p > "$OUT/after-confirmed-menu-touch.png"
+test -s "$OUT/after-confirmed-menu-touch.png"
+python tools/detect_sensible_main_menu.py "$OUT/after-confirmed-menu-touch.png" || true
 
-# In DOSBox Pure touchpad mode a drag can move the relative mouse cursor.
-# Try it separately and capture result before a follow-up tap.
 adb shell input swipe 1200 540 1260 390 650
 sleep 2
-adb exec-out screencap -p > "$OUT/menu-after-drag-159s.png"
-test -s "$OUT/menu-after-drag-159s.png"
+adb exec-out screencap -p > "$OUT/after-confirmed-menu-drag.png"
+test -s "$OUT/after-confirmed-menu-drag.png"
 adb shell input tap 1260 390
 sleep 5
-adb exec-out screencap -p > "$OUT/menu-after-drag-tap-164s.png"
-test -s "$OUT/menu-after-drag-tap-164s.png"
+adb exec-out screencap -p > "$OUT/after-confirmed-menu-drag-tap.png"
+test -s "$OUT/after-confirmed-menu-drag-tap.png"
 
-# Keyboard fallback is a DIAGNOSTIC CONTROL, not part of the target touch UI.
-# If a touch moves the cursor but does not register a left click, Enter helps
-# distinguish a missing click mapping from a broken original DOS game menu.
-adb shell input keyevent 66  # Android ENTER -> original DOS ENTER
+# Keyboard ENTER is a diagnostic CONTROL, not a substitute for native touch.
+adb shell input keyevent 66
 sleep 5
-adb exec-out screencap -p > "$OUT/menu-after-enter-169s.png"
-test -s "$OUT/menu-after-enter-169s.png"
-sleep 7
-adb exec-out screencap -p > "$OUT/menu-after-enter-176s.png"
-test -s "$OUT/menu-after-enter-176s.png"
+adb exec-out screencap -p > "$OUT/after-confirmed-menu-enter.png"
+test -s "$OUT/after-confirmed-menu-enter.png"
 
 python - "$OUT" <<'PY'
 import hashlib,json,sys
@@ -114,8 +134,9 @@ names=["intro-8s.png","after-escape-11s.png","after-space-16s.png",
        "intro-32s.png","intro-80s.png","intro-128s.png",
        "after-tap-131s.png","after-tap-139s.png",
        "after-demo-escape-143s.png","after-demo-space-149s.png",
-       "menu-after-tap-156s.png","menu-after-drag-159s.png",
-       "menu-after-drag-tap-164s.png"]
+       "original-main-menu-confirmed.png","after-confirmed-menu-touch.png",
+       "after-confirmed-menu-drag.png","after-confirmed-menu-drag-tap.png",
+       "after-confirmed-menu-enter.png"]
 hashes={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in names}
 (root/"visual-progression-sha256.json").write_text(json.dumps(hashes,indent=2)+"\\n")
 assert len(set(hashes.values()))>1,"All game frames identical; no visual progress"
@@ -131,5 +152,5 @@ if grep -Eq 'FATAL EXCEPTION|UnsatisfiedLinkError|Unable to start activity' "$OU
   exit 1
 fi
 
-echo "ANDROID ACTIVITY SMOKE PASS: process remains alive; original game launch screenshots captured."
-echo "NOTICE: Activity + changing frames + simulated tap are not evidence of playable menus, original input, audio or 25-course coverage."
+echo "ANDROID MENU BOOT PASS: verified original DOS main-menu pixel signature; touch interaction screenshots captured for review."
+echo "NOTICE: Pixel signature verifies menu presence only; captured taps are NOT yet proof of selecting a round, audio or 25-course coverage."

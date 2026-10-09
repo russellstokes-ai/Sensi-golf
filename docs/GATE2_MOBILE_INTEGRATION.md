@@ -345,3 +345,43 @@ The original commercial assets remain outside the public repo. This is a
 **3/18-hole real-resource integration proof** and not final Gate-2 signoff:
 code-9/code-10 event-11 post-stop continuation and complete original-round
 behaviour remain outstanding; the Android playable build is not yet started.
+
+### Continuous four-hole original-game checkpoint — 2026-10-09
+
+**PASS — original resource sequence 42 → 50 → 58 → 38 scored
+continuously in one `ClassicGameSession`; resource 70 loaded next.**
+
+| Original hole | Par | Strokes |
+|---|---:|---:|
+| 42 | 4 | 3 |
+| 50 | 4 | 4 |
+| 58 | 3 | 1 |
+| 38 | 4 | 2 |
+| **Cumulative** | **15** | **10** |
+
+The recovered par-minus-strokes field is **+5** (five under par).
+The round has four accepted completed holes and next original round index
+4; it is **not** marked complete. Original fifth course resource **70**
+(par 3) is physically loaded from MAPM/MAPS/SPT at tee **(341,367)**
+and cup **(88,94)**, ready for a first stroke.
+
+- Four-hole continuous original-resource workflow:
+  [37963459155](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37963459155)
+  **PASS**; same-commit
+  [CI 37963459038](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37963459038)
+  **PASS**.
+- Independent hole-38 audit:
+  [37963249179](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37963249179)
+  **PASS** (two recovered shots).
+- The retained two- and three-hole continuous regressions both
+  **PASS**, and all ten individual Gate-1 golden-master workflows
+  **PASS** on the source-extension commit `c464268`.
+- Machine-readable exact original shot requests, resource data, cumulative
+  score, run IDs and caveats are preserved in
+  `analysis/evidence/gate2_continuous_four_hole_round_checkpoint.json`.
+
+**Gate 2 is still IN PROGRESS.** This is 4/18 original holes scored in
+a single continuous portable-core round, not a full original-game
+completion or playable mobile application. The original code9/code10
+event11 post-stop continuation is unproven and must not be approximated.
+The recovered physics implementation was not modified to pass this test.

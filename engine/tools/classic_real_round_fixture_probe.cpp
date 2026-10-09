@@ -160,6 +160,14 @@ int main(int argc, char** argv) {
             sensigolf::ClassicHolePlan(order, pars), slot);
         const auto desc = read_file(root + "/MAPI01.RAW");
         const auto select = read_file(root + "/MAPI02.RAW");
+        std::uint64_t trajectory_hash = 14695981039346656037ULL;
+        auto mix_state = [&trajectory_hash](std::uint64_t value) {
+            // FNV-1a over fixed byte order: stable across host endianness.
+            for (unsigned i = 0; i < 8; ++i) {
+                trajectory_hash ^= (value >> (i * 8u)) & 0xFFu;
+                trajectory_hash *= 1099511628211ULL;
+            }
+        };
         std::uint32_t completed_strokes = 0;
         std::uint32_t completed_par = 0;
         std::size_t completed = 0;
@@ -198,6 +206,15 @@ int main(int argc, char** argv) {
 
             for (std::size_t i = 0; i < row.shots.size(); ++i) {
                 play_original_shot(game.active_hole(), row.shots[i]);
+                const auto& state = game.active_hole();
+                mix_state(static_cast<std::uint64_t>(index));
+                mix_state(static_cast<std::uint64_t>(i));
+                mix_state(static_cast<std::uint32_t>(state.ball_x_raw()));
+                mix_state(static_cast<std::uint32_t>(state.ball_y_raw()));
+                mix_state(state.distance_to_hole());
+                mix_state(state.strokes());
+                mix_state(static_cast<std::uint64_t>(state.green_mode()));
+                mix_state(static_cast<std::uint64_t>(state.phase()));
                 if (i + 1 != row.shots.size()
                     && game.active_hole().phase()
                         != sensigolf::HoleSessionPhase::ReadyForShot) {
@@ -241,7 +258,8 @@ int main(int argc, char** argv) {
             if (i) std::cout << ",";
             std::cout << rows[i].shots.size();
         }
-        std::cout << "],\"holes_completed\":" << score.holes_completed
+        std::cout << "],\"trajectory_hash\":" << trajectory_hash
+                  << ",\"holes_completed\":" << score.holes_completed
                   << ",\"total_strokes\":" << score.total_strokes
                   << ",\"cumulative_par\":" << score.cumulative_par
                   << ",\"relative_to_par\":" << score.relative_to_par

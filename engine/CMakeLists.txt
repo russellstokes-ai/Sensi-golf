@@ -15,6 +15,7 @@ add_library(sensigolf_core
     src/classic_round_session.cpp
     src/classic_hole_plan.cpp
     src/classic_game_session.cpp
+    src/classic_mobile_controls.cpp
 )
 
 target_include_directories(sensigolf_core
@@ -196,3 +197,12 @@ add_executable(sensigolf_real_round_fixture_probe
     tools/classic_real_round_fixture_probe.cpp
 )
 target_link_libraries(sensigolf_real_round_fixture_probe PRIVATE sensigolf_core)
+
+# Android touch/gamepad input boundary; deliberately independent of the
+# unmodified recovered simulation and original commercial assets.
+add_executable(sensigolf_classic_mobile_controls_tests
+    tests/classic_mobile_controls_tests.cpp
+)
+target_link_libraries(sensigolf_classic_mobile_controls_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_classic_mobile_controls_tests
+    COMMAND sensigolf_classic_mobile_controls_tests)

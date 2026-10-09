@@ -1,3 +1,6 @@
+#if defined(NDEBUG)
+#undef NDEBUG // Assertions must run in GitHub's Release CTest configuration.
+#endif
 #include <cassert>
 #include <cstdint>
 #include <stdexcept>
@@ -52,7 +55,8 @@ int main() {
     assert(!controls.enabled());
     must_reject([&] { controls.meter_click(0); });
     must_reject([&] { controls.set_aim_raw(0); });
-    assert(!controls.dispatch_to(hole));
+    const bool nothing_to_dispatch = controls.dispatch_to(hole);
+    assert(!nothing_to_dispatch);
 
     controls.sync_hole(hole);
     assert(controls.enabled());
@@ -95,7 +99,8 @@ int main() {
     assert(shot.accuracy_tick == 63);
     assert(shot.club_index == 12);
     must_reject([&] { controls.meter_click(20); });
-    assert(controls.dispatch_to(hole));
+    const bool dispatched = controls.dispatch_to(hole);
+    assert(dispatched);
     assert(hole.phase() == HoleSessionPhase::ShotActive);
     assert(hole.strokes() == 1);
     assert(!controls.queued_shot().has_value());

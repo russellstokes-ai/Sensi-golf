@@ -95,6 +95,17 @@ sleep 5
 adb exec-out screencap -p > "$OUT/menu-after-drag-tap-164s.png"
 test -s "$OUT/menu-after-drag-tap-164s.png"
 
+# Keyboard fallback is a DIAGNOSTIC CONTROL, not part of the target touch UI.
+# If a touch moves the cursor but does not register a left click, Enter helps
+# distinguish a missing click mapping from a broken original DOS game menu.
+adb shell input keyevent 66  # Android ENTER -> original DOS ENTER
+sleep 5
+adb exec-out screencap -p > "$OUT/menu-after-enter-169s.png"
+test -s "$OUT/menu-after-enter-169s.png"
+sleep 7
+adb exec-out screencap -p > "$OUT/menu-after-enter-176s.png"
+test -s "$OUT/menu-after-enter-176s.png"
+
 python - "$OUT" <<'PY'
 import hashlib,json,sys
 from pathlib import Path

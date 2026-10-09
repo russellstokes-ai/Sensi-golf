@@ -67,7 +67,14 @@ class FullGameActivity : ComponentActivity() {
 
             // Internal config. Never show core menus, keyboard or emulation UI.
             variables = arrayOf(
-                Variable("dosbox_pure_mouse_input", "pad"),
+                // Absolute touchscreen presses must select the button under the
+                // finger. "pad" is *relative* touchpad mode: its tap clicks
+                // at the old cursor (observed over Play Season while the
+                // original menu was visible), even when the finger is on
+                // Play Round. DOSBox Pure "direct" consumes LibretroDroid's
+                // normalized on-screen pointer coordinates instead.
+                // This is an Android-host input fix only: game code is intact.
+                Variable("dosbox_pure_mouse_input", "direct"),
                 Variable("dosbox_pure_on_screen_keyboard", "false"),
                 Variable("dosbox_pure_menu_time", "0"),
                 Variable("dosbox_pure_auto_mapping", "false")

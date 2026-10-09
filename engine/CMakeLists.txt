@@ -186,3 +186,8 @@ add_executable(sensigolf_real_hole_solver_probe
     tools/classic_real_hole_solver_probe.cpp
 )
 target_link_libraries(sensigolf_real_hole_solver_probe PRIVATE sensigolf_core)
+
+add_executable(sensigolf_real_two_hole_round_probe
+    tools/classic_real_two_hole_round_probe.cpp
+)
+target_link_libraries(sensigolf_real_two_hole_round_probe PRIVATE sensigolf_core)

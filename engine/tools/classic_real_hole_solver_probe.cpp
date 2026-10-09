@@ -235,6 +235,43 @@ int main(int argc, char** argv) {
         };
 
         auto search_course = make_course();
+        const auto green_region = search_course.green_region();
+        if (green_region) {
+            const auto cup = search_course.hole_position();
+            const auto gx = static_cast<int>(cup.x) - green_region->origin_x;
+            const auto gy = static_cast<int>(cup.y) - green_region->origin_y;
+            std::cerr << "diagnostic green origin=("
+                      << green_region->origin_x << ","
+                      << green_region->origin_y << ") cup=("
+                      << cup.x << "," << cup.y
+                      << ") local=(" << gx << "," << gy << ")"
+                      << " green_scaled_target=(" << (gx * 2)
+                      << "," << (gy * 2) << ")\n";
+            int code8_count = 0;
+            int code8_best_error = 1000000;
+            int code8_best_x = -1;
+            int code8_best_y = -1;
+            for (int gy2 = 0; gy2 < 208; ++gy2) {
+                for (int gx2 = 0; gx2 < 256; ++gx2) {
+                    const auto s = search_course.resolve_integer_position(
+                        static_cast<std::int16_t>(gx2),
+                        static_cast<std::int16_t>(gy2), true);
+                    if (s.landing_code != 8) continue;
+                    ++code8_count;
+                    const auto error = std::abs(gx2 - gx * 2)
+                        + std::abs(gy2 - gy * 2);
+                    if (error < code8_best_error) {
+                        code8_best_error = error;
+                        code8_best_x = gx2;
+                        code8_best_y = gy2;
+                    }
+                }
+            }
+            std::cerr << "diagnostic code8 cells=" << code8_count
+                      << " nearest_code8=(" << code8_best_x
+                      << "," << code8_best_y << ") delta="
+                      << code8_best_error << "\n";
+        }
         sensigolf::ClassicHoleSession search(
             search_course,
             player_slot,
@@ -261,6 +298,7 @@ int main(int argc, char** argv) {
             std::cerr
                 << "solver stroke " << (stroke + 1)
                 << " before=" << before
+                << " green=" << search.green_mode()
                 << " surface_code=" << current_surface.landing_code
                 << " descriptor=" << current_surface.descriptor_index
                 << " club=" << choice.request.club_index
@@ -283,6 +321,8 @@ int main(int argc, char** argv) {
                     << " x_raw=" << search.ball_x_raw()
                     << " y_raw=" << search.ball_y_raw()
                     << " phase=" << static_cast<unsigned>(search.phase())
+                    << " green=" << search.green_mode()
+                    << " surface=" << search.current_surface().landing_code
                     << "\n";
                 if (search.ball_x_raw() == old_x
                     && search.ball_y_raw() == old_y) {

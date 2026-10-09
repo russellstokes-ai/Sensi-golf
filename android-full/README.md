@@ -8,7 +8,7 @@
 - Original game executable stays authoritative for every ball bounce, meter, slope, shot, course, tournament and scoring rule; no C++ physics reconstruction runs here.
 - One graphics style: original art scaled to device resolution with **fixed low-effort bilinear smoothing**, aspect ratio preserved. No Classic/Enhanced options, no graphics selection, no user-facing emulator text.
 - Android fullscreen branded activity, touchpad-mouse forwarding, optional gamepad, Android pause/exit only, folds open/closed, phones and tablets.
-- The **approved eagle/golfer launcher icon** is staged as a user-approved image in the conversation; drawable currently is a temporary build-only placeholder until that raster is shipped in the project. Never release with that placeholder.
+- The **approved eagle/golfer launcher icon** is now embedded as `app/src/main/res/drawable-nodpi/approved_eagle.webp`, referenced by AndroidManifest and shown in the 3.2-second startup splash. The approved full-resolution source remains retained in the conversation; the packaged POC rendition is compressed for app size.
 - The first Android native-core debug APK must NOT be described as a playable full game until a real-content runtime and full-game UI smoke test is recorded.
 
 ## Rights and release
@@ -28,7 +28,6 @@ POC packaging now: `tools/build_original_dosz.py` validates the original DOS exe
 - Actual complete-original DOS runtime game boot proven on Android
 - Touch accuracy/left click timing on a real closed/open Fold or tablet
 - No-start-menu assertion proven from captured video rather than the upstream single-executable documentation
-- Approved launcher art committed to packaged APK
 - 25-course navigation/season/multiplayer/music/stability validation
 - Commercial distribution rights (not a prerequisite for private compatibility investigation)
 

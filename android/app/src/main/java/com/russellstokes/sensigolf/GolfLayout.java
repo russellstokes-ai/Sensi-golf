@@ -10,7 +10,7 @@ public final class GolfLayout {
             throw new IllegalArgumentException("available viewport must be positive");
         }
         if (widthDp < heightDp) return Mode.PHONE_PORTRAIT;
-        if (widthDp >= 680f) return Mode.EXPANDED_FOLD_TABLET;
+        if (widthDp >= 680f && heightDp >= 480f) return Mode.EXPANDED_FOLD_TABLET;
         return Mode.PHONE_LANDSCAPE;
     }
 

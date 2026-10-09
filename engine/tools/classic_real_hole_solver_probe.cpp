@@ -7,6 +7,7 @@
 #include <iterator>
 #include <limits>
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -410,7 +411,7 @@ std::vector<ShotChoice> enumerate_beam_shots(
 }
 
 struct BeamNode {
-    sensigolf::ClassicHoleSession hole;
+    std::shared_ptr<sensigolf::ClassicHoleSession> hole;
     std::vector<sensigolf::ClassicShotRequest> shots;
     std::vector<std::pair<double, double>> visited;
     double score = std::numeric_limits<double>::infinity();
@@ -437,17 +438,17 @@ std::vector<sensigolf::ClassicShotRequest> solve_with_beam(
     };
 
     std::vector<BeamNode> beam;
-    beam.push_back(BeamNode{start, {}, {to_course(start)}, 0.0});
+    beam.push_back(BeamNode{std::make_shared<sensigolf::ClassicHoleSession>(start), {}, {to_course(start)}, 0.0});
     for (int depth = 1; depth <= kMaxStrokes; ++depth) {
         std::vector<BeamNode> expanded;
         std::size_t trials = 0;
         for (const auto& node : beam) {
-            if (node.hole.phase() != sensigolf::HoleSessionPhase::ReadyForShot) {
+            if (node.hole->phase() != sensigolf::HoleSessionPhase::ReadyForShot) {
                 continue;
             }
-            const auto candidates = enumerate_beam_shots(course, node.hole);
+            const auto candidates = enumerate_beam_shots(course, *node.hole);
             for (const auto& candidate : candidates) {
-                auto next = node.hole;
+                auto next = *node.hole;
                 apply_shot(next, candidate.request);
                 ++trials;
                 auto path = node.shots;
@@ -473,7 +474,8 @@ std::vector<sensigolf::ClassicShotRequest> solve_with_beam(
                 auto visited = node.visited;
                 visited.push_back(location);
                 expanded.push_back(BeamNode{
-                    std::move(next), std::move(path), std::move(visited),
+                    std::make_shared<sensigolf::ClassicHoleSession>(std::move(next)),
+                    std::move(path), std::move(visited),
                     candidate.ranking_score});
             }
         }
@@ -484,13 +486,13 @@ std::vector<sensigolf::ClassicShotRequest> solve_with_beam(
             });
         std::vector<BeamNode> unique;
         for (auto& node : expanded) {
-            const auto location = to_course(node.hole);
+            const auto location = to_course(*node.hole);
             bool duplicate = false;
             for (const auto& saved : unique) {
-                const auto previous = to_course(saved.hole);
+                const auto previous = to_course(*saved.hole);
                 if (std::hypot(location.first - previous.first,
                                location.second - previous.second) < 6.0
-                    && node.hole.green_mode() == saved.hole.green_mode()) {
+                    && node.hole->green_mode() == saved.hole->green_mode()) {
                     duplicate = true;
                     break;
                 }
@@ -505,7 +507,7 @@ std::vector<sensigolf::ClassicShotRequest> solve_with_beam(
                   << " replayed=" << trials
                   << " retained=" << beam.size()
                   << " best_distance="
-                  << (beam.empty() ? 0u : beam.front().hole.distance_to_hole())
+                  << (beam.empty() ? 0u : beam.front().hole->distance_to_hole())
                   << "\n";
         if (beam.empty()) break;
     }

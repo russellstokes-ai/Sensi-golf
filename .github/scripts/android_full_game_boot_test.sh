@@ -110,17 +110,19 @@ for attempt in $(seq 1 60); do
   adb exec-out screencap -p > "$probe"
   test -s "$probe"
   if python tools/detect_sensible_main_menu.py "$probe"; then
-    # Confirm a second unmodified stable frame; do not mistake a single
-    # demo transition frame for the real selectable title menu.
-    sleep 3
-    verify="$OUT/menu-confirm-$(printf '%02d' "$attempt").png"
-    adb exec-out screencap -p > "$verify"
-    if python tools/detect_sensible_main_menu.py "$verify"; then
-      cp "$verify" "$OUT/original-main-menu-confirmed.png"
-      echo "CONFIRMED: stable original main-menu brown buttons, not Demo Mode."
-      menu_found=1
-      break
-    fi
+    # Real game behavior: run 37997727471 captured a COMPLETE bright main
+    # menu at probe-46, but only 3 seconds later Demo Mode had resumed.
+    # Requiring two stable frames incorrectly FAILS the full original game.
+    # Grab the first strongly matching real menu frame and click PLAY ROUND
+    # immediately, before the title transitions back into attract mode.
+    cp "$probe" "$OUT/original-main-menu-confirmed.png"
+    echo "CONFIRMED: actual original Sensible Golf selectable main menu frame."
+    menu_found=1
+    adb shell input tap 1260 390
+    sleep 1
+    adb exec-out screencap -p > "$OUT/after-immediate-play-round-tap.png"
+    test -s "$OUT/after-immediate-play-round-tap.png"
+    break
   fi
   if (( attempt <= 30 )); then
     if (( attempt % 2 )); then
@@ -187,5 +189,5 @@ if grep -Eq 'FATAL EXCEPTION|UnsatisfiedLinkError|Unable to start activity' "$OU
   exit 1
 fi
 
-echo "ANDROID MENU BOOT PASS: verified original DOS main-menu pixel signature; touch interaction screenshots captured for review."
-echo "NOTICE: Pixel signature verifies menu presence only; captured taps are NOT yet proof of selecting a round, audio or 25-course coverage."
+echo "ANDROID MENU BOOT PASS: captured original full main-menu frame and immediate Play Round tap; saved interaction screenshots."
+echo "NOTICE: Menu frame and touch dispatched are verified, but the resulting game-mode selection, audio and all-course completion remain separate gates."

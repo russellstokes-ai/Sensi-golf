@@ -69,7 +69,7 @@ Evidence:
 
 ### Burst 3 — hole/session/round state machine
 
-**IN PROGRESS — SCORED-HOLE AND ROUND PROGRESSION INTEGRATED**
+**IN PROGRESS — REAL HOLE COMPLETED; REMAINING CLASSIC-RULE COVERAGE**
 
 #### Delivered
 
@@ -176,7 +176,7 @@ Durable record: `analysis/evidence/gate2_burst3_round_checkpoint.json`.
 
 1. **Remaining terminal continuations:** close unsupported/special-green continuations and any non-putter scored-hole completion path required by the original.
 2. **Session PRNG integration:** the game session now owns an optional captured original seed/state across hole transitions and restores that deterministic baseline on reset; next feed it into the parity-proven interaction branches required by complete-hole replay.
-3. **Real-course end-to-end proof:** complete resource 42 from its real SPT tee through recovered shots/cup/scoring, commit it through `ClassicGameSession`, and activate the original next request (resource 50).
+3. **Real-course end-to-end proof: PASS.** Resource 42 has been scored from the real tee in 3 recovered shots, committed through `ClassicGameSession`, and followed by successful loading of resource 50 from original MAPM/MAPS/SPT (not merely a filename request).
 
 Recent merged checkpoints:
 - `31c238565a8f6fa89f1d9fd82e6065e32e2ddcc5` — single-player hazard handoff;
@@ -218,3 +218,36 @@ Deliverables:
 Gate 2 exits only when a complete **real original hole** can be played deterministically through the platform-neutral game/session layer, including terminal, scoring and next-hole handoff, with no Android-specific gameplay logic and with unsupported original rules resolved rather than approximated.
 
 Android then becomes the first actual playable product build.
+
+
+### 2026-10-09 reproducible real-course checkpoint
+
+The analysis-only real-hole probe `sensigolf_real_hole_solver_probe` and
+`.github/workflows/gate2-real-hole-end-to-end.yml` now exercise:
+original resource 42 tee -> three physics-driven shots -> recovered
+zero-distance pre-update scoring -> `ClassicGameSession` score commit ->
+original resource 50 request -> **real resource 50 MAPM/MAPS/SPT load**.
+
+- First hole: original resource 42, par 4, tee `(247,726)`, cup `(414,85)`.
+- First hole: **3 strokes** (club/power/accuracy/aim:
+  `0/105/63/1882`, `2/95/63/1882`, `3/5/63/1756`).
+- Second hole: actual original resource 50, par 4, tee `(401,855)`,
+  cup `(88,97)`, phase `ReadyForShot`.
+- Gate 2 workflow **37959306670: PASS**; CI **37959306617: PASS**
+  (16 portable-core C++ tests). Checkpoint commit `aebed46e`.
+- Analysis discovered no landing-code-8 cells in the actual resource-42
+  MAPS terrain bank. Original zero-distance scoring and code-8 terminal are
+  *distinct* recovered routes; the core now checks the original zero-distance
+  branch on the following idle tick for a normal resting shot.
+- The extra transient putter/code-8 counter correction is applied only for
+  that terminal path, not for a normal resting putt.
+- The recovered physics constants and tables remain unchanged.
+
+Canonical machine-readable record:
+`analysis/evidence/gate2_real_hole_full_load_checkpoint.json`.
+
+This is **not complete Gate-2 exit**: full legacy interaction coverage,
+all remaining terminal/surface rules, full original 18-hole replay and a
+fresh Gate-1 binary-oracle matrix remain necessary before universal
+original-game fidelity can be claimed. Android is still the first planned
+playable product target; the C++ solver remains a test utility.

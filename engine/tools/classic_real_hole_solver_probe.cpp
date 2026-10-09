@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -232,6 +233,288 @@ ShotChoice choose_shot(
 
 void apply_shot(
     sensigolf::ClassicHoleSession& hole,
+    const sensigolf::ClassicShotRequest& request);
+
+
+struct BeamCandidate {
+    ShotChoice shot;
+    double course_x = 0.0;
+    double course_y = 0.0;
+};
+
+// Original shot simulation is the *only* way to generate a successor.
+// This is analysis-only: the beam's ranking and spatial diversity do not
+// change recovered gameplay rules, physics, scoring, or green transitions.
+std::vector<ShotChoice> enumerate_beam_shots(
+    const sensigolf::ClassicCourseResources& course,
+    const sensigolf::ClassicHoleSession& current) {
+    const auto surface = current.current_surface();
+    const auto cup = current.hole_position();
+
+    std::int32_t target_x =
+        static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(cup.x) << 16);
+    std::int32_t target_y =
+        static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(cup.y) << 16);
+
+    if (current.green_mode()) {
+        const auto region = course.green_region();
+        if (!region) {
+            throw std::runtime_error(
+                "green-mode solver state missing recovered green region");
+        }
+        target_x = static_cast<std::int32_t>(
+            (static_cast<std::uint32_t>(cup.x - region->origin_x) << 16)
+            << 1);
+        target_y = static_cast<std::int32_t>(
+            (static_cast<std::uint32_t>(cup.y - region->origin_y) << 16)
+            << 1);
+    }
+
+    const auto target = direction_to(
+        current.ball_x_raw(),
+        current.ball_y_raw(),
+        target_x,
+        target_y);
+
+    static constexpr std::array<int, 51> offsets{{
+        0,
+        -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7, -8, 8,
+        -12, 12, -16, 16, -24, 24, -32, 32, -48, 48, -64, 64,
+        -96, 96, -128, 128, -192, 192, -256, 256, -384, 384,
+        -512, 512, -768, 768, -1024, 1024, -1280, 1280,
+        -1536, 1536, -1792, 1792
+    }};
+    static constexpr std::array<int, 23> powers{{
+        105, 95, 85, 75, 65, 55, 45, 35, 25,
+        20, 18, 16, 14, 12, 10, 8, 6, 5, 4, 3, 2, 1, 0
+    }};
+
+    std::vector<std::uint16_t> clubs;
+    if (surface.landing_code == 1
+        || surface.landing_code == 8
+        || surface.landing_code == 9
+        || surface.landing_code == 10) {
+        clubs.push_back(12);
+    } else {
+        for (std::uint16_t club = 0; club <= 12; ++club) {
+            clubs.push_back(club);
+        }
+    }
+
+    std::map<std::pair<int, int>, BeamCandidate> per_landing_cell;
+    const auto current_distance = current.distance_to_hole();
+    const double cell_size = current_distance > 250u ? 28.0
+        : current_distance > 90u ? 12.0 : 4.0;
+    for (const auto club : clubs) {
+        for (const auto power : powers) {
+            for (const auto offset : offsets) {
+                auto trial = current;
+                sensigolf::ClassicShotRequest request{};
+                request.club_index = club;
+                request.power_tick = power;
+                request.accuracy_tick = 63;
+                request.aim_raw = static_cast<std::uint16_t>(
+                    static_cast<int>(target) + offset) & 0x0FFFu;
+                try {
+                    trial.begin_shot(request);
+                    run_until_terminal(trial);
+                } catch (const std::exception&) {
+                    continue;
+                }
+
+                const auto phase = trial.phase();
+                if (phase == sensigolf::HoleSessionPhase::UnsupportedTerrain
+                    || phase == sensigolf::HoleSessionPhase::HazardStopped
+                    || phase == sensigolf::HoleSessionPhase::SpecialGreenStopped) {
+                    // Original event-11 continuation is unresolved: never
+                    // manufacture a drop/reposition in the search.
+                    continue;
+                }
+
+                const auto distance = trial.distance_to_hole();
+                if (distance == 0
+                    && (phase == sensigolf::HoleSessionPhase::CupTerminal
+                        || phase == sensigolf::HoleSessionPhase::ReadyForShot)) {
+                    trial.step();
+                }
+                if (trial.phase() == sensigolf::HoleSessionPhase::HoleScored) {
+                    return {ShotChoice{
+                        request, 0u, sensigolf::HoleSessionPhase::HoleScored, true, 0.0}};
+                }
+                if (trial.phase() != sensigolf::HoleSessionPhase::ReadyForShot) {
+                    continue;
+                }
+
+                double course_x =
+                    static_cast<double>(trial.ball_x_raw()) / 65536.0;
+                double course_y =
+                    static_cast<double>(trial.ball_y_raw()) / 65536.0;
+                double old_x =
+                    static_cast<double>(current.ball_x_raw()) / 65536.0;
+                double old_y =
+                    static_cast<double>(current.ball_y_raw()) / 65536.0;
+                if (trial.green_mode()) {
+                    const auto region = course.green_region();
+                    if (!region) continue;
+                    course_x = course_x / 2.0 + region->origin_x;
+                    course_y = course_y / 2.0 + region->origin_y;
+                }
+                if (current.green_mode()) {
+                    const auto region = course.green_region();
+                    if (!region) continue;
+                    old_x = old_x / 2.0 + region->origin_x;
+                    old_y = old_y / 2.0 + region->origin_y;
+                }
+                if (std::hypot(course_x - old_x, course_y - old_y) < 0.15) {
+                    continue;
+                }
+
+                const auto landing = trial.current_surface().landing_code;
+                // Gentle terrain penalty leaves room for temporary detours,
+                // unlike the old greedy solver's unescapable rough minimum.
+                const auto lie_penalty = landing == 7u ? 32.0
+                    : landing == 6u ? 16.0
+                    : landing == 5u ? 4.0 : 0.0;
+                const auto cup_here = trial.hole_position();
+                const double exact_distance = std::hypot(
+                    course_x - cup_here.x, course_y - cup_here.y);
+                const double score = static_cast<double>(distance)
+                    + lie_penalty + 0.0001 * exact_distance;
+                const auto cell = std::make_pair(
+                    static_cast<int>(std::floor(course_x / cell_size)),
+                    static_cast<int>(std::floor(course_y / cell_size)));
+                const auto it = per_landing_cell.find(cell);
+                if (it == per_landing_cell.end()
+                    || score < it->second.shot.ranking_score) {
+                    per_landing_cell[cell] = BeamCandidate{
+                        ShotChoice{request, distance, trial.phase(), true, score},
+                        course_x, course_y};
+                }
+            }
+        }
+    }
+
+    std::vector<ShotChoice> candidates;
+    for (const auto& entry : per_landing_cell) {
+        candidates.push_back(entry.second.shot);
+    }
+    std::sort(candidates.begin(), candidates.end(),
+        [](const ShotChoice& a, const ShotChoice& b) {
+            return a.ranking_score < b.ranking_score;
+        });
+    constexpr std::size_t kBranches = 24;
+    if (candidates.size() > kBranches) candidates.resize(kBranches);
+    return candidates;
+}
+
+struct BeamNode {
+    sensigolf::ClassicHoleSession hole;
+    std::vector<sensigolf::ClassicShotRequest> shots;
+    std::vector<std::pair<double, double>> visited;
+    double score = std::numeric_limits<double>::infinity();
+};
+
+// Bounded breadth plus deduplication of reachable original-physics states.
+// This is a hole audit/proof search, *not* the runtime golf-playing AI.
+std::vector<sensigolf::ClassicShotRequest> solve_with_beam(
+    const sensigolf::ClassicCourseResources& course,
+    const sensigolf::ClassicHoleSession& start) {
+    constexpr int kMaxStrokes = 14;
+    constexpr std::size_t kBeamWidth = 28;
+
+    auto to_course = [&course](const sensigolf::ClassicHoleSession& hole) {
+        double x = static_cast<double>(hole.ball_x_raw()) / 65536.0;
+        double y = static_cast<double>(hole.ball_y_raw()) / 65536.0;
+        if (hole.green_mode()) {
+            const auto region = course.green_region();
+            if (!region) throw std::runtime_error("beam missing green region");
+            x = x / 2.0 + region->origin_x;
+            y = y / 2.0 + region->origin_y;
+        }
+        return std::make_pair(x, y);
+    };
+
+    std::vector<BeamNode> beam;
+    beam.push_back(BeamNode{start, {}, {to_course(start)}, 0.0});
+    for (int depth = 1; depth <= kMaxStrokes; ++depth) {
+        std::vector<BeamNode> expanded;
+        std::size_t trials = 0;
+        for (const auto& node : beam) {
+            if (node.hole.phase() != sensigolf::HoleSessionPhase::ReadyForShot) {
+                continue;
+            }
+            const auto candidates = enumerate_beam_shots(course, node.hole);
+            for (const auto& candidate : candidates) {
+                auto next = node.hole;
+                apply_shot(next, candidate.request);
+                ++trials;
+                auto path = node.shots;
+                path.push_back(candidate.request);
+                if (next.phase() == sensigolf::HoleSessionPhase::HoleScored) {
+                    std::cerr << "beam scored original hole after "
+                              << depth << " strokes\n";
+                    return path;
+                }
+                if (next.phase() != sensigolf::HoleSessionPhase::ReadyForShot) {
+                    continue;
+                }
+                const auto location = to_course(next);
+                bool revisited = false;
+                for (const auto& previous : node.visited) {
+                    if (std::hypot(location.first - previous.first,
+                                   location.second - previous.second) < 0.4) {
+                        revisited = true;
+                        break;
+                    }
+                }
+                if (revisited) continue;
+                auto visited = node.visited;
+                visited.push_back(location);
+                expanded.push_back(BeamNode{
+                    std::move(next), std::move(path), std::move(visited),
+                    candidate.ranking_score});
+            }
+        }
+
+        std::sort(expanded.begin(), expanded.end(),
+            [](const BeamNode& a, const BeamNode& b) {
+                return a.score < b.score;
+            });
+        std::vector<BeamNode> unique;
+        for (auto& node : expanded) {
+            const auto location = to_course(node.hole);
+            bool duplicate = false;
+            for (const auto& saved : unique) {
+                const auto previous = to_course(saved.hole);
+                if (std::hypot(location.first - previous.first,
+                               location.second - previous.second) < 6.0
+                    && node.hole.green_mode() == saved.hole.green_mode()) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                unique.push_back(std::move(node));
+                if (unique.size() >= kBeamWidth) break;
+            }
+        }
+        beam = std::move(unique);
+        std::cerr << "beam depth=" << depth
+                  << " replayed=" << trials
+                  << " retained=" << beam.size()
+                  << " best_distance="
+                  << (beam.empty() ? 0u : beam.front().hole.distance_to_hole())
+                  << "\n";
+        if (beam.empty()) break;
+    }
+    throw std::runtime_error(
+        "bounded multi-shot beam did not score original hole within budget");
+}
+
+void apply_shot(
+    sensigolf::ClassicHoleSession& hole,
     const sensigolf::ClassicShotRequest& request) {
     hole.begin_shot(request);
     run_until_terminal(hole);
@@ -322,6 +605,8 @@ int main(int argc, char** argv) {
             sensigolf::ClassicHoleMetadata{0, par, resource_id});
 
         std::vector<sensigolf::ClassicShotRequest> shots;
+        bool greedy_failed = false;
+        try {
         for (int stroke = 0; stroke < 12; ++stroke) {
             if (search.phase() == sensigolf::HoleSessionPhase::HoleScored) {
                 break;
@@ -376,8 +661,23 @@ int main(int argc, char** argv) {
             }
         }
 
+        } catch (const std::exception& e) {
+            greedy_failed = true;
+            std::cerr << "greedy search blocked: " << e.what() << "\n";
+        }
         if (search.phase() != sensigolf::HoleSessionPhase::HoleScored) {
-            throw std::runtime_error("real resource hole was not completed");
+            std::cerr << "greedy search "
+                      << (greedy_failed ? "aborted" : "exhausted")
+                      << "; restarting from recovered tee for beam search\n";
+            const auto tee = search_course.player_start(player_slot);
+            search.reset(tee.x_raw(), tee.y_raw());
+            shots = solve_with_beam(search_course, search);
+            for (const auto& request : shots) {
+                apply_shot(search, request);
+            }
+        }
+        if (search.phase() != sensigolf::HoleSessionPhase::HoleScored) {
+            throw std::runtime_error("multi-shot replay did not score real hole");
         }
 
         std::array<std::uint8_t, sensigolf::kClassicRoundHoleCount> order{};

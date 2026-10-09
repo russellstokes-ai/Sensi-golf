@@ -206,12 +206,34 @@ class FullGameActivity : ComponentActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        // Let the core handle its genuine original keyboard/gamepad mapping.
-        if (keyCode == KeyEvent.KEYCODE_BACK ||
-            keyCode == KeyEvent.KEYCODE_ESCAPE) {
+        // Android Back is our own pause action. ESC, Space, Enter, arrows and
+        // physical controller keys must reach the ORIGINAL DOS game, not be
+        // intercepted by Android or lost through an unfocused SurfaceView.
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
             onBackPressed()
             return true
         }
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+            keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            return super.onKeyDown(keyCode, event)
+        }
+        if (initialized && !pausedByMenu) {
+            gameView.sendKeyEvent(KeyEvent.ACTION_DOWN, keyCode)
+            return true
+        }
         return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) return true
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+            keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            return super.onKeyUp(keyCode, event)
+        }
+        if (initialized && !pausedByMenu) {
+            gameView.sendKeyEvent(KeyEvent.ACTION_UP, keyCode)
+            return true
+        }
+        return super.onKeyUp(keyCode, event)
     }
 }

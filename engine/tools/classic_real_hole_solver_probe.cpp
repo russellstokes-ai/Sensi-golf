@@ -183,8 +183,14 @@ ShotChoice choose_shot(
                 // oscillations. Prefer reachable cleaner lies without changing
                 // any simulation/terrain physics or scoring rules.
                 const auto landing_code = trial.current_surface().landing_code;
-                const auto severe_rough_penalty =
-                    landing_code == 7u ? 100u : 0u;
+                // Planning heuristic only: avoid a local minimum in rough.
+                // Once approaching the green, a safer lie has more value
+                // than a few units of immediate distance reduction.
+                const auto rough_risk = current.distance_to_hole() <= 300u
+                    ? (landing_code == 7u ? 220u
+                        : landing_code == 6u ? 120u
+                        : landing_code == 5u ? 15u : 0u)
+                    : (landing_code == 7u ? 100u : 0u);
 
                 // Use original integer distance as the primary objective,
                 // with unrounded course-space distance only to resolve ties.
@@ -209,7 +215,7 @@ ShotChoice choose_shot(
                     course_y - original_cup.y);
                 const double score =
                     10000.0 * static_cast<double>(
-                        distance + penalty + severe_rough_penalty)
+                        distance + penalty + rough_risk)
                     + precise_distance;
                 if (!best.valid || score < best.ranking_score) {
                     best = ShotChoice{request, distance, phase, true, score};

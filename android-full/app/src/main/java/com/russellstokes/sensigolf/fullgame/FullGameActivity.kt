@@ -4,11 +4,13 @@ import android.app.AlertDialog
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Build
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.WindowInsets
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
@@ -32,6 +34,11 @@ class FullGameActivity : ComponentActivity() {
     private lateinit var gameView: GLRetroView
     private var initialized = false
     private var pausedByMenu = false
+    private lateinit var gameFrame: FrameLayout
+    private var cutoutLeft = 0
+    private var cutoutTop = 0
+    private var cutoutRight = 0
+    private var cutoutBottom = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,15 +79,30 @@ class FullGameActivity : ComponentActivity() {
         gameView = GLRetroView(this, config)
         lifecycle.addObserver(gameView)
         val frame = FrameLayout(this)
-        frame.setBackgroundColor(Color.BLACK)
+        // The original video is 4:3. Side/top margins are deliberate: never
+        // crop course edges or warp golfer, text and scorecard on wide phones.
+        frame.setBackgroundColor(Color.rgb(13, 27, 23))
+        gameFrame = frame
         frame.addView(
             gameView,
-            FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                Gravity.CENTER
-            )
+            FrameLayout.LayoutParams(1, 1, Gravity.TOP or Gravity.LEFT)
         )
+        frame.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            fitGameInsideAvailableScreen()
+        }
+        frame.setOnApplyWindowInsetsListener { _, insets ->
+            // Fold / display-cutout safe bounds, even while bars are hidden.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                @Suppress("DEPRECATION")
+                val cutout = insets.displayCutout
+                cutoutLeft = cutout?.safeInsetLeft ?: 0
+                cutoutTop = cutout?.safeInsetTop ?: 0
+                cutoutRight = cutout?.safeInsetRight ?: 0
+                cutoutBottom = cutout?.safeInsetBottom ?: 0
+            }
+            fitGameInsideAvailableScreen()
+            insets
+        }
         // Branded launch overlay masks all internal runtime initialization.
         // The original game and its own menu are the first thing the player sees.
         val splash = FrameLayout(this).apply { setBackgroundColor(Color.rgb(15, 34, 30)) }
@@ -105,6 +127,34 @@ class FullGameActivity : ComponentActivity() {
         initialized = true
     }
 
+    /**
+     * This changes only the Android video surface size, never the internal
+     * game resolution or logic. GLSurfaceView pointer normalization therefore
+     * uses the actual content bounds, not the letterbox/gutter width.
+     */
+    private fun fitGameInsideAvailableScreen() {
+        if (!::gameFrame.isInitialized || !::gameView.isInitialized) return
+        val w = gameFrame.width
+        val h = gameFrame.height
+        if (w <= 0 || h <= 0) return
+
+        val left = cutoutLeft.coerceAtMost(w / 4)
+        val right = cutoutRight.coerceAtMost(w / 4)
+        val top = cutoutTop.coerceAtMost(h / 4)
+        val bottom = cutoutBottom.coerceAtMost(h / 4)
+        val rect = ViewportPolicy.fit(w, h, left, top, right, bottom)
+        val existing = gameView.layoutParams as FrameLayout.LayoutParams
+        if (existing.width != rect.width() || existing.height != rect.height() ||
+            existing.leftMargin != rect.left || existing.topMargin != rect.top) {
+            gameView.layoutParams = FrameLayout.LayoutParams(
+                rect.width(), rect.height(), Gravity.TOP or Gravity.LEFT
+            ).apply {
+                leftMargin = rect.left
+                topMargin = rect.top
+            }
+        }
+    }
+
     private fun enableFullScreen() {
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility =
@@ -125,7 +175,10 @@ class FullGameActivity : ComponentActivity() {
         super.onConfigurationChanged(newConfig)
         enableFullScreen()
         // Same instance + same game session survive Fold open/close/rotation.
-        if (initialized) gameView.requestLayout()
+        if (initialized) {
+            gameView.requestLayout()
+            gameFrame.post { fitGameInsideAvailableScreen() }
+        }
     }
 
     @Deprecated("Back action is a game pause dialog, never the emulator menu.")

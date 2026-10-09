@@ -162,9 +162,14 @@ ShotChoice choose_shot(
                 }
 
                 const auto distance = trial.distance_to_hole();
-                if (phase == sensigolf::HoleSessionPhase::CupTerminal
-                    && distance == 0) {
-                    return ShotChoice{request, 0, phase, true};
+                if (distance == 0
+                    && (phase == sensigolf::HoleSessionPhase::CupTerminal
+                        || phase == sensigolf::HoleSessionPhase::ReadyForShot)) {
+                    trial.step();
+                    if (trial.phase() == sensigolf::HoleSessionPhase::HoleScored) {
+                        return ShotChoice{
+                            request, 0, sensigolf::HoleSessionPhase::HoleScored, true};
+                    }
                 }
 
                 // Prefer clean resting shots. Special-green terminal positions
@@ -194,8 +199,9 @@ void apply_shot(
     hole.begin_shot(request);
     run_until_terminal(hole);
     finish_replay_gate(hole);
-    if (hole.phase() == sensigolf::HoleSessionPhase::CupTerminal
-        && hole.distance_to_hole() == 0) {
+    if (hole.distance_to_hole() == 0
+        && (hole.phase() == sensigolf::HoleSessionPhase::CupTerminal
+            || hole.phase() == sensigolf::HoleSessionPhase::ReadyForShot)) {
         hole.step();
     }
 }

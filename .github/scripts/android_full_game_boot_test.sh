@@ -100,68 +100,86 @@ test -s "$OUT/after-demo-space-149s.png"
 # One passing run reached the real menu at 149s; another was still in Demo Mode.
 # Never infer menu presence from elapsed seconds or from changing frames.
 menu_found=0
-# Prior failure 37996364852 was a FALSE NEGATIVE: its last screenshot
-# (menu-probe-30) visibly captured the original title/button menu during
-# a black fade. The test stopped precisely as the menu emerged.
-# Allow 60 checks; during the second half stop injecting SPACE/ESC so a
-# successfully reached menu can settle instead of launching another demo.
-for attempt in $(seq 1 60); do
-  probe="$OUT/menu-probe-$(printf '%02d' "$attempt").png"
+# The authentic menu can be visible for <3 seconds before attract mode.
+# Poll rapidly. Keep periodic screenshots without inflating the CI artifact.
+# Earlier runs proved the original menu can appear ~180 seconds after the
+# first probes; our window must span that interval without 4-second blind
+# spots. The only intended action after recognition is ONE Play Round tap.
+menu_start=$SECONDS
+for attempt in $(seq 1 320); do
+  probe="$OUT/menu-live.png"
   adb exec-out screencap -p > "$probe"
   test -s "$probe"
   if python tools/detect_sensible_main_menu.py "$probe"; then
-    # Real game behavior: run 37997727471 captured a COMPLETE bright main
-    # menu at probe-46, but only 3 seconds later Demo Mode had resumed.
-    # Requiring two stable frames incorrectly FAILS the full original game.
-    # Grab the first strongly matching real menu frame and click PLAY ROUND
-    # immediately, before the title transitions back into attract mode.
     cp "$probe" "$OUT/original-main-menu-confirmed.png"
-    echo "CONFIRMED: actual original Sensible Golf selectable main menu frame."
+    echo "CONFIRMED: original Sensible Golf six-button menu, attempt $attempt."
     menu_found=1
-    adb shell input tap 1260 390
-    sleep 1
-    adb exec-out screencap -p > "$OUT/after-immediate-play-round-tap.png"
-    test -s "$OUT/after-immediate-play-round-tap.png"
+    # Screenshot from run 37997727471: first (Play Round) button is
+    # within x=900..1635, y=344..416 on the 2400x1080 emulator.
+    # With the Android core in absolute 'direct' mouse mode, an Android
+    # tap here should move the DOS cursor before issuing a left click.
+    adb shell input tap 1260 380
+    sleep 0.4
+    adb exec-out screencap -p > "$OUT/after-play-round-0.4s.png"
+    sleep 1.0
+    adb exec-out screencap -p > "$OUT/after-play-round-1.4s.png"
+    sleep 2.0
+    adb exec-out screencap -p > "$OUT/after-play-round-3.4s.png"
+    sleep 3.0
+    adb exec-out screencap -p > "$OUT/after-play-round-6.4s.png"
     break
   fi
   if (( attempt <= 30 )); then
     if (( attempt % 2 )); then
-      adb shell input keyevent 111  # ESC; may exit Demo Mode
+      adb shell input keyevent 111  # ESC
     else
-      adb shell input keyevent 62   # SPACE; original menus
+      adb shell input keyevent 62   # SPACE
     fi
+    sleep 3
+  else
+    # Frequent checks are essential for a short-lived original menu.
+    # Take periodic diagnostic frames without uploading hundreds of PNGs.
+    if (( attempt % 12 == 0 )); then
+      cp "$probe" "$OUT/menu-history-$(printf '%03d' "$attempt").png"
+    fi
+    sleep 0.55
   fi
-  sleep 4
+  # Bounded wall-clock guard under a slow software-rendered emulator.
+  if (( SECONDS - menu_start > 430 )); then break; fi
 done
 if [ "$menu_found" -ne 1 ]; then
-  echo "::error::Original DOS app ran but stable main menu was not detected after 60 probes."
+  echo "::error::Original DOS menu was not captured in the bounded probe window."
   exit 1
 fi
 
-# Only NOW test touch on the proven original menu. In touchpad mode, a tap
-# may click at the current cursor rather than jump to absolute screen coords.
-# These frames diagnose actual behaviour; their mere existence does not claim
-# that Play Round was selected or that a human round is playable.
-adb shell input tap 1260 390
-sleep 4
-adb exec-out screencap -p > "$OUT/after-confirmed-menu-touch.png"
-test -s "$OUT/after-confirmed-menu-touch.png"
-python tools/detect_sensible_main_menu.py "$OUT/after-confirmed-menu-touch.png" || true
-
-adb shell input swipe 1200 540 1260 390 650
-sleep 2
-adb exec-out screencap -p > "$OUT/after-confirmed-menu-drag.png"
-test -s "$OUT/after-confirmed-menu-drag.png"
-adb shell input tap 1260 390
-sleep 5
-adb exec-out screencap -p > "$OUT/after-confirmed-menu-drag-tap.png"
-test -s "$OUT/after-confirmed-menu-drag-tap.png"
-
-# Keyboard ENTER is a diagnostic CONTROL, not a substitute for native touch.
-adb shell input keyevent 66
-sleep 5
-adb exec-out screencap -p > "$OUT/after-confirmed-menu-enter.png"
-test -s "$OUT/after-confirmed-menu-enter.png"
+# A touch dispatched is NOT evidence of a selected playable round.
+# Never follow with extra taps/swipes/Enter that could accidentally select
+# another game mode. Retain the next frames for a strict state review.
+python - "$OUT" <<'PYMENU'
+import json,sys
+from pathlib import Path
+from PIL import Image
+sys.path.insert(0,"tools")
+from detect_sensible_main_menu import fractions, is_main_menu
+root=Path(sys.argv[1])
+frames=["original-main-menu-confirmed.png","after-play-round-0.4s.png",
+        "after-play-round-1.4s.png","after-play-round-3.4s.png",
+        "after-play-round-6.4s.png"]
+reports=[]
+for name in frames:
+    path=root/name
+    with Image.open(path) as im:
+        size=list(im.size)
+    brown, green=fractions(path)
+    reports.append({"file":name,"size":size,"original_main_menu":is_main_menu(path),
+                    "brown_fraction":round(brown,4),"green_fraction":round(green,4)})
+(root/"menu-tap-diagnostics.json").write_text(json.dumps({
+    "input_mode":"direct", "tap_screen_xy":[1260,380],
+    "proof_level":"menu visible and touch dispatched; round selection unverified",
+    "screenshots":reports},indent=2)+"\n")
+print("Original-menu immediate-tap diagnostics:")
+print(json.dumps(reports,indent=2))
+PYMENU
 
 python - "$OUT" <<'PY'
 import hashlib,json,sys
@@ -171,9 +189,9 @@ names=["intro-8s.png","after-escape-11s.png","after-space-16s.png",
        "intro-32s.png","intro-80s.png","intro-128s.png",
        "after-tap-131s.png","after-tap-139s.png",
        "after-demo-escape-143s.png","after-demo-space-149s.png",
-       "original-main-menu-confirmed.png","after-confirmed-menu-touch.png",
-       "after-confirmed-menu-drag.png","after-confirmed-menu-drag-tap.png",
-       "after-confirmed-menu-enter.png"]
+       "original-main-menu-confirmed.png","after-play-round-0.4s.png",
+       "after-play-round-1.4s.png","after-play-round-3.4s.png",
+       "after-play-round-6.4s.png"]
 hashes={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in names}
 (root/"visual-progression-sha256.json").write_text(json.dumps(hashes,indent=2)+"\\n")
 assert len(set(hashes.values()))>1,"All game frames identical; no visual progress"
@@ -189,5 +207,5 @@ if grep -Eq 'FATAL EXCEPTION|UnsatisfiedLinkError|Unable to start activity' "$OU
   exit 1
 fi
 
-echo "ANDROID MENU BOOT PASS: captured original full main-menu frame and immediate Play Round tap; saved interaction screenshots."
-echo "NOTICE: Menu frame and touch dispatched are verified, but the resulting game-mode selection, audio and all-course completion remain separate gates."
+echo "ANDROID MENU CAPTURED: original main menu reached; direct-mode tap dispatched and screenshots preserved."
+echo "NOTICE: Play Round selection and playable golf are NOT accepted without a verified post-tap state and original-game round test."

@@ -16,6 +16,7 @@ add_library(sensigolf_core
     src/classic_hole_plan.cpp
     src/classic_game_session.cpp
     src/classic_mobile_controls.cpp
+    src/classic_replay_journal.cpp
 )
 
 target_include_directories(sensigolf_core
@@ -206,3 +207,11 @@ add_executable(sensigolf_classic_mobile_controls_tests
 target_link_libraries(sensigolf_classic_mobile_controls_tests PRIVATE sensigolf_core)
 add_test(NAME sensigolf_classic_mobile_controls_tests
     COMMAND sensigolf_classic_mobile_controls_tests)
+
+# Versioned stable-shot save journal, restored by original engine replay.
+add_executable(sensigolf_classic_replay_journal_tests
+    tests/classic_replay_journal_tests.cpp
+)
+target_link_libraries(sensigolf_classic_replay_journal_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_classic_replay_journal_tests
+    COMMAND sensigolf_classic_replay_journal_tests)

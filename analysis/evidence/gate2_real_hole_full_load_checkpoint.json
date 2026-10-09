@@ -56,7 +56,24 @@
     "second_ready_for_shot": true,
     "core_cpp_tests_passed": 16,
     "ci_conclusion": "success",
-    "real_hole_workflow_conclusion": "success"
+    "real_hole_workflow_conclusion": "success",
+    "gate1_golden_masters_at_code_commit": {
+      "code_commit": "b1dd77f696ef7acf91b17e5df3688ab070b9f7a6",
+      "count": 10,
+      "all_success": true,
+      "workflow_runs": {
+        "green_slope": 37959117481,
+        "prng": 37959117503,
+        "course_collision": 37959117439,
+        "live_player": 37959117349,
+        "hazards": 37959117450,
+        "prng_interactions": 37959117284,
+        "hole_capture": 37959117358,
+        "normal_surfaces": 37959117375,
+        "putter": 37959117487,
+        "flat_landing_rest": 37959117331
+      }
+    }
   },
   "finding": {
     "observed_real_resource42_maps_code8_cells": 0,
@@ -68,7 +85,7 @@
   "limitations": [
     "Not all original interaction/terrain/terminal branches are integrated",
     "This proves one original real hole and next resource load, not the full 18-hole original round",
-    "A fresh complete Gate 1 oracle parity matrix has not been rerun on this proof commit; normal CI and 16 portable-core tests passed",
+    "Ten individual Gate 1 Golden Master workflows reran and passed at the gameplay-code commit; a single fresh consolidated Gate 1 sign-off workflow was not rerun",
     "The analysis-only shot solver is not the planned Android/mobile game input implementation"
   ],
   "relevant_files": [

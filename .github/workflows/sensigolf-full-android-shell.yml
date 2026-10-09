@@ -110,7 +110,9 @@ jobs:
           emulator-options: -no-snapshot -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           disable-animations: true
           script: |
-            set -euo pipefail
+            # android-emulator-runner invokes this script with /bin/sh, not bash.
+            # POSIX sh supports -e and -u; 'pipefail' is a bash extension.
+            set -eu
             adb install -r android-full/app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -W -n com.russellstokes.sensigolf/com.russellstokes.sensigolf.fullgame.FullGameActivity
             sleep 12

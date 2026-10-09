@@ -6,6 +6,9 @@
 
 ## Documents
 - [FIDELITY_AND_PROVENANCE.md](FIDELITY_AND_PROVENANCE.md) — behavioural targets, what can be independently reproduced, legal boundaries and unknown exact display measurements
+- [ORIGINAL_PHYSICS_REFERENCE.md](ORIGINAL_PHYSICS_REFERENCE.md) — detailed numerical physics, ball states, launch, swing, flight, bounce, putting, slope, hazards, cup, scoring and verified unknowns
+- [ORIGINAL_PHYSICS_RESEARCH.json](ORIGINAL_PHYSICS_RESEARCH.json) — research-only machine-readable 13 clubs, 11 swing profiles, 13×10 lie selector and 77 terrain descriptors
+- [PHYSICS_BEHAVIOUR_BASELINES.md](PHYSICS_BEHAVIOUR_BASELINES.md) — exact original-restoration launch/flight/putting/terminal test vectors and independent fidelity acceptance gates
 - [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) — mobile runtime, camera coordinates, simulation, meter and input contracts, save architecture
 - [CONTENT_AND_PROGRESS.md](CONTENT_AND_PROGRESS.md) — original courses, artwork, career, stats, rewards, anti-exploit requirements
 - [ACCEPTANCE_AND_PHASES.md](ACCEPTANCE_AND_PHASES.md) — independent proof gates, gameplay tests, art controls and release preparation
@@ -25,3 +28,10 @@ A fresh application written to match **observable gameplay rules and functional 
 - Name provisional pending app store and UK/international trademark clearance.
 
 No Pixtee implementation or compiled Android APK is claimed by this specification.
+
+## Research reference reproducibility
+
+The restricted numerical reference has an automated correspondence audit:
+`python tools/validate_pixtee_physics_reference.py` (standard-library only).
+GitHub Actions: `.github/workflows/pixtee-physics-reference-audit.yml`.
+Neither the audit nor the documented facts grants redistribution or source-code reuse rights.

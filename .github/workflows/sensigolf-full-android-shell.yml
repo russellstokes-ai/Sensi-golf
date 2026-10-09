@@ -86,6 +86,20 @@ jobs:
           unzip -l "$APK" | grep lib/x86_64/libdosbox_pure_libretro_android.so
           unzip -l "$APK" | grep lib/arm64-v8a/liblibretrodroid.so
           echo "PASS: frontend and native original DOS runtime compile."
+      # GitHub's Linux runner exposes /dev/kvm but the runner account can lack
+      # permissions. Without KVM the x86_64 emulator fails before Android boots.
+      - name: Enable Android emulator KVM acceleration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -e /dev/kvm ]; then
+            echo "::error::GitHub runner has no /dev/kvm; x86_64 Android boot cannot be validated here."
+            exit 1
+          fi
+          ls -l /dev/kvm
+          sudo chmod 666 /dev/kvm
+          test -r /dev/kvm && test -w /dev/kvm
+          echo "PASS: runner has KVM read/write permissions."
       - name: Boot original full game in Android x86_64 emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:

@@ -118,7 +118,10 @@ for attempt in $(seq 1 320); do
     # within x=900..1635, y=344..416 on the 2400x1080 emulator.
     # With the Android core in absolute 'direct' mouse mode, an Android
     # tap here should move the DOS cursor before issuing a left click.
-    adb shell input tap 1260 380
+    # ADB's instantaneous tap can release between libretro input polls.
+    # A 180-ms stationary swipe is an actual held left-click, not a
+    # cursor drag; it spans multiple original/emulator frames.
+    adb shell input swipe 1260 380 1260 380 180
     sleep 0.4
     adb exec-out screencap -p > "$OUT/after-play-round-0.4s.png"
     sleep 1.0
@@ -174,7 +177,7 @@ for name in frames:
     reports.append({"file":name,"size":size,"original_main_menu":is_main_menu(path),
                     "brown_fraction":round(brown,4),"green_fraction":round(green,4)})
 (root/"menu-tap-diagnostics.json").write_text(json.dumps({
-    "input_mode":"direct", "tap_screen_xy":[1260,380],
+    "input_mode":"direct", "tap_screen_xy":[1260,380], "press_duration_ms":180,
     "proof_level":"menu visible and touch dispatched; round selection unverified",
     "screenshots":reports},indent=2)+"\n")
 print("Original-menu immediate-tap diagnostics:")

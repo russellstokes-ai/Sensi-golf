@@ -26,6 +26,7 @@ jobs:
           mkdir -p android-full/vendor
           git clone --quiet https://github.com/Swordfish90/LibretroDroid.git android-full/vendor/LibretroDroid
           git -C android-full/vendor/LibretroDroid checkout -q 8835c3098514390a271e36983957f7bb5f40abf1
+          git -C android-full/vendor/LibretroDroid submodule update --init --recursive --depth 1
           # This project uses the workflow-managed Gradle; no vendored wrapper binaries.
           rm -rf android-full/vendor/LibretroDroid/gradle/wrapper
           git clone --quiet https://github.com/libretro/dosbox-pure.git android-full/vendor/dosbox-pure

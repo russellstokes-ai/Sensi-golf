@@ -158,7 +158,11 @@ ShotChoice choose_shot(
 
                 const auto phase = trial.phase();
                 if (phase == sensigolf::HoleSessionPhase::UnsupportedTerrain
-                    || phase == sensigolf::HoleSessionPhase::HazardStopped) {
+                    || phase == sensigolf::HoleSessionPhase::HazardStopped
+                    || phase == sensigolf::HoleSessionPhase::SpecialGreenStopped) {
+                    // Code-9/10 event-11 continuation has not been fully
+                    // parity-integrated. Do not invent a drop/reposition
+                    // or route a repeated terminal as a useful solver shot.
                     continue;
                 }
 

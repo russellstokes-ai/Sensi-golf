@@ -84,6 +84,30 @@ int main() {
     assert(session.phase() == HoleSessionPhase::ReadyForShot);
     assert(session.ball_y_raw() > 0);
 
+    // Original zero-distance scoring is not dependent on code-8 tiles.
+    // On ordinary fairway, a shot can come to rest at the recovered cup
+    // distance (integer-scoped), and scoring occurs on the following tick.
+    const auto rest_x = static_cast<std::uint16_t>(
+        static_cast<std::uint32_t>(session.ball_x_raw()) >> 16);
+    const auto rest_y = static_cast<std::uint16_t>(
+        static_cast<std::uint32_t>(session.ball_y_raw()) >> 16);
+    auto rest_course = uniform_course(1, rest_x, rest_y);
+    ClassicHoleSession rest_scored(
+        rest_course, 0, 0, ClassicHoleMetadata{0, 4});
+    rest_scored.step();
+    assert(rest_scored.phase() == HoleSessionPhase::ReadyForShot);
+    rest_scored.begin_shot(drive);
+    run_active(rest_scored);
+    assert(rest_scored.phase() == HoleSessionPhase::ReadyForShot);
+    assert(rest_scored.distance_to_hole() == 0);
+    rest_scored.step();
+    assert(rest_scored.phase() == HoleSessionPhase::HoleScored);
+    assert(rest_scored.recovered_counters().player_52 == 1);
+    assert(rest_scored.recovered_counters().player_56 == 1);
+    assert(rest_scored.recovered_counters().player_70 == 1);
+    rest_scored.step();
+    assert(rest_scored.recovered_counters().player_70 == 1);
+
     auto hole = uniform_course(7);
     ClassicHoleSession hole_session(hole, 0, 0);
     ClassicShotRequest approach{};
@@ -179,6 +203,26 @@ int main() {
     putt_session.begin_shot(putter_request());
     run_active(putt_session);
     assert(putt_session.phase() == HoleSessionPhase::ReadyForShot);
+
+    // A normal resting putt at recovered distance zero also scores without
+    // subtracting the transient extra code-8 putter terminal counters.
+    const auto putt_rest_x = static_cast<std::uint16_t>(
+        static_cast<std::uint32_t>(putt_session.ball_x_raw()) >> 16);
+    const auto putt_rest_y = static_cast<std::uint16_t>(
+        static_cast<std::uint32_t>(putt_session.ball_y_raw()) >> 16);
+    auto putt_rest_course = uniform_course(31, putt_rest_x, putt_rest_y);
+    ClassicHoleSession putt_rest_scored(
+        putt_rest_course, 0, 0, ClassicHoleMetadata{0, 4});
+    putt_rest_scored.begin_shot(putter_request());
+    run_active(putt_rest_scored);
+    assert(putt_rest_scored.phase() == HoleSessionPhase::ReadyForShot);
+    assert(putt_rest_scored.distance_to_hole() == 0);
+    putt_rest_scored.step();
+    assert(putt_rest_scored.phase() == HoleSessionPhase::HoleScored);
+    assert(putt_rest_scored.recovered_counters().player_52 == 1);
+    assert(putt_rest_scored.recovered_counters().player_56 == 1);
+    assert(putt_rest_scored.recovered_counters().player_58 == 4);
+    assert(putt_rest_scored.recovered_counters().player_70 == 1);
 
     // GREEN H1/code 8 is the parity-proven cup terminal for a putter.
     // It is intentionally not HoleScored: original v1.014 performs scored-hole

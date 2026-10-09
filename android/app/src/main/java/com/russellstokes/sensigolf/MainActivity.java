@@ -240,6 +240,7 @@ public final class MainActivity extends Activity {
         private long lastFrame=0L, stageTime=0L;
         private double tickDebt=0d;
         private float touchX,touchY;
+        private float displayedBallX = Float.NaN, displayedBallY = Float.NaN;
         private boolean pinch=false;
         private float twoFingerDistance=0f;
         private int safeL=0,safeT=0,safeR=0,safeB=0;
@@ -440,6 +441,8 @@ public final class MainActivity extends Activity {
             p.setColor(0xffef5752);
             canvas.drawRect(cupX,cupY-dp(24),cupX+dp(13),cupY-dp(16),p);
             float x=mapLeft+bx*scale,y=mapTop+by*scale;
+            displayedBallX=x;
+            displayedBallY=y;
             int aim=s.optInt("aim",0);
             if(s.optBoolean("ready",false)) {
                 double rad=aim*(Math.PI*2/4096d);
@@ -543,8 +546,13 @@ public final class MainActivity extends Activity {
                             lastSnapshot.optBoolean("ready",false)) {
                         // Touch direction relative to the ball marker at viewport
                         // centre; small aim corrections via arrow buttons.
-                        float dx=e.getX()-courseRect.centerX();
-                        float dy=e.getY()-courseRect.centerY();
+                        float originX=Float.isNaN(displayedBallX)
+                                ? courseRect.centerX():displayedBallX;
+                        float originY=Float.isNaN(displayedBallY)
+                                ? courseRect.centerY():displayedBallY;
+                        float dx=e.getX()-originX;
+                        float dy=e.getY()-originY;
+                        if(Math.hypot(dx,dy)<dp(12)) return true;
                         int target=(int)Math.round((Math.atan2(dx,dy)/
                                 (Math.PI*2d))*4096d)&4095;
                         int current=lastSnapshot.optInt("aim",0);

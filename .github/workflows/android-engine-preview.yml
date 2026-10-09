@@ -1,0 +1,47 @@
+name: Android Original Engine Touch Preview APK
+on:
+  push:
+    paths:
+      - 'android/**'
+      - 'engine/include/**'
+      - 'engine/src/**'
+      - 'engine/CMakeLists.txt'
+      - '.github/workflows/android-engine-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install pinned Android toolchain
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build debug APK with original C++ engine
+        run: gradle -p android --no-daemon --stacktrace :app:assembleDebug
+      - name: Confirm APK and native original engine exist
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -l "$APK" | grep -E 'lib/arm64-v8a/libsensigolf_android.so'
+          sha256sum "$APK"
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: SensiGolf-OriginalEngine-TouchPreview-ANDROID-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

@@ -26,6 +26,8 @@ target_include_directories(sensigolf_core
 
 target_compile_features(sensigolf_core PUBLIC cxx_std_17)
 
+if(NOT ANDROID)
+
 add_executable(sensigolf_core_contract_tests
     tests/core_contract_tests.cpp
 )
@@ -215,3 +217,5 @@ add_executable(sensigolf_classic_replay_journal_tests
 target_link_libraries(sensigolf_classic_replay_journal_tests PRIVATE sensigolf_core)
 add_test(NAME sensigolf_classic_replay_journal_tests
     COMMAND sensigolf_classic_replay_journal_tests)
+
+endif() # Native Android NDK only builds the proven core shared-library dependency.

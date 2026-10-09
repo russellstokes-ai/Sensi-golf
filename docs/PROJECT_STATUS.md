@@ -328,3 +328,28 @@ commit `b1dd77f` (green slope, PRNG, course collision, live player, hazards,
 PRNG interactions, hole capture, normal surfaces, putter, flat landing/rest).
 Normal CI and 16 core tests passed. A fresh *consolidated* Gate-1 final
 sign-off workflow has not been rerun.
+
+
+### Original second-hole audit (2026-10-09)
+
+A separate real-course analysis workflow attempted **original resource 50**
+(par 4; SPT tee `(401,855)`, cup `(88,97)`) and the original following
+resource **58** (par 3). The second-hole replay is **NOT yet proven**.
+
+- Latest audit: [37960397473](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37960397473) — **FAIL** (resource 50 not scored).
+- Tested original physics with bounded greedy shot selection, severe-rough penalties,
+  finer course-distance tie breaking, and explicit exclusion of unresolved
+  code-9/code-10 event-11 continuation.
+- The latest audit reached recovered hole-distance **135** before getting
+  stuck in small nonproductive movements on terrain code 5.
+- **Known limitation is in the analysis-only shot planner / incomplete
+  special-terminal continuation.** This failure does not establish a bug in
+  recovered physics, and the core must not fabricate cup collisions or drops
+  to force success.
+- The resource-42 -> **loaded resource-50** proof remains green, as does core CI.
+- Next proof task: bounded multi-step/beam-search shot planning and original
+  event-11 continuation research, followed by original-binary comparison.
+
+Evidence: `analysis/evidence/gate2_second_hole_audit.json`.
+
+The **first real-hole success stands**; Gate 2 remains **IN PROGRESS**.

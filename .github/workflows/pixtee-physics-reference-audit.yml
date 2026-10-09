@@ -1,0 +1,27 @@
+name: Pixtee Physics Research Audit
+
+on:
+  push:
+    paths:
+      - 'spec/pixtee/**'
+      - 'engine/src/recovered_flight.cpp'
+      - 'engine/src/classic_terrain.cpp'
+      - 'tools/validate_pixtee_physics_reference.py'
+      - '.github/workflows/pixtee-physics-reference-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify numeric research against the recovered source
+        run: python tools/validate_pixtee_physics_reference.py
+      - name: Validate independently authored content schema
+        run: python -m json.tool spec/pixtee/game_data.schema.json >/dev/null

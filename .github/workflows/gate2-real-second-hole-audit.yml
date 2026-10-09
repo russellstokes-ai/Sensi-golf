@@ -101,6 +101,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sensible-golf-gate2-real-hole-end-to-end
-          path: analysis/private/gate2-real-hole-end-to-end/
+          name: sensible-golf-gate2-real-second-hole-audit
+          path: analysis/private/gate2-real-second-hole-audit/
           retention-days: 30

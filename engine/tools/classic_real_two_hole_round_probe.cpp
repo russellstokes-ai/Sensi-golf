@@ -97,10 +97,10 @@ void complete_original_hole(
 } // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 9 && argc != 11) {
+    if (argc != 9 && argc != 11 && argc != 13) {
         std::cerr << "usage: sensigolf_real_two_hole_round_probe "
                   << "<original-epf-root> <id1> <par1> <id2> <par2> "
-                  << "<id3> <par3> [<id4> <par4>] <player-slot>\n";
+                  << "<id3> <par3> [<id4> <par4> [<id5> <par5>]] <player-slot>\n";
         return 2;
     }
     try {
@@ -111,17 +111,23 @@ int main(int argc, char** argv) {
         const auto second_par = static_cast<std::uint8_t>(std::stoul(argv[5]));
         const auto third = static_cast<std::uint8_t>(std::stoul(argv[6]));
         const auto third_par = static_cast<std::uint8_t>(std::stoul(argv[7]));
-        const bool include_third_hole = argc == 11;
+        const bool include_third_hole = argc >= 11;
+        const bool include_fourth_hole = argc == 13;
         const auto fourth = include_third_hole
             ? static_cast<std::uint8_t>(std::stoul(argv[8])) : third;
         const auto fourth_par = include_third_hole
             ? static_cast<std::uint8_t>(std::stoul(argv[9])) : third_par;
+        const auto fifth = include_fourth_hole
+            ? static_cast<std::uint8_t>(std::stoul(argv[10])) : fourth;
+        const auto fifth_par = include_fourth_hole
+            ? static_cast<std::uint8_t>(std::stoul(argv[11])) : fourth_par;
         const auto player_slot = static_cast<std::size_t>(
             std::stoul(argv[argc - 1]));
         if (first != 42 || second != 50 || third != 58
             || first_par != 4 || second_par != 4 || third_par != 3
             || player_slot != 0
-            || (include_third_hole && (fourth != 38 || fourth_par != 4))) {
+            || (include_third_hole && (fourth != 38 || fourth_par != 4))
+            || (include_fourth_hole && (fifth != 70 || fifth_par != 3))) {
             throw std::runtime_error(
                 "fixture must use recovered Windows v1.014 slot-0 sequence 42/50/58");
         }
@@ -134,11 +140,13 @@ int main(int argc, char** argv) {
         order[1] = second;
         order[2] = third;
         if (include_third_hole) order[3] = fourth;
+        if (include_fourth_hole) order[4] = fifth;
         std::array<std::uint8_t, sensigolf::kClassicParTableSize> pars{};
         pars[first] = first_par;
         pars[second] = second_par;
         pars[third] = third_par;
         if (include_third_hole) pars[fourth] = fourth_par;
+        if (include_fourth_hole) pars[fifth] = fifth_par;
         sensigolf::ClassicGameSession game(
             sensigolf::ClassicHolePlan(order, pars), player_slot);
 
@@ -238,6 +246,59 @@ int main(int argc, char** argv) {
                 throw std::runtime_error(
                     "fourth original course not loaded at recovered tee");
             }
+
+            if (include_fourth_hole) {
+                // Original resource38, independently proven in two strokes.
+                constexpr std::array<sensigolf::ClassicShotRequest, 2> fourth_shots{{
+                    {2126, 105, 63, 0},
+                    {1988, 85, 63, 1},
+                }};
+                complete_original_hole(game, fourth, 3u, fourth_shots);
+                expected_request(fifth, 4u, fifth_par);
+                const auto& four_score = game.round_state();
+                if (four_score.holes_completed != 4u
+                    || four_score.current_hole_index != 4u
+                    || four_score.total_strokes != 10u
+                    || four_score.cumulative_par != 15u
+                    || four_score.relative_to_par != 5
+                    || four_score.round_complete) {
+                    throw std::runtime_error("four-hole continuous scorecard is wrong");
+                }
+                auto fifth_course = load_original_course(
+                    root, fifth, descriptors, selection);
+                const auto fifth_tee = fifth_course.player_start(player_slot);
+                const auto fifth_cup = fifth_course.hole_position();
+                game.load_current_hole(fifth, std::move(fifth_course));
+                const auto fifth_meta = game.active_hole().hole_metadata();
+                if (!fifth_meta || fifth_meta->hole_index != 4u
+                    || fifth_meta->resource_id != fifth
+                    || game.active_hole().phase()
+                        != sensigolf::HoleSessionPhase::ReadyForShot
+                    || game.active_hole().ball_x_raw() != fifth_tee.x_raw()
+                    || game.active_hole().ball_y_raw() != fifth_tee.y_raw()
+                    || fifth_tee.x != 341 || fifth_tee.y != 367
+                    || fifth_cup.x != 88 || fifth_cup.y != 94) {
+                    throw std::runtime_error(
+                        "fifth original course not loaded at recovered tee");
+                }
+                std::cout << "{\"resources\":["
+                          << static_cast<unsigned>(first) << ","
+                          << static_cast<unsigned>(second) << ","
+                          << static_cast<unsigned>(third) << ","
+                          << static_cast<unsigned>(fourth) << ","
+                          << static_cast<unsigned>(fifth)
+                          << "],\"completed_strokes\":[3,4,1,2],\"holes_completed\":"
+                          << four_score.holes_completed << ",\"total_strokes\":"
+                          << four_score.total_strokes << ",\"cumulative_par\":"
+                          << four_score.cumulative_par << ",\"relative_to_par\":"
+                          << four_score.relative_to_par
+                          << ",\"next_loaded\":true,\"next_tee\":["
+                          << fifth_tee.x << "," << fifth_tee.y
+                          << "],\"next_cup\":["
+                          << fifth_cup.x << "," << fifth_cup.y << "]}\n";
+                return 0;
+            }
+
             std::cout << "{\"resources\":["
                       << static_cast<unsigned>(first) << ","
                       << static_cast<unsigned>(second) << ","

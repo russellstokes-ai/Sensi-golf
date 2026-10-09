@@ -385,3 +385,42 @@ a single continuous portable-core round, not a full original-game
 completion or playable mobile application. The original code9/code10
 event11 post-stop continuation is unproven and must not be approximated.
 The recovered physics implementation was not modified to pass this test.
+
+### Reusable five-hole original-round fixture — latest status 2026-10-09
+
+**PASS: five authentic original holes scored consecutively in one
+`ClassicGameSession`, sixth original course physically loaded.**
+
+- Original slot-0 order: **42 → 50 → 58 → 38 → 70 → loaded 44**.
+- Recovered shot counts: **3, 4, 1, 2, 2**, over original
+  pars **4, 4, 3, 4, 3**.
+- After five scored holes: **12 cumulative strokes / 18 par**,
+  recovered par-minus-strokes **+6** (six under par), no premature
+  18-hole completion.
+- Following original resource **44** (par 4) physically loaded from
+  MAPM/MAPS/SPT, SPT tee **(302,723)**, cup **(148,107)**.
+- The new **data-driven** replay harness
+  `engine/tools/classic_real_round_fixture_probe.cpp` accepts
+  `engine/tests/fixtures/original_round_first_five.txt`. It checks
+  each hole's genuine SPT tee/cup, every transition/score update,
+  original-par values, and keeps one authoritative game session throughout.
+  The executable can accommodate later course fixtures and a full
+  original 18-hole round; no more nested bespoke C++ fixture branches
+  are required as future shot paths are recovered.
+- Strict workflow
+  [37964103361](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37964103361)
+  **PASS**; same-commit
+  [CI 37964103351](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37964103351)
+  **PASS**.
+- The independent original resource-70 audit
+  [37963698000](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/37963698000)
+  **PASS** and identified the following original resource 44.
+
+Durable record:
+`analysis/evidence/gate2_data_driven_five_hole_checkpoint.json`.
+
+**Gate 2 remains IN PROGRESS.** Five of eighteen authentic holes have
+been completed continuously. The original code9/code10 event11
+post-stop continuation is still unresolved; original multiplayer/full
+round parity and the Android playable app are not yet complete.
+Commercial original assets are never checked into the public repository.

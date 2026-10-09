@@ -62,6 +62,9 @@ jobs:
             --solver "$(pwd)/build/engine/sensigolf_real_hole_solver_probe" \
             --replay "$(pwd)/build/engine/sensigolf_real_round_fixture_probe" \
             --output "$OUT" --max-new 10
+          echo ORIGINAL_NUMERIC_FIXTURE_BEGIN
+          cat "$OUT/verified_original_round_fixture.txt"
+          echo ORIGINAL_NUMERIC_FIXTURE_END
       - uses: actions/upload-artifact@v4
         if: always()
         with:

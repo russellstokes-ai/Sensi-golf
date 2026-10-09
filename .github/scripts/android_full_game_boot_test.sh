@@ -75,6 +75,26 @@ sleep 6
 adb exec-out screencap -p > "$OUT/after-demo-space-149s.png"
 test -s "$OUT/after-demo-space-149s.png"
 
+# First original-menu touch probe: Play Round is visibly centered near
+# screen x=1260,y=390 on the 2400x1080 landscape emulator. Screenshot each
+# stage; one tap is not assumed to equal a successful click.
+sleep 3
+adb shell input tap 1260 390
+sleep 4
+adb exec-out screencap -p > "$OUT/menu-after-tap-156s.png"
+test -s "$OUT/menu-after-tap-156s.png"
+
+# In DOSBox Pure touchpad mode a drag can move the relative mouse cursor.
+# Try it separately and capture result before a follow-up tap.
+adb shell input swipe 1200 540 1260 390 650
+sleep 2
+adb exec-out screencap -p > "$OUT/menu-after-drag-159s.png"
+test -s "$OUT/menu-after-drag-159s.png"
+adb shell input tap 1260 390
+sleep 5
+adb exec-out screencap -p > "$OUT/menu-after-drag-tap-164s.png"
+test -s "$OUT/menu-after-drag-tap-164s.png"
+
 python - "$OUT" <<'PY'
 import hashlib,json,sys
 from pathlib import Path
@@ -82,7 +102,9 @@ root=Path(sys.argv[1])
 names=["intro-8s.png","after-escape-11s.png","after-space-16s.png",
        "intro-32s.png","intro-80s.png","intro-128s.png",
        "after-tap-131s.png","after-tap-139s.png",
-       "after-demo-escape-143s.png","after-demo-space-149s.png"]
+       "after-demo-escape-143s.png","after-demo-space-149s.png",
+       "menu-after-tap-156s.png","menu-after-drag-159s.png",
+       "menu-after-drag-tap-164s.png"]
 hashes={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in names}
 (root/"visual-progression-sha256.json").write_text(json.dumps(hashes,indent=2)+"\\n")
 assert len(set(hashes.values()))>1,"All game frames identical; no visual progress"

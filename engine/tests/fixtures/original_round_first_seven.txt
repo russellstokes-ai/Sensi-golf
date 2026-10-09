@@ -1,0 +1,12 @@
+# Original Windows v1.014 slot-0 course order, original SPT coordinates.
+# Each row: resource_id par tee_x tee_y cup_x cup_y shot_count [aim power accuracy club]...
+# Last row with zero shots is the next original course physically loaded.
+# Numeric shot paths verified by the original-resource physics solver audits.
+42 4 247 726 414 85 3 1882 105 63 0 1882 95 63 2 1756 5 63 3
+50 4 401 855 88 97 4 2335 105 63 1 1893 105 63 1 2908 95 63 1 2800 5 63 3
+58 3 370 383 138 96 1 2491 105 63 0
+38 4 310 766 282 154 2 2126 105 63 0 1988 85 63 1
+70 3 341 367 88 94 2 2541 105 63 0 2352 3 63 0
+44 4 302 723 148 107 3 2256 105 63 0 2126 105 63 4 321 4 63 3
+64 5 439 871 67 84 3 2432 105 63 0 2063 105 63 0 2829 95 63 5
+48 5 372 864 206 140 0

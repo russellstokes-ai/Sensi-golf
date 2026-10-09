@@ -75,11 +75,14 @@ jobs:
           NEXT_RID="$(python -c 'import json; print(json.load(open("'"$OUT/selected.json"'"))[1]["resource_id"])')"
           NEXT_PAR="$(python -c 'import json; print(json.load(open("'"$OUT/selected.json"'"))[1]["par"])')"
           NN="$(printf '%02d' "$RID")"
+          NEXT_NN="$(printf '%02d' "$NEXT_RID")"
 
           ./build/engine/sensigolf_real_hole_solver_probe \
             "$RID" "$PAR" "$NEXT_RID" "$NEXT_PAR" \
             "$ROOT/MAPM${NN}.MAP" "$ROOT/MAPS${NN}.MAP" "$ROOT/MAPM${NN}.SPT" \
-            "$ROOT/MAPI01.RAW" "$ROOT/MAPI02.RAW" 0 \
+            "$ROOT/MAPI01.RAW" "$ROOT/MAPI02.RAW" \
+            "$ROOT/MAPM${NEXT_NN}.MAP" "$ROOT/MAPS${NEXT_NN}.MAP" \
+            "$ROOT/MAPM${NEXT_NN}.SPT" 0 \
             | tee "$OUT/result.json"
 
           python - "$OUT/result.json" "$RID" "$NEXT_RID" <<'PY'
@@ -88,6 +91,8 @@ jobs:
           assert j["resource_id"]==int(sys.argv[2]),j
           assert j["next_resource_id"]==int(sys.argv[3]),j
           assert j["next_round_index"]==1,j
+          assert j["next_loaded"] is True,j
+          assert j["next_tee_x"] >= 0 and j["next_tee_y"] >= 0,j
           assert j["strokes"] > 0,j
           assert j["shots"] and len(j["shots"])==j["strokes"],j
           print("real end-to-end hole proof passed:",json.dumps(j,indent=2))

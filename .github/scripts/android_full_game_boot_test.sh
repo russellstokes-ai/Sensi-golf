@@ -64,13 +64,25 @@ sleep 8
 adb exec-out screencap -p > "$OUT/after-tap-139s.png"
 test -s "$OUT/after-tap-139s.png"
 
+# Once the attract/demo course is active, Escape should return control to
+# the original title/menu if that command is supported. Record actual result.
+adb shell input keyevent 111
+sleep 4
+adb exec-out screencap -p > "$OUT/after-demo-escape-143s.png"
+test -s "$OUT/after-demo-escape-143s.png"
+adb shell input keyevent 62
+sleep 6
+adb exec-out screencap -p > "$OUT/after-demo-space-149s.png"
+test -s "$OUT/after-demo-space-149s.png"
+
 python - "$OUT" <<'PY'
 import hashlib,json,sys
 from pathlib import Path
 root=Path(sys.argv[1])
 names=["intro-8s.png","after-escape-11s.png","after-space-16s.png",
        "intro-32s.png","intro-80s.png","intro-128s.png",
-       "after-tap-131s.png","after-tap-139s.png"]
+       "after-tap-131s.png","after-tap-139s.png",
+       "after-demo-escape-143s.png","after-demo-space-149s.png"]
 hashes={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in names}
 (root/"visual-progression-sha256.json").write_text(json.dumps(hashes,indent=2)+"\\n")
 assert len(set(hashes.values()))>1,"All game frames identical; no visual progress"

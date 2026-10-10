@@ -322,12 +322,14 @@ private class PixteeCanvas(context: Context) : View(context) {
     }
     private fun woodButton(c: Canvas, label: String, x: Float, y: Float,
                            w: Float, h: Float, enabled: Boolean = true) {
-        rect(c, x - 2, y - 2, x + w + 2, y + h + 2, Color.BLACK)
-        rect(c, x, y, x + w, y + h, Color.rgb(199, 106, 20))
-        rect(c, x + 2, y + 2, x + w - 2, y + h - 2, wood)
-        for (i in 0..4) {
-            line(c, x + 6f, y + 5f + i * 7, x + w - 7f,
-                y + 4f + i * 7, Color.rgb(111, 38, 10))
+        if(!art.ui(c,"ui_wood_button",x-2,y-2,x+w+2,y+h+2)) {
+            rect(c, x - 2, y - 2, x + w + 2, y + h + 2, Color.BLACK)
+            rect(c, x, y, x + w, y + h, Color.rgb(199, 106, 20))
+            rect(c, x + 2, y + 2, x + w - 2, y + h - 2, wood)
+            for (i in 0..4) {
+                line(c, x + 6f, y + 5f + i * 7, x + w - 7f,
+                    y + 4f + i * 7, Color.rgb(111, 38, 10))
+            }
         }
         text(c, label, x + w / 2f, y + h * 0.67f, min(19f, w / (label.length * 0.67f)),
             if (enabled) gold else Color.rgb(160, 126, 87), true)
@@ -365,8 +367,10 @@ private class PixteeCanvas(context: Context) : View(context) {
         // Final logo, lettering, wooden panels and scenic tile art are
         // still subject to exact source-asset approval before release.
         rect(c,10f,108f,350f,251f,Color.argb(145,4,18,29))
-        text(c, "PIXTEE", 180f, 164f, 64f, Color.rgb(255, 193, 31), true)
-        text(c, "GOLF", 180f, 228f, 56f, Color.rgb(63, 212, 53), true)
+        if (!art.ui(c,"ui_pixtee_logo",25f,118f,335f,242f)) {
+            text(c, "PIXTEE", 180f, 164f, 64f, Color.rgb(255, 193, 31), true)
+            text(c, "GOLF", 180f, 228f, 56f, Color.rgb(63, 212, 53), true)
+        }
         val buttons = listOf("PLAY ROUND", "CAREER",
             if(savedGame()!=null) "RESUME ROUND" else "PRACTICE HOLE",
             "STATISTICS", "TROPHIES", "OPTIONS", "CUSTOMIZE GOLFER")
@@ -435,6 +439,8 @@ private class PixteeCanvas(context: Context) : View(context) {
         c.translate(-viewport.leftWorld, -viewport.topWorld)
         rect(c, viewport.leftWorld, viewport.topWorld,
             viewport.rightWorld, viewport.bottomWorld, palette.rough)
+        art.terrainRect(c,"terrain_rough",viewport.leftWorld,viewport.topWorld,
+            viewport.rightWorld,viewport.bottomWorld)
         for (y in (viewport.topWorld.toInt()-10)..(viewport.bottomWorld.toInt()+10) step 10)
             for (x in (viewport.leftWorld.toInt()-10)..(viewport.rightWorld.toInt()+10) step 11)
                 if ((x*17+y*13+layout.seed.toInt())%7 < 3)
@@ -447,11 +453,14 @@ private class PixteeCanvas(context: Context) : View(context) {
                 palette.fairway)
             rect(c,centre-half,y.toFloat(),centre+half,y+3f,
                 if ((y/21)%2==0) palette.fairway else tinted(palette.fairway, 0.90f))
+            art.terrainRect(c,"terrain_fairway",centre-half,y.toFloat(),
+                centre+half,y+3f)
         }
         val ambientMs=android.os.SystemClock.uptimeMillis()
         val frame=CourseAmbient.frame(ambientMs,courseMotion)
         layout.waters.forEach { patch ->
             rect(c,patch.l,patch.t,patch.r,patch.b,palette.water)
+            art.terrainRect(c,"terrain_water",patch.l,patch.t,patch.r,patch.b)
             var row=0
             var yy=patch.t+5f
             while(yy<patch.b-4f) {
@@ -468,11 +477,15 @@ private class PixteeCanvas(context: Context) : View(context) {
         layout.bunkers.forEach {
             ellipse(c,it.x-it.rx,it.y-it.ry,it.x+it.rx,it.y+it.ry,
                 palette.sand)
+            art.terrainOval(c,"terrain_sand",it.x-it.rx,it.y-it.ry,
+                it.x+it.rx,it.y+it.ry)
         }
         ellipse(c, layout.pinX-30f,layout.pinY-24f,
             layout.pinX+30f,layout.pinY+24f,tinted(palette.green, .85f))
         ellipse(c, layout.pinX-24f,layout.pinY-20f,
             layout.pinX+24f,layout.pinY+20f,palette.green)
+        art.terrainOval(c,"terrain_green",layout.pinX-24f,layout.pinY-20f,
+            layout.pinX+24f,layout.pinY+20f)
         for((i,spot) in grassSpots.withIndex()) {
             val (gx,gy)=spot
             if (layout.groundAt(gx,gy)!=Ground.ROUGH) continue
@@ -682,9 +695,12 @@ private class PixteeCanvas(context: Context) : View(context) {
         woodButton(c, "WHACK", 266f, bottomControlY, 91f, 50f)
     }
     private fun drawHUD(c: Canvas) {
-        rect(c, 2f, 38f, 110f, 279f, Color.BLACK)
-        rect(c, 4f, 40f, 108f, 277f, Color.rgb(34, 8, 5))
-        for (y in 40..276 step 48) line(c, 4f, y.toFloat(), 108f, y.toFloat(), woodLight, 2f)
+        if(!art.ui(c,"ui_hud_panel",2f,38f,110f,279f)) {
+            rect(c, 2f, 38f, 110f, 279f, Color.BLACK)
+            rect(c, 4f, 40f, 108f, 277f, Color.rgb(34, 8, 5))
+            for (y in 40..276 step 48)
+                line(c, 4f, y.toFloat(), 108f, y.toFloat(), woodLight, 2f)
+        }
         text(c, (g.activeHole?.course?.title ?: "PIXTEE").uppercase().take(10),
             8f, 61f, 12f, gold)
         text(c, "HOLE ${g.holeNumber} PAR ${g.par}", 8f, 81f, 11f)

@@ -39,7 +39,7 @@ def main():
         if row["asset_class"] in ("bird","golfer","impact","advertising"):
             pattern = row["id_template"]
             if row["asset_class"] == "bird":
-                pattern = re.sub(r"^bird_.*_(fly|hit|recover)_", r"bird_<species>_\\1_", pattern)
+                pattern = re.sub(r"^bird_.*_(fly|hit|recover)_", lambda m: "bird_<species>_"+m.group(1)+"_", pattern)
             ensure(pattern in bible,"MD misses generic asset family "+pattern)
     totals={}
     for row in g: totals[row["asset_class"]]=totals.get(row["asset_class"],0)+row["total_frames"]

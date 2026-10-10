@@ -218,6 +218,17 @@ private class PixteeCanvas(context: Context) : View(context) {
     private fun logicalScreenHeight(): Float =
         height.coerceAtLeast(1) * 360f / width.coerceAtLeast(1)
 
+    /**
+     * Provisional classic-framing camera under visual review: the ball moves
+     * through world-space scenery while only the nearby region is visible.
+     * No change to club ranges, collision dimensions or stroke simulation.
+     */
+    private fun gameViewport(): CourseViewport = CourseViewport(
+        360f, logicalScreenHeight(),
+        zoom=CourseViewport.REFERENCE_ZOOM_CANDIDATE,
+        focusX=g.x, focusY=g.y-CourseViewport.LOOK_AHEAD_WORLD
+    )
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val now = System.nanoTime()
@@ -374,13 +385,15 @@ private class PixteeCanvas(context: Context) : View(context) {
         val layout = g.activeHole ?: return
         val palette = CourseArtDirection.palette(layout.course.theme)
         fill(c, palette.rough)
-        val viewport = CourseViewport(360f, logicalScreenHeight())
+        val viewport = gameViewport()
         c.save()
+        c.clipRect(0f,0f,360f,logicalScreenHeight())
         c.scale(viewport.worldScale, viewport.worldScale)
-        c.translate(0f, -viewport.topWorld)
-        rect(c, 0f, viewport.topWorld, 300f, viewport.bottomWorld, palette.rough)
+        c.translate(-viewport.leftWorld, -viewport.topWorld)
+        rect(c, viewport.leftWorld, viewport.topWorld,
+            viewport.rightWorld, viewport.bottomWorld, palette.rough)
         for (y in (viewport.topWorld.toInt()-10)..(viewport.bottomWorld.toInt()+10) step 10)
-            for (x in 0..300 step 11)
+            for (x in (viewport.leftWorld.toInt()-10)..(viewport.rightWorld.toInt()+10) step 11)
                 if ((x*17+y*13+layout.seed.toInt())%7 < 3)
                     rect(c,x.toFloat(),y.toFloat(),x+3f,y+3f,
                         palette.fairway)
@@ -564,23 +577,31 @@ private class PixteeCanvas(context: Context) : View(context) {
 
     private fun drawPlaying(c: Canvas) {
         course(c)
-        val viewport = CourseViewport(360f, logicalScreenHeight())
+        val viewport = gameViewport()
         val bx = viewport.screenX(g.x)
         val by = viewport.screenY(g.y)
-        // Underlying tiny golfer drawn a small distance beside the ball.
-        golfer(c, bx - 12f, by)
-        circle(c, bx, by + 3f, 3f, Color.rgb(27, 70, 20))
-        val lift = min(32f, g.height * 0.55f)
-        if (g.height > 1f) circle(c, bx, by - lift, 3f, Color.rgb(255, 244, 174))
-        else circle(c, bx, by, 2.5f, gearColour(StyleSlot.BALL))
+        val modelScale=viewport.worldScale
+        // Golfer and ball are projected at the SAME scale as the terrain.
+        // Approved production sprite pixels keep their true world proportions.
+        val golferX=bx-12f*modelScale
+        c.save()
+        c.scale(modelScale,modelScale,golferX,by)
+        golfer(c,golferX,by)
+        c.restore()
+        circle(c, bx, by + 3f*modelScale, 3f*modelScale,
+            Color.rgb(27, 70, 20))
+        val lift = min(32f, g.height * 0.55f)*modelScale
+        if (g.height > 1f) circle(c, bx, by-lift, 3f*modelScale,
+            Color.rgb(255, 244, 174))
+        else circle(c,bx,by,2.5f*modelScale,gearColour(StyleSlot.BALL))
         drawHUD(c)
         woodButton(c, "II", 305f, 3f, 49f, 30f)
         if (g.stage == GameStage.READY) {
             // Aim marker stays in course world coordinates; classic full top-down view.
             val angle = Math.toRadians(g.aimDegrees.toDouble())
-            val px = bx + sin(angle).toFloat() * 65f
-            val py = by - cos(angle).toFloat() * 65f
-            line(c, bx, by - 5f, px, py, Color.WHITE, 1.7f)
+            val px = bx + sin(angle).toFloat() * 65f*modelScale
+            val py = by - cos(angle).toFloat() * 65f*modelScale
+            line(c, bx, by - 5f*modelScale, px, py, Color.WHITE, 1.7f)
             circle(c, px, py, 3f, gold)
         }
         if (g.stage == GameStage.POWER || g.stage == GameStage.ACCURACY) drawMeter(c)

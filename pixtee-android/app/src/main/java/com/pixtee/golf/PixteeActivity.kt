@@ -619,6 +619,7 @@ private class PixteeCanvas(context: Context) : View(context) {
         val y = event.y * 360f / width.coerceAtLeast(1)
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
+                android.util.Log.i("PixteeTouch", "DOWN screen=$screen x=$x y=$y width=$width height=$height")
                 downX = x; downY = y
                 if (screen != Screen.PLAYING) menuInput.down(x, y)
                 return true
@@ -635,6 +636,7 @@ private class PixteeCanvas(context: Context) : View(context) {
                 return true
             }
             MotionEvent.ACTION_UP -> {
+                android.util.Log.i("PixteeTouch", "UP screen=$screen x=$x y=$y scroll=${menuInput.scrollY}")
                 performClick()
                 val previousScreen = screen
                 if (screen == Screen.PLAYING) {
@@ -643,6 +645,7 @@ private class PixteeCanvas(context: Context) : View(context) {
                     val location = menuInput.release(x, y) ?: return true
                     tapMenu(location.first, location.second)
                 }
+                android.util.Log.i("PixteeTouch", "RESULT prev=$previousScreen screen=$screen stage=${g.stage}")
                 if (screen != previousScreen) menuInput.reset()
                 invalidate()
                 return true

@@ -239,7 +239,9 @@ private class PixteeCanvas(context: Context) : View(context) {
         }
         canvas.restore()
         val state = "Pixtee screen: ${screen.name}" +
-            if (screen == Screen.PLAYING) "; stage: ${g.stage.name}; strokes: ${g.strokes}" else ""
+            (if (screen == Screen.PLAYING) "; stage: ${g.stage.name}; strokes: ${g.strokes}" else "") +
+            (if (g.activeHole != null && screen in listOf(Screen.TEE, Screen.PLAYING, Screen.PAUSE, Screen.SCORE))
+                "; course: ${g.activeHole?.course?.id}; hole: ${g.holeNumber}" else "")
         if (contentDescription != state) contentDescription = state
         if (screen == Screen.PLAYING) postInvalidateOnAnimation()
     }

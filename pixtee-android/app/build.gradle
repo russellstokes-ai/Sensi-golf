@@ -9,6 +9,7 @@ android {
         applicationId 'com.pixtee.golf'
         minSdk 26
         targetSdk 35
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         versionCode 2
         versionName '0.1.1-sponsor-boards'
     }
@@ -20,4 +21,9 @@ android {
     kotlinOptions { jvmTarget = '17' }
     testOptions { unitTests.returnDefaultValues = true }
 }
-dependencies { testImplementation 'junit:junit:4.13.2' }
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
+}

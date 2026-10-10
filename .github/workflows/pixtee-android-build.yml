@@ -104,6 +104,9 @@ jobs:
             mkdir -p pixtee-android/app/build/actual-device-screenshots
             adb shell settings put secure immersive_mode_confirmations confirmed
             adb shell wm size 1080x2400
+            # Gradle connectedAndroidTest normally uninstalls the target APK
+            # during runner teardown. Reinstall before real screen capture.
+            adb install -r pixtee-android/app/build/outputs/apk/debug/app-debug.apk
             adb shell am force-stop com.pixtee.golf || true
             adb shell am start -n com.pixtee.golf/.PixteeActivity
             sleep 3

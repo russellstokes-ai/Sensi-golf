@@ -11,7 +11,7 @@ class PixteeSwingRigTest {
         assertEquals(expected,PixteeSwingRig.FULL_SWING)
         assertEquals(8,expected.map { it.spriteId }.distinct().size)
         assertEquals(0f,PixteeSwingRig.BALL_OFFSET_Y,0f)
-        assertEquals(12f,PixteeSwingRig.BALL_OFFSET_X,0f)
+        assertEquals(3.5f,PixteeSwingRig.BALL_OFFSET_X,0f)
     }
 
     @Test fun realWhackSequenceDrivesCompleteSwingIncludingImpact() {
@@ -47,13 +47,13 @@ class PixteeSwingRigTest {
         val feetX=140f
         val feetY=420f
         val ball=PixteeSwingRig.expectedBallPosition(feetX,feetY)
-        assertEquals(152f,ball.first,0f)
+        assertEquals(143.5f,ball.first,0f)
         assertEquals(420f,ball.second,0f)
         for(height in listOf(700f,760f,920f)) {
             val view=CourseViewport(360f,height,
                 zoom=CourseViewport.REFERENCE_ZOOM_CANDIDATE,
                 focusX=150f,focusY=380f)
-            assertEquals(12f*view.worldScale,
+            assertEquals(3.5f*view.worldScale,
                 view.screenX(ball.first)-view.screenX(feetX),0.001f)
             assertEquals(view.screenY(feetY),view.screenY(ball.second),0.001f)
         }

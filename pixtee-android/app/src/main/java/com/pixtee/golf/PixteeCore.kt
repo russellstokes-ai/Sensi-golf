@@ -184,7 +184,16 @@ class PixteeCore {
             y = (startY + (destY-startY)*t + flightCurveY*swing)
                 .coerceIn(5f, HEIGHT-5f)
             height = (sin(t * PI).toFloat() * club.loft * chosenPower).coerceAtLeast(0f)
-            if (t >= 1f) { stage = GameStage.ROLL; rollTime = 0f; height = 0f }
+            if (t >= 1f) {
+                height = 0f
+                // Water at first contact terminates immediately, matching
+                // the observed classic hazard behaviour (no extra roll tick).
+                if (groundAt(x,y) == Ground.WATER) finishShot()
+                else {
+                    stage = GameStage.ROLL
+                    rollTime = 0f
+                }
+            }
         }
         GameStage.ROLL -> {
             val dt = TICK_SECONDS
@@ -248,7 +257,11 @@ class PixteeCore {
         flightCurveX = -directionY*lateral
         flightCurveY = directionX*lateral
         shotTime = 0f
-        shotDuration = 0.9f + intended / 180f
+        // Independently calibrated arcade pacing: a full-power driver now
+        // lands after ~80 logical 70Hz steps (~1.14s), rather than ~170.
+        // Taller lofts float a little longer. This does not copy source code.
+        shotDuration = (0.44f + 0.59f*chosenPower +
+            club.loft*0.005f).coerceIn(0.5f,1.45f)
         rollTime = 0f
         val speed = if (clubIndex == CLUBS.lastIndex) intended * 1.75f
             else (5f + intended * 0.08f) * (1f - miss * 0.2f)

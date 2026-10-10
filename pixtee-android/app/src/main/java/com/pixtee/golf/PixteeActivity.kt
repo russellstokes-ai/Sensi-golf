@@ -514,13 +514,27 @@ private class PixteeCanvas(context: Context) : View(context) {
 
         val cx = 223f
         val cy = 450f
+        // Narrow straight-hit zone becomes harder from rough or sand.
+        val safeTicks = when (g.lastLie) {
+            Ground.SAND -> 2
+            Ground.ROUGH -> 3
+            else -> 5
+        }
+        // Small extension left of the bottom red zone shows a LATE strike.
+        // The previous design clamped the cursor to zero and hid this error.
+        for (i in -8..-1) {
+            val px = cx - 100f + i * 3f
+            val colour = if (i >= -safeTicks) Color.rgb(242, 52, 35)
+                else Color.rgb(237, 205, 61)
+            rect(c, px - 1f, cy - 3f, px + 2f, cy + 4f, colour)
+        }
         // Original-era solid pixel steps create a crisp arch at mobile scale.
         for (i in 0..64) {
             val radians = Math.PI * (1.0 - i / 64.0)
             val px = cx + cos(radians).toFloat() * 100f
             val py = cy - sin(radians).toFloat() * 78f
             val colour = when {
-                i <= 6 -> Color.rgb(242, 52, 35) // straight-hit red zone
+                i <= safeTicks -> Color.rgb(242, 52, 35) // lie-sensitive red zone
                 i in 25..39 -> Color.rgb(246, 183, 29) // strong-power zone
                 i in 19..24 || i in 40..45 -> Color.rgb(103, 204, 42)
                 else -> Color.rgb(237, 231, 186)
@@ -528,10 +542,17 @@ private class PixteeCanvas(context: Context) : View(context) {
             rect(c, px - 3f, py - 3f, px + 4f, py + 4f, Color.BLACK)
             rect(c, px - 2f, py - 2f, px + 3f, py + 3f, colour)
         }
-        val t = g.meter.coerceIn(0f, 1f)
-        val radians = Math.PI * (1.0 - t.toDouble())
-        val cursorX = cx + cos(radians).toFloat() * 100f
-        val cursorY = cy - sin(radians).toFloat() * 78f
+        val t = g.meter
+        val cursorX: Float
+        val cursorY: Float
+        if (t < 0f) {
+            cursorX = cx - 100f + t.coerceAtLeast(-0.32f) * 75f
+            cursorY = cy
+        } else {
+            val radians = Math.PI * (1.0 - t.coerceAtMost(1f).toDouble())
+            cursorX = cx + cos(radians).toFloat() * 100f
+            cursorY = cy - sin(radians).toFloat() * 78f
+        }
         circle(c, cursorX, cursorY, 5.2f, Color.BLACK)
         circle(c, cursorX, cursorY, 3.7f, Color.WHITE)
         text(c, "MAX", cx, 369f, 10f, cream, true)

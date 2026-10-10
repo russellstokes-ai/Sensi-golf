@@ -149,6 +149,28 @@ class PixteeNavigationSmokeTest {
     }
 
     @Test
+    fun secondCourseRoundLengthPauseAndResumeWorkOnAndroid() {
+        tap(180f,300f); waitFor("COURSES")
+        tap(180f,209f); waitFor("PLAYER") // Riverdale is row 2
+        tap(138f,472f) // select a three-hole round
+        tap(180f,550f); waitFor("TEE")
+        val tee=device.findObject(By.descContains("Pixtee screen: TEE"))!!
+        assertTrue("Second course was not selected",
+            tee.contentDescription.toString().contains("course: riverdale"))
+        tap(180f,640f); waitFor("PLAYING","READY")
+        tap(331f,20f); waitFor("PAUSE")
+        tap(180f,380f); waitFor("PLAYING","READY")
+        tap(331f,20f); waitFor("PAUSE")
+        tap(180f,468f); waitFor("MAIN")
+        tap(180f,433f); waitFor("PLAYING","READY") // RESUME ROUND
+        val resumed=device.findObject(By.descContains("Pixtee screen: PLAYING"))!!
+        assertTrue("Resume lost selected course",
+            resumed.contentDescription.toString().contains("course: riverdale"))
+        assertTrue("Resume lost first-hole state",
+            resumed.contentDescription.toString().contains("hole: 1"))
+    }
+
+    @Test
     fun secondaryScreensCanBeOpenedAndExited() {
         tap(180f, 368f); waitFor("CAREER")
         tap(180f, 47f); waitFor("MAIN")

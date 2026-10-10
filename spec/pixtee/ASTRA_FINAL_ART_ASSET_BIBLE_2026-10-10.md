@@ -172,11 +172,15 @@ Final enhanced **8 facing directions** = `n,ne,e,se,s,sw,w,nw` with identical fe
 | Putter swing | `golfer_putt_<dir>_f00..f11.png` | 12 | 96 | Ground shot, no driver-style airborne arc |
 | Walk to next lie | `golfer_walk_<dir>_f00..f07.png` | 8 | 64 | Visual movement after real ball stops; doesn't move the ball |
 | Idle/read stance | `golfer_idle_<dir>_f00..f03.png` | 4 | 32 | Subtle loop; foot registered and grounded |
-| **TOTAL NEW SEQUENCED FRAMES** |  | **48 per direction** | **576** | Separate from 12 compatibility pose exports |
+| Address / setup | `golfer_address_<dir>_f00..f03.png` | 4 | 32 | Registered first stance |
+| Watch the shot | `golfer_watch_shot_<dir>_f00..f05.png` | 6 | 48 | Per completed shot |
+| Celebrate | `golfer_celebrate_<dir>_f00..f07.png` | 8 | 64 | Birdie, eagle, trophy feedback |
+| Disappointed | `golfer_disappointed_<dir>_f00..f05.png` | 6 | 48 | Shot/hazard reactions |
+| **TOTAL NEW SEQUENCED FRAMES** |  | **72 per direction** | **576** | Separate from 12 compatibility pose exports |
 
-Deliver 576 **individually named** RGBA PNG frames plus packed texture atlases and manifest with deterministic frame ordering and pivot metadata. At 256×128 RGBA, 384 uncompressed frames would consume ~50 MB just in raw frame pixels; **pack/crop transparently with pivot metadata, group atlases (prefer <=2048×2048), load animation families on demand, and budget GPU memory**. Do **not** trim/pivot recenter the actual world character or spoil clubface alignment. Enhanced intermediate frames must be visually approved, not guessed from the classic game's sprite count.
+Deliver 576 **individually named** RGBA PNG frames plus packed texture atlases and manifest with deterministic frame ordering and pivot metadata. At 256×128 RGBA, 576 uncompressed frames would consume ~72 MiB just in raw frame pixels; **pack/crop transparently with pivot metadata, group atlases (prefer <=2048×2048), load animation families on demand, and budget GPU memory**. Do **not** trim/pivot recenter the actual world character or spoil clubface alignment. Enhanced intermediate frames must be visually approved, not guessed from the classic game's sprite count.
 
-Additional costume variants: at minimum red/blue/white default and unlocked clothing/hats/trousers/skin-tone options, designed as recolour/masked parts or composited layers sharing this one skeletal registration contract. **Do not** duplicate 384 full RGBA frame sets for every outfit unless memory planning explicitly justifies it. 13 club drawings/icons must align with the independently authored player and verified gameplay club mapping.
+Additional costume variants: at minimum red/blue/white default and unlocked clothing/hats/trousers/skin-tone options, designed as recolour/masked parts or composited layers sharing this one skeletal registration contract. **Do not** duplicate 576 full RGBA frame sets for every outfit unless memory planning explicitly justifies it. 13 club drawings/icons must align with the independently authored player and verified gameplay club mapping.
 
 ## 6. Menus, career, HUD, sponsorship and brand — complete production UI assets
 
@@ -312,7 +316,7 @@ Pixtee's planned total is **35 distinct original courses / 630 distinct holes**.
 
 ### 11.1 Bird species matched to location: complete required wildlife artwork
 
-The current code's \`PixteeCourse.theme = courseIndex % 10\` is only a **palette rotation**, not reliable ecology. **Astra/engineering MUST use an explicit \`wildlifeBiome\` and weighted \`speciesSpawnSet\` per course** (recorded in \`assets/courses/cNN/theme_palette.json\` and authored course metadata). Bird types, calling sounds, visual sizes, feather colours and flight style must be appropriate to the course environment. Do not render tropical parrots on frozen Scottish-style greens or seabirds in inland deserts.
+The current code's `PixteeCourse.theme = courseIndex % 10` is only a **palette rotation**, not reliable ecology. **Astra/engineering MUST use an explicit `wildlifeBiome` and weighted `speciesSpawnSet` per course** (recorded in `assets/courses/cNN/theme_palette.json` and authored course metadata). Bird types, calling sounds, visual sizes, feather colours and flight style must be appropriate to the course environment. Do not render tropical parrots on frozen Scottish-style greens or seabirds in inland deserts.
 
 | Environment | Required original Pixtee bird species | Behaviour and effect personality |
 |---|---|---|
@@ -327,41 +331,41 @@ The current code's \`PixteeCourse.theme = courseIndex % 10\` is only a **palette
 | AUTUMN / VALLEY | magpie, crow | dashes between tree canopies |
 | FROST / GLACIER | ptarmigan, raven | rare bird movement and mostly long gliding shots |
 
-**Coverage rule:** all **18 distinct species** named across that table require unique silhouettes/colour palettes and impact/recovery frames; shared bird **skeleton templates may be reused** but no single gull skin covers every biome. Birds are sometimes alone and occasionally two together if appropriate; never a guaranteed flyover every shot. Season/weather variants are variants, not a new game-physics mechanic. A curated per-course \`wildlifeBiome\` mapping MUST cover all 35 course IDs, including Coastline/Pebble Cove/Seabright (COASTAL), Willow Marsh (MARSH), Desert Bloom/High Mesa (DESERT), Frostwood/Glacier Point/Northlight (FROST), Blue Lagoon/Coral Key/Lotus Springs (TROPICAL/LAGOON), Lakewood/Summit Lakes (LAKE), Pine Crest/Redwood Park (WOODLAND), and all others. Defaults chosen by explicit authored ecology, not numeric \`theme\` index.
+**Coverage rule:** all **21 distinct species** named across that table require unique silhouettes/colour palettes and impact/recovery frames; shared bird **skeleton templates may be reused** but no single gull skin covers every biome. Birds are sometimes alone and occasionally two together if appropriate; never a guaranteed flyover every shot. Season/weather variants are variants, not a new game-physics mechanic. A curated per-course `wildlifeBiome` mapping MUST cover all 35 course IDs, including Coastline/Pebble Cove/Seabright (COASTAL), Willow Marsh (MARSH), Desert Bloom/High Mesa (DESERT), Frostwood/Glacier Point/Northlight (FROST), Blue Lagoon/Coral Key/Lotus Springs (TROPICAL/LAGOON), Lakewood/Summit Lakes (LAKE), Pine Crest/Redwood Park (WOODLAND), and all others. Defaults chosen by explicit authored ecology, not numeric `theme` index.
 
 **Per-species exact export convention and filenames:**
 
-| Bird asset family (replace \`<species>\`) | Exact PNG canvas per frame | Frames / species | World footprint target | Trigger |
+| Bird asset family (replace `<species>`) | Exact PNG canvas per frame | Frames / species | World footprint target | Trigger |
 |---|---|---:|---|---|
-| \`bird_<species>_fly_f00..f07.png\` | 64×64 (small), 96×96 (medium), or 128×96 (large) | 8 | 8×8, 12×12, or 16×12 world | world-space flyover, not fixed screen overlay |
-| \`bird_<species>_hit_f00..f09.png\` | same size as species' flight canvas | 10 | **exact same visual/world anchor** | rare ball-to-bird event |
-| \`bird_<species>_recover_f00..f07.png\` | same as species' flight canvas | 8 | same footprint | comical mid-air wobble, then safe fly-away |
-| \`bird_feathers_f00..f09.png\` | 128×128 | 10 shared | 16×16 world decorative effect | feather puff with 2-3 species-tinted particles |
-| \`bird_confused_star_f00..f05.png\` | 64×64 | 6 shared | 8×8 world decorative effect | whimsical star orbit, optional |
+| `bird_<species>_fly_f00..f07.png` | 64×64 (small), 96×96 (medium), or 128×96 (large) | 8 | 8×8, 12×12, or 16×12 world | world-space flyover, not fixed screen overlay |
+| `bird_<species>_hit_f00..f09.png` | same size as species' flight canvas | 10 | **exact same visual/world anchor** | rare ball-to-bird event |
+| `bird_<species>_recover_f00..f07.png` | same as species' flight canvas | 8 | same footprint | comical mid-air wobble, then safe fly-away |
+| `bird_feathers_f00..f09.png` | 128×128 | 10 shared | 16×16 world decorative effect | feather puff with 2-3 species-tinted particles |
+| `bird_confused_star_f00..f05.png` | 64×64 | 6 shared | 8×8 world decorative effect | whimsical star orbit, optional |
 
-Species size classes: **small** robin/blackbird/sparrow/blue-tit/woodpecker/skylark/tern/oystercatcher/kingfisher/dove/magpie/ptarmigan; **medium** crow/gull/mallard/kestrel/parrot/raven; **large** heron/falcon/eagle. Some are a zoologically simplified stylized scale; review final visible height on a normal portrait phone. Where a species is larger in nature, treat its size class above as a readability **proposal**, not an assertion about the original game. Supply transparent registered canvases and distinct light/dark silhouette values. The species set lists **21 unique species**; generate **21 complete animation families**. That is **21×26 = 546 authored frames**, plus 16 shared hit particles. Flight direction can be flipped only when asymmetry/lighting passes review; otherwise author left/right facings and note frame multiplication in \`assets.manifest.json\`.
+Species size classes: **small** robin/blackbird/sparrow/blue-tit/woodpecker/skylark/tern/oystercatcher/kingfisher/dove/magpie/ptarmigan; **medium** crow/gull/mallard/kestrel/parrot/raven; **large** heron/falcon/eagle. Some are a zoologically simplified stylized scale; review final visible height on a normal portrait phone. Where a species is larger in nature, treat its size class above as a readability **proposal**, not an assertion about the original game. Supply transparent registered canvases and distinct light/dark silhouette values. The species set lists **21 unique species**; generate **21 complete animation families**. That is **21×26 = 546 authored frames**, plus 16 shared hit particles. Flight direction can be flipped only when asymmetry/lighting passes review; otherwise author left/right facings and note frame multiplication in `assets.manifest.json`.
 
-**Humorous bird strike — Pixtee-exclusive Easter egg:** if (and only if) a real existing ball-flight position overlaps the actual *world-space* bird interaction volume including height, trigger the bird's 10-frame flip/spin with a brief safe scatter of feathers, surprised blink/chirp, then 8-frame recovery/flyaway. It is a lighthearted cartoon near-miss/bonk, never gory, never a dead bird. The ball **continues on its verified original-game physics path unchanged**. Use a purely visual trigger filtered out of authoritative physics collision/cup/hazard handling and use a separately seeded *cosmetic* RNG so identical three-tap shot produces identical ball history with birds on/off. Debounce the encounter once per bird and shot. Do not randomly force a bird under the ball or count a normal 2D screen overlap (its flight-height must intersect). Add accessibility/reduce-effects option for feathers/flash and limit frequency, including a per-round cooldown. **The current \`CourseAmbient.birdFlyover\` uses screen-ish coordinates (-22..322) despite being drawn under world transform: refactor bird placement to actual camera-independent course world coordinates before declaring finished.**
+**Humorous bird strike — Pixtee-exclusive Easter egg:** if (and only if) a real existing ball-flight position overlaps the actual *world-space* bird interaction volume including height, trigger the bird's 10-frame flip/spin with a brief safe scatter of feathers, surprised blink/chirp, then 8-frame recovery/flyaway. It is a lighthearted cartoon near-miss/bonk, never gory, never a dead bird. The ball **continues on its verified original-game physics path unchanged**. Use a purely visual trigger filtered out of authoritative physics collision/cup/hazard handling and use a separately seeded *cosmetic* RNG so identical three-tap shot produces identical ball history with birds on/off. Debounce the encounter once per bird and shot. Do not randomly force a bird under the ball or count a normal 2D screen overlap (its flight-height must intersect). Add accessibility/reduce-effects option for feathers/flash and limit frequency, including a per-round cooldown. **The current `CourseAmbient.birdFlyover` uses screen-ish coordinates (-22..322) despite being drawn under world transform: refactor bird placement to actual camera-independent course world coordinates before declaring finished.**
 
 ### 11.2 Birds, flowers and foliage never remain static
 
 | Family | Exact PNG export | Frames / variant | Loop rule and limits |
 |---|---|---:|---|
-| \`grass_tuft_small_01..03_f00..f05.png\` | 48×48 | 6 × 3 | tiny sway ±1–2 authored pixels; asynchronous, never uniform |
-| \`grass_tuft_large_01..03_f00..f05.png\` | 64×64 | 6 × 3 | gentle tip bend; anchored base, no tile drift |
-| \`flower_yellow_patch_01..02_f00..f05.png\` | 64×64 | 6 × 2 | slight sway, unchanged root |
-| \`flower_pink_patch_01..02_f00..f05.png\` | 64×64 | 6 × 2 | slight sway, unchanged root |
-| \`flower_white_patch_01..02_f00..f05.png\` | 64×64 | 6 × 2 | 6-frame gentle loop |
-| \`flower_blue_patch_01..02_f00..f05.png\` | 64×64 | 6 × 2 | 6-frame gentle loop |
-| \`flower_red_patch_01..02_f00..f05.png\` | 64×64 | 6 × 2 | 6-frame gentle loop |
-| \`reeds_marsh_01..03_f00..f07.png\` | 96×96 | 8 × 3 | reed sway tied to biome, no collision |
-| \`bush_low_01..04_sway_f00..f03.png\` | 192×128 | 4 × 4 | nearly imperceptible leaf motion; not ball physics |
-| \`tree_round_sway_f00..f03.png\` | 384×320 | 4 | anchored trunk / rustling crown |
-| \`tree_pine_sway_f00..f03.png\` | 256×352 | 4 | anchored trunk |
-| \`water_ripple_f00..f07.png\` | 128×64 | 8 | separate from splash; tile anchored |
-| \`flag_cloth_f00..f07.png\` | 96×64 | 8 | weather visuals; wind-off original fidelity mode remains non-force |
+| `grass_tuft_small_01..03_f00..f05.png` | 48×48 | 6 × 3 | tiny sway ±1–2 authored pixels; asynchronous, never uniform |
+| `grass_tuft_large_01..03_f00..f05.png` | 64×64 | 6 × 3 | gentle tip bend; anchored base, no tile drift |
+| `flower_yellow_patch_01..02_f00..f05.png` | 64×64 | 6 × 2 | slight sway, unchanged root |
+| `flower_pink_patch_01..02_f00..f05.png` | 64×64 | 6 × 2 | slight sway, unchanged root |
+| `flower_white_patch_01..02_f00..f05.png` | 64×64 | 6 × 2 | 6-frame gentle loop |
+| `flower_blue_patch_01..02_f00..f05.png` | 64×64 | 6 × 2 | 6-frame gentle loop |
+| `flower_red_patch_01..02_f00..f05.png` | 64×64 | 6 × 2 | 6-frame gentle loop |
+| `reeds_marsh_01..03_f00..f07.png` | 96×96 | 8 × 3 | reed sway tied to biome, no collision |
+| `bush_low_01..04_sway_f00..f03.png` | 192×128 | 4 × 4 | nearly imperceptible leaf motion; not ball physics |
+| `tree_round_sway_f00..f03.png` | 384×320 | 4 | anchored trunk / rustling crown |
+| `tree_pine_sway_f00..f03.png` | 256×352 | 4 | anchored trunk |
+| `water_ripple_f00..f07.png` | 128×64 | 8 | separate from splash; tile anchored |
+| `flag_cloth_f00..f07.png` | 96×64 | 8 | weather visuals; wind-off original fidelity mode remains non-force |
 
-These include **purely cosmetic animation** at deterministic frame sampling; flora and sky movement do not advance gameplay time, RNG or change surface classification. Static originals (\`flower_yellow.png\` etc) remain compatible until animated API shipped. All optional motion respects reduced motion.
+These include **purely cosmetic animation** at deterministic frame sampling; flora and sky movement do not advance gameplay time, RNG or change surface classification. Static originals (`flower_yellow.png` etc) remain compatible until animated API shipped. All optional motion respects reduced motion.
 
 ### 11.3 People — complete crowds, individual poses and photographer WITH FLASH
 
@@ -369,48 +373,48 @@ Every person remains legible at the intended tiny top-down camera scale, with na
 
 | Family | Export canvas | Count and frames | Event |
 |---|---|---|---|
-| \`spectator_idle_male_01..03_f00..f03.png\` | 96×96 | 3 variants ×4 | animated breathing/shift |
-| \`spectator_idle_female_01..03_f00..f03.png\` | 96×96 | 3 ×4 | animated breathing |
-| \`spectator_idle_child_01..02_f00..f03.png\` | 96×96 | 2 ×4 | subtle movement |
-| \`spectator_clap_01..04_f00..f07.png\` | 96×96 | 4 ×8 | good shot / holed |
-| \`spectator_cheer_01..04_f00..f07.png\` | 96×96 | 4 ×8 | birdie/eagle/ace, event-driven |
-| \`spectator_wave_01..04_f00..f07.png\` | 96×96 | 4 ×8 | occasional, never simultaneous wall |
-| \`spectator_turn_head_01..04_f00..f03.png\` | 96×96 | 4 ×4 | ball/crowd attention |
-| \`spectator_seated_01..04_f00..f03.png\` | 96×96 | 4 ×4 | seated by spectators’ area |
-| \`spectator_photographer_idle_f00..f03.png\` | 96×96 | 4 | camera lowered / readiness |
-| \`spectator_photographer_raise_f00..f05.png\` | 96×96 | 6 | raises camera to eye |
-| \`spectator_photographer_shoot_f00..f03.png\` | 96×96 | 4 | shutter animation |
-| \`spectator_photographer_lower_f00..f05.png\` | 96×96 | 6 | return to idle |
-| \`camera_flash_f00..f03.png\` | 48×48 | 4 | bright 1–2-frame burst + fading flash; honour reduced flash |
-| \`crowd_cluster_small_01..04.png\` | 160×128 | 4 | 2–3 people reusable group |
-| \`crowd_cluster_medium_01..04.png\` | 224×160 | 4 | 4–5 people |
-| \`crowd_cluster_large_01..04.png\` | 320×192 | 4 | 6–8 people |
+| `spectator_idle_male_01..03_f00..f03.png` | 96×96 | 3 variants ×4 | animated breathing/shift |
+| `spectator_idle_female_01..03_f00..f03.png` | 96×96 | 3 ×4 | animated breathing |
+| `spectator_idle_child_01..02_f00..f03.png` | 96×96 | 2 ×4 | subtle movement |
+| `spectator_clap_01..04_f00..f07.png` | 96×96 | 4 ×8 | good shot / holed |
+| `spectator_cheer_01..04_f00..f07.png` | 96×96 | 4 ×8 | birdie/eagle/ace, event-driven |
+| `spectator_wave_01..04_f00..f07.png` | 96×96 | 4 ×8 | occasional, never simultaneous wall |
+| `spectator_turn_head_01..04_f00..f03.png` | 96×96 | 4 ×4 | ball/crowd attention |
+| `spectator_seated_01..04_f00..f03.png` | 96×96 | 4 ×4 | seated by spectators’ area |
+| `spectator_photographer_idle_f00..f03.png` | 96×96 | 4 | camera lowered / readiness |
+| `spectator_photographer_raise_f00..f05.png` | 96×96 | 6 | raises camera to eye |
+| `spectator_photographer_shoot_f00..f03.png` | 96×96 | 4 | shutter animation |
+| `spectator_photographer_lower_f00..f05.png` | 96×96 | 6 | return to idle |
+| `camera_flash_f00..f03.png` | 48×48 | 4 | bright 1–2-frame burst + fading flash; honour reduced flash |
+| `crowd_cluster_small_01..04.png` | 160×128 | 4 | 2–3 people reusable group |
+| `crowd_cluster_medium_01..04.png` | 224×160 | 4 | 4–5 people |
+| `crowd_cluster_large_01..04.png` | 320×192 | 4 | 6–8 people |
 
-Crowd clusters are **render composites of still-animated individuals** where applicable; final implementation must either animate each person through slots or export small group sequences. Draw with depth order keyed to the footpoint in a true straight-down course. Photographer's flash must be tied to the actual shutter pose, not an independent bright spot; current \`CourseAmbient.photographerFlash()\` hard-codes a 120ms flash every ~18 sec, which is **current prototype timing, not original Sensible Golf evidence**. No camera flashes during user interface transitions or reduced-flash settings.
+Crowd clusters are **render composites of still-animated individuals** where applicable; final implementation must either animate each person through slots or export small group sequences. Draw with depth order keyed to the footpoint in a true straight-down course. Photographer's flash must be tied to the actual shutter pose, not an independent bright spot; current `CourseAmbient.photographerFlash()` hard-codes a 120ms flash every ~18 sec, which is **current prototype timing, not original Sensible Golf evidence**. No camera flashes during user interface transitions or reduced-flash settings.
 
 ### 11.4 Bunker, water, trees, rough — all impact reactions are MANDATORY
 
-**The following list is a minimum final-game set, not a statement these frame counts are extracted from original files.** The historical source's collision/terrain transition logic must decide *when* an effect plays. Astra authors original high-detail Pixtee animation frames; gameplay code emits distinct \`BallImpactEvent(kind, worldX, worldY, tick, shotId, contactIndex, velocity, lie)\` snapshots for the effect renderer without allowing the renderer to alter physics.
+**The following list is a minimum final-game set, not a statement these frame counts are extracted from original files.** The historical source's collision/terrain transition logic must decide *when* an effect plays. Astra authors original high-detail Pixtee animation frames; gameplay code emits distinct `BallImpactEvent(kind, worldX, worldY, tick, shotId, contactIndex, velocity, lie)` snapshots for the effect renderer without allowing the renderer to alter physics.
 
 | Physics contact / event | Required asset filenames (one transparent PNG per frame) | Exact final export canvas | Frames | Source/reference and behavioural requirement |
 |---|---|---|---:|---|
-| First ball hits **bunker sand** | \`fx_bunker_ball_impact_f00..f11.png\` | 128×96 | 12 | Only emitted by confirmed SAND collision; sand puffs out and settles; anchored at true impact |
-| Sand landing bounce on subsequent contact | \`fx_bunker_ball_bounce_f00..f07.png\` | 96×80 | 8 | Real second/subsequent impacts, never fake bounce count |
-| Sand lie when resting | \`ball_sand.png\`, \`fx_sand_settle_f00..f05.png\` | 48×48; 96×64 | 1 + 6 | Ball partially seated in sand as classified by collision resolver |
-| Bunker shot leaving sand | \`fx_bunker_explosion_f00..f11.png\` | 160×128 | 12 | When the club launches FROM sand, sand cloud behind the true outgoing ball, never a different launch vector |
-| Ball touches **water** | \`fx_water_entry_f00..f13.png\` | 128×128 | 14 | Impact/splash at exact water collision point; wait for hazard state and original 35 stop case |
-| Water ring / settling | \`fx_water_ripple_ring_f00..f11.png\` | 128×128 | 12 | Expanding fading ring, no fake ball ground bounce |
-| Water ball disappearance | \`fx_water_sink_f00..f07.png\` | 64×64 | 8 | Only when original hazard state removes/recovers ball; never leave white ball floating |
-| **Tree trunk** contact | \`fx_tree_trunk_hit_f00..f07.png\` | 192×192 | 8 | Only after actual object collision; trunk thump/chips |
-| **Tree canopy / branch** contact | \`fx_tree_canopy_hit_f00..f11.png\` | 192×192 | 12 | Layered branch shake with leaf scatter |
-| Tree leaves scattering | \`fx_tree_leaf_scatter_f00..f11.png\` | 192×192 | 12 | Different leaf colour variants by tree type/season |
-| Branch motion / recover | \`fx_tree_branch_wobble_f00..f07.png\` | 256×192 | 8 | Anchor trunk untouched, crown oscillates and settles |
-| **Rough / grass** impact | \`fx_rough_grass_impact_f00..f05.png\` | 64×64 | 6 | Grass blades fly only on terrain-contact event |
-| **Fairway** contact | \`fx_fairway_turf_tap_f00..f03.png\` | 64×48 | 4 | Tiny near-invisible turf response, real ball bounce |
-| Ball hit solid obstacle / wood fence | \`fx_obstacle_impact_f00..f07.png\` | 128×128 | 8 | Only after proven object collider category; no invented rebound |
-| Repeated airborne touchdown/bounce dust | \`ball_bounce_dust_f00..f05.png\` | 96×64 | 6 | Replay as many contacts as physics records |
-| **Hole/cup** capture | \`fx_cup_capture_f00..f11.png\` | 96×96 | 12 | Cup moment is actual original-style terminal result, no visual-only 'hole in' cheat |
-| Green slope indication | \`green_slope_arrow_f00..f03.png\` | 64×64 | 4 | Direction/magnitude from original-like terrain slope descriptors; not generic static arrows |
+| First ball hits **bunker sand** | `fx_bunker_ball_impact_f00..f11.png` | 128×96 | 12 | Only emitted by confirmed SAND collision; sand puffs out and settles; anchored at true impact |
+| Sand landing bounce on subsequent contact | `fx_bunker_ball_bounce_f00..f07.png` | 96×80 | 8 | Real second/subsequent impacts, never fake bounce count |
+| Sand lie when resting | `ball_sand.png`, `fx_sand_settle_f00..f05.png` | 48×48; 96×64 | 1 + 6 | Ball partially seated in sand as classified by collision resolver |
+| Bunker shot leaving sand | `fx_bunker_explosion_f00..f11.png` | 160×128 | 12 | When the club launches FROM sand, sand cloud behind the true outgoing ball, never a different launch vector |
+| Ball touches **water** | `fx_water_entry_f00..f13.png` | 128×128 | 14 | Impact/splash at exact water collision point; wait for hazard state and original 35 stop case |
+| Water ring / settling | `fx_water_ripple_ring_f00..f11.png` | 128×128 | 12 | Expanding fading ring, no fake ball ground bounce |
+| Water ball disappearance | `fx_water_sink_f00..f07.png` | 64×64 | 8 | Only when original hazard state removes/recovers ball; never leave white ball floating |
+| **Tree trunk** contact | `fx_tree_trunk_hit_f00..f07.png` | 192×192 | 8 | Only after actual object collision; trunk thump/chips |
+| **Tree canopy / branch** contact | `fx_tree_canopy_hit_f00..f11.png` | 192×192 | 12 | Layered branch shake with leaf scatter |
+| Tree leaves scattering | `fx_tree_leaf_scatter_f00..f11.png` | 192×192 | 12 | Different leaf colour variants by tree type/season |
+| Branch motion / recover | `fx_tree_branch_wobble_f00..f07.png` | 256×192 | 8 | Anchor trunk untouched, crown oscillates and settles |
+| **Rough / grass** impact | `fx_rough_grass_impact_f00..f05.png` | 64×64 | 6 | Grass blades fly only on terrain-contact event |
+| **Fairway** contact | `fx_fairway_turf_tap_f00..f03.png` | 64×48 | 4 | Tiny near-invisible turf response, real ball bounce |
+| Ball hit solid obstacle / wood fence | `fx_obstacle_impact_f00..f07.png` | 128×128 | 8 | Only after proven object collider category; no invented rebound |
+| Repeated airborne touchdown/bounce dust | `ball_bounce_dust_f00..f05.png` | 96×64 | 6 | Replay as many contacts as physics records |
+| **Hole/cup** capture | `fx_cup_capture_f00..f11.png` | 96×96 | 12 | Cup moment is actual original-style terminal result, no visual-only 'hole in' cheat |
+| Green slope indication | `green_slope_arrow_f00..f03.png` | 64×64 | 4 | Direction/magnitude from original-like terrain slope descriptors; not generic static arrows |
 
 **Distinct impact outcomes are mandatory**: bunker ball landing, sand-lie ball, sand shot cloud, water strike/splash/ripple/sink, tree trunk vs canopy hit + leaves + wobble, fairway/rough contact, every genuine bounce, hole capture. Record effect event IDs in replay so frame and sound trigger reproducibly; animation FPS must not modify original shot state. If original game has additional effects or special branches, add them as new test-backed rows; no statement of “all original animations recovered” until the full renderer/event trace is inventoried.
 
@@ -418,46 +422,46 @@ Crowd clusters are **render composites of still-animated individuals** where app
 
 ### 11.5 Advertising boards: must face tee and hole, NOT randomly face the camera or away
 
-**Four fixed non-colliding signs per hole:** \`tee-a\`, \`tee-b\`, \`green-a\`, \`green-b\`. They must be **positioned near the tee-off zone and green, outside shot corridor, and their front faces must face toward the associated playable area**, so they are actually visible as the golfer prepares to hit/putt.
+**Four fixed non-colliding signs per hole:** `tee-a`, `tee-b`, `green-a`, `green-b`. They must be **positioned near the tee-off zone and green, outside shot corridor, and their front faces must face toward the associated playable area**, so they are actually visible as the golfer prepares to hit/putt.
 
 | Board variant | Proposed PNG export | Role/face target | Required viewpoint |
 |---|---:|---|---|
-| \`board_tee_left_front.png\` | 352×160 | tee-a: face the teeing ball/address point | readable true-overhead front at tee |
-| \`board_tee_right_front.png\` | 352×160 | tee-b: face teeing ball/address point | same, not mirrored typography |
-| \`board_green_left_front.png\` | 352×160 | green-a: face playable green / cup and common approach direction | readable at ball-follow green view |
-| \`board_green_right_front.png\` | 352×160 | green-b: face playable green / cup and common approach direction | same |
-| \`board_wood_back.png\` | 352×160 | alternate rear face when seen from behind | no accidental ad impression |
-| \`board_post_shadow.png\` | 352×80 | non-colliding world-space shadow | decorative |
-| \`board_house_pixtee.png\` | 352×160 | offline/unfilled house sign fallback | **not** paid advertisement |
-| \`board_slot_mask.png\` | 320×112 | blank area for provider-approved creative/labels | never print baked advertiser logos |
-| \`board_corner_highlight.png\` | 64×64 | world-scene polish | no physics |
+| `board_tee_left_front.png` | 352×160 | tee-a: face the teeing ball/address point | readable true-overhead front at tee |
+| `board_tee_right_front.png` | 352×160 | tee-b: face teeing ball/address point | same, not mirrored typography |
+| `board_green_left_front.png` | 352×160 | green-a: face playable green / cup and common approach direction | readable at ball-follow green view |
+| `board_green_right_front.png` | 352×160 | green-b: face playable green / cup and common approach direction | same |
+| `board_wood_back.png` | 352×160 | alternate rear face when seen from behind | no accidental ad impression |
+| `board_post_shadow.png` | 352×80 | non-colliding world-space shadow | decorative |
+| `board_house_pixtee.png` | 352×160 | offline/unfilled house sign fallback | **not** paid advertisement |
+| `board_slot_mask.png` | 320×112 | blank area for provider-approved creative/labels | never print baked advertiser logos |
+| `board_corner_highlight.png` | 64×64 | world-scene polish | no physics |
  
-**Geometry contract:** Each sign has \`position=(x,y)\` and \`frontNormal = normalize(targetPoint - position)\` in the world XY plane. For tee signs \`targetPoint=tee\`; for green signs \`targetPoint=cup/green approach focus\`. This is **an authored 2D plan-view orientation cue**, not a tilted 3D billboard; ensure screen-space projection is legible in the straight-down camera, with proper depth/front/back variants if visible from the reverse side. Place front-face artwork so the normal play camera sees the branding and mandatory SDK attribution without sideways/mirrored copy. Assess visibility/cutout/minimap/shot corridor at **1080×2400 normal portrait phone** first, then compact phone and Fold open/closed. Never alter camera zoom to increase ad visibility. Retain original 42×16 body world units and 44×20 outer artwork bounds (352×160 art @8px/world) until source gameplay scale acceptance; no hitbox at all.
+**Geometry contract:** Each sign has `position=(x,y)` and `frontNormal = normalize(targetPoint - position)` in the world XY plane. For tee signs `targetPoint=tee`; for green signs `targetPoint=cup/green approach focus`. This is **an authored 2D plan-view orientation cue**, not a tilted 3D billboard; ensure screen-space projection is legible in the straight-down camera, with proper depth/front/back variants if visible from the reverse side. Place front-face artwork so the normal play camera sees the branding and mandatory SDK attribution without sideways/mirrored copy. Assess visibility/cutout/minimap/shot corridor at **1080×2400 normal portrait phone** first, then compact phone and Fold open/closed. Never alter camera zoom to increase ad visibility. Retain original 42×16 body world units and 44×20 outer artwork bounds (352×160 art @8px/world) until source gameplay scale acceptance; no hitbox at all.
 
 **Advertising product contract:** provider-approved programmatic in-game ad system only; merely drawing Pixtee placeholder logos on signs does not earn revenue. Advertiser creative is filled and measured by licensed network renderer; any contrast/attribution requirements override decorative design only after review. **No billboard-as-HUD bars and no collision with ball.**
 
 ### 11.6 Expanded golfer direction/pose completeness and original animation coverage
 
-The existing brief's 8 direction set (\`n ne e se s sw w nw\`) is MANDATORY in every relevant golfer action and frames share identical 256×128 canvas, pivot **(80,116)**, impact-contact **(108,116)** for its reference facing with facing-specific, explicitly registered contact anchors for all rotated facings (do NOT falsely reuse the same contact point for left/back side shots). Proposed full enhancement sequences:
+The existing brief's 8 direction set (`n ne e se s sw w nw`) is MANDATORY in every relevant golfer action and frames share identical 256×128 canvas, pivot **(80,116)**, impact-contact **(108,116)** for its reference facing with facing-specific, explicitly registered contact anchors for all rotated facings (do NOT falsely reuse the same contact point for left/back side shots). Proposed full enhancement sequences:
 
 | Required asset family | Frames/direction | 8-direction count | Export |
 |---|---:|---:|---:|
-| \`golfer_address_<dir>_f00..f03.png\` | 4 | 32 | 256×128 |
-| \`golfer_swing_<dir>_f00..f23.png\` | 24 | 192 | 256×128 |
-| \`golfer_putt_<dir>_f00..f11.png\` | 12 | 96 | 256×128 |
-| \`golfer_walk_<dir>_f00..f07.png\` | 8 | 64 | 256×128 |
-| \`golfer_idle_<dir>_f00..f03.png\` | 4 | 32 | 256×128 |
-| \`golfer_watch_shot_<dir>_f00..f05.png\` | 6 | 48 | 256×128 |
-| \`golfer_celebrate_<dir>_f00..f07.png\` | 8 | 64 | 256×128 |
-| \`golfer_disappointed_<dir>_f00..f05.png\` | 6 | 48 | 256×128 |
+| `golfer_address_<dir>_f00..f03.png` | 4 | 32 | 256×128 |
+| `golfer_swing_<dir>_f00..f23.png` | 24 | 192 | 256×128 |
+| `golfer_putt_<dir>_f00..f11.png` | 12 | 96 | 256×128 |
+| `golfer_walk_<dir>_f00..f07.png` | 8 | 64 | 256×128 |
+| `golfer_idle_<dir>_f00..f03.png` | 4 | 32 | 256×128 |
+| `golfer_watch_shot_<dir>_f00..f05.png` | 6 | 48 | 256×128 |
+| `golfer_celebrate_<dir>_f00..f07.png` | 8 | 64 | 256×128 |
+| `golfer_disappointed_<dir>_f00..f05.png` | 6 | 48 | 256×128 |
 | **Total** | **72** | **576 complete animation frames** | Not the old 384-frame minimum |
 
 The earlier 384 count is **superseded by 576** because address and shot reaction/emotion animations are now mandatory. The 12 current engine pose IDs remain compatibility mapping aliases; updated 8-direction/576-frame atlas manifest and animation state machine must be implemented. Swing impact, bunker shot, water hit, tree hit, putt, hole completion, idle, walk and celebrations are all **event-driven**. One pixel-art template or flipped frame set only qualifies when facing silhouette/handedness, foot anchor and clubface genuinely align. The original Sensible Golf animation frame-by-frame timing is not fully extracted; **no made-up 'exact original frame count' claims allowed**.
 
 ### 11.7 Specific directories and mandatory verification
 
-- Editables for all new ambience and effects: \`art/source/world/ambient/\`, \`art/source/world/wildlife/\`, \`art/source/world/spectators/\`, \`art/source/world/foliage/\`, \`art/source/world/impacts/\`, \`art/source/world/boards/\`, plus \`art/source/golfer/8dir/\`. Group by course/biome as needed.
-- Review: \`art/previews/<batch>/\`; debug runtime flat-ID PNGs: \`pixtee-android/app/src/main/assets/art/review/<asset_id>.png\`; **approved** runtime flat-ID PNGs: \`pixtee-android/app/src/main/assets/art/production/<asset_id>.png\`; expandable atlases can use \`assets/art/production/atlases/\` **only after implementing a manifest-aware loader**. New IDs are NOT accepted by current \`ProductionPixelArt.REQUIRED_SPRITES\` allowlist; Astra must update code/loader and demonstrate visible sprites (otherwise files are invisible).
+- Editables for all new ambience and effects: `art/source/world/ambient/`, `art/source/world/wildlife/`, `art/source/world/spectators/`, `art/source/world/foliage/`, `art/source/world/impacts/`, `art/source/world/boards/`, plus `art/source/golfer/8dir/`. Group by course/biome as needed.
+- Review: `art/previews/<batch>/`; debug runtime flat-ID PNGs: `pixtee-android/app/src/main/assets/art/review/<asset_id>.png`; **approved** runtime flat-ID PNGs: `pixtee-android/app/src/main/assets/art/production/<asset_id>.png`; expandable atlases can use `assets/art/production/atlases/` **only after implementing a manifest-aware loader**. New IDs are NOT accepted by current `ProductionPixelArt.REQUIRED_SPRITES` allowlist; Astra must update code/loader and demonstrate visible sprites (otherwise files are invisible).
 - Machine-readable per-animation export specs in **[ASTRA_AMBIENCE_AND_IMPACT_MANIFEST_v2.json](ASTRA_AMBIENCE_AND_IMPACT_MANIFEST_v2.json)**. Current core [ASTRA_ART_EXPORT_MANIFEST_v1.json](ASTRA_ART_EXPORT_MANIFEST_v1.json) covers the original 31 IDs **only**; do not conflate that with complete production coverage.
 - QA for every animated set: exact per-frame export pixel canvas, frame counts, world footprints, named event trigger and animation clock, transparent padding, stable pivot, screen-captured animation/impact on normal portrait phone, graceful Fold layout, no occlusion of the ball/WHACK-O-METER, correct ambience for **each course**, visible board fronts facing tee/green, no gameplay physics deltas with cosmetic layers on/off.
 - **All 35 original authored courses × 18 holes (630 unique holes)** need selected biome, bird species, foliage, crowds, four sign slots, impact event visibility, tree type and authentic slopes. Do not count 630 random seeded course arrangements as fully artist-authored/polished layouts. The classic source physics/extracted dimensions remain frozen independent of this new art.

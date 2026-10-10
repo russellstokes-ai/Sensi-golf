@@ -459,6 +459,19 @@ private class PixteeCanvas(context: Context) : View(context) {
         val ambientMs=android.os.SystemClock.uptimeMillis()
         val frame=CourseAmbient.frame(ambientMs,courseMotion)
         layout.waters.forEach { patch ->
+            // Clip visuals to the exact collision polygon for authored rivers.
+            // The same outline is used by HoleLayout.groundAt(), so swimmers
+            // never get penalised for apparently dry ground or vice versa.
+            c.save()
+            if(patch.outline.isNotEmpty()) {
+                val shape=Path()
+                patch.outline.forEachIndexed { index, pt ->
+                    if(index==0) shape.moveTo(pt.first,pt.second)
+                    else shape.lineTo(pt.first,pt.second)
+                }
+                shape.close()
+                c.clipPath(shape)
+            }
             rect(c,patch.l,patch.t,patch.r,patch.b,palette.water)
             art.terrainRect(c,"terrain_water",patch.l,patch.t,patch.r,patch.b)
             var row=0
@@ -473,6 +486,7 @@ private class PixteeCanvas(context: Context) : View(context) {
                 }
                 yy+=9f;row++
             }
+            c.restore()
         }
         layout.bunkers.forEach {
             ellipse(c,it.x-it.rx,it.y-it.ry,it.x+it.rx,it.y+it.ry,

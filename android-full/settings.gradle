@@ -1,4 +1,0 @@
-pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
-rootProject.name = 'SensibleGolfAndroid'
-include ':app', ':libretrodroid'
-project(':libretrodroid').projectDir = file('vendor/LibretroDroid/libretrodroid')

@@ -164,6 +164,31 @@ sleep 6
 adb exec-out screencap -p > "$OUT/after-demo-space-149s.png"
 test -s "$OUT/after-demo-space-149s.png"
 
+# Real screenshot from run 38004770739 already showed the original, fully
+# lit main menu at this exact time. A second screenshot/detection cycle
+# allowed the ~3-second Demo Mode timeout to win. Use the first captured
+# frame IMMEDIATELY and avoid another expensive adb screencap before tapping.
+if player_select_probe "$OUT/after-demo-space-149s.png"; then
+  exit 0
+fi
+if python tools/detect_sensible_main_menu.py "$OUT/after-demo-space-149s.png"; then
+  cp "$OUT/after-demo-space-149s.png" "$OUT/first-visible-main-menu.png"
+  echo "EARLY MENU: selecting Play Round directly from the already-captured frame."
+  adb shell input swipe 1260 380 1260 380 230
+  sleep 0.5
+  adb exec-out screencap -p > "$OUT/after-early-play-round-0.5s.png"
+  sleep 1
+  adb exec-out screencap -p > "$OUT/after-early-play-round-1.5s.png"
+  sleep 2
+  adb exec-out screencap -p > "$OUT/after-early-play-round-3.5s.png"
+  for frame in "$OUT/after-early-play-round-0.5s.png" "$OUT/after-early-play-round-1.5s.png" "$OUT/after-early-play-round-3.5s.png"; do
+    if player_select_probe "$frame"; then
+      exit 0
+    fi
+  done
+  echo "EARLY MENU TOUCH: no verified Player Select yet; continue diagnostic polling."
+fi
+
 # The 1995 executable's intro/demo length fluctuates between emulator boots.
 # One passing run reached the real menu at 149s; another was still in Demo Mode.
 # Never infer menu presence from elapsed seconds or from changing frames.

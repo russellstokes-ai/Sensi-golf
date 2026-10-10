@@ -6,6 +6,7 @@ import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 /** Independent deterministic Pixtee mechanics. Never import original commercial code/data. */
@@ -29,6 +30,9 @@ class PixteeCore {
     companion object {
         const val WIDTH = 300f
         const val HEIGHT = 510f
+        /** Classic-reference logical cadence (~70.017Hz); approximate Pixtee implementation. */
+        const val TICKS_PER_SECOND = 70f
+        const val TICK_SECONDS = 1f / TICKS_PER_SECOND
         const val PIN_X = 145f
         const val PIN_Y = 67f
         const val TEE_X = 151f
@@ -71,6 +75,8 @@ class PixteeCore {
     private var destX = TEE_X; private var destY = TEE_Y
     private var shotTime = 0f
     private var shotDuration = 1f
+    private var flightCurveX = 0f
+    private var flightCurveY = 0f
     private var rollTime = 0f
     private var rollVx = 0f
     private var rollVy = 0f
@@ -91,6 +97,7 @@ class PixteeCore {
         par = activeHole?.par ?: 4; putts = 0
         meterDirection = 1f
         rollTime = 0f; rollVx = 0f; rollVy = 0f
+        flightCurveX = 0f; flightCurveY = 0f
     }
 
     /** Begin a distinct playable hole without losing the enclosing round. */
@@ -149,17 +156,17 @@ class PixteeCore {
         return stage
     }
 
-    /** Fixed 60Hz gameplay clock, independent of Android render frames. */
+    /** Fixed ~70Hz simulation clock, independent of Android rendering cadence. */
     fun tick() {
         when (stage) {
         GameStage.POWER -> {
-            meter += meterDirection * (1.14f / 60f)
+            meter += meterDirection * (1.14f * TICK_SECONDS)
             if (meter >= 1f) { meter = 1f; meterDirection = -1f }
             if (meter <= 0f) { meter = 0f; meterDirection = 1f }
         }
         GameStage.ACCURACY -> {
             // Stronger swings cross the narrow accuracy zone faster.
-            meter -= (1.1f + chosenPower * 0.95f) / 60f
+            meter -= (1.1f + chosenPower * 0.95f) * TICK_SECONDS
             if (meter <= -0.32f) {
                 meter = -0.32f
                 accuracy = 0f
@@ -167,16 +174,26 @@ class PixteeCore {
             }
         }
         GameStage.FLIGHT -> {
-            shotTime += 1f / 60f
+            shotTime += TICK_SECONDS
             val t = min(1f, shotTime / shotDuration)
-            x = startX + (destX - startX) * t
-            y = startY + (destY - startY) * t
+            // Side-spin changes the trajectory during flight, not only the
+            // destination. The arc closes at touchdown to prevent teleporting.
+            val swing = sin(t * PI).toFloat()
+            x = (startX + (destX-startX)*t + flightCurveX*swing)
+                .coerceIn(5f, WIDTH-5f)
+            y = (startY + (destY-startY)*t + flightCurveY*swing)
+                .coerceIn(5f, HEIGHT-5f)
             height = (sin(t * PI).toFloat() * club.loft * chosenPower).coerceAtLeast(0f)
             if (t >= 1f) { stage = GameStage.ROLL; rollTime = 0f; height = 0f }
         }
         GameStage.ROLL -> {
-            val dt = 1f / 60f
+            val dt = TICK_SECONDS
             rollTime += dt
+            // Course-specific gentle green break. No wind by default.
+            activeHole?.greenRollAcceleration(x,y)?.let { (ax,ay) ->
+                rollVx += ax*dt
+                rollVy += ay*dt
+            }
             val nextX = x + rollVx * dt
             val nextY = y + rollVy * dt
             val boundary = nextX !in 5f..(WIDTH - 5f) ||
@@ -184,8 +201,9 @@ class PixteeCore {
             x = nextX.coerceIn(5f, WIDTH - 5f)
             y = nextY.coerceIn(5f, HEIGHT - 5f)
             val lie = groundAt(x, y)
-            // Damping is per fixed 60Hz tick, independent of Android FPS.
-            val damping = when (lie) {
+            // Preserve approximate seconds-to-rest across the 60 -> 70Hz
+            // transition. Original source coefficients are NOT imported.
+            val sixtyHzDrag = when (lie) {
                 Ground.GREEN -> 0.971f
                 Ground.TEE -> 0.923f
                 Ground.FAIRWAY -> 0.925f
@@ -193,6 +211,7 @@ class PixteeCore {
                 Ground.SAND -> 0.712f
                 Ground.WATER -> 0f
             }
+            val damping = sixtyHzDrag.pow(60f/TICKS_PER_SECOND)
             rollVx *= damping
             rollVy *= damping
             val speedSquared = rollVx * rollVx + rollVy * rollVy
@@ -224,6 +243,10 @@ class PixteeCore {
         val directionY = -cos(angle).toFloat()
         destX = (x + directionX * intended).coerceIn(5f, WIDTH - 5f)
         destY = (y + directionY * intended).coerceIn(5f, HEIGHT - 5f)
+        // Smooth early/late curve with an independently chosen arcade profile.
+        val lateral = (accuracy-0.5f) * min(18f, intended*0.10f)
+        flightCurveX = -directionY*lateral
+        flightCurveY = directionX*lateral
         shotTime = 0f
         shotDuration = 0.9f + intended / 180f
         rollTime = 0f

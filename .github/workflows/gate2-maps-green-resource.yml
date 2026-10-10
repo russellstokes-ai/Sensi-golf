@@ -1,0 +1,84 @@
+name: Gate 2 MAPS Green Resource Recovery
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate2-maps-green-resource.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install disassembler
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace MAPS loader and inspect resource 42
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          ROOT="analysis/private/step2/extracted/epf"
+          OUT=analysis/private/gate2-maps-green-resource
+          mkdir -p "$OUT"
+
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x41EF00 --va 0x41EF0B --va 0x41EF16 \
+            --radius 180 -o "$OUT/resource-template-xrefs.json"
+
+          python - "$ROOT/MAPM42.MAP" "$ROOT/MAPS42.MAP" "$ROOT/MAPM42.SPT" <<'PY' \
+            | tee "$OUT/resource42-layout.txt"
+          from pathlib import Path
+          import struct,sys
+          for fn in sys.argv[1:]:
+              b=Path(fn).read_bytes()
+              print("\nFILE",Path(fn).name,"SIZE",len(b))
+              print("HEX0_128",b[:128].hex())
+              print("BE16_0_96",[struct.unpack_from(">H",b,i)[0] for i in range(0,min(96,len(b)-1),2)])
+              if len(b) >= 0x58:
+                  w,h=struct.unpack_from(">HH",b,0x54)
+                  print("WORDS_54_56",(w,h))
+                  if Path(fn).name.startswith("MAPM") and Path(fn).suffix.upper()==".MAP":
+                      markers=[]
+                      for y in range(h):
+                          for x in range(w):
+                              word=struct.unpack_from(">H",b,0x60+2*(y*w+x))[0]
+                              if (word & 0xE000)==0xE000:
+                                  markers.append({
+                                      "cell":[x,y],
+                                      "course":[x<<4,y<<3],
+                                      "word":hex(word),
+                                      "tile":word & 0x03ff,
+                                  })
+                      print("GREEN_MARKERS",markers)
+          PY
+
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/gate2-maps-green-resource/resource-template-xrefs.json'))
+          for x in j['xrefs']:
+              print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
+              for i in x['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate2-maps-green-resource
+          path: analysis/private/gate2-maps-green-resource/
+          retention-days: 30

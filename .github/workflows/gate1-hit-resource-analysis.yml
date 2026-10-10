@@ -1,0 +1,108 @@
+name: Gate 1 HIT Resource Analysis
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate1-hit-resource-analysis.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install disassembler
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip             --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Analyse HIT resource and short loader tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          ROOT="analysis/private/step2/extracted/epf"
+          INV="analysis/private/step2/reports/epf_inventory.json"
+          OUT="analysis/private/gate1-hit-resource"
+          mkdir -p "$OUT"
+
+          python tools/pe_target_xrefs.py "$WIN_EXE"             --target HIT --target hit --target TREE --target Tree --target tree             --target OOB --target "OUT OF BOUNDS" --target SGOLF             --disassemble --radius 40 -o "$OUT/short-token-xrefs.json"
+
+          python - "$ROOT" "$INV" "$OUT/resource-analysis.json" <<'PY'
+          import collections,hashlib,json,math,sys
+          from pathlib import Path
+          root=Path(sys.argv[1]); inv=json.load(open(sys.argv[2])); out=Path(sys.argv[3])
+
+          idx=next(i for i,e in enumerate(inv) if e['filename'].upper()=='SGOLF.HIT')
+          neighbors=inv[max(0,idx-8):idx+9]
+
+          def stats(name):
+              data=(root/name).read_bytes()
+              hist=collections.Counter(data)
+              dims=[]
+              for width in (16,20,32,40,64,80,128,160,256,320,512,640):
+                  if len(data)%width: continue
+                  height=len(data)//width
+                  rows=[data[y*width:(y+1)*width] for y in range(height)]
+                  nz=[sum(b!=0 for b in row) for row in rows]
+                  dims.append({
+                    'width':width,'height':height,
+                    'nonzero_row_min':min(nz),'nonzero_row_max':max(nz),
+                    'nonzero_row_mean':round(sum(nz)/len(nz),3),
+                    'all_zero_rows':sum(v==0 for v in nz),
+                  })
+              return {
+                'name':name,'size':len(data),'sha256':hashlib.sha256(data).hexdigest(),
+                'unique_values':len(hist),
+                'top_values':hist.most_common(16),
+                'min':min(data),'max':max(data),
+                'dimensions':dims,
+              }
+
+          names=['SGOLF.HIT','WOOD1.BIN','WOOD2.BIN','WOOD3.BIN','WOOD4.BIN']
+          rows={n:stats(n) for n in names}
+
+          hit=(root/'SGOLF.HIT').read_bytes()
+          correlations={}
+          for n in names[1:]:
+              other=(root/n).read_bytes()
+              common=min(len(hit),len(other))
+              correlations[n]={
+                'common_bytes':common,
+                'equal_fraction':round(sum(a==b for a,b in zip(hit[:common],other[:common]))/common,6),
+                'hit_nonzero_where_other_nonzero_fraction':round(
+                    sum((a!=0 and b!=0) for a,b in zip(hit[:common],other[:common])) /
+                    max(1,sum(a!=0 for a in hit[:common])),6),
+              }
+
+          refs=[]
+          needles=[b'SGOLF.HIT',b'sgolf.hit',b'HIT\x00',b'hit\x00',b'TREE\x00',b'tree\x00']
+          for p in sorted(root.iterdir()):
+              if not p.is_file(): continue
+              data=p.read_bytes()
+              found=[needle.decode('latin1').replace('\x00','\\0') for needle in needles if needle in data]
+              if found: refs.append({'file':p.name,'needles':found})
+
+          report={
+            'epf_index':idx,
+            'epf_neighbors':neighbors,
+            'resource_stats':rows,
+            'correlations':correlations,
+            'cross_resource_literal_refs':refs,
+          }
+          out.write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps(report,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate1-hit-resource
+          path: analysis/private/gate1-hit-resource/
+          retention-days: 14

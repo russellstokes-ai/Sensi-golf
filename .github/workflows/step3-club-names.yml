@@ -1,0 +1,65 @@
+name: Step 3 Club Name Mapping
+
+on:
+  push:
+    paths:
+      - ".github/workflows/step3-club-names.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  club-names:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch and ingest public PC archive
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Search executable and extracted data for club labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          python - "$WIN_EXE" <<'PY'
+          import re,sys
+          from pathlib import Path
+          exe=Path(sys.argv[1])
+          terms=re.compile(r'(wood|iron|wedge|putter|driver|club|sand|pitch|lob|[1-9]\s*[wi])',re.I)
+
+          def strings(data,minlen=2):
+              start=None
+              for i,b in enumerate(data+b'\0'):
+                  if 32 <= b <= 126:
+                      if start is None:start=i
+                  elif start is not None:
+                      if i-start>=minlen:
+                          yield start,data[start:i].decode('ascii','replace')
+                      start=None
+
+          print("=== EXECUTABLE MATCHES ===")
+          for off,s in strings(exe.read_bytes(),2):
+              if terms.search(s):
+                  print(hex(off),repr(s))
+
+          print("\n=== EXTRACTED EPF MATCHES ===")
+          root=Path('analysis/private/step2/extracted/epf')
+          count=0
+          for p in sorted(root.glob('*')):
+              if not p.is_file():continue
+              try:data=p.read_bytes()
+              except:continue
+              for off,s in strings(data,2):
+                  if terms.search(s):
+                      print(p.name,hex(off),repr(s))
+                      count+=1
+                      if count>=400:
+                          raise SystemExit
+          PY

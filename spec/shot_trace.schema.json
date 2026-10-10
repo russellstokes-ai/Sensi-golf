@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sensi-golf/shot_trace.schema.json",
+  "title": "Sensible Golf parity shot trace",
+  "type": "object",
+  "required": ["version", "source", "input", "samples", "events"],
+  "properties": {
+    "version": {"const": 1},
+    "source": {
+      "type": "object",
+      "required": ["build_sha256", "executable", "course", "hole"],
+      "properties": {
+        "build_sha256": {"type": "string"},
+        "executable": {"type": "string"},
+        "course": {"type": "string"},
+        "hole": {"type": "integer", "minimum": 1}
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["aim", "club", "lie", "power_tick", "accuracy_tick"],
+      "properties": {
+        "aim": {"type": "number"},
+        "club": {"type": "string"},
+        "lie": {"type": "string"},
+        "power_tick": {"type": "integer"},
+        "accuracy_tick": {"type": "integer"}
+      }
+    },
+    "samples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["tick", "x", "y"],
+        "properties": {
+          "tick": {"type": "integer", "minimum": 0},
+          "x": {"type": "number"},
+          "y": {"type": "number"},
+          "z": {"type": "number"},
+          "surface": {"type": "string"}
+        }
+      }
+    },
+    "events": {
+      "type": "object",
+      "required": ["landing", "rest"],
+      "properties": {
+        "landing": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {"x": {"type": "number"}, "y": {"type": "number"}}
+        },
+        "rest": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {"x": {"type": "number"}, "y": {"type": "number"}}
+        },
+        "hazard": {"type": ["string", "null"]},
+        "holed": {"type": "boolean"}
+      }
+    }
+  }
+}

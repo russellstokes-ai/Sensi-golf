@@ -1,0 +1,168 @@
+{
+  "id": "tdc-5865.0",
+  "title": "Sensible Golf (1994)(Virgin Interactive Entertainment (Europe) Ltd.) [Sports]",
+  "source": "darkstar/tdc-database: 1994/5865.0 - Sensible Golf.yaml",
+  "note": "Reference metadata only. Do not treat as locally verified until matched against a legally held copy.",
+  "files": [
+    {
+      "path": "CDGO.BAT",
+      "size": 102,
+      "crc32": "67b017de"
+    },
+    {
+      "path": "CDINST.BAT",
+      "size": 226,
+      "crc32": "5c456a56"
+    },
+    {
+      "path": "DEINST16.ICO",
+      "size": 318,
+      "crc32": "f95abe36"
+    },
+    {
+      "path": "DEINST32.EXE",
+      "size": 34304,
+      "crc32": "84932067"
+    },
+    {
+      "path": "DEINST32.ICO",
+      "size": 766,
+      "crc32": "e104909a"
+    },
+    {
+      "path": "DISK1",
+      "size": 938720,
+      "crc32": "9b25172f"
+    },
+    {
+      "path": "DISK2",
+      "size": 1267939,
+      "crc32": "e1e01987"
+    },
+    {
+      "path": "DISKS.LOG",
+      "size": 1142,
+      "crc32": "c65d1876"
+    },
+    {
+      "path": "EP16.ICO",
+      "size": 318,
+      "crc32": "6471e707"
+    },
+    {
+      "path": "EP32.ICO",
+      "size": 766,
+      "crc32": "b1272d40"
+    },
+    {
+      "path": "EPSMIX32.DLL",
+      "size": 6144,
+      "crc32": "fe73806a"
+    },
+    {
+      "path": "GOLF.EPF",
+      "size": 833273,
+      "crc32": "fbd76014"
+    },
+    {
+      "path": "GOLF.HMP",
+      "size": 47218,
+      "crc32": "28fae5d2"
+    },
+    {
+      "path": "GOLF.MID",
+      "size": 47337,
+      "crc32": "1ecd328d"
+    },
+    {
+      "path": "GOLFDOS.EXE",
+      "size": 582975,
+      "crc32": "c070f837"
+    },
+    {
+      "path": "GOLFWIN.EXE",
+      "size": 239616,
+      "crc32": "4c11d6b0"
+    },
+    {
+      "path": "HMIDRV.386",
+      "size": 261257,
+      "crc32": "42be40d0"
+    },
+    {
+      "path": "HMIMDRV.386",
+      "size": 115909,
+      "crc32": "5bfb567d"
+    },
+    {
+      "path": "INSTALL.EXE",
+      "size": 13096,
+      "crc32": "9c353d54"
+    },
+    {
+      "path": "LOADPATS.EXE",
+      "size": 49194,
+      "crc32": "066c5e51"
+    },
+    {
+      "path": "PATCHES.INI",
+      "size": 9825,
+      "crc32": "ff05cbf8"
+    },
+    {
+      "path": "REMOVE.STR",
+      "size": 1168,
+      "crc32": "41ad0392"
+    },
+    {
+      "path": "REMOVE32.EXE",
+      "size": 40960,
+      "crc32": "bb307b94"
+    },
+    {
+      "path": "SETSOUND.EXE",
+      "size": 5480,
+      "crc32": "5ff04578"
+    },
+    {
+      "path": "SETUP.ENG",
+      "size": 4190,
+      "crc32": "4e513ecf"
+    },
+    {
+      "path": "SETUP.EPI",
+      "size": 2216,
+      "crc32": "39576d40"
+    },
+    {
+      "path": "SETUP.EXE",
+      "size": 89088,
+      "crc32": "bcc80239"
+    },
+    {
+      "path": "SGOLF.CD/S_GOLF.CFG",
+      "size": 125,
+      "crc32": "1450f1f8"
+    },
+    {
+      "path": "S_GOLF.BMP",
+      "size": 16332,
+      "crc32": "64ab0da4"
+    },
+    {
+      "path": "S_GOLF.CFG",
+      "size": 123,
+      "crc32": "7b282c69"
+    },
+    {
+      "path": "S_GOLF.ICO",
+      "size": 766,
+      "crc32": "6e7da940"
+    },
+    {
+      "path": "WINGPAL.WND",
+      "size": 5024,
+      "crc32": "a2b26dc7"
+    }
+  ]
+}

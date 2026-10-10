@@ -1,0 +1,16 @@
+{
+  "id": "win1014-ball-structure",
+  "status": "observed",
+  "claim": "GOLFWIN.EXE v1.014 uses a 44-byte ball structure with X/Y, vertical force, horizontal force, direction, height, distance-to-hole and pause at recovered offsets 0x00 through 0x1C.",
+  "sources": [
+    {
+      "kind": "windows-executable",
+      "source": "GOLFWIN.EXE v1.014 SHA256 3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+      "sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+      "offset": null,
+      "observation": "Embedded debug descriptors point to the live ball fields; update code repeatedly indexes the structure with a 0x2C stride."
+    }
+  ],
+  "tests": [],
+  "notes": "Terrain-tail fields after +0x1C are only partially named."
+}

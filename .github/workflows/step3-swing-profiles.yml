@@ -1,0 +1,47 @@
+name: Step 3 Swing Profiles
+
+on:
+  push:
+    paths:
+      - ".github/workflows/step3-swing-profiles.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  swing-profiles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch and ingest public PC archive
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Extract swing profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          mkdir -p analysis/private/step3
+          python tools/extract_swing_profiles.py "$WIN_EXE" \
+            -o analysis/private/step3/swing-profiles.json
+      - name: Print profile values
+        run: |
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/step3/swing-profiles.json'))
+          for p in j['profiles']:
+              print(p)
+          PY
+      - name: Upload metadata report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-swing-profiles
+          path: analysis/private/step3/swing-profiles.json
+          retention-days: 7

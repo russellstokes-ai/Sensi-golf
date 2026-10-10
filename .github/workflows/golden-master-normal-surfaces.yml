@@ -1,0 +1,101 @@
+name: Golden Master Normal Surfaces
+
+on:
+  push:
+    paths:
+      - ".github/workflows/golden-master-normal-surfaces.yml"
+      - "engine/**"
+      - "tools/original_v1014_flat_oracle.py"
+      - "tools/original_v1014_oracle.py"
+      - "tools/compare_full_oracle.py"
+      - "tools/pe_target_xrefs.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  normal-surfaces:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+
+      - name: Build portable core
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+
+      - name: Locate reference executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          test -n "$WIN_EXE"
+          echo "WIN_EXE=$WIN_EXE" >> "$GITHUB_ENV"
+
+      - name: Zero-tolerance parity across ordinary surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="analysis/private/golden-master-normal-surfaces"
+          mkdir -p "$out"
+
+          # terrain index, descriptor profile slot (lie), expected landing code
+          # 0 SKIRT=slot5/code2
+          # 1 FAIRWAY=slot4/code3
+          # 2 SEMI ROUGH=slot3/code4
+          # 3 ROUGH=slot2/code5
+          # 4 V ROUGH=slot1/code6
+          # 5 SAND=slot0/code7
+          run_case() {
+            name="$1"; terrain="$2"; lie="$3"; code="$4"
+            python tools/original_v1014_flat_oracle.py "$WIN_EXE" \
+              --club 5 --lie "$lie" --power 83 --accuracy 63 \
+              --direction 777 --max-ticks 512 --terrain-index "$terrain" \
+              -o "$out/${name}-original.json"
+
+            ./build/engine/sensigolf_recovered_full_probe \
+              5 "$lie" 83 63 777 512 "$code" \
+              > "$out/${name}-recovered.json"
+
+            python tools/compare_full_oracle.py \
+              "$out/${name}-original.json" "$out/${name}-recovered.json" \
+              -o "$out/${name}-comparison.json"
+
+            python -c 'import json,sys; o=json.load(open(sys.argv[1])); c=json.load(open(sys.argv[2])); print(o["surface_name"], "terrain", o["terrain_index"], "code", o["surface_code"], "samples", c["sample_count"], "pass", c["pass"], "mismatches", c["mismatch_count"])' \
+              "$out/${name}-original.json" "$out/${name}-comparison.json"
+          }
+
+          run_case skirt 0 5 2
+          run_case fairway 1 4 3
+          run_case semi_rough 2 3 4
+          run_case rough 3 2 5
+          run_case very_rough 4 1 6
+          run_case sand 5 0 7
+
+      - name: Unit/core tests
+        run: |
+          python -m unittest discover -s tests -v
+          ctest --test-dir build --output-on-failure
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-golden-master-normal-surfaces
+          path: analysis/private/golden-master-normal-surfaces/
+          retention-days: 14

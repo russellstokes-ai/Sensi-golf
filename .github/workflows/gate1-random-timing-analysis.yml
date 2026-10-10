@@ -1,0 +1,58 @@
+name: Gate 1 Randomness And Timing Analysis
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate1-random-timing-analysis.yml"
+      - "tools/gate1_random_timing_probe.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install disassembler
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Audit randomness and timing anchors
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT="analysis/private/gate1-random-timing"
+          mkdir -p "$OUT"
+          python tools/gate1_random_timing_probe.py "$WIN_EXE" -o "$OUT/report.json"
+
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/gate1-random-timing/report.json'))
+          for section in ('random','timing'):
+              print('\n===',section.upper(),'STRINGS ===')
+              for x in j[section]['strings']: print(x)
+              print('\n===',section.upper(),'DESCRIPTORS ===')
+              for x in j[section]['descriptors']: print(x)
+              print('\n===',section.upper(),'XREFS ===')
+              for x in j[section]['xrefs']:
+                  print('XREF',hex(x['xref_va']),x['target']['text'])
+                  for i in x['instructions']:
+                      print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate1-random-timing
+          path: analysis/private/gate1-random-timing/
+          retention-days: 14

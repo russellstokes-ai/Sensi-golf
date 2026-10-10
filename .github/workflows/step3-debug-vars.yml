@@ -1,0 +1,103 @@
+name: Step 3 Debug Variables
+
+on:
+  push:
+    paths:
+      - ".github/workflows/step3-debug-vars.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  debug-vars:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Extract debug descriptors
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          mkdir -p analysis/private/step3
+          python tools/extract_debug_descriptors.py "$WIN_EXE"             --targets-file reference/physics_debug_targets.txt             -o analysis/private/step3/debug-descriptors.json
+
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/step3/debug-descriptors.json'))
+          print("=== DEBUG VARIABLE DESCRIPTORS ===")
+          for d in j["descriptors"]:
+              print(d["label"],"type",d["type_prefix"],"width",d["width_bytes"],
+                    "variable_va",hex(d["variable_va"]) if d["variable_va"] is not None else None,
+                    "section",d["variable_section"])
+          PY
+
+      - name: Trace ball-physics variable references
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          python - <<'PY'
+          import json,subprocess,sys
+          j=json.load(open('analysis/private/step3/debug-descriptors.json'))
+          wanted={
+            'HDBall X coord','HDBall Y coord','HDBall V force','HDBall H force',
+            'HDBall direction','HDBall height','HDBall pause',
+            'DWWind amount','HDWind adjustment','HDWind x adj','HDWind y adj',
+            'HWSwing adjuster','HWDrop Power',
+            'DWball x position','DWball y position','DDball-hole in yards'
+          }
+          vals=[]
+          for d in j['descriptors']:
+              if d['label'] in wanted and d['variable_va'] is not None:
+                  vals.append((d['label'],d['variable_va']))
+          open('/tmp/varmap.txt','w').write('\n'.join(f'{name}\t{va:#x}' for name,va in vals)+'\n')
+          args=[sys.executable,'tools/pe_va_xrefs.py']
+          import glob
+          exe=glob.glob('analysis/private/step2/input/**/[Gg][Oo][Ll][Ff][Ww][Ii][Nn].[Ee][Xx][Ee]',recursive=True)[0]
+          args.append(exe)
+          for _,va in vals:
+              args += ['--va',hex(va)]
+          args += ['--radius','20','-o','analysis/private/step3/ball-variable-xrefs.json']
+          subprocess.check_call(args)
+          PY
+
+      - name: Summarise variable xrefs
+        run: |
+          python - <<'PY'
+          import json
+          names={}
+          for line in open('/tmp/varmap.txt'):
+              name,va=line.rstrip().split('\t')
+              names[int(va,16)]=name
+          j=json.load(open('analysis/private/step3/ball-variable-xrefs.json'))
+          print("xref_count",len(j["xrefs"]))
+          counts={v:0 for v in names}
+          for x in j["xrefs"]:
+              for v in x["targets"]: counts[v]=counts.get(v,0)+1
+          print("=== COUNTS ===")
+          for va,name in names.items():
+              print(name,hex(va),"xrefs",counts.get(va,0))
+          print("=== XREF WINDOWS ===")
+          for x in j["xrefs"]:
+              labels=[names.get(v,hex(v)) for v in x["targets"]]
+              print("\nXREF",hex(x["xref_va"]),"->",labels)
+              for ins in x["instructions"]:
+                  mark=">>" if ins["address"]==x["xref_va"] else "  "
+                  print(f'{mark} {ins["address"]:08x} {ins["mnemonic"]:8} {ins["op_str"]}')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-step3-debug-vars
+          path: |
+            analysis/private/step3/debug-descriptors.json
+            analysis/private/step3/ball-variable-xrefs.json
+          retention-days: 7

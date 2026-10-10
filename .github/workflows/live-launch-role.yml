@@ -1,0 +1,77 @@
+name: Live Launch Role
+
+on:
+  push:
+    paths:
+      - ".github/workflows/live-launch-role.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest reference build
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace candidate live launch
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          mkdir -p analysis/private/live-launch-role
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40ab80 --end-va 0x40aef0 \
+            -o analysis/private/live-launch-role/ad1d-context.json
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40a160 --end-va 0x40a260 \
+            -o analysis/private/live-launch-role/profile-helper-context.json
+
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x41f3a8 --va 0x41f3ac --va 0x41d59e --va 0x41f32c \
+            --radius 60 \
+            -o analysis/private/live-launch-role/live-globals-xrefs.json
+
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x40ad1d --va 0x40a603 --va 0x40a22b \
+            --radius 60 \
+            -o analysis/private/live-launch-role/routine-xrefs.json
+
+      - name: Print evidence
+        run: |
+          python - <<'PY'
+          import json,glob,os
+          for p in sorted(glob.glob('analysis/private/live-launch-role/*.json')):
+              j=json.load(open(p))
+              print('\n====',os.path.basename(p),'====')
+              if 'instructions' in j:
+                  for i in j['instructions']:
+                      print(f'{i["address"]:08x} {i["mnemonic"]:8} {i["op_str"]}')
+              else:
+                  print('xref_count',len(j.get('xrefs',[])))
+                  for x in j.get('xrefs',[]):
+                      print('\nXREF',hex(x['xref_va']),'targets',','.join(hex(v) for v in x['targets']))
+                      for i in x['instructions']:
+                          mark='>>' if i['address']==x['xref_va'] else '  '
+                          print(f'{mark} {i["address"]:08x} {i["mnemonic"]:8} {i["op_str"]}')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-live-launch-role
+          path: analysis/private/live-launch-role/
+          retention-days: 14

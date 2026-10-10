@@ -1,0 +1,100 @@
+name: Gate 2 Data-Driven Six-Hole Round
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate2-data-driven-six-hole-round.yml"
+      - "engine/tools/classic_real_round_fixture_probe.cpp"
+      - "engine/tests/fixtures/original_round_first_six.txt"
+      - "engine/include/sensigolf/classic_hole_session.hpp"
+      - "engine/src/classic_hole_session.cpp"
+      - "engine/include/sensigolf/classic_game_session.hpp"
+      - "engine/src/classic_game_session.cpp"
+      - "engine/include/sensigolf/classic_round_session.hpp"
+      - "engine/src/classic_round_session.cpp"
+      - "engine/CMakeLists.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+      - name: Fetch verified original Windows build
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! curl -fLSs --retry 3 --retry-all-errors --retry-delay 2 \
+            --connect-timeout 15 --max-time 120 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip; then
+            curl -fLSs --retry 3 --retry-all-errors --retry-delay 2 \
+              --connect-timeout 15 --max-time 120 \
+              'https://archive.org/download/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+              -o /tmp/Sensible_Golf_PC.zip
+          fi
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Build platform-neutral core and replay harness
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+          ctest --test-dir build --output-on-failure
+      - name: Validate real original order and replay six holes in ONE game session
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="analysis/private/step2/extracted/epf"
+          OUT="analysis/private/gate2-data-driven-six-hole-round"
+          FIXTURE="engine/tests/fixtures/original_round_first_six.txt"
+          mkdir -p "$OUT"
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          python tools/original_v1014_next_hole_resources.py "$WIN_EXE" \
+            -o "$OUT/original-resource-metadata.json"
+          python - "$OUT/original-resource-metadata.json" "$FIXTURE" <<'PY'
+          import json,sys
+          src=json.load(open(sys.argv[1]))
+          order=next(x["hole_ids"] for x in src["orders"] if x["slot"]==0)
+          rows=[]
+          for line in open(sys.argv[2]):
+              line=line.strip()
+              if not line or line.startswith("#"): continue
+              columns=list(map(int,line.split()))
+              assert len(columns)==7+columns[6]*4,columns
+              rows.append(columns)
+          assert [r[0] for r in rows]==order[:len(rows)],(rows,order)
+          assert [r[1] for r in rows]==[
+              src["par_by_resource_id"][r[0]] for r in rows],rows
+          assert [r[0] for r in rows]==[42,50,58,38,70,44,64],rows
+          assert [r[1] for r in rows]==[4,4,3,4,3,4,5],rows
+          assert rows[-1][6]==0 and all(r[6]>0 for r in rows[:-1]),rows
+          print("original Windows executable order/pars match replay fixture")
+          PY
+          ./build/engine/sensigolf_real_round_fixture_probe \
+            "$ROOT" "$FIXTURE" 0 | tee "$OUT/result.json"
+          python - "$OUT/result.json" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          assert j["resources"]==[42,50,58,38,70,44,64],j
+          assert j["completed_strokes"]==[3,4,1,2,2,3],j
+          assert j["holes_completed"]==6 and j["total_strokes"]==15,j
+          assert j["cumulative_par"]==22 and j["relative_to_par"]==7,j
+          assert j["next_loaded"] and not j["round_complete"],j
+          assert j["next_tee"]==[439,871] and j["next_cup"]==[67,84],j
+          print("data-driven original six-hole round passed:",json.dumps(j,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate2-data-driven-six-hole-round
+          path: analysis/private/gate2-data-driven-six-hole-round/
+          retention-days: 30

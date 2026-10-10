@@ -1,0 +1,66 @@
+name: Gate 1 Whole Tick Edge Analysis
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate1-whole-tick-edge-analysis.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install disassembler
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace whole-tick helpers and PRNG entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT="analysis/private/gate1-whole-tick"
+          mkdir -p "$OUT"
+
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x406FFA --va 0x40A250 --va 0x40A1F0 --va 0x40AE7F --va 0x40AE06 \
+            --va 0x40AB97 --va 0x40C630 \
+            --radius 36 -o "$OUT/xrefs.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" --start-va 0x40A1C0 --end-va 0x40A250 -o "$OUT/helper-a1f0.json"
+          python tools/pe_disasm_range.py "$WIN_EXE" --start-va 0x40AB90 --end-va 0x40AC32 -o "$OUT/helper-ab97.json"
+          python tools/pe_disasm_range.py "$WIN_EXE" --start-va 0x40AE00 --end-va 0x40AF80 -o "$OUT/helpers-ae.json"
+          python tools/pe_disasm_range.py "$WIN_EXE" --start-va 0x40C600 --end-va 0x40C6C0 -o "$OUT/helper-c630.json"
+
+          python - <<'PY'
+          import json,glob,os
+          j=json.load(open('analysis/private/gate1-whole-tick/xrefs.json'))
+          print('=== XREFS ===')
+          for x in j['xrefs']:
+              print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
+              for i in x['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          for p in sorted(glob.glob('analysis/private/gate1-whole-tick/helper-*.json')):
+              q=json.load(open(p))
+              print('\n====',os.path.basename(p),'====')
+              for i in q['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate1-whole-tick-edge-analysis
+          path: analysis/private/gate1-whole-tick/
+          retention-days: 14

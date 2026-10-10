@@ -1,0 +1,76 @@
+name: Gate 2 Special Surface Physics Parity
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate2-special-surface-parity.yml"
+      - "engine/src/recovered_ground.cpp"
+      - "engine/src/classic_terrain.cpp"
+      - "tools/original_v1014_flat_oracle.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+      - name: Fetch verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip             --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Build recovered core
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+      - name: Zero-tolerance special-surface ball-state parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT=analysis/private/gate2-special-surface-parity
+          mkdir -p "$OUT"
+
+          run_case() {
+            name="$1"; terrain="$2"; lie="$3"; code="$4"
+            python tools/original_v1014_flat_oracle.py "$WIN_EXE"               --club 5 --lie "$lie" --power 83 --accuracy 63               --direction 777 --max-ticks 512 --terrain-index "$terrain"               -o "$OUT/$name-original.json"
+
+            ./build/engine/sensigolf_recovered_full_probe               5 "$lie" 83 63 777 512 "$code"               > "$OUT/$name-recovered.json"
+
+            python tools/compare_full_oracle.py               "$OUT/$name-original.json" "$OUT/$name-recovered.json"               -o "$OUT/$name-comparison.json"
+
+            python - "$OUT/$name-comparison.json" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          assert j['pass'] is True,j
+          assert j['mismatch_count']==0,j
+          print(sys.argv[1], 'zero-tolerance PASS', j['sample_count'])
+          PY
+          }
+
+          # GREEN H2: landing code 10, profile slot 0.
+          run_case green_h2 15 0 10
+
+          # GREEN D2: landing code 50, profile slot 9.
+          run_case green_d2 47 9 50
+
+          # MUD D2: landing code 60, profile slot 8.
+          run_case mud_d2 72 8 60
+
+      - name: Core tests
+        run: ctest --test-dir build --output-on-failure
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate2-special-surface-parity
+          path: analysis/private/gate2-special-surface-parity/
+          retention-days: 30

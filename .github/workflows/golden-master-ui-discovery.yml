@@ -1,0 +1,77 @@
+name: Golden Master UI Discovery
+
+on:
+  push:
+    paths:
+      - ".github/workflows/golden-master-ui-discovery.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install runtime
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y wine64 wine32:i386 xvfb xdotool x11-utils imagemagick unzip
+      - name: Prepare deterministic original
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          PATCHED="$(dirname "$WIN_EXE")/GOLFWIN_GM.EXE"
+          python tools/patch_golden_master_seed.py "$WIN_EXE" "$PATCHED" --seed 0x12345678
+          echo "PATCHED_EXE=$PATCHED" >> "$GITHUB_ENV"
+      - name: Step through intro one input at a time
+        shell: bash
+        run: |
+          set -uo pipefail
+          export DISPLAY=:99
+          export WINEPREFIX="$RUNNER_TEMP/wineprefix"
+          export WINEDEBUG=-all
+          mkdir -p analysis/private/ui-discovery
+          Xvfb :99 -screen 0 800x600x8 >/tmp/xvfb.log 2>&1 &
+          XVFB=$!
+          sleep 2
+          wineboot -u >/tmp/wineboot.log 2>&1 || true
+          (
+            cd "$(dirname "$PATCHED_EXE")"
+            wine ./GOLFWIN_GM.EXE >/tmp/golfwin.stdout 2>/tmp/golfwin.stderr
+          ) &
+          GPID=$!
+          sleep 5
+          WID="$(xdotool search --onlyvisible --name '^Sensible Golf$' | head -1)"
+          echo "WID=$WID"
+
+          snap () {
+            import -window "$WID" "$GITHUB_WORKSPACE/analysis/private/ui-discovery/$1.png" || true
+          }
+
+          snap 00-before-input
+          for n in $(seq -w 1 12); do
+            xdotool key --window "$WID" space || true
+            sleep 3
+            snap "${n}-after-space"
+          done
+
+          xdotool mousemove --window "$WID" 160 120 click 1 || true
+          sleep 3
+          snap 13-after-click
+
+          kill "$GPID" 2>/dev/null || true
+          kill "$XVFB" 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-ui-discovery
+          path: analysis/private/ui-discovery/
+          retention-days: 7

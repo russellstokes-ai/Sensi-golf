@@ -1,0 +1,44 @@
+name: Golden Master Startup Crash Trace
+
+on:
+  push:
+    paths:
+      - ".github/workflows/golden-master-startup-crash.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch and ingest verified build
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Disassemble startup fault and nearby callers
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          mkdir -p analysis/private/startup-crash
+          python tools/pe_disasm_range.py "$WIN_EXE"             --start-va 0x4029c0 --end-va 0x402c40             -o analysis/private/startup-crash/fault-range.json
+          python tools/pe_target_xrefs.py "$WIN_EXE"             --target 0x402b06 --radius 48             -o analysis/private/startup-crash/fault-xrefs.json || true
+          python - <<'PY'
+          import json
+          j=json.load(open('analysis/private/startup-crash/fault-range.json'))
+          for i in j['instructions']:
+              mark='>>' if i['address']==0x402b06 else '  '
+              print(f'{mark} {i["address"]:08x} {i["mnemonic"]:8} {i["op_str"]}')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sensible-golf-startup-crash-trace
+          path: analysis/private/startup-crash/
+          retention-days: 7

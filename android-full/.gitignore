@@ -1,0 +1,11 @@
+/.gradle/
+/vendor/
+/app/build/
+/build/
+/local.properties
+**/.cxx/
+**/.externalNativeBuild/
+**/src/main/jniLibs/
+**/src/main/assets/game/*.dosz
+*.keystore
+*.jks

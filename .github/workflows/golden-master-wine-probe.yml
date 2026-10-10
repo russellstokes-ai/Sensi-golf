@@ -1,0 +1,120 @@
+name: Golden Master Wine Probe
+
+on:
+  push:
+    paths:
+      - ".github/workflows/golden-master-wine-probe.yml"
+      - "tools/live_ball_probe.py"
+      - "tools/patch_golden_master_seed.py"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Wine and X11 automation
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y wine64 wine32:i386 xvfb xdotool x11-utils imagemagick unzip
+
+      - name: Fetch verified v1.014 package
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+
+      - name: Apply minimal deterministic Wine compatibility patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          PATCHED="$(dirname "$WIN_EXE")/GOLFWIN_GM.EXE"
+          python tools/patch_golden_master_seed.py "$WIN_EXE" "$PATCHED" --seed 0x12345678
+          echo "PATCHED_EXE=$PATCHED" >> "$GITHUB_ENV"
+
+      - name: Boot deterministic original and sample mapped game process
+        shell: bash
+        run: |
+          set -uo pipefail
+          export DISPLAY=:99
+          export WINEPREFIX="$RUNNER_TEMP/wineprefix"
+          export WINEDEBUG=+seh
+          Xvfb :99 -screen 0 800x600x8 >/tmp/xvfb.log 2>&1 &
+          XVFB_PID=$!
+          sleep 2
+          wineboot -u >/tmp/wineboot.log 2>&1 || true
+
+          GAME_DIR="$(dirname "$PATCHED_EXE")"
+          (
+            cd "$GAME_DIR"
+            wine ./GOLFWIN_GM.EXE >/tmp/golfwin.stdout 2>/tmp/golfwin.stderr
+          ) &
+          WINE_LAUNCH_PID=$!
+          sleep 4
+
+          python - <<'PY'
+          from pathlib import Path
+          found=[]
+          for p in Path('/proc').iterdir():
+              if not p.name.isdigit(): continue
+              try:
+                  maps=(p/'maps').read_text(errors='ignore')
+                  cmd=(p/'cmdline').read_bytes().replace(b'\0',b' ').decode(errors='ignore')
+              except Exception:
+                  continue
+              upper=(maps+' '+cmd).upper()
+              if 'GOLFWIN_GM.EXE' in upper:
+                  found.append((int(p.name),cmd))
+          print('mapped candidates',found)
+          if not found: raise SystemExit('no mapped GOLFWIN_GM.EXE process')
+          Path('/tmp/golf_pid').write_text(str(found[0][0]))
+          PY
+
+          PID="$(cat /tmp/golf_pid)"
+          sudo python "$GITHUB_WORKSPACE/tools/live_ball_probe.py" "$PID"             --duration-s 5 --interval-ms 20             -o "$GITHUB_WORKSPACE/analysis/private/wine-ball-probe.json"
+          PROBE_RC=$?
+
+          echo "=== windows ==="
+          xdotool search --onlyvisible --name '.*' getwindowname %@ 2>/dev/null || true
+          xwininfo -root -tree || true
+          import -window root "$GITHUB_WORKSPACE/analysis/private/wine-root.png" || true
+
+          kill "$WINE_LAUNCH_PID" 2>/dev/null || true
+          kill "$XVFB_PID" 2>/dev/null || true
+          exit "$PROBE_RC"
+
+      - name: Print probe summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('analysis/private/wine-ball-probe.json')
+          if p.exists():
+              j=json.loads(p.read_text())
+              print('samples',len(j['samples']))
+              print('first',j['samples'][:10])
+          PY
+          echo "=== stderr tail ==="
+          tail -120 /tmp/golfwin.stderr 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-golden-master-wine-probe
+          path: |
+            analysis/private/wine-root.png
+            analysis/private/wine-ball-probe.json
+            /tmp/golfwin.stdout
+            /tmp/golfwin.stderr
+            /tmp/xvfb.log
+            /tmp/wineboot.log
+          if-no-files-found: ignore
+          retention-days: 7

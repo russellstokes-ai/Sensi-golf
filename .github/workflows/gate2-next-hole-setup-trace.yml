@@ -1,0 +1,99 @@
+name: Gate 2 Next Hole Setup Trace
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate2-next-hole-setup-trace.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install analysis dependencies
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6 unicorn
+      - name: Fetch verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Trace next-hole setup chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT=analysis/private/gate2-next-hole-setup
+          mkdir -p "$OUT"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x409300 --end-va 0x4094C0 \
+            -o "$OUT/advance-40935b.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x409B80 --end-va 0x409D40 \
+            -o "$OUT/setup-409bf4.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40AB70 --end-va 0x40AC40 \
+            -o "$OUT/pre-advance-40ab97.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x40AA70 --end-va 0x40AB20 \
+            -o "$OUT/post-advance-40aa84.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x4089E0 --end-va 0x408B20 \
+            -o "$OUT/resource-load-408a29.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE" \
+            --start-va 0x409E90 --end-va 0x40A080 \
+            -o "$OUT/hole-setup-409efe.json"
+
+          python tools/pe_va_xrefs.py "$WIN_EXE" \
+            --va 0x40935B --va 0x409BF4 --va 0x40AB97 --va 0x40AA84 \
+            --va 0x408A29 --va 0x409EFE \
+            --va 0x42952B --va 0x425580 --va 0x41E64C --va 0x41E603 \
+            --va 0x41EF04 --va 0x41EF0F --va 0x41EF1A \
+            --radius 120 -o "$OUT/xrefs.json"
+
+          python tools/original_v1014_next_hole_resources.py "$WIN_EXE" \
+            -o "$OUT/resource-metadata.json"
+          cat "$OUT/resource-metadata.json"
+
+          python - <<'PY'
+          import json
+          for name in (
+              'advance-40935b.json',
+              'setup-409bf4.json',
+              'pre-advance-40ab97.json',
+              'post-advance-40aa84.json',
+              'resource-load-408a29.json',
+              'hole-setup-409efe.json',
+          ):
+              print('\n===',name,'===')
+              j=json.load(open('analysis/private/gate2-next-hole-setup/'+name))
+              for i in j['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          print('\n=== xrefs ===')
+          j=json.load(open('analysis/private/gate2-next-hole-setup/xrefs.json'))
+          for x in j['xrefs']:
+              print('\nXREF',hex(x['xref_va']),[hex(v) for v in x['targets']])
+              for i in x['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate2-next-hole-setup-trace
+          path: analysis/private/gate2-next-hole-setup/
+          retention-days: 30

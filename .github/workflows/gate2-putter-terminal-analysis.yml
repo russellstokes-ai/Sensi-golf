@@ -1,0 +1,57 @@
+name: Gate 2 Putter Terminal Branch Analysis
+
+on:
+  push:
+    paths:
+      - ".github/workflows/gate2-putter-terminal-analysis.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install disassembler
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Fetch verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2             'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip'             -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip             --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Disassemble putter terminal paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT=analysis/private/gate2-putter-terminals
+          mkdir -p "$OUT"
+
+          python tools/pe_disasm_range.py "$WIN_EXE"             --start-va 0x40A3D0 --end-va 0x40A460             -o "$OUT/code9-10-terminal.json"
+
+          python tools/pe_disasm_range.py "$WIN_EXE"             --start-va 0x40A6A0 --end-va 0x40A7E0             -o "$OUT/code8-and-contact.json"
+
+          python tools/pe_va_xrefs.py "$WIN_EXE"             --va 0x40A730 --va 0x40A40B --va 0x40A22B --va 0x40CD00             --radius 48 -o "$OUT/terminal-xrefs.json"
+
+          python tools/scan_struct_offsets.py "$WIN_EXE"             --offset 0x52 --offset 0x56 --offset 0x70             --radius 24 -o "$OUT/player-counter-xrefs.json"
+
+          python - <<'PY'
+          import json
+          for name in ('code9-10-terminal','code8-and-contact'):
+              j=json.load(open(f'analysis/private/gate2-putter-terminals/{name}.json'))
+              print('\n===',name,'===')
+              for i in j['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-gate2-putter-terminal-analysis
+          path: analysis/private/gate2-putter-terminals/
+          retention-days: 30

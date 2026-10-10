@@ -1,0 +1,101 @@
+{
+  "schema": "sensigolf.gate2.second_hole_audit.v1",
+  "date": "2026-10-09",
+  "status": "PASS: bounded multi-shot solver scored original resource 50 in 4 strokes and independently loaded original resource 58",
+  "reference": "Sensible Golf Windows v1.014 original resources",
+  "real_order": [
+    42,
+    50,
+    58
+  ],
+  "hole": {
+    "resource_id": 50,
+    "round_index_in_original_order": 1,
+    "par": 4,
+    "tee": [
+      401,
+      855
+    ],
+    "cup": [
+      88,
+      97
+    ],
+    "following_resource_id": 58,
+    "following_par": 3
+  },
+  "workflows": {
+    "initial": 37959740023,
+    "severe_rough_heuristic": 37959923976,
+    "precise_tie_breaker": 37960119153,
+    "safe_lie_heuristic": 37960274362,
+    "special_terminal_exclusion": 37960397473,
+    "multi_shot_beam_pass": 37961865206,
+    "multi_shot_beam_core_ci_pass": 37961865113,
+    "first_hole_same_commit_pass": 37961865174
+  },
+  "known_facts": [
+    "Real resource50 MAPS green has no landing-code-8 terrain cells in the probe's full green search",
+    "Greedy per-shot distance minimization can strand candidate paths in landing codes 5/6/7 far from the cup",
+    "Selecting code-9 event-11 special-green stop can preserve ball position and trap analysis solver; incomplete original continuation must not be fabricated",
+    "Earlier greedy heuristics stalled at distance 135; bounded multi-shot search subsequently found a four-stroke par route",
+    "First real resource42 hole proof continues to pass, including loading original resource50; core CI passed"
+  ],
+  "limitations": [
+    "Failure of an analysis-only greedy solver is not proof that the original game or recovered physics cannot complete this hole",
+    "Do not change recovered physics or fabricate reposition/drop behavior to force the test to pass",
+    "Real resources42 and 50 have now been scored in a continuous same-session round; full 18-hole replay remains open"
+  ],
+  "recommended_next_work": [
+    "Capture the exact original code-9/code-10 event-11 continuation before integrating terminal return behavior",
+    "Compare chosen real-course shot sequences to original executable trace before broadening the engine",
+    "Keep Gate1 parity and resource42-to-loaded-resource50 workflows green throughout"
+  ],
+  "result": {
+    "scored": true,
+    "resource_id": 50,
+    "par": 4,
+    "strokes": 4,
+    "shots": [
+      {
+        "club": 1,
+        "power": 105,
+        "accuracy": 63,
+        "aim": 2335
+      },
+      {
+        "club": 1,
+        "power": 105,
+        "accuracy": 63,
+        "aim": 1893
+      },
+      {
+        "club": 1,
+        "power": 95,
+        "accuracy": 63,
+        "aim": 2908
+      },
+      {
+        "club": 3,
+        "power": 5,
+        "accuracy": 63,
+        "aim": 2800
+      }
+    ],
+    "next_resource_id": 58,
+    "next_par": 3,
+    "next_loaded": true,
+    "next_tee": [
+      370,
+      383
+    ],
+    "next_cup": [
+      138,
+      96
+    ]
+  },
+  "verification": {
+    "continuous_two_hole_round_pass": 37962471601,
+    "continuous_round_checkpoint": "analysis/evidence/gate2_continuous_two_hole_round_checkpoint.json",
+    "continuous_round_result": "Original 42 + 50 scored inside a single ClassicGameSession; loaded real resource58; 7 strokes / 8 par / +1 original par-minus-strokes"
+  }
+}

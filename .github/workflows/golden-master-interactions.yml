@@ -1,0 +1,77 @@
+name: Golden Master PRNG Shot Interactions
+
+on:
+  push:
+    paths:
+      - ".github/workflows/golden-master-interactions.yml"
+      - "engine/**"
+      - "tools/original_v1014_interactions_oracle.py"
+      - "tools/original_v1014_prng_oracle.py"
+      - "tools/original_v1014_oracle.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  interactions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install original-code emulator
+        run: python -m pip install --disable-pip-version-check unicorn
+      - name: Fetch and ingest verified v1.014
+        run: |
+          curl -fL --retry 3 --retry-delay 2 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Build portable core
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
+      - name: Exact interaction parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          OUT=analysis/private/golden-master-interactions
+          mkdir -p "$OUT"
+
+          run_case() {
+            branch="$1"; seed0="$2"; seed1="$3"; direction="$4"; vf="$5"; hf="$6"
+            python tools/original_v1014_interactions_oracle.py "$WIN_EXE" \
+              --branch "$branch" --seed0 "$seed0" --seed1 "$seed1" \
+              --direction "$direction" --vforce "$vf" --hforce "$hf" \
+              -o "$OUT/$branch-original.json"
+            ./build/engine/sensigolf_recovered_interactions_probe \
+              "$branch" "$seed0" "$seed1" "$direction" "$vf" "$hf" \
+              > "$OUT/$branch-recovered.json"
+            python - "$OUT/$branch-original.json" "$OUT/$branch-recovered.json" <<'PY'
+          import json,sys
+          a=json.load(open(sys.argv[1])); b=json.load(open(sys.argv[2]))
+          a.pop('build_sha256',None)
+          assert a==b,(a,b)
+          print(a['branch'],'zero-tolerance parity',a)
+          PY
+          }
+
+          run_case code9 0x1234 0xABCD 777 -50000 90000
+          run_case lip   0x89AB 0xCDEF 3000 -20000 0x12000
+          run_case flag  0x1357 0x2468 100 -8448 70000
+
+      - name: Tests
+        run: |
+          python -m unittest discover -s tests -v
+          ctest --test-dir build --output-on-failure
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-golf-golden-master-interactions
+          path: analysis/private/golden-master-interactions/
+          retention-days: 14

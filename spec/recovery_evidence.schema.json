@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sensi-golf/recovery_evidence.schema.json",
+  "title": "Recovered gameplay evidence record",
+  "type": "object",
+  "required": ["id", "status", "claim", "sources", "tests"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "status": {
+      "enum": ["hypothesis", "observed", "cross-checked", "parity-verified"]
+    },
+    "claim": {"type": "string", "minLength": 1},
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["kind", "source"],
+        "properties": {
+          "kind": {
+            "enum": [
+              "manual",
+              "dos-executable",
+              "windows-executable",
+              "epf-data",
+              "black-box-trace"
+            ]
+          },
+          "source": {"type": "string"},
+          "sha256": {"type": "string"},
+          "offset": {"type": ["integer", "null"], "minimum": 0},
+          "observation": {"type": "string"}
+        }
+      }
+    },
+    "tests": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "notes": {"type": "string"}
+  }
+}

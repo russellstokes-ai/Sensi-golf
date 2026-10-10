@@ -1,0 +1,66 @@
+name: Android Original Engine Touch Preview APK
+
+on:
+  push:
+    paths:
+      - 'android/**'
+      - 'engine/include/**'
+      - 'engine/src/**'
+      - 'engine/CMakeLists.txt'
+      - '.github/workflows/android-engine-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Verify phone, Fold, tablet layout decisions without emulator
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sensigolf-layout
+          javac -d /tmp/sensigolf-layout             android/app/src/main/java/com/russellstokes/sensigolf/GolfLayout.java             android/layout-tests/GolfLayoutSmokeTest.java
+          java -cp /tmp/sensigolf-layout GolfLayoutSmokeTest
+      - name: Install Android SDK 35 / NDK 27 / CMake without legacy tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/sdkmanager' -type f | head -n 1)"
+          fi
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build Android preview APK and original recovered C++ engine
+        run: gradle -p android --no-daemon --stacktrace :app:assembleDebug
+      - name: Check native ARM64 and emulator ABIs and uniquely name APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android/apk-out
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -l "$APK" | grep 'lib/arm64-v8a/libsensigolf_android.so'
+          unzip -l "$APK" | grep 'lib/x86_64/libsensigolf_android.so'
+          cp "$APK" android/apk-out/SensiGolf-0.1.0-test-02-OriginalEngine-Android.apk
+          sha256sum android/apk-out/SensiGolf-0.1.0-test-02-OriginalEngine-Android.apk
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: SensiGolf-0.1.0-test-02-OriginalEngine-Android-APK
+          path: android/apk-out/SensiGolf-0.1.0-test-02-OriginalEngine-Android.apk
+          retention-days: 30

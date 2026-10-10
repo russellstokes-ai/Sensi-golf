@@ -1,0 +1,1022 @@
+{
+  "schema": "pixtee-research.original-physics.v1",
+  "title": "Sensible Golf Windows 1.014 recovered numeric reference — NOT Pixtee runtime game data",
+  "source_executable_sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+  "provenance": {
+    "clubs": "engine/src/recovered_flight.cpp",
+    "terrain": "engine/src/classic_terrain.cpp",
+    "air_ground": "engine/src/recovered_ground.cpp",
+    "distance": "engine/src/recovered_distance.cpp",
+    "test_signoff": "analysis/evidence/gate1_final_signoff.json"
+  },
+  "intended_use": "Research, measured comparison, independent specification and IP review only; do not auto-import into a purported clean-room commercial Pixtee game.",
+  "legal_reuse_status": "UNREVIEWED — obtaining original licence recommended if exact recovered tables/engine are to be shipped",
+  "established": {
+    "directions_per_circle": 4096,
+    "angle_mask": 4095,
+    "trig_fractional_bits": 14,
+    "original_logical_timer_fixed_interval": 936,
+    "seconds_per_tick": 0.0142822265625,
+    "raw_power_min": 0,
+    "raw_power_max": 105,
+    "accuracy_center": 63,
+    "gravity_per_tick": 8448,
+    "normal_drag": 3840,
+    "putter_green_drag": 1920,
+    "normal_putter_non_green_drag": 3840,
+    "putter_index": 12,
+    "ordinary_landing_codes": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "green_putter_landing_code": 1,
+    "cup_landing_code": 8,
+    "special_green_codes": [
+      9,
+      10
+    ],
+    "hazard_stop_code": 35,
+    "hazard_pause_ticks": 100,
+    "distance_scale_numerator": 6,
+    "distance_scale_denominator": 10,
+    "mapm_header_bytes": 96,
+    "mapm_tile_world_width": 16,
+    "mapm_tile_world_height": 8,
+    "collision_subcells_x": 8,
+    "collision_subcells_y": 4,
+    "green_mode_coordinate_multiplier": 2,
+    "max_holes": 18
+  },
+  "recovered_club_launch_research": [
+    {
+      "index": 0,
+      "vertical_base": 8192,
+      "horizontal_base": 81920,
+      "power_scale": 3168,
+      "special_putter_path": false
+    },
+    {
+      "index": 1,
+      "vertical_base": 16384,
+      "horizontal_base": 73728,
+      "power_scale": 3120,
+      "special_putter_path": false
+    },
+    {
+      "index": 2,
+      "vertical_base": 36864,
+      "horizontal_base": 65536,
+      "power_scale": 3120,
+      "special_putter_path": false
+    },
+    {
+      "index": 3,
+      "vertical_base": 49152,
+      "horizontal_base": 49152,
+      "power_scale": 3072,
+      "special_putter_path": false
+    },
+    {
+      "index": 4,
+      "vertical_base": 65536,
+      "horizontal_base": 49152,
+      "power_scale": 2944,
+      "special_putter_path": false
+    },
+    {
+      "index": 5,
+      "vertical_base": 71680,
+      "horizontal_base": 49152,
+      "power_scale": 2880,
+      "special_putter_path": false
+    },
+    {
+      "index": 6,
+      "vertical_base": 77824,
+      "horizontal_base": 49152,
+      "power_scale": 2560,
+      "special_putter_path": false
+    },
+    {
+      "index": 7,
+      "vertical_base": 81920,
+      "horizontal_base": 49152,
+      "power_scale": 2496,
+      "special_putter_path": false
+    },
+    {
+      "index": 8,
+      "vertical_base": 112640,
+      "horizontal_base": 48128,
+      "power_scale": 2464,
+      "special_putter_path": false
+    },
+    {
+      "index": 9,
+      "vertical_base": 114688,
+      "horizontal_base": 48128,
+      "power_scale": 2368,
+      "special_putter_path": false
+    },
+    {
+      "index": 10,
+      "vertical_base": 131072,
+      "horizontal_base": 47104,
+      "power_scale": 2176,
+      "special_putter_path": false
+    },
+    {
+      "index": 11,
+      "vertical_base": 131072,
+      "horizontal_base": 40960,
+      "power_scale": 2112,
+      "special_putter_path": false
+    },
+    {
+      "index": 12,
+      "vertical_base": 0,
+      "horizontal_base": 8192,
+      "power_scale": 1536,
+      "special_putter_path": true
+    }
+  ],
+  "recovered_club_lie_profile_selectors": [
+    [
+      1,
+      2,
+      3,
+      8,
+      7,
+      8,
+      4,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      2,
+      3,
+      8,
+      7,
+      8,
+      4,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      2,
+      3,
+      8,
+      7,
+      8,
+      4,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      2,
+      4,
+      8,
+      7,
+      8,
+      4,
+      2,
+      2,
+      2
+    ],
+    [
+      1,
+      2,
+      5,
+      8,
+      7,
+      8,
+      4,
+      2,
+      2,
+      2
+    ],
+    [
+      1,
+      2,
+      5,
+      8,
+      7,
+      8,
+      4,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      3,
+      5,
+      8,
+      7,
+      8,
+      4,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      3,
+      5,
+      8,
+      7,
+      8,
+      4,
+      2,
+      2,
+      2
+    ],
+    [
+      3,
+      3,
+      6,
+      8,
+      7,
+      8,
+      4,
+      2,
+      2,
+      2
+    ],
+    [
+      4,
+      4,
+      6,
+      8,
+      7,
+      8,
+      4,
+      4,
+      4,
+      4
+    ],
+    [
+      5,
+      6,
+      8,
+      8,
+      8,
+      8,
+      4,
+      5,
+      5,
+      5
+    ],
+    [
+      6,
+      7,
+      8,
+      8,
+      8,
+      8,
+      4,
+      5,
+      5,
+      5
+    ],
+    [
+      1,
+      1,
+      1,
+      11,
+      11,
+      11,
+      1,
+      1,
+      1,
+      1
+    ]
+  ],
+  "recovered_swing_profile_accuracy_bounds": [
+    {
+      "min": 61,
+      "max": 65
+    },
+    {
+      "min": 61,
+      "max": 65
+    },
+    {
+      "min": 60,
+      "max": 66
+    },
+    {
+      "min": 60,
+      "max": 66
+    },
+    {
+      "min": 58,
+      "max": 68
+    },
+    {
+      "min": 58,
+      "max": 68
+    },
+    {
+      "min": 55,
+      "max": 70
+    },
+    {
+      "min": 55,
+      "max": 70
+    },
+    {
+      "min": 55,
+      "max": 70
+    },
+    {
+      "min": 55,
+      "max": 70
+    },
+    {
+      "min": 55,
+      "max": 70
+    }
+  ],
+  "recovered_swing_profile_evenized_error_columns": [
+    -8,
+    -6,
+    -4,
+    -2,
+    0,
+    2,
+    4,
+    6
+  ],
+  "recovered_swing_profile_samples": [
+    [
+      0,
+      0,
+      0,
+      -2,
+      0,
+      2,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      -2,
+      0,
+      2,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      -4,
+      -2,
+      0,
+      2,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      -1,
+      -1,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      -2,
+      -1,
+      -1,
+      0,
+      1,
+      1,
+      0
+    ],
+    [
+      0,
+      -2,
+      -1,
+      -1,
+      0,
+      1,
+      1,
+      0
+    ],
+    [
+      -2,
+      -2,
+      -1,
+      -1,
+      0,
+      1,
+      1,
+      1
+    ],
+    [
+      -2,
+      -2,
+      -1,
+      0,
+      0,
+      0,
+      1,
+      1
+    ],
+    [
+      -2,
+      -2,
+      -1,
+      0,
+      0,
+      0,
+      1,
+      1
+    ],
+    [
+      -2,
+      -2,
+      -1,
+      0,
+      0,
+      0,
+      1,
+      1
+    ],
+    [
+      -2,
+      -1,
+      -1,
+      0,
+      0,
+      0,
+      1,
+      1
+    ]
+  ],
+  "recovered_terrain_descriptor_research": [
+    {
+      "index": 0,
+      "landing_code": 2,
+      "variant": 0,
+      "lie_profile_slot": 5,
+      "name": "SKIRT"
+    },
+    {
+      "index": 1,
+      "landing_code": 3,
+      "variant": 0,
+      "lie_profile_slot": 4,
+      "name": "FAIRWAY"
+    },
+    {
+      "index": 2,
+      "landing_code": 4,
+      "variant": 0,
+      "lie_profile_slot": 3,
+      "name": "SEMI ROUGH"
+    },
+    {
+      "index": 3,
+      "landing_code": 5,
+      "variant": 0,
+      "lie_profile_slot": 2,
+      "name": "ROUGH"
+    },
+    {
+      "index": 4,
+      "landing_code": 6,
+      "variant": 0,
+      "lie_profile_slot": 1,
+      "name": "V ROUGH"
+    },
+    {
+      "index": 5,
+      "landing_code": 7,
+      "variant": 0,
+      "lie_profile_slot": 0,
+      "name": "SAND"
+    },
+    {
+      "index": 6,
+      "landing_code": 35,
+      "variant": 0,
+      "lie_profile_slot": 7,
+      "name": "WATER"
+    },
+    {
+      "index": 7,
+      "landing_code": 8,
+      "variant": -5,
+      "lie_profile_slot": 9,
+      "name": "GREEN H1"
+    },
+    {
+      "index": 8,
+      "landing_code": 2,
+      "variant": 1,
+      "lie_profile_slot": 5,
+      "name": "SKIRT H1"
+    },
+    {
+      "index": 9,
+      "landing_code": 3,
+      "variant": 1,
+      "lie_profile_slot": 4,
+      "name": "FAIRWAY H1"
+    },
+    {
+      "index": 10,
+      "landing_code": 4,
+      "variant": 1,
+      "lie_profile_slot": 3,
+      "name": "SEMI ROUGH H1"
+    },
+    {
+      "index": 11,
+      "landing_code": 5,
+      "variant": 1,
+      "lie_profile_slot": 2,
+      "name": "ROUGH H1"
+    },
+    {
+      "index": 12,
+      "landing_code": 6,
+      "variant": 1,
+      "lie_profile_slot": 1,
+      "name": "V ROUGH H1"
+    },
+    {
+      "index": 13,
+      "landing_code": 7,
+      "variant": 1,
+      "lie_profile_slot": 0,
+      "name": "SAND H1"
+    },
+    {
+      "index": 14,
+      "landing_code": 35,
+      "variant": 1,
+      "lie_profile_slot": 7,
+      "name": "NO GO"
+    },
+    {
+      "index": 15,
+      "landing_code": 10,
+      "variant": 0,
+      "lie_profile_slot": 0,
+      "name": "GREEN H2"
+    },
+    {
+      "index": 16,
+      "landing_code": 2,
+      "variant": 2,
+      "lie_profile_slot": 5,
+      "name": "SKIRT H2"
+    },
+    {
+      "index": 17,
+      "landing_code": 3,
+      "variant": 2,
+      "lie_profile_slot": 4,
+      "name": "FAIRWAY H2"
+    },
+    {
+      "index": 18,
+      "landing_code": 4,
+      "variant": 2,
+      "lie_profile_slot": 3,
+      "name": "SEMI ROUGH H2"
+    },
+    {
+      "index": 19,
+      "landing_code": 5,
+      "variant": 2,
+      "lie_profile_slot": 2,
+      "name": "ROUGH H2"
+    },
+    {
+      "index": 20,
+      "landing_code": 6,
+      "variant": 2,
+      "lie_profile_slot": 1,
+      "name": "V ROUGH H2"
+    },
+    {
+      "index": 21,
+      "landing_code": 7,
+      "variant": 2,
+      "lie_profile_slot": 0,
+      "name": "SAND H2"
+    },
+    {
+      "index": 22,
+      "landing_code": 35,
+      "variant": 2,
+      "lie_profile_slot": 7,
+      "name": "OUT OF BOUNDS"
+    },
+    {
+      "index": 23,
+      "landing_code": 9,
+      "variant": 0,
+      "lie_profile_slot": 0,
+      "name": "GREEN H3"
+    },
+    {
+      "index": 24,
+      "landing_code": 2,
+      "variant": 3,
+      "lie_profile_slot": 5,
+      "name": "SKIRT H3"
+    },
+    {
+      "index": 25,
+      "landing_code": 3,
+      "variant": 3,
+      "lie_profile_slot": 4,
+      "name": "FAIRWAY H3"
+    },
+    {
+      "index": 26,
+      "landing_code": 4,
+      "variant": 3,
+      "lie_profile_slot": 3,
+      "name": "SEMI ROUGH H3"
+    },
+    {
+      "index": 27,
+      "landing_code": 5,
+      "variant": 3,
+      "lie_profile_slot": 2,
+      "name": "ROUGH H3"
+    },
+    {
+      "index": 28,
+      "landing_code": 6,
+      "variant": 3,
+      "lie_profile_slot": 1,
+      "name": "V ROUGH H3"
+    },
+    {
+      "index": 29,
+      "landing_code": 7,
+      "variant": 3,
+      "lie_profile_slot": 0,
+      "name": "SAND H3"
+    },
+    {
+      "index": 30,
+      "landing_code": 35,
+      "variant": 3,
+      "lie_profile_slot": 7,
+      "name": "TARMAC"
+    },
+    {
+      "index": 31,
+      "landing_code": 1,
+      "variant": 0,
+      "lie_profile_slot": 6,
+      "name": "GREEN H4"
+    },
+    {
+      "index": 32,
+      "landing_code": 2,
+      "variant": 4,
+      "lie_profile_slot": 5,
+      "name": "SKIRT H4"
+    },
+    {
+      "index": 33,
+      "landing_code": 3,
+      "variant": 4,
+      "lie_profile_slot": 4,
+      "name": "FAIRWAY H4"
+    },
+    {
+      "index": 34,
+      "landing_code": 4,
+      "variant": 4,
+      "lie_profile_slot": 3,
+      "name": "SEMI ROUGH H4"
+    },
+    {
+      "index": 35,
+      "landing_code": 5,
+      "variant": 4,
+      "lie_profile_slot": 2,
+      "name": "ROUGH H4"
+    },
+    {
+      "index": 36,
+      "landing_code": 6,
+      "variant": 4,
+      "lie_profile_slot": 1,
+      "name": "V ROUGH H4"
+    },
+    {
+      "index": 37,
+      "landing_code": 7,
+      "variant": 4,
+      "lie_profile_slot": 0,
+      "name": "SAND H4"
+    },
+    {
+      "index": 38,
+      "landing_code": 35,
+      "variant": 4,
+      "lie_profile_slot": 7,
+      "name": "DIVOT"
+    },
+    {
+      "index": 39,
+      "landing_code": 6,
+      "variant": -1,
+      "lie_profile_slot": 1,
+      "name": "GREEN D1"
+    },
+    {
+      "index": 40,
+      "landing_code": 2,
+      "variant": -1,
+      "lie_profile_slot": 5,
+      "name": "SKIRT D1"
+    },
+    {
+      "index": 41,
+      "landing_code": 3,
+      "variant": -1,
+      "lie_profile_slot": 4,
+      "name": "FAIRWAY D1"
+    },
+    {
+      "index": 42,
+      "landing_code": 4,
+      "variant": -1,
+      "lie_profile_slot": 3,
+      "name": "SEMI ROUGH D1"
+    },
+    {
+      "index": 43,
+      "landing_code": 5,
+      "variant": -1,
+      "lie_profile_slot": 2,
+      "name": "ROUGH D1"
+    },
+    {
+      "index": 44,
+      "landing_code": 6,
+      "variant": -1,
+      "lie_profile_slot": 1,
+      "name": "V ROUGH D1"
+    },
+    {
+      "index": 45,
+      "landing_code": 7,
+      "variant": -1,
+      "lie_profile_slot": 0,
+      "name": "SAND D1"
+    },
+    {
+      "index": 46,
+      "landing_code": 35,
+      "variant": -1,
+      "lie_profile_slot": 7,
+      "name": "WATER D1"
+    },
+    {
+      "index": 47,
+      "landing_code": 50,
+      "variant": -1,
+      "lie_profile_slot": 9,
+      "name": "GREEN D2"
+    },
+    {
+      "index": 48,
+      "landing_code": 2,
+      "variant": -2,
+      "lie_profile_slot": 5,
+      "name": "SKIRT D2"
+    },
+    {
+      "index": 49,
+      "landing_code": 3,
+      "variant": -2,
+      "lie_profile_slot": 4,
+      "name": "FAIRWAY D2"
+    },
+    {
+      "index": 50,
+      "landing_code": 4,
+      "variant": -2,
+      "lie_profile_slot": 3,
+      "name": "SEMI ROUGH D2"
+    },
+    {
+      "index": 51,
+      "landing_code": 5,
+      "variant": -2,
+      "lie_profile_slot": 2,
+      "name": "ROUGH D2"
+    },
+    {
+      "index": 52,
+      "landing_code": 6,
+      "variant": -2,
+      "lie_profile_slot": 1,
+      "name": "V ROUGH D2"
+    },
+    {
+      "index": 53,
+      "landing_code": 7,
+      "variant": -2,
+      "lie_profile_slot": 0,
+      "name": "SAND D2"
+    },
+    {
+      "index": 54,
+      "landing_code": 35,
+      "variant": -2,
+      "lie_profile_slot": 7,
+      "name": "WATER D2"
+    },
+    {
+      "index": 55,
+      "landing_code": 50,
+      "variant": -2,
+      "lie_profile_slot": 9,
+      "name": "GREEN D3"
+    },
+    {
+      "index": 56,
+      "landing_code": 2,
+      "variant": -3,
+      "lie_profile_slot": 5,
+      "name": "SKIRT D3"
+    },
+    {
+      "index": 57,
+      "landing_code": 3,
+      "variant": -3,
+      "lie_profile_slot": 4,
+      "name": "FAIRWAY D3"
+    },
+    {
+      "index": 58,
+      "landing_code": 4,
+      "variant": -3,
+      "lie_profile_slot": 3,
+      "name": "SEMI ROUGH D3"
+    },
+    {
+      "index": 59,
+      "landing_code": 5,
+      "variant": -3,
+      "lie_profile_slot": 2,
+      "name": "ROUGH D3"
+    },
+    {
+      "index": 60,
+      "landing_code": 6,
+      "variant": -3,
+      "lie_profile_slot": 1,
+      "name": "V ROUGH D3"
+    },
+    {
+      "index": 61,
+      "landing_code": 7,
+      "variant": -3,
+      "lie_profile_slot": 0,
+      "name": "SAND D3"
+    },
+    {
+      "index": 62,
+      "landing_code": 35,
+      "variant": -3,
+      "lie_profile_slot": 7,
+      "name": "WATER D3"
+    },
+    {
+      "index": 63,
+      "landing_code": 50,
+      "variant": -3,
+      "lie_profile_slot": 9,
+      "name": "GREEN D4"
+    },
+    {
+      "index": 64,
+      "landing_code": 2,
+      "variant": -4,
+      "lie_profile_slot": 5,
+      "name": "SKIRT D4"
+    },
+    {
+      "index": 65,
+      "landing_code": 3,
+      "variant": -4,
+      "lie_profile_slot": 4,
+      "name": "FAIRWAY D4"
+    },
+    {
+      "index": 66,
+      "landing_code": 4,
+      "variant": -4,
+      "lie_profile_slot": 3,
+      "name": "SEMI ROUGH D4"
+    },
+    {
+      "index": 67,
+      "landing_code": 5,
+      "variant": -4,
+      "lie_profile_slot": 2,
+      "name": "ROUGH D4"
+    },
+    {
+      "index": 68,
+      "landing_code": 6,
+      "variant": -4,
+      "lie_profile_slot": 1,
+      "name": "V ROUGH D4"
+    },
+    {
+      "index": 69,
+      "landing_code": 7,
+      "variant": -4,
+      "lie_profile_slot": 0,
+      "name": "SAND D4"
+    },
+    {
+      "index": 70,
+      "landing_code": 35,
+      "variant": -4,
+      "lie_profile_slot": 7,
+      "name": "WATER D4"
+    },
+    {
+      "index": 71,
+      "landing_code": 50,
+      "variant": -4,
+      "lie_profile_slot": 9,
+      "name": "MUD D1"
+    },
+    {
+      "index": 72,
+      "landing_code": 60,
+      "variant": -1,
+      "lie_profile_slot": 8,
+      "name": "MUD D2"
+    },
+    {
+      "index": 73,
+      "landing_code": 60,
+      "variant": -2,
+      "lie_profile_slot": 8,
+      "name": "MUD D3"
+    },
+    {
+      "index": 74,
+      "landing_code": 60,
+      "variant": -3,
+      "lie_profile_slot": 8,
+      "name": "MUD D4"
+    },
+    {
+      "index": 75,
+      "landing_code": 60,
+      "variant": -4,
+      "lie_profile_slot": 8,
+      "name": "MUD D5"
+    },
+    {
+      "index": 76,
+      "landing_code": 60,
+      "variant": -5,
+      "lie_profile_slot": 8,
+      "name": "UNUSED"
+    }
+  ],
+  "unresolved": [
+    "full out-of-bounds accuracy input handling",
+    "code9/code10 event11 post-stop continuation",
+    "all PRNG activation paths in normal game sessions",
+    "exact original camera/viewport/pixel scale and sprite animation timing",
+    "original full screen swing-meter travel cadence at all framerates",
+    "genuine permission to use recovered engine, constants, graphics, course map or tables commercially"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "workflow_run": 37603087138,
+  "commit": "796ce71055d54b4787ded7c9a592a60ff798b681",
+  "artifact_digest": "sha256:43bb61522870dc4d6cf1acf3cb5482184a8829a2f32cbdb16e355dff8dcb76a5",
+  "tolerance": 0,
+  "case": {
+    "descriptor_bank": "MAPI01.RAW",
+    "selector_bank": "MAPI02.RAW",
+    "tile": 137,
+    "x_subcell": 0,
+    "y_subcell": 0,
+    "landing_code": 9,
+    "descriptor_index": 23,
+    "slope_direction": 0,
+    "slope_magnitude": 0,
+    "raw_word": 23
+  },
+  "original_event_ids": [
+    11
+  ],
+  "original": {
+    "descriptor_index": 23,
+    "landing_code": 9,
+    "direction": 2430,
+    "vertical_force": -50000,
+    "horizontal_force": 90000,
+    "seed0": 14957,
+    "seed1": 54758
+  },
+  "recovered_lookup": {
+    "tile": 137,
+    "x": 0,
+    "y": 0,
+    "descriptor": 23,
+    "direction": 0,
+    "magnitude": 0
+  },
+  "recovered_interaction": {
+    "branch": "code9",
+    "direction": 2430,
+    "vertical_force": -50000,
+    "horizontal_force": 90000,
+    "seed0": 14957,
+    "seed1": 54758,
+    "marker": false
+  }
+}

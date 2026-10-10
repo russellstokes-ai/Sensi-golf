@@ -7,6 +7,9 @@ import android.os.Bundle
 import android.os.Build
 import android.view.Gravity
 import android.view.KeyEvent
+import android.view.MotionEvent
+import android.widget.TextView
+import android.graphics.drawable.GradientDrawable
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -124,6 +127,10 @@ class FullGameActivity : ComponentActivity() {
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         ))
         setContentView(frame)
+        // Optional, retractable phone controls. The entire original DOS video
+        // stays untouched; these map ONLY to the original keyboard. They are
+        // hidden until requested, so menus and artwork remain canonical.
+        attachOptionalTouchControls(frame)
         // Runtime screen capture validation must confirm the core has reached the
         // actual game before uncovering it; this delay alone is NOT that proof.
         splash.postDelayed({
@@ -160,6 +167,94 @@ class FullGameActivity : ComponentActivity() {
                 topMargin = rect.top
             }
         }
+    }
+
+    /**
+     * One small touch-controller toggle outside the classic content on wide
+     * screens. Original keyboard gameplay needs arrows + CTRL as the fire
+     * control. All input still reaches the unmodified original executable.
+     *
+     * Foldable devices have less gutter space than ordinary 16:9 phones.
+     * In that case these semitransparent buttons may overlay video only while
+     * explicitly expanded by the player, never by default.
+     */
+    private fun attachOptionalTouchControls(frame: FrameLayout) {
+        fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
+        val controls = FrameLayout(this).apply {
+            visibility = View.GONE
+            isClickable = false
+            contentDescription = "Sensible Golf touch gameplay controls"
+        }
+        frame.addView(controls, FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+        ))
+
+        fun shape(): GradientDrawable = GradientDrawable().apply {
+            setColor(Color.argb(164, 14, 31, 27))
+            setStroke(dp(1), Color.argb(180, 237, 230, 191))
+            cornerRadius = dp(13).toFloat()
+        }
+
+        fun gameButton(
+            title: String, keyCode: Int,
+            gravity: Int, xMargin: Int, bottomMargin: Int, width: Int = 50, height: Int = 50
+        ) {
+            val button = TextView(this).apply {
+                text = title
+                gravity = Gravity.CENTER
+                textSize = if (title == "SWING") 13f else 24f
+                setTextColor(Color.WHITE)
+                background = shape()
+                contentDescription = "Golf: $title"
+                isClickable = true
+                // Hold-to-aim/reselect club, or quick fire/three-click swing.
+                setOnTouchListener { _, event ->
+                    when (event.actionMasked) {
+                        MotionEvent.ACTION_DOWN -> {
+                            gameView.sendKeyEvent(KeyEvent.ACTION_DOWN, keyCode)
+                            true
+                        }
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            gameView.sendKeyEvent(KeyEvent.ACTION_UP, keyCode)
+                            true
+                        }
+                        else -> true
+                    }
+                }
+            }
+            val lp = FrameLayout.LayoutParams(dp(width), dp(height), gravity).apply {
+                bottomMargin = dp(bottomMargin)
+                if (gravity and Gravity.RIGHT == Gravity.RIGHT || gravity and Gravity.END == Gravity.END) {
+                    rightMargin = dp(xMargin)
+                } else {
+                    leftMargin = dp(xMargin)
+                }
+            }
+            controls.addView(button, lp)
+        }
+
+        gameButton("↑", KeyEvent.KEYCODE_DPAD_UP, Gravity.LEFT or Gravity.BOTTOM, 72, 122)
+        gameButton("↓", KeyEvent.KEYCODE_DPAD_DOWN, Gravity.LEFT or Gravity.BOTTOM, 72, 20)
+        gameButton("←", KeyEvent.KEYCODE_DPAD_LEFT, Gravity.LEFT or Gravity.BOTTOM, 20, 71)
+        gameButton("→", KeyEvent.KEYCODE_DPAD_RIGHT, Gravity.LEFT or Gravity.BOTTOM, 124, 71)
+        gameButton("SWING", KeyEvent.KEYCODE_CTRL_LEFT, Gravity.RIGHT or Gravity.BOTTOM, 30, 45, 86, 86)
+
+        val toggle = TextView(this).apply {
+            text = "Pad"
+            gravity = Gravity.CENTER
+            textSize = 13f
+            setTextColor(Color.WHITE)
+            background = shape()
+            contentDescription = "Show or hide original golf controls"
+            setOnClickListener {
+                controls.visibility = if (controls.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+                text = if (controls.visibility == View.VISIBLE) "Hide" else "Pad"
+            }
+        }
+        frame.addView(toggle, FrameLayout.LayoutParams(dp(55), dp(34), Gravity.RIGHT or Gravity.TOP).apply {
+            rightMargin = dp(14)
+            topMargin = dp(18)
+        })
     }
 
     private fun enableFullScreen() {

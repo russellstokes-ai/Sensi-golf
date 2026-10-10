@@ -16,8 +16,8 @@ def example_png(*, feet=True, contact=True, width=128, rgba=True):
     for y in range(64):
         row=bytearray()
         for x in range(width):
-            alpha=255 if (feet and x==40 and y==60) or (
-                contact and x==92 and y==60) else 0
+            alpha=255 if (feet and x==40 and y==58) or (
+                contact and x==54 and y==58) else 0
             if rgba: row.extend((230,40,25,alpha))
             else: row.extend((230,40,25))
         rows.append(b"\x00"+bytes(row))

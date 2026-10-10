@@ -353,8 +353,8 @@ private class PixteeCanvas(context: Context) : View(context) {
             if(menuCamera.containsWorld(golfer.golferWorldX,golfer.golferWorldY)) {
                 c.save()
                 c.scale(menuCamera.worldScale,menuCamera.worldScale,ax,ay)
-                art.draw(c,ProductionArtContract.golferFrame(golfer.stage),
-                    ax-12f,ay)
+                art.draw(c,ProductionArtContract.golferFrame(golfer),
+                    ax-PixteeSwingRig.BALL_OFFSET_X,ay)
                 c.restore()
             }
             if(menuCamera.containsWorld(golfer.x,golfer.y))
@@ -526,7 +526,7 @@ private class PixteeCanvas(context: Context) : View(context) {
         circle(c, x, y, 1.5f, Color.BLACK)
     }
     private fun golfer(c: Canvas, x: Float, y: Float) {
-        art.draw(c,ProductionArtContract.golferFrame(g.stage),x,y+1f)
+        art.draw(c,ProductionArtContract.golferFrame(g),x,y+1f)
     }
 
     /**
@@ -628,7 +628,7 @@ private class PixteeCanvas(context: Context) : View(context) {
         // Both are world projected but do NOT move together.
         val addressX=viewport.screenX(g.golferWorldX)
         val addressY=viewport.screenY(g.golferWorldY)
-        val golferX=addressX-12f*modelScale
+        val golferX=addressX-PixteeSwingRig.BALL_OFFSET_X*modelScale
         c.save()
         c.scale(modelScale,modelScale,golferX,addressY)
         golfer(c,golferX,addressY)

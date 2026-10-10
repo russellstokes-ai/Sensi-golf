@@ -5,6 +5,8 @@
 **Source project:** intended to move into its own clean repository. These are planning/data-contract files only, stored here because the GitHub connection does not expose new-repository creation. Do not link or import the Sensi-golf source tree into Pixtee builds.
 
 ## Documents
+- **[SCREEN_RESOLUTION_AND_WORLD_SCALE_2026-10-10.md](SCREEN_RESOLUTION_AND_WORLD_SCALE_2026-10-10.md)** — LOCKED normal Android phone-first calculation for original 544×912 course world, 272×456 terrain collisions, 874 original sprite frames, 720/1080/1440 phone display sizes, fold-safe camera HUD and nonstretch scaling. [Machine-readable screen matrix](SCREEN_RESOLUTION_AND_WORLD_SCALE_2026-10-10.json); [direct original game geometry artifact](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38090500528/artifacts/11684037276).
+- [Original source dimensions/collision extraction script](../../tools/extract_sensible_complete_dimensions_and_collision_reference.py) with [reproducible original-file CI workflow](../../.github/workflows/pixtee-complete-original-dimensions.yml).
 - **[ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md](ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md) — START HERE for real Windows v1.014 executable/EPF-extracted numerical gameplay data; audited club power, all slopes/green resources, exact mechanics, file hashes and unresolved game-file/animation research. Source extraction PASSED on GitHub Actions run 38089050718.**
 - [tools/extract_pixtee_original_binary_hard_data.py](../../tools/extract_pixtee_original_binary_hard_data.py) — reproducibly extract hard source data from the actual game ZIP; includes 72 MAPM/MAPS/SPT resource sets and the MAPI slope histogram. [Source-verification workflow](../../.github/workflows/pixtee-original-binary-hard-data.yml).
 - [FIDELITY_AND_PROVENANCE.md](FIDELITY_AND_PROVENANCE.md) — behavioural targets, what can be independently reproduced, legal boundaries and unknown exact display measurements
@@ -21,7 +23,7 @@
 A fresh application written to match **observable gameplay rules and functional behaviour** can be independently developed, but copying recovered source, tables, binary content, extracted sprites, original course geometry and soundtrack is **not** clean-room work. Renaming the game or moving some bunkers does not cure copying. For exact reuse of original intellectual property pursue written commercial permission. The original Sensi-golf restoration and Pixtee Golf are separate commercial/IP routes.
 
 ## Decisions fixed
-- Target platform Android; phone landscape first, foldable open/closed support.
+- Target platform Android; **normal portrait phone first**, foldable closed/open adaptive support. Do not change the locked true overhead viewpoint.
 - Preserve original-style shot feel, 13 club slots, overhead framing, three-click swing, no-wind classic default, fast loop, short load times.
 - Classic style **not** replaced by modern 3D; integer/pixel-aligned terrain presentation, optional smooth 60/90/120Hz animations.
 - Physically independent courses and artwork, yet familiar strategic hole archetypes (par/length/dogleg/hazard types, avoiding substantially matching original topology).

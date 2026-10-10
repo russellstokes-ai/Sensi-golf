@@ -29,6 +29,8 @@ jobs:
           gradle-version: '8.9'
       - name: Validate curated sponsor campaign placements
         run: python tools/validate_pixtee_sponsors.py
+      - name: Test sponsor campaign validation
+        run: python -m unittest discover -s tests -p 'test_validate_pixtee_sponsors.py' -v
       - name: Unit tests and APK
         run: gradle -p pixtee-android --no-daemon :app:testDebugUnitTest :app:assembleDebug
       - name: Verify standalone Pixtee package
@@ -39,10 +41,10 @@ jobs:
             echo "::error::Original game archive leaked into Pixtee"; exit 1
           fi
           mkdir -p out
-          cp "$APK" out/Pixtee-Golf-0.1.0-framework-portrait.apk
+          cp "$APK" out/Pixtee-Golf-0.1.1-sponsor-boards-portrait.apk
       - name: Publish test APK
         uses: actions/upload-artifact@v4
         with:
-          name: Pixtee-Golf-0.1.0-framework-portrait
-          path: out/Pixtee-Golf-0.1.0-framework-portrait.apk
+          name: Pixtee-Golf-0.1.1-sponsor-boards-portrait
+          path: out/Pixtee-Golf-0.1.1-sponsor-boards-portrait.apk
           retention-days: 14

@@ -18,3 +18,7 @@ From a machine with Android SDK/Java 17 and Gradle 8.9 installed:
 
 ## Status
 Native-Android deterministic mechanics foundation, original Lakewood hole and basic touch UI in development. This is a new game with the intended classic mechanics, not the DOS binary under a different title. Visual and physics fidelity require measured tests before claiming parity.
+
+
+## Course sponsor placements
+Four small world-coordinate sponsor boards per hole (two tee, two green), with PIXTEE placeholders until approved paid campaigns are assigned through the validated local creative manifest. The player may toggle Course Boards ON/OFF in Options. These decorative boards do not alter ball physics, collision, targeting, shot scoring or difficulty. Sponsor packages, creative standards, time windows, approval and planned sales tooling: `spec/pixtee/ON_COURSE_SPONSORSHIP.md`. The paid booking/payment portal is **not yet implemented**.

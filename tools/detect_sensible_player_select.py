@@ -36,13 +36,24 @@ def is_player_select(path: Path) -> bool:
     return blue >= 0.50 and brown >= 0.15 and green < 0.08
 
 
+def is_round_player_select(path: Path) -> bool:
+    """True Play Round shows four player slots. One-slot count is Play Season.
+
+    Verified Android evidence: Round blue=.554,brown=.393; Season
+    blue=.727,brown=.236. The old generic detector conflated both.
+    """
+    blue,brown,green=signature(path)
+    return 0.50 <= blue < 0.69 and brown >= 0.30 and green < 0.08
+
+
 def main() -> int:
     parser=argparse.ArgumentParser()
     parser.add_argument("image",type=Path)
+    parser.add_argument("--round-only",action="store_true",help="Reject Play Season 1-row select")
     args=parser.parse_args()
     b,r,g=signature(args.image)
-    ok=is_player_select(args.image)
-    print(f"original-player-select={ok} blue={b:.3f} brown={r:.3f} green={g:.3f} file={args.image.name}")
+    ok=is_round_player_select(args.image) if args.round_only else is_player_select(args.image)
+    print(f"original-player-select={ok} round_only={args.round_only} blue={b:.3f} brown={r:.3f} green={g:.3f} file={args.image.name}")
     return 0 if ok else 1
 
 

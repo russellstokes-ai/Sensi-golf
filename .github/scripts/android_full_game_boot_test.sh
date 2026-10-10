@@ -110,10 +110,29 @@ test -s "$OUT/after-escape-11s.png"
 # Take Play Round immediately, while the original menu is on screen.
 if python tools/detect_sensible_main_menu.py "$OUT/after-escape-11s.png"; then
   cp "$OUT/after-escape-11s.png" "$OUT/early-main-menu-11s.png"
-  adb shell input swipe 1260 380 1260 380 230
-  sleep 1
-  adb exec-out screencap -p > "$OUT/after-early-play-round.png"
-  if python tools/detect_sensible_player_select.py "$OUT/after-early-play-round.png"; then
+  # The old cursor points at Play Season even while we tap Play Round.
+  # Never accept the visually similar SEASON Player Select as a round.
+  # Return with original ESC and retry on an already-positioned cursor.
+  for selection_attempt in 1 2 3; do
+    if (( selection_attempt > 1 )); then
+      adb shell input keyevent 111
+      sleep 0.8
+      adb exec-out screencap -p > "$OUT/after-wrong-mode-escape-${selection_attempt}.png"
+      if ! python tools/detect_sensible_main_menu.py "$OUT/after-wrong-mode-escape-${selection_attempt}.png"; then
+        adb shell input keyevent 111
+        sleep 0.8
+      fi
+    fi
+    adb shell input swipe 1260 380 1260 380 260
+    sleep 1
+    adb exec-out screencap -p > "$OUT/after-early-play-round.png"
+    if python tools/detect_sensible_player_select.py "$OUT/after-early-play-round.png" --round-only; then
+      echo "ORIGINAL PLAY ROUND CONFIRMED: 4-row Human 1 player selector."
+      break
+    fi
+    echo "::warning::Play Round not yet selected; retry after original ESC (attempt ${selection_attempt})."
+  done
+  if python tools/detect_sensible_player_select.py "$OUT/after-early-play-round.png" --round-only; then
     cp "$OUT/after-early-play-round.png" "$OUT/early-human-player-select.png"
     adb shell input swipe 1250 840 1250 840 230
     sleep 1
@@ -182,7 +201,7 @@ test -s "$OUT/after-tap-139s.png"
 # This navigation helper is evidence collection, not gameplay sign-off.
 player_select_probe() {
   local frame="$1"
-  if ! python tools/detect_sensible_player_select.py "$frame"; then
+  if ! python tools/detect_sensible_player_select.py "$frame" --round-only; then
     return 1
   fi
   cp "$frame" "$OUT/original-player-select-confirmed.png"

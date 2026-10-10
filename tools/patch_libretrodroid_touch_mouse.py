@@ -23,8 +23,23 @@ BRIDGE = """        case RETRO_DEVICE_MOUSE: {
             // Only the first finger's primary click is mapped; this leaves
             // all gamepad and keyboard bindings unchanged.
             if (port != 0 || id != RETRO_DEVICE_ID_MOUSE_LEFT) return 0;
-            return (int16_t) (pads[port].pointerScreenXAxis >= 0 &&
-                              pads[port].pointerScreenYAxis >= 0);
+            // Fix sporadic wrong-mode clicks on authentic menu. The original
+            // cursor may still point at Play Season during the same libretro
+            // frame that receives a finger DOWN on Play Round. Let the core
+            // process the new absolute pointer position first, then deliver
+            // the mouse-down on a subsequent frame, without game patching.
+            const bool pressed=(pads[port].pointerScreenXAxis >= 0 &&
+                                pads[port].pointerScreenYAxis >= 0);
+            static bool lastPressed=false;
+            static std::chrono::steady_clock::time_point firstPressAt{};
+            if (!pressed) { lastPressed=false; return 0; }
+            if (!lastPressed) {
+                lastPressed=true;
+                firstPressAt=std::chrono::steady_clock::now();
+                return 0;
+            }
+            return (int16_t) ((std::chrono::steady_clock::now()-firstPressAt)
+                              >= std::chrono::milliseconds(35));
         }
 
 """
@@ -39,7 +54,10 @@ def patch(content: str) -> tuple[str, bool]:
         raise ValueError("Pinned input.cpp pointer handler not found exactly once")
     if "RETRO_DEVICE_ID_POINTER_PRESSED" not in content:
         raise ValueError("Pinned source no longer exposes the expected pointer")
-    return content.replace(ANCHOR, BRIDGE + ANCHOR, 1), True
+    patched=content.replace(ANCHOR, BRIDGE + ANCHOR, 1)
+    if "#include <cmath>" in patched and "#include <chrono>" not in patched:
+        patched=patched.replace("#include <cmath>", "#include <cmath>\n#include <chrono>", 1)
+    return patched, True
 
 
 def main() -> None:

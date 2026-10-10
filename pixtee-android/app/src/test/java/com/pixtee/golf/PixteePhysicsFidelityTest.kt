@@ -75,4 +75,43 @@ class PixteePhysicsFidelityTest {
             assertEquals(0f to 0f,l.greenRollAcceleration(l.teeX,l.teeY))
         }
     }
+    @Test fun waterPenaltyIsExactlyOneAndRestoresPreviousLie() {
+        val course=PixteeCourseCatalog.courses[0]
+        val custom=HoleLayout(course,1,4,150f,459f,145f,67f,
+            0f,74f,listOf(WaterPatch(231f,185f,300f,302f)),emptyList(),17L)
+        val g=PixteeCore()
+        g.startHole(custom)
+        g.restoreBall(StableBall(223f,240f,0,0,0,12,85f))
+        val start=g.x to g.y
+        assertEquals(Ground.ROUGH,g.groundAt(g.x,g.y))
+        g.whack()
+        repeat(29){g.tick()}
+        g.whack()
+        repeat(16){g.tick()}
+        assertEquals(GameStage.ROLL,g.whack())
+        repeat(250){ if(g.stage==GameStage.ROLL) g.tick() }
+        assertEquals(GameStage.READY,g.stage)
+        assertEquals(1,g.penalties)
+        assertEquals(2,g.strokes)
+        assertEquals(1,g.shots.size)
+        assertEquals(1,g.shots.single().penalty)
+        assertEquals(start,g.x to g.y)
+        assertEquals(Ground.ROUGH,g.lastLie)
+    }
+
+    @Test fun multipleHolesUseDifferentGreensAndShotGeometry() {
+        val first=PixteeCourseCatalog.hole(0,1)
+        val second=PixteeCourseCatalog.hole(0,2)
+        val g=PixteeCore()
+        g.startHole(first)
+        assertEquals(first.par,g.par)
+        assertEquals(first.pinX,g.x+(first.pinX-g.x),.0001f)
+        g.startHole(second)
+        assertEquals(second.par,g.par)
+        assertEquals(second.teeX,g.x,.0001f)
+        assertEquals(second.teeY,g.y,.0001f)
+        assertEquals(second.number,g.holeNumber)
+        assertNotEquals(first.seed,second.seed)
+    }
+
 }

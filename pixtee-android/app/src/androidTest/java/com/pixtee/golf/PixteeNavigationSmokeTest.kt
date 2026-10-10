@@ -136,6 +136,19 @@ class PixteeNavigationSmokeTest {
     }
 
     @Test
+    fun unlockableWardrobeCanBeBrowsedWithoutLeavingGameplay() {
+        // Main menu seventh entry uses y=279+6*66=675; fully visible at 800.
+        tap(180f,699f)
+        waitFor("WARDROBE")
+        tap(180f,232f) // hat category
+        waitFor("WARDROBE")
+        tap(258f,673f) // next equipped unlocked hat
+        waitFor("WARDROBE")
+        tap(180f,728f) // back
+        waitFor("MAIN")
+    }
+
+    @Test
     fun secondaryScreensCanBeOpenedAndExited() {
         tap(180f, 368f); waitFor("CAREER")
         tap(180f, 47f); waitFor("MAIN")

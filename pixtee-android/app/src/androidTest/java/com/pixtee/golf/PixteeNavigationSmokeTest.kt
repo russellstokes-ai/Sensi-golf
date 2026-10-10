@@ -41,6 +41,16 @@ class PixteeNavigationSmokeTest {
         device.click(touchX, touchY)
     }
 
+    // Gameplay controls are bottom anchored and move lower on taller phones.
+    // Fixed y=725 misses WHACK on 20:9 displays.
+    private fun tapWhack() {
+        val view = device.findObject(By.descContains("Pixtee screen:"))
+            ?: error("Canvas not visible")
+        val bounds = view.visibleBounds
+        val logicalHeight = bounds.height() * 360f / bounds.width()
+        tap(310f, logicalHeight - 25f)
+    }
+
     private fun waitFor(screen: String, stage: String? = null) {
         val match = if (stage == null) "Pixtee screen: $screen" else
             "Pixtee screen: $screen; stage: $stage"
@@ -58,11 +68,11 @@ class PixteeNavigationSmokeTest {
         tap(180f, 160f); waitFor("PLAYER")
         tap(180f, 550f); waitFor("TEE")
         tap(180f, 642f); waitFor("PLAYING", "READY")
-        tap(310f, 725f); waitFor("PLAYING", "POWER")
+        tapWhack(); waitFor("PLAYING", "POWER")
         Thread.sleep(650L)
-        tap(310f, 725f); waitFor("PLAYING", "ACCURACY")
+        tapWhack(); waitFor("PLAYING", "ACCURACY")
         Thread.sleep(300L)
-        tap(310f, 725f); waitFor("PLAYING", "FLIGHT")
+        tapWhack(); waitFor("PLAYING", "FLIGHT")
         // A full human-controlled stroke must make it back to READY or HOLED.
         val match = By.descContains("Pixtee screen: PLAYING; stage: READY; strokes: 1")
         assertTrue("Shot did not finish", device.wait(Until.hasObject(match), 12000))

@@ -454,7 +454,8 @@ private class PixteeCanvas(context: Context) : View(context) {
         // Underlying tiny golfer drawn a small distance beside the ball.
         golfer(c, bx - 12f, by)
         circle(c, bx, by + 3f, 3f, Color.rgb(27, 70, 20))
-        if (g.height > 1f) circle(c, bx, by, 3f, Color.rgb(255, 244, 174))
+        val lift = min(32f, g.height * 0.55f)
+        if (g.height > 1f) circle(c, bx, by - lift, 3f, Color.rgb(255, 244, 174))
         else circle(c, bx, by, 2.5f, Color.WHITE)
         drawHUD(c)
         if (g.stage == GameStage.READY) {

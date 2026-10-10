@@ -141,4 +141,27 @@ class PixteePhysicsFidelityTest {
             restingTick in 125..185)
     }
 
+
+    @Test fun golferRemainsAtLaunchPointWhileBallTravels() {
+        val game=PixteeCore()
+        val atAddress=game.golferWorldX to game.golferWorldY
+        game.whack()
+        repeat(29){game.tick()}
+        game.whack()
+        repeat(16){game.tick()}
+        val beforeContact=game.x to game.y
+        assertEquals(atAddress,game.golferWorldX to game.golferWorldY)
+        assertEquals(GameStage.FLIGHT,game.whack())
+        // First flight instant is exact ball-club contact coordinate.
+        assertEquals(beforeContact,game.x to game.y)
+        assertEquals(beforeContact,game.golferWorldX to game.golferWorldY)
+        repeat(32){game.tick()}
+        assertEquals(GameStage.FLIGHT,game.stage)
+        assertTrue("Ball must have separated from golfer",game.y<game.golferWorldY)
+        assertEquals(atAddress,game.golferWorldX to game.golferWorldY)
+        repeat(340) {
+            if(game.stage==GameStage.FLIGHT || game.stage==GameStage.ROLL) game.tick()
+        }
+        assertTrue(game.stage==GameStage.READY || game.stage==GameStage.HOLED)
+    }
 }

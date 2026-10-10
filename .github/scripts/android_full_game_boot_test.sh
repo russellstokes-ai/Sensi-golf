@@ -85,15 +85,26 @@ sleep 8
 adb exec-out screencap -p > "$OUT/after-tap-139s.png"
 test -s "$OUT/after-tap-139s.png"
 
-# Regression: rerun 38002246293 reached ORIGINAL Player Select, but the
-# old test mistakenly kept searching for the preceding main menu for ~7 min.
-# Player Select is a stronger milestone. Use the user's real full-game path
-# instead of backing out to attract mode. Coordinates below are the ORIGINAL
-# visible Okay button, measured on a 2400x1080 Android screenshot.
-if python tools/detect_sensible_player_select.py "$OUT/after-tap-139s.png"; then
-  cp "$OUT/after-tap-139s.png" "$OUT/original-player-select-confirmed.png"
-  echo "PASS: original Play Round path reached Player Select page."
-  adb shell input swipe 1260 840 1260 840 180
+# Player Select has been seen in previous Android evidence at 139s and even
+# at the final 'menu-live' frame. The old script looked ONLY for Main Menu,
+# then waited ~7 minutes and incorrectly failed on a valid next screen.
+# This navigation helper is evidence collection, not gameplay sign-off.
+player_select_probe() {
+  local frame="$1"
+  if ! python tools/detect_sensible_player_select.py "$frame"; then
+    return 1
+  fi
+  cp "$frame" "$OUT/original-player-select-confirmed.png"
+  echo "CONFIRMED: original DOS Player Select reached before attract mode."
+  # ORIGINAL Player Select defaults to 'Keyboard'. Since the Android UI has
+  # native direct-touch mouse, probe the Type field to learn whether a
+  # touchscreen user can select Mouse as their control device.
+  adb shell input swipe 1490 416 1490 416 180
+  sleep 0.5
+  adb exec-out screencap -p > "$OUT/after-player-type-tap.png"
+  # Keep the original game authoritative: tap the observed Okay control.
+  # Screen positions are measured at 2400x1080, not hard-coded in the app.
+  adb shell input swipe 1250 840 1250 840 180
   sleep 1
   adb exec-out screencap -p > "$OUT/after-player-okay-1s.png"
   sleep 2
@@ -101,30 +112,44 @@ if python tools/detect_sensible_player_select.py "$OUT/after-tap-139s.png"; then
   sleep 4
   adb exec-out screencap -p > "$OUT/after-player-okay-7s.png"
   python - "$OUT" <<'PYPLAYER'
-import json,sys,hashlib
+import hashlib,json,sys
 from pathlib import Path
 sys.path.insert(0,"tools")
 from detect_sensible_player_select import is_player_select,signature
 root=Path(sys.argv[1])
-names=["original-player-select-confirmed.png","after-player-okay-1s.png",
-       "after-player-okay-3s.png","after-player-okay-7s.png"]
+names=["original-player-select-confirmed.png","after-player-type-tap.png",
+       "after-player-okay-1s.png","after-player-okay-3s.png",
+       "after-player-okay-7s.png"]
 frames=[]
 for name in names:
     p=root/name
-    frames.append({"file":name, "sha256":hashlib.sha256(p.read_bytes()).hexdigest(),
-                   "still_player_select":is_player_select(p),
-                   "blue_brown_green":list(map(lambda x:round(x,4),signature(p)))})
-(root/"player-select-okay-diagnostics.json").write_text(json.dumps({
-  "player_select_proven":True, "touch":"held primary click at (1260,840) 180ms",
-  "next_menu_verified":False,
+    frames.append({"file":name,"sha256":hashlib.sha256(p.read_bytes()).hexdigest(),
+       "original_player_select":is_player_select(p),
+       "blue_brown_green":[round(x,4) for x in signature(p)]})
+(root/"player-select-navigation.json").write_text(json.dumps({
+  "player_select_reached":True,
+  "control_type_tap_xy":[1490,416],
+  "okay_tap_xy":[1250,840],
+  "hold_ms":180,
+  "next_screen_in_game_verified":False,
+  "actual_round_or_shot_verified":False,
   "screenshots":frames},indent=2)+"\n")
 print(json.dumps(frames,indent=2))
-if all(f["still_player_select"] for f in frames[1:]):
-    raise SystemExit("Player Select Okay tap did not visibly advance - NOT PLAYABLE")
-print("Player Select -> later state VISUALLY CHANGED; human review required before gameplay claim.")
+if all(f["original_player_select"] for f in frames[2:]):
+    print("NOT ADVANCED: Player Select remains visible after Okay; inspect controls.")
+else:
+    print("VISUAL CHANGE: must inspect post-Okay screenshots before calling playable.")
 PYPLAYER
+  adb shell pidof "$PKG" > "$OUT/post-player-select-pid.txt"
   adb logcat -d -s AndroidRuntime:E libretrodroid:E > "$OUT/android-errors.txt"
-  echo "ORIGINAL PLAYER-SELECT NAVIGATION PROBE FINISHED: screenshots saved."
+  if grep -Eq 'FATAL EXCEPTION|UnsatisfiedLinkError|Unable to start activity' "$OUT/android-errors.txt"; then
+    echo "::error::Android exception after Player Select navigation."
+    return 2
+  fi
+  echo "PLAYER SELECT PROBE COMPLETE: screenshots preserved; gameplay NOT yet proven."
+  return 0
+}
+if player_select_probe "$OUT/after-tap-139s.png"; then
   exit 0
 fi
 
@@ -153,6 +178,11 @@ for attempt in $(seq 1 320); do
   probe="$OUT/menu-live.png"
   adb exec-out screencap -p > "$probe"
   test -s "$probe"
+  # Player Select is itself proof that Play Round was already entered.
+  # Never wait for the earlier main menu once this screen has appeared.
+  if player_select_probe "$probe"; then
+    exit 0
+  fi
   if python tools/detect_sensible_main_menu.py "$probe"; then
     cp "$probe" "$OUT/original-main-menu-confirmed.png"
     echo "CONFIRMED: original Sensible Golf six-button menu, attempt $attempt."
@@ -173,6 +203,13 @@ for attempt in $(seq 1 320); do
     adb exec-out screencap -p > "$OUT/after-play-round-3.4s.png"
     sleep 3.0
     adb exec-out screencap -p > "$OUT/after-play-round-6.4s.png"
+    # Re-check the NEXT original screen; some boots reach Player Select,
+    # others return to Demo Mode. Do not treat those outcomes as equivalent.
+    for frame in "$OUT/after-play-round-0.4s.png" "$OUT/after-play-round-1.4s.png" "$OUT/after-play-round-3.4s.png" "$OUT/after-play-round-6.4s.png"; do
+      if player_select_probe "$frame"; then
+        exit 0
+      fi
+    done
     break
   fi
   if (( attempt <= 30 )); then

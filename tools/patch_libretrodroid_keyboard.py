@@ -91,8 +91,8 @@ def patch_environment(source: str) -> str:
 
 """
     source=inject_once(source,"        case RETRO_ENVIRONMENT_SET_PIXEL_FORMAT:",environment_case)[0]
-    return inject_after_once(source, "void Environment::deinitialize() {\\n",
-                             "    libretrodroid::Input::setKeyboardCallback(nullptr);\\n")
+    return inject_after_once(source, "void Environment::deinitialize() {\n",
+                             "    libretrodroid::Input::setKeyboardCallback(nullptr);\n")
 
 
 def main() -> None:

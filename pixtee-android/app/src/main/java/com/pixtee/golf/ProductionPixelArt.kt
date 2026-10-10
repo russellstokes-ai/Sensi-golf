@@ -141,12 +141,21 @@ class ProductionPixelArt(private val context: Context) {
     fun draw(canvas: Canvas, id: String, centreX: Float, bottomY: Float) {
         if (!approved || id !in ProductionArtContract.REQUIRED_SPRITES) return
         val bitmap=bitmap(id) ?: return
-        val worldHeight=ProductionArtContract.candidateWorldHeight(id)
-        val worldWidth=worldHeight*bitmap.width/bitmap.height.coerceAtLeast(1).toFloat()
-        // Nearest-neighbour only. Preserve artwork aspect ratio, center on
-        // ball/world anchor, and use the SAME camera zoom as other geometry.
-        val dst=RectF(centreX-worldWidth/2f,bottomY-worldHeight,
-            centreX+worldWidth/2f,bottomY)
+        val dst=if(id.startsWith("golfer_")) {
+            // The golfer frame uses the SAME pixel-to-world ratio across all
+            // poses, even when the club rotates above the head. Image bounds
+            // are never scaled relative to opaque contents or cropped.
+            if(!PixteeSwingRig.isValidFrameSize(bitmap.width,bitmap.height))
+                return
+            val r=PixteeSwingRig.artFrameRect(centreX,bottomY)
+            RectF(r[0],r[1],r[2],r[3])
+        } else {
+            val worldHeight=ProductionArtContract.candidateWorldHeight(id)
+            val worldWidth=worldHeight*bitmap.width/
+                bitmap.height.coerceAtLeast(1).toFloat()
+            RectF(centreX-worldWidth/2f,bottomY-worldHeight,
+                centreX+worldWidth/2f,bottomY)
+        }
         canvas.drawBitmap(bitmap,Rect(0,0,bitmap.width,bitmap.height),dst,paint)
     }
 }

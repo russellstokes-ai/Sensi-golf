@@ -70,7 +70,7 @@ tasks.register('verifyApprovedProductionArt') {
         }
         approved.each { asset ->
             if (!(asset.category in expectedCategories) ||
-                !(asset.file ==~ /[a-z0-9][a-z0-9_-]*\\.(png|webp|jpg|jpeg|svg)/) ||
+                !(asset.file ==~ /[a-z0-9][a-z0-9_-]*\.(png|webp|jpg|jpeg|svg)/) ||
                 !(asset.sha256 ==~ /[a-f0-9]{64}/) ||
                 !asset.ownerApprovalReference ||
                 asset.ownerApprovalReference.toString().trim().toLowerCase() in

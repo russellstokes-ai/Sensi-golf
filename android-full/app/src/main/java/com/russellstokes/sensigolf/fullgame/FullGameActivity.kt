@@ -196,7 +196,7 @@ class FullGameActivity : ComponentActivity() {
 
         fun gameButton(
             title: String, keyCode: Int,
-            anchorGravity: Int, xMargin: Int, bottomMargin: Int, width: Int = 50, height: Int = 50
+            anchorGravity: Int, xMargin: Int, bottomInset: Int, width: Int = 50, height: Int = 50
         ) {
             val button = TextView(this).apply {
                 text = title
@@ -222,7 +222,7 @@ class FullGameActivity : ComponentActivity() {
                 }
             }
             val lp = FrameLayout.LayoutParams(dp(width), dp(height), anchorGravity).apply {
-                bottomMargin = dp(bottomMargin)
+                bottomMargin = dp(bottomInset)
                 if ((anchorGravity and Gravity.RIGHT) == Gravity.RIGHT || (anchorGravity and Gravity.END) == Gravity.END) {
                     rightMargin = dp(xMargin)
                 } else {

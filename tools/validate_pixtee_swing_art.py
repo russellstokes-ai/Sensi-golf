@@ -19,8 +19,8 @@ GOLFER_IDS = (
     "golfer_putt_impact", "golfer_putt_finish",
 )
 WIDTH, HEIGHT = 128, 64
-FEET = (40, 60)
-CONTACT = (92, 60)
+FEET = (40, 58)
+CONTACT = (54, 58)
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 

@@ -43,6 +43,7 @@ private class PixteeCanvas(context: Context) : View(context) {
     private val p = Paint().apply { isAntiAlias = false; isFilterBitmap = false
         typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD) }
     private val g = PixteeCore()
+    private val menuInput = MenuInput()
     private val stats = context.getSharedPreferences("pixtee_stats_v1", Context.MODE_PRIVATE)
     private var screen = Screen.MAIN
     private var lastNs = 0L
@@ -98,6 +99,7 @@ private class PixteeCanvas(context: Context) : View(context) {
         // neither golfers nor collision geometry get stretched.
         val pixelScale = width / 360f
         canvas.scale(pixelScale, pixelScale)
+        if (screen != Screen.PLAYING) canvas.translate(0f, -menuInput.scrollY)
         when (screen) {
             Screen.MAIN -> drawMain(canvas)
             Screen.COURSES -> drawCourses(canvas)
@@ -111,6 +113,9 @@ private class PixteeCanvas(context: Context) : View(context) {
             Screen.OPTIONS -> drawOptions(canvas)
         }
         canvas.restore()
+        val state = "Pixtee screen: ${screen.name}" +
+            if (screen == Screen.PLAYING) "; stage: ${g.stage.name}; strokes: ${g.strokes}" else ""
+        if (contentDescription != state) contentDescription = state
         if (screen == Screen.PLAYING) postInvalidateOnAnimation()
     }
 
@@ -509,69 +514,126 @@ private class PixteeCanvas(context: Context) : View(context) {
         screen = Screen.SCORE
     }
 
+    /** Native touch and scroll handling against the same fixed logical drawing coordinates. */
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = event.x * 360f / width.coerceAtLeast(1)
         val y = event.y * 360f / width.coerceAtLeast(1)
-        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-            downX = x; downY = y; return true
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                downX = x; downY = y
+                if (screen != Screen.PLAYING) menuInput.down(x, y)
+                return true
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (screen != Screen.PLAYING) {
+                    menuInput.move(x, y, MenuInput.maxScroll(logicalScreenHeight()))
+                    invalidate()
+                }
+                return true
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                menuInput.cancel()
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
+                performClick()
+                val previousScreen = screen
+                if (screen == Screen.PLAYING) {
+                    tapPlaying(x, y)
+                } else {
+                    val location = menuInput.release(x, y) ?: return true
+                    tapMenu(location.first, location.second)
+                }
+                if (screen != previousScreen) menuInput.reset()
+                invalidate()
+                return true
+            }
         }
-        if (event.actionMasked != MotionEvent.ACTION_UP) return true
+        return true
+    }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
+    }
+
+    private fun tapMenu(x: Float, y: Float) {
+        fun hit(l: Float, t: Float, w: Float, h: Float): Boolean =
+            MenuInput.contains(x, y, l, t, l + w, t + h)
         when (screen) {
-            Screen.MAIN -> if (y in 279f..692f) {
-                when (((y - 279f) / 66f).toInt()) {
-                    0 -> screen = Screen.COURSES
-                    1 -> screen = Screen.CAREER
-                    2 -> { g.restart(); g.practice = true; screen = Screen.TEE }
-                    3 -> screen = Screen.STATS
-                    4 -> screen = Screen.TROPHIES
-                    5 -> screen = Screen.OPTIONS
+            Screen.MAIN -> {
+                for (i in 0..5) {
+                    if (!hit(44f, 279f + i * 66f, 272f, 49f)) continue
+                    when (i) {
+                        0 -> screen = Screen.COURSES
+                        1 -> screen = Screen.CAREER
+                        2 -> { g.restart(); g.practice = true; screen = Screen.TEE }
+                        3 -> screen = Screen.STATS
+                        4 -> screen = Screen.TROPHIES
+                        5 -> screen = Screen.OPTIONS
+                    }
+                    return
                 }
             }
-            Screen.COURSES -> {
-                if (y < 78f || y > 667f) screen = Screen.MAIN
-                else if (y in 132f..185f) screen = Screen.PLAYER // one original hole available
+            Screen.COURSES -> when {
+                hit(6f, 24f, 348f, 47f) || hit(75f, 677f, 210f, 46f) -> screen = Screen.MAIN
+                hit(37f, 132f, 286f, 51f) -> screen = Screen.PLAYER
+                // Unbuilt course entries deliberately cannot launch a placeholder hole.
             }
             Screen.PLAYER -> when {
-                y in 522f..593f -> screen = Screen.TEE
-                y > 593f || y < 76f -> screen = Screen.COURSES
+                hit(76f, 527f, 208f, 51f) -> screen = Screen.TEE
+                hit(6f, 24f, 348f, 47f) || hit(76f, 600f, 208f, 51f) ->
+                    screen = Screen.COURSES
             }
             Screen.TEE -> when {
-                y in 595f..695f -> { g.restart(); screen = Screen.PLAYING; lastNs = 0L }
-                y < 75f -> screen = Screen.PLAYER
-            }
-            Screen.PLAYING -> when {
-                g.stage == GameStage.HOLED -> finishHole()
-                y > logicalScreenHeight() - 75f -> when {
-                    x < 87f -> g.steer(-3.5f)
-                    x < 172f -> g.changeClub(1)
-                    x < 263f -> g.steer(3.5f)
-                    else -> g.whack()
+                hit(63f, 611f, 234f, 60f) -> {
+                    g.restart(); screen = Screen.PLAYING; lastNs = 0L; accumulator = 0f
                 }
-                g.stage == GameStage.READY && abs(x - downX) > 20f ->
-                    g.steer((x - downX) / 5f)
-                g.stage == GameStage.POWER || g.stage == GameStage.ACCURACY -> g.whack()
-                // Tap the tiny HUD course name to pause and return to main menu.
-                y < 38f -> screen = Screen.MAIN
+                hit(6f, 24f, 348f, 47f) -> screen = Screen.PLAYER
             }
             Screen.SCORE -> when {
-                y in 535f..617f -> { g.restart(); screen = Screen.TEE }
-                y > 619f || y < 80f -> screen = Screen.MAIN
+                hit(50f, 545f, 260f, 52f) -> { g.restart(); screen = Screen.TEE }
+                hit(50f, 625f, 260f, 52f) || hit(6f, 24f, 348f, 47f) ->
+                    screen = Screen.MAIN
             }
             Screen.CAREER -> when {
-                y < 80f -> screen = Screen.MAIN
-                y > 643f -> { g.restart(); g.practice = true; screen = Screen.TEE }
+                hit(6f, 24f, 348f, 47f) -> screen = Screen.MAIN
+                hit(37f, 652f, 286f, 45f) -> {
+                    g.restart(); g.practice = true; screen = Screen.TEE
+                }
             }
-            Screen.STATS, Screen.TROPHIES -> if (y < 80f || y > 645f) screen = Screen.MAIN
+            Screen.STATS, Screen.TROPHIES -> {
+                if (hit(6f, 24f, 348f, 47f) || hit(74f, 667f, 212f, 53f)) {
+                    screen = Screen.MAIN
+                }
+            }
             Screen.OPTIONS -> when {
-                y < 80f || y > 652f -> screen = Screen.MAIN
-                y in 413f..483f -> sound = !sound
-                y in 497f..568f -> {
+                hit(6f, 24f, 348f, 47f) || hit(74f, 670f, 212f, 47f) ->
+                    screen = Screen.MAIN
+                hit(30f, 417f, 300f, 53f) -> sound = !sound
+                hit(30f, 502f, 300f, 53f) -> {
                     sponsorBoards = !sponsorBoards
                     courseOptions.edit().putBoolean("course_boards", sponsorBoards).apply()
                 }
             }
+            Screen.PLAYING -> Unit
         }
-        invalidate()
-        return true
+    }
+
+    private fun tapPlaying(x: Float, y: Float) {
+        when {
+            g.stage == GameStage.HOLED -> finishHole()
+            y >= logicalScreenHeight() - 57f -> when {
+                x < 87f -> g.steer(-3.5f)
+                x < 172f -> g.changeClub(1)
+                x < 263f -> g.steer(3.5f)
+                else -> g.whack()
+            }
+            g.stage == GameStage.READY && abs(x - downX) > 20f ->
+                g.steer((x - downX) / 5f)
+            g.stage == GameStage.POWER || g.stage == GameStage.ACCURACY -> g.whack()
+            // Keep the upper strip as an explicit exit gesture until pause is implemented.
+            y < 38f -> screen = Screen.MAIN
+        }
     }
 }

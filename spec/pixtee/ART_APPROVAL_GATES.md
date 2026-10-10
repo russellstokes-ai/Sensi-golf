@@ -1,3 +1,27 @@
+# REJECTED ART — enforce no placeholder sprites (10 October 2026)
+
+The owner rejected the full ten-sprite glyph batch as unacceptable, and has
+explicitly required **NO PLACEHOLDER SPRITES, FULL STOP**.
+
+Enforced in active Pixtee development:
+- The glyph atlas and its SVG contact sheet were deleted from the branch.
+- Only genuinely authored, owner-approved production PNGs may be drawn as
+  golfer, tree, spectator or flower sprites.
+- If an image is absent or not approved, the renderer draws no sprite and
+  never creates a dummy box/silhouette/pixel glyph in its place.
+- Debug builds are ENGINE TESTS ONLY until the art has been approved.
+  They are not visually acceptable or distributable preview APKs.
+- Release Gradle builds are blocked if a required sprite or explicit owner
+  approval marker is missing.
+- No approved production sprite assets currently exist in the project.
+  Approval must be obtained before any production visual claim.
+
+This restriction does not prevent work on ball physics, controls, gameplay,
+course geometry, scoring, saved games, progression or automated testing.
+It does prevent labelling a grey-box or assetless build as a finished game.
+
+---
+
 # Pixtee Golf — visual asset approval gates
 
 **Status: ALL VISUAL ART UNAPPROVED.** The project owner signs off each batch before it is locked as the production canonical asset. Unapproved colours, Canvas primitives, deterministic geometry and any preview images are temporary scaffolding, not final art.

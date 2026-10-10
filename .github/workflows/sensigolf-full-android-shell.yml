@@ -6,6 +6,11 @@ on:
       - 'android-full/**'
       - 'tools/build_original_dosz.py'
       - 'tools/detect_sensible_main_menu.py'
+      - 'tools/detect_sensible_player_select.py'
+      - 'tools/detect_sensible_course_select.py'
+      - 'tools/patch_libretrodroid_touch_mouse.py'
+      - 'tools/patch_libretrodroid_keyboard.py'
+      - 'tests/test_touch_mouse_bridge.py'
       - 'tests/test_original_dosz.py'
       - '.github/workflows/sensigolf-full-android-shell.yml'
       - '.github/scripts/android_full_game_boot_test.sh'
@@ -60,6 +65,16 @@ jobs:
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses > /dev/null || true
           "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+      - name: Apply and verify pinned GPL LibretroDroid direct-touch bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_touch_mouse_bridge.py' -v
+          python tools/patch_libretrodroid_touch_mouse.py
+          python tools/patch_libretrodroid_keyboard.py
+          python tools/patch_libretrodroid_keyboard.py   # verify patch is idempotent
+          bash -n .github/scripts/android_full_game_boot_test.sh
+          grep -Fq 'case RETRO_DEVICE_MOUSE: {' android-full/vendor/LibretroDroid/libretrodroid/src/main/cpp/input.cpp
       - name: Compile DOSBox Pure native Android library
         shell: bash
         run: |
@@ -131,6 +146,32 @@ jobs:
           name: original-full-game-android-poc-boot-evidence
           path: analysis/private/android-full-boot/
           retention-days: 14
+      # Make a legally distributable user-test frontend AFTER the native
+      # original-game compatibility run. Never upload an APK containing the
+      # unlicensed original DOS executable or course assets to a public repo.
+      - name: Package installable no-game test APK
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f android-full/app/src/main/assets/game/SensibleGolf.dosz
+          gradle -p android-full --no-daemon :app:assembleDebug
+          mkdir -p analysis/private/android-user-test
+          src=android-full/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$src"
+          if unzip -Z1 "$src" | grep -Fq 'assets/game/SensibleGolf.dosz'; then
+            echo "::error::Refusing to distribute APK with original commercial game."
+            exit 1
+          fi
+          cp "$src" analysis/private/android-user-test/SensiGolf-Original-Android-Import-TEST.apk
+          echo "PASS: user-test APK has native emulator and on-device ZIP importer; no original commercial game assets."
+      - name: Upload installable no-game test APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SensiGolf-Original-Android-Import-TEST
+          path: analysis/private/android-user-test/SensiGolf-Original-Android-Import-TEST.apk
+          retention-days: 7
       # Android emulator boot is best-effort on hosted runners; absence of KVM
       # or ADB connectivity must not invalidate successful native compilation.
       # Do not label a compile-only result as an end-to-end full-game pass.

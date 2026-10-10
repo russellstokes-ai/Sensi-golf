@@ -51,6 +51,13 @@ def fractions(path: Path, normalize_dim_fade: bool = False) -> tuple[float, floa
 
 
 def is_main_menu(path: Path) -> bool:
+    # A four-player original Player Select page has many brown buttons too.
+    # It previously passed this main-menu heuristic despite displaying the
+    # WRONG screen, hiding a genuine Play Round success in run 38038070178.
+    # Require the lack of the original blue Player Select background.
+    from detect_sensible_player_select import is_player_select
+    if is_player_select(path):
+        return False
     brown, green = fractions(path)
     if brown >= 0.18 and green <= 0.15:
         return True

@@ -33,6 +33,10 @@ class PixteeCore {
         const val PIN_Y = 67f
         const val TEE_X = 151f
         const val TEE_Y = 459f
+        /** Independent swing strength: the TOP of the circular dial is 100%, not the bottom. */
+        fun powerForMeter(position: Float): Float =
+            sin(PI * position.coerceIn(0f, 1f).toDouble()).toFloat().coerceIn(0f, 1f)
+
         val CLUBS = listOf(
             Club("Driver", 275f, 22f), Club("3 Wood", 235f, 24f),
             Club("5 Wood", 210f, 28f), Club("3 Iron", 185f, 30f),
@@ -100,8 +104,10 @@ class PixteeCore {
             }
             GameStage.POWER -> {
                 // A downswing returns along the SAME meter arc; do not restart at zero.
-                chosenPower = meter.coerceIn(0.05f, 1f)
-                meter = chosenPower
+                val cursorPosition = meter.coerceIn(0f, 1f)
+                chosenPower = powerForMeter(cursorPosition).coerceIn(0.05f, 1f)
+                // Keep the cursor at its physical arc location for downswing.
+                meter = cursorPosition
                 meterDirection = -1f
                 stage = GameStage.ACCURACY
             }

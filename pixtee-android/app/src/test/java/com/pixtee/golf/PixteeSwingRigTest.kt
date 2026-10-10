@@ -60,12 +60,19 @@ class PixteeSwingRigTest {
     }
 
     @Test fun puttingNeverUsesAnUnrelatedDriverFollowThrough() {
-        assertEquals(SwingPose.PUTT,PixteeSwingRig.phase(
+        assertEquals(SwingPose.PUTT_READY,PixteeSwingRig.phase(
+            GameStage.READY,0,0,0,true))
+        assertEquals(SwingPose.PUTT_BACK,PixteeSwingRig.phase(
+            GameStage.POWER,12,0,0,true))
+        assertEquals(SwingPose.PUTT_BACK,PixteeSwingRig.phase(
+            GameStage.ACCURACY,12,4,0,true))
+        assertEquals(SwingPose.PUTT_FINISH,PixteeSwingRig.phase(
             GameStage.ROLL,3,7,5,true))
-        assertEquals(SwingPose.IMPACT,PixteeSwingRig.phase(
+        assertEquals(SwingPose.PUTT_IMPACT,PixteeSwingRig.phase(
             GameStage.ROLL,3,7,0,true))
-        assertEquals(SwingPose.ADDRESS,PixteeSwingRig.phase(
+        assertEquals(SwingPose.PUTT_READY,PixteeSwingRig.phase(
             GameStage.ROLL,3,7,20,true))
+        assertEquals(4,PixteeSwingRig.PUTTING.map { it.spriteId }.distinct().size)
         assertEquals(SwingPose.FOLLOW_THROUGH,PixteeSwingRig.phase(
             GameStage.FLIGHT,30,10,2,false))
     }

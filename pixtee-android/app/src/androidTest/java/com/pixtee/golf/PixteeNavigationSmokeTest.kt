@@ -60,12 +60,17 @@ class PixteeNavigationSmokeTest {
             val activeWindow = device.currentPackageName
             val actual = current?.contentDescription?.toString() ?: "missing view"
             val bounds = current?.visibleBounds?.toString() ?: "no bounds"
+            // UiDevice.executeShellCommand invokes the service without a shell pipe.
+            // Filter locally, otherwise Android treats '|' as a dumpsys argument.
             val traces = device.executeShellCommand(
-                "logcat -d -s PixteeTouch:I PixteeSmoke:I '*:S' | tail -n 36"
-            ).takeLast(6000)
-            val focus = device.executeShellCommand(
-                "dumpsys window | grep -E 'mCurrentFocus|mFocusedApp|mObscuringWindow' | head -n 12"
-            ).take(1200)
+                "logcat -d -t 120 -s PixteeTouch:I PixteeSmoke:I"
+            ).takeLast(4500).replace('\n', ';')
+            val focus = device.executeShellCommand("dumpsys window")
+                .lineSequence()
+                .filter { it.contains("mCurrentFocus") || it.contains("mFocusedApp") }
+                .take(5)
+                .joinToString(" / ")
+                .take(800)
             throw AssertionError("Expected [$match], actual [$actual], bounds=[$bounds], package=[$activeWindow]; focus=[$focus]; native-touch-events=[$traces]")
         }
     }

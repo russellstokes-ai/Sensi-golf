@@ -99,7 +99,21 @@ player_select_probe() {
   # ORIGINAL Player Select defaults to 'Keyboard'. Since the Android UI has
   # native direct-touch mouse, probe the Type field to learn whether a
   # touchscreen user can select Mouse as their control device.
-  adb shell input swipe 1490 416 1490 416 180
+  # The original presents two legitimate layouts. In the one-player page,
+  # the Type field is at y=416; in the full four-row page it is at y=365.
+  # A static y=416 in the four-row page would click player TWO's Off field,
+  # which must never be mistaken for configuring Human 1 to use Mouse.
+  type_y=$(python - "$frame" <<'PYTYPE'
+import sys
+from PIL import Image
+with Image.open(sys.argv[1]) as image:
+    r,g,b=image.convert("RGB").getpixel((1490,550))
+    four_rows=(r>40 and r>g*1.4 and r>b*1.75)
+print(365 if four_rows else 416)
+PYTYPE
+)
+  echo "Player Select layout: Human 1 Type control at screen (1490,$type_y)."
+  adb shell input swipe 1490 "$type_y" 1490 "$type_y" 180
   sleep 0.5
   adb exec-out screencap -p > "$OUT/after-player-type-tap.png"
   # Keep the original game authoritative: tap the observed Okay control.
@@ -128,7 +142,7 @@ for name in names:
        "blue_brown_green":[round(x,4) for x in signature(p)]})
 (root/"player-select-navigation.json").write_text(json.dumps({
   "player_select_reached":True,
-  "control_type_tap_xy":[1490,416],
+  "control_type_tap_x":1490,"control_type_tap_y":"chosen from Player Select row layout",
   "okay_tap_xy":[1250,840],
   "hold_ms":180,
   "next_screen_in_game_verified":False,

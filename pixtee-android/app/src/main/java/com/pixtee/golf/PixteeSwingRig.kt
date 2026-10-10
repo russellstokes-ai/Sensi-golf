@@ -14,7 +14,10 @@ enum class SwingPose(val spriteId: String) {
     IMPACT("golfer_impact"),
     FOLLOW_THROUGH("golfer_follow"),
     FINISH("golfer_finish"),
-    PUTT("golfer_putt")
+    PUTT_READY("golfer_putt_ready"),
+    PUTT_BACK("golfer_putt_back"),
+    PUTT_IMPACT("golfer_putt_impact"),
+    PUTT_FINISH("golfer_putt_finish")
 }
 
 object PixteeSwingRig {
@@ -73,19 +76,22 @@ object PixteeSwingRig {
     fun phase(stage: GameStage, backswingTicks: Int,
               downswingTicks: Int, postContactTicks: Int,
               putter: Boolean = false): SwingPose {
-        if(stage==GameStage.READY || stage==GameStage.HOLED) return SwingPose.ADDRESS
+        // Putting is a separate four-frame animation family. It must never
+        // display a full-swing impact or driver follow-through sprite.
         if(putter) {
             return when(stage) {
-                GameStage.POWER -> if(backswingTicks<10) SwingPose.ADDRESS
-                    else SwingPose.TAKEAWAY
-                GameStage.ACCURACY -> SwingPose.DOWNSWING
-                GameStage.FLIGHT, GameStage.ROLL ->
-                    if(postContactTicks==0) SwingPose.IMPACT
-                    else if(postContactTicks<13) SwingPose.PUTT
-                    else SwingPose.ADDRESS
-                else -> SwingPose.ADDRESS
+                GameStage.READY, GameStage.HOLED -> SwingPose.PUTT_READY
+                GameStage.POWER -> if(backswingTicks<10) SwingPose.PUTT_READY
+                    else SwingPose.PUTT_BACK
+                GameStage.ACCURACY -> SwingPose.PUTT_BACK
+                GameStage.FLIGHT, GameStage.ROLL -> when {
+                    postContactTicks==0 -> SwingPose.PUTT_IMPACT
+                    postContactTicks<13 -> SwingPose.PUTT_FINISH
+                    else -> SwingPose.PUTT_READY
+                }
             }
         }
+        if(stage==GameStage.READY || stage==GameStage.HOLED) return SwingPose.ADDRESS
         return when(stage) {
             GameStage.POWER -> when {
                 backswingTicks<7 -> SwingPose.ADDRESS
@@ -117,5 +123,11 @@ object PixteeSwingRig {
         SwingPose.ADDRESS, SwingPose.TAKEAWAY, SwingPose.BACKSWING,
         SwingPose.TOP, SwingPose.DOWNSWING, SwingPose.IMPACT,
         SwingPose.FOLLOW_THROUGH, SwingPose.FINISH
+    )
+
+    /** Approved 12-pose source sheet supplies four distinct putter frames. */
+    val PUTTING = listOf(
+        SwingPose.PUTT_READY, SwingPose.PUTT_BACK,
+        SwingPose.PUTT_IMPACT, SwingPose.PUTT_FINISH
     )
 }

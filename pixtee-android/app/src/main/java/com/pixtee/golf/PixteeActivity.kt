@@ -203,9 +203,9 @@ private class PixteeCanvas(context: Context) : View(context) {
         if (lastNs != 0L && screen == Screen.PLAYING) {
             accumulator += ((now - lastNs) / 1_000_000_000f).coerceIn(0f, 0.05f)
             var steps = 0
-            while (accumulator >= 1f / 60f && steps < 4) {
+            while (accumulator >= PixteeCore.TICK_SECONDS && steps < 4) {
                 g.tick()
-                accumulator -= 1f / 60f
+                accumulator -= PixteeCore.TICK_SECONDS
                 steps++
             }
         }

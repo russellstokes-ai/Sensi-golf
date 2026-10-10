@@ -7,10 +7,10 @@ import org.junit.Test
 class ProductionArtContractTest {
     @Test fun expectedProductionSpriteNamesAreStableAndUnique() {
         val ids = ProductionArtContract.REQUIRED_SPRITES
-        assertEquals(19,ids.size)
+        assertEquals(22,ids.size)
         assertEquals(5,ProductionArtContract.TERRAIN_TILES.size)
         assertEquals(4,ProductionArtContract.UI_ART.size)
-        assertEquals(28,(
+        assertEquals(31,(
             ids+ProductionArtContract.TERRAIN_TILES+ProductionArtContract.UI_ART
         ).distinct().size)
         assertEquals(ids.size,ids.distinct().size)
@@ -23,7 +23,7 @@ class ProductionArtContractTest {
     @Test fun allSwingFramesHaveExplicitProductionSlots() {
         val ids=ProductionArtContract.REQUIRED_SPRITES
         assertTrue(PixteeSwingRig.FULL_SWING.all { it.spriteId in ids })
-        assertTrue(SwingPose.PUTT.spriteId in ids)
+        assertTrue(PixteeSwingRig.PUTTING.all { it.spriteId in ids })
         assertTrue("spectator_photographer" in ids)
         assertTrue("camera_flash" in ids)
         assertTrue("bird_wings_up" in ids)

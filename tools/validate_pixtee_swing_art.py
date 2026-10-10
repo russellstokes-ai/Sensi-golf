@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate real transparent Pixtee golfer frames before any Android preview.
 
-All eight full-swing frames plus putter must be identical 128x64 RGBA PNGs.
+Eight full-swing frames plus four distinct putter poses must be identical 128x64 RGBA PNGs.
 A common feet pivot and contact point protect the exact game-world geometry.
 This checks exported pixels, not aesthetic quality, swing continuity, or
 copyright/owner approval. Those still require human review and sign-off.
@@ -15,7 +15,8 @@ import zlib
 GOLFER_IDS = (
     "golfer_idle", "golfer_takeaway", "golfer_backswing", "golfer_top",
     "golfer_downswing", "golfer_impact", "golfer_follow",
-    "golfer_finish", "golfer_putt",
+    "golfer_finish", "golfer_putt_ready", "golfer_putt_back",
+    "golfer_putt_impact", "golfer_putt_finish",
 )
 WIDTH, HEIGHT = 128, 64
 FEET = (40, 60)

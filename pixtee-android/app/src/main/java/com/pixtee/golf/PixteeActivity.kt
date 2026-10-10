@@ -43,6 +43,8 @@ private class PixteeCanvas(context: Context) : View(context) {
     private val p = Paint().apply { isAntiAlias = false; isFilterBitmap = false
         typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD) }
     private val g = PixteeCore()
+    private val menuAttract = MenuAttractMode()
+    private var menuAccumulator = 0f
     private val art = ProductionPixelArt(context)
     private val menuInput = MenuInput()
     private var round: PixteeRound? = null
@@ -241,6 +243,15 @@ private class PixteeCanvas(context: Context) : View(context) {
                 steps++
             }
         }
+        if (lastNs != 0L && screen == Screen.MAIN && courseMotion) {
+            menuAccumulator += ((now - lastNs) / 1_000_000_000f).coerceIn(0f, .05f)
+            var steps = 0
+            while (menuAccumulator >= PixteeCore.TICK_SECONDS && steps < 4) {
+                menuAttract.tick()
+                menuAccumulator -= PixteeCore.TICK_SECONDS
+                steps++
+            }
+        }
         lastNs = now
         // Persist only settled ball coordinates. Pending swings resume from
         // the last fully completed shot, not a partially simulated frame.
@@ -276,6 +287,7 @@ private class PixteeCanvas(context: Context) : View(context) {
                 "; course: ${g.activeHole?.course?.id}; hole: ${g.holeNumber}" else "")
         if (contentDescription != state) contentDescription = state
         if (screen == Screen.PLAYING) postInvalidateOnAnimation()
+        else if (screen == Screen.MAIN && courseMotion) postInvalidateDelayed(33L)
     }
 
     private fun fill(c: Canvas, color: Int) { c.drawColor(color) }
@@ -325,7 +337,33 @@ private class PixteeCanvas(context: Context) : View(context) {
         text(c, "<", 20f, 55f, 23f, gold)
     }
     private fun drawMain(c: Canvas) {
-        navyBackdrop(c)
+        val scene=menuAttract.hole
+        val menuCamera=CourseViewport(360f,logicalScreenHeight(),
+            zoom=1.35f,focusX=150f,focusY=245f)
+        drawCourseScene(c,scene,menuCamera)
+        // Real gameplay-driven demo golfers. Character sprites stay invisible
+        // until the owner-approved production pack is actually installed.
+        for (actor in menuAttract.actors) {
+            val golfer=actor.player
+            val ax=menuCamera.screenX(golfer.golferWorldX)
+            val ay=menuCamera.screenY(golfer.golferWorldY)
+            val bx=menuCamera.screenX(golfer.x)
+            val by=menuCamera.screenY(golfer.y)
+            if(menuCamera.containsWorld(golfer.golferWorldX,golfer.golferWorldY)) {
+                c.save()
+                c.scale(menuCamera.worldScale,menuCamera.worldScale,ax,ay)
+                art.draw(c,ProductionArtContract.golferFrame(golfer.stage),
+                    ax-12f,ay)
+                c.restore()
+            }
+            if(menuCamera.containsWorld(golfer.x,golfer.y))
+                circle(c,bx,by,2.5f*menuCamera.worldScale,
+                    gearColour(StyleSlot.BALL))
+        }
+        // Menus remain interactive in the same places as the validated UI.
+        // Final logo, lettering, wooden panels and scenic tile art are
+        // still subject to exact source-asset approval before release.
+        rect(c,10f,108f,350f,251f,Color.argb(145,4,18,29))
         text(c, "PIXTEE", 180f, 164f, 64f, Color.rgb(255, 193, 31), true)
         text(c, "GOLF", 180f, 228f, 56f, Color.rgb(63, 212, 53), true)
         val buttons = listOf("PLAY ROUND", "CAREER",
@@ -382,10 +420,14 @@ private class PixteeCanvas(context: Context) : View(context) {
 
     /** Each hole renders from the exact same authored geometry used for collisions. */
     private fun course(c: Canvas) {
-        val layout = g.activeHole ?: return
+        val layout=g.activeHole ?: return
+        drawCourseScene(c,layout,gameViewport())
+    }
+
+    /** Shared world renderer for real gameplay and the independent menu scene. */
+    private fun drawCourseScene(c: Canvas, layout: HoleLayout, viewport: CourseViewport) {
         val palette = CourseArtDirection.palette(layout.course.theme)
         fill(c, palette.rough)
-        val viewport = gameViewport()
         c.save()
         c.clipRect(0f,0f,360f,logicalScreenHeight())
         c.scale(viewport.worldScale, viewport.worldScale)
@@ -545,8 +587,8 @@ private class PixteeCanvas(context: Context) : View(context) {
     private fun drawSponsorBoard(c: Canvas, sign: SponsorBoardView) {
         val x = sign.slot.x
         val y = sign.slot.y
-        val w = 35f
-        val h = 13f
+        val w = 42f
+        val h = 16f
         val left = x - w / 2f
         rect(c, left + 3f, y + 2f, left + 5f, y + 8f, Color.rgb(89, 52, 23))
         rect(c, left + w - 5f, y + 2f, left + w - 3f, y + 8f, Color.rgb(89, 52, 23))
@@ -565,7 +607,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             val colour = Color.rgb((sign.foregroundRgb shr 16) and 255,
                 (sign.foregroundRgb shr 8) and 255, sign.foregroundRgb and 255)
             text(c, sign.copy.take(11), x, y - 4.2f,
-                if (sign.copy.length > 7) 4.3f else 5.5f, colour, true)
+                if (sign.copy.length > 7) 5.0f else 6.2f, colour, true)
         }
         if (sign.paid) {
             // Embedded disclosure within the sign; no separate UI banner.

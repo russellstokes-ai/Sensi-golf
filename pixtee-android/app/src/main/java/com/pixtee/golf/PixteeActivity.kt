@@ -117,6 +117,14 @@ private class PixteeCanvas(context: Context) : View(context) {
         }
     }
     private val stats = context.getSharedPreferences("pixtee_stats_v1", Context.MODE_PRIVATE)
+    private val masteryPrefs =
+        context.getSharedPreferences("pixtee_course_mastery_v1", Context.MODE_PRIVATE)
+    private fun courseMastery(): PixteeCourseMastery =
+        PixteeCourseMasteryCodec.decode(masteryPrefs.getString("records",null))
+            ?: PixteeCourseMastery()
+    private fun saveMastery(value: PixteeCourseMastery) {
+        masteryPrefs.edit().putString("records",PixteeCourseMasteryCodec.encode(value)).apply()
+    }
     private val gameSave = context.getSharedPreferences("pixtee_round_save_v2",Context.MODE_PRIVATE)
     private var lastSaved = ""
     private fun savedGame(): SavedPixteeGame? =
@@ -319,10 +327,13 @@ private class PixteeCanvas(context: Context) : View(context) {
     private fun drawCourses(c: Canvas) {
         pageHeader(c, "SELECT GOLF COURSE")
         text(c, "${holes.size} PIXTEE COURSES", 180f, 108f, 13f, gold, true)
+        val medals=courseMastery()
         holes.forEachIndexed { i, course ->
             val y = 132f + i * 56f
             woodButton(c, course.title.uppercase(), 37f, y, 286f, 45f)
-            text(c, "18 HOLES", 294f, y + 29f, 9f, cream, true)
+            val medal=medals.medal(i)
+            text(c, if(medal==MasteryMedal.UNPLAYED) "18 HOLES" else medal.name,
+                294f, y + 29f, 9f, cream, true)
         }
         woodButton(c, "BACK", 75f, 132f + holes.size * 56f + 20f, 210f, 46f)
     }
@@ -843,6 +854,10 @@ private class PixteeCanvas(context: Context) : View(context) {
             e.putInt("best",scored.strokes)
         if(current.isComplete) {
             e.putInt("rounds",stats.getInt("rounds",0)+1)
+            // Only genuinely completed full rounds contribute permanent mastery.
+            if(current.length==18 && current.mode!=RoundMode.PRACTICE) {
+                saveMastery(courseMastery().record(current))
+            }
             lastReward=""
             if(current.length>=9 && current.results.take(9).all{it.strokes<=it.par})
                 e.putInt("clean_nine",stats.getInt("clean_nine",0)+1)

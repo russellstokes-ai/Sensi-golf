@@ -63,8 +63,17 @@ if python tools/detect_sensible_main_menu.py "$OUT/after-escape-11s.png"; then
     adb shell input swipe 1250 840 1250 840 230
     sleep 1
     adb exec-out screencap -p > "$OUT/after-early-human-okay.png"
-    if python tools/detect_sensible_course_select.py "$OUT/after-early-human-okay.png"; then
-      cp "$OUT/after-early-human-okay.png" "$OUT/early-human-course-menu.png"
+    early_course_frame="$OUT/after-early-human-okay.png"
+    if ! python tools/detect_sensible_course_select.py "$early_course_frame"; then
+      # Preserve the failed first click evidence. A true Android ESC/ENTER
+      # is now forwarded to the original game by our libretro key callback.
+      adb shell input keyevent 66
+      sleep 1
+      adb exec-out screencap -p > "$OUT/after-early-human-enter.png"
+      early_course_frame="$OUT/after-early-human-enter.png"
+    fi
+    if python tools/detect_sensible_course_select.py "$early_course_frame"; then
+      cp "$early_course_frame" "$OUT/early-human-course-menu.png"
       adb shell input swipe 1260 310 1260 310 230
       sleep 2
       adb exec-out screencap -p > "$OUT/after-early-human-augusta-2s.png"

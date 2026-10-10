@@ -28,6 +28,9 @@ REQUIRED_FRAMES = {
     "spectator_photographer.png", "camera_flash.png",
     "bird_wings_up.png", "bird_wings_down.png",
     "flower_yellow.png", "flower_pink.png",
+    "terrain_rough.png", "terrain_fairway.png", "terrain_green.png",
+    "terrain_sand.png", "terrain_water.png", "ui_pixtee_logo.png",
+    "ui_wood_button.png", "ui_hud_panel.png", "ui_sponsor_board.png",
 }
 ASSET_PATH = Path("pixtee-android/app/src/main/assets/art/production")
 LEDGER_PATH = Path("spec/pixtee/ART_REVIEW_REGISTER.json")

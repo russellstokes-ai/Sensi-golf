@@ -116,6 +116,28 @@ player_select_probe() {
       break
     fi
   done
+  if [ -z "$course_frame" ]; then
+    # Human Keyboard differs from a CPU player in run 38040976533:
+    # the first 230-ms Okay click left the EXACT frame unchanged. Probe
+    # a separate tap, then original keyboard ENTER (now actually
+    # forwarded through the native libretro keyboard callback).
+    echo "Human Player Select still visible: try fresh Okay tap."
+    adb shell input tap 1250 840
+    sleep 1
+    adb exec-out screencap -p > "$OUT/after-player-okay-retry-tap.png"
+    if python tools/detect_sensible_course_select.py "$OUT/after-player-okay-retry-tap.png"; then
+      course_frame="$OUT/after-player-okay-retry-tap.png"
+    fi
+  fi
+  if [ -z "$course_frame" ]; then
+    echo "Human Player Select still visible: try keyboard ENTER."
+    adb shell input keyevent 66
+    sleep 1
+    adb exec-out screencap -p > "$OUT/after-player-okay-enter.png"
+    if python tools/detect_sensible_course_select.py "$OUT/after-player-okay-enter.png"; then
+      course_frame="$OUT/after-player-okay-enter.png"
+    fi
+  fi
   if [ -n "$course_frame" ]; then
     cp "$course_frame" "$OUT/original-course-select-confirmed.png"
     echo "CONFIRMED: real original COURSE SELECTION after HUMAN player."
@@ -141,7 +163,8 @@ from detect_sensible_player_select import is_player_select
 from detect_sensible_course_select import is_course_select
 root=Path(sys.argv[1])
 names=["original-player-select-confirmed.png","after-player-okay-1s.png",
-       "after-player-okay-3s.png","original-course-select-confirmed.png",
+       "after-player-okay-3s.png","after-player-okay-retry-tap.png",
+       "after-player-okay-enter.png","original-course-select-confirmed.png",
        "after-augusta-1s.png","after-augusta-4s.png",
        "after-augusta-9s.png","after-augusta-20s.png",
        "after-player-okay-7s.png"]

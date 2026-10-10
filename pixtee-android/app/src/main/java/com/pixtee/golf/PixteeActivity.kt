@@ -49,6 +49,19 @@ private class PixteeCanvas(context: Context) : View(context) {
     private var selectedLength = 18
     private var selectedMode = RoundMode.QUICK
     private var careerTier = 0
+    private var careerEventIndex = -1
+    private var lastReward = ""
+    private fun progress(): ReaderStats = ReaderStats(
+        holes=stats.getInt("holes_played",0),
+        rounds=stats.getInt("rounds",0),
+        birdies=stats.getInt("birdies",0),
+        eagles=stats.getInt("eagles",0),
+        putts=stats.getInt("putts",0),
+        shots=stats.getInt("shots",0),
+        penalties=stats.getInt("penalties",0),
+        cleanNine=stats.getInt("clean_nine",0),
+        careerMask=stats.getLong("career_mask",0L)
+    )
     private val tourNames = listOf("AMATEUR TOUR", "REGIONAL TOUR", "NATIONAL TOUR",
         "PRO TOUR", "WORLD TOUR")
     private fun screenContentHeight() = if (screen == Screen.COURSES) 1620f
@@ -629,8 +642,8 @@ private class PixteeCanvas(context: Context) : View(context) {
         text(c,(if(rel>0) "+" else "")+rel,180f,345f,74f,gold,true)
         text(c,"PENALTIES ${r.totalPenalties}   PUTTS ${r.totalPutts}",
             180f,391f,14f,cream,true)
-        text(c,if(r.mode==RoundMode.CAREER && rel<=0) "CAREER EVENT COMPLETED!"
-            else "ROUND COMPLETE",180f,477f,17f,gold,true)
+        text(c,if(lastReward.isNotEmpty()) lastReward else "ROUND COMPLETE",
+            180f,477f,15f,gold,true)
         woodButton(c,"PLAY AGAIN",52f,544f,256f,52f)
         woodButton(c,"MAIN MENU",52f,628f,256f,52f)
     }
@@ -644,42 +657,50 @@ private class PixteeCanvas(context: Context) : View(context) {
         woodButton(c,"EXIT ROUND",50f,440f,260f,58f)
     }
     private fun drawCareer(c: Canvas) {
-        pageHeader(c, "CAREER")
-        woodButton(c,"PIXTEE TOUR - SEASON 1",27f,135f,306f,52f)
-        text(c,"FIVE TOUR TIERS",180f,251f,20f,gold,true)
-        val titles=stats.getInt("career_titles",0)
+        pageHeader(c, "PIXTEE CAREER")
+        val mask=stats.getLong("career_mask",0L)
+        val wins=PixteeCareer.titles(mask)
+        woodButton(c,"SEASON 1 - ${wins} / 25 EVENTS",27f,135f,306f,52f)
+        text(c,"TOUR PROGRESSION",180f,246f,20f,gold,true)
         tourNames.forEachIndexed { i,label ->
-            val unlocked=i<=titles
+            val unlocked=PixteeCareer.tierUnlocked(mask,i)
+            val earned=(i*5 until i*5+5).count{ PixteeCareer.completed(mask,it) }
             woodButton(c,label,33f,282f+i*60f,294f,43f,unlocked)
-            if(!unlocked) text(c,"LOCKED",290f,310f+i*60f,10f,cream,true)
+            text(c,if(unlocked) "$earned/5" else "LOCKED",
+                300f,310f+i*60f,11f,gold,true)
         }
-        text(c,"${titles} EVENTS WON",180f,632f,14f,gold,true)
-        woodButton(c,"PRACTICE FIRST HOLE",37f,652f,286f,45f)
+        val p=progress()
+        text(c,"LEVEL ${p.level}   ${p.xp} XP",180f,619f,14f,gold,true)
+        woodButton(c,"PRACTICE HOLE",37f,652f,286f,45f)
     }
     private fun drawStats(c: Canvas) {
         pageHeader(c, "STATISTICS")
-        val labels = listOf("ROUNDS FINISHED", "SHOTS PLAYED", "HOLES UNDER PAR",
-            "PENALTY STROKES", "BEST HOLE")
-        val vals = listOf(stats.getInt("rounds", 0).toString(), stats.getInt("shots", 0).toString(),
-            stats.getInt("under_par", 0).toString(), stats.getInt("penalties", 0).toString(),
-            if (stats.contains("best")) stats.getInt("best", 0).toString() else "-")
-        labels.forEachIndexed { i, label ->
-            woodButton(c, "", 20f, 160f + i * 85f, 320f, 62f)
-            text(c, label, 33f, 196f + i * 85f, 15f, cream)
-            text(c, vals[i], 318f, 196f + i * 85f, 22f, gold, true)
+        val p=progress()
+        val labels=listOf("ROUNDS COMPLETED","HOLES PLAYED","SHOTS PLAYED",
+            "HOLES UNDER PAR","TOTAL PUTTS","PENALTIES")
+        val vals=listOf(p.rounds,p.holes,p.shots,stats.getInt("under_par",0),
+            p.putts,p.penalties)
+        labels.forEachIndexed { i,label ->
+            val y=121f+i*82f
+            woodButton(c,"",20f,y,320f,61f)
+            text(c,label,32f,y+38f,13f,cream)
+            text(c,vals[i].toString(),318f,y+38f,22f,gold,true)
         }
-        woodButton(c, "BACK", 74f, 674f, 212f, 46f)
+        text(c,"PIXTEE LEVEL ${p.level}   -   ${p.xp} XP",180f,645f,12f,gold,true)
+        woodButton(c,"BACK",74f,674f,212f,46f)
     }
     private fun drawTrophies(c: Canvas) {
         pageHeader(c, "TROPHY CABINET")
-        text(c, "CLASSIC ARCADE ACHIEVEMENTS", 180f, 130f, 15f, gold, true)
-        listOf("FIRST HOLE FINISHED", "FIRST BIRDIE", "FIRST EAGLE", "BOGEY-FREE ROUND",
-            "TEN ROUNDS", "TOUR CHAMPION").forEachIndexed { i, a ->
-            woodButton(c, (if (i == 0 && stats.getInt("rounds", 0) > 0) "*" else "-") +
-                "  " + a, 17f, 163f + i * 77f, 326f, 53f,
-                i == 0 && stats.getInt("rounds", 0) > 0)
+        text(c,"EARNED THROUGH PLAY",180f,116f,15f,gold,true)
+        val rewards=PixteeRewards.achievements(progress())
+        rewards.forEachIndexed { i,a ->
+            val y=130f+i*64f
+            woodButton(c,(if(a.unlocked) "*  " else "-  ")+a.title,
+                17f,y,326f,50f,a.unlocked)
         }
-        woodButton(c, "BACK", 74f, 667f, 212f, 47f)
+        text(c,"${rewards.count{it.unlocked}} / ${rewards.size} AWARDS",
+            180f,655f,13f,gold,true)
+        woodButton(c,"BACK",74f,667f,212f,47f)
     }
     private fun drawOptions(c: Canvas) {
         pageHeader(c, "OPTIONS")
@@ -714,8 +735,17 @@ private class PixteeCanvas(context: Context) : View(context) {
             e.putInt("best",scored.strokes)
         if(current.isComplete) {
             e.putInt("rounds",stats.getInt("rounds",0)+1)
-            if(current.mode==RoundMode.CAREER && current.relativeToPar<=0) {
-                e.putInt("career_titles",stats.getInt("career_titles",0)+1)
+            lastReward=""
+            if(current.length>=9 && current.results.take(9).all{it.strokes<=it.par})
+                e.putInt("clean_nine",stats.getInt("clean_nine",0)+1)
+            if(current.mode==RoundMode.CAREER && careerEventIndex in 0..24) {
+                val mask=stats.getLong("career_mask",0L)
+                val event=PixteeCareer.events[careerEventIndex]
+                val newMask=PixteeCareer.award(mask,event,current.relativeToPar)
+                if(newMask!=mask) {
+                    e.putLong("career_mask",newMask)
+                    lastReward="TOUR EVENT WON - TROPHY EARNED"
+                } else lastReward="EVENT ENDED - RETRY TO WIN"
             }
         }
         e.apply()
@@ -835,12 +865,19 @@ private class PixteeCanvas(context: Context) : View(context) {
                 hit(6f,24f,348f,47f) -> screen=Screen.MAIN
                 hit(37f,652f,286f,45f) -> startRound(RoundMode.PRACTICE,1)
                 else -> {
-                    val unlocked=stats.getInt("career_titles",0)
+                    val mask=stats.getLong("career_mask",0L)
                     tourNames.forEachIndexed { i,_ ->
-                        if(i <= unlocked && hit(33f,282f+i*60f,294f,43f)) {
-                            careerTier=i
-                            selectedCourse=(i*5).coerceAtMost(24)
-                            startRound(RoundMode.CAREER,when(i){0->3;1->3;2->9;else->18})
+                        if(hit(33f,282f+i*60f,294f,43f)) {
+                            val ev=PixteeCareer.nextEvent(mask,i)
+                                ?: PixteeCareer.events[i*5+4].takeIf {
+                                    PixteeCareer.tierUnlocked(mask,i)
+                                }
+                            if(ev!=null) {
+                                careerTier=i
+                                careerEventIndex=ev.index
+                                selectedCourse=ev.course
+                                startRound(RoundMode.CAREER,ev.holes)
+                            }
                             return
                         }
                     }

@@ -44,10 +44,20 @@ sleep 3
 adb exec-out screencap -p > "$OUT/after-play-next-hole-4s.png"
 sleep 5
 adb exec-out screencap -p > "$OUT/after-play-next-hole-9s.png"
-# Do not blindly press game controls while still in a blue menu.
-# The authentic golf course has grass-green terrain. Capture both
-# the raw tee image and the decision for human inspection.
-if python - "$OUT/after-play-next-hole-9s.png" <<'PYTEE'
+# The original game shows an intermediate "Next To The Tee" page:
+# AUGUSTA / HOLE 1 (PAR 4) / HUMAN 1 / [TEE OFF]. Verified real
+# 2400x1080 Android frame in run 38044844087. Button centre (1260,940).
+# Press it, do NOT mistake this non-grass menu for a gameplay failure.
+echo "NEXT TO THE TEE: press original Tee Off at (1260,940)."
+adb shell input swipe 1260 940 1260 940 240
+sleep 1
+adb exec-out screencap -p > "$OUT/after-tee-off-1s.png"
+sleep 3
+adb exec-out screencap -p > "$OUT/after-tee-off-4s.png"
+sleep 4
+adb exec-out screencap -p > "$OUT/after-tee-off-8s.png"
+# Only probe original on-course controls when an actual course is visible.
+if python - "$OUT/after-tee-off-8s.png" <<'PYTEE'
 from PIL import Image
 import sys
 im=Image.open(sys.argv[1]).convert("RGB")
@@ -68,11 +78,16 @@ then
   adb shell input tap 2290 86
   sleep 1
   adb exec-out screencap -p > "$OUT/tee-pad-expanded.png"
-  adb shell input swipe 320 870 320 870 350
+  # The original game requires one press to reveal the Welly-o-meter,
+  # then timing presses, not a generic one-touch mobile golf shot.
+  adb shell input swipe 2210 850 2210 850 160
+  sleep 1
+  adb exec-out screencap -p > "$OUT/tee-after-open-swing-meter.png"
+  adb shell input swipe 390 830 390 830 350
   sleep 1
   adb exec-out screencap -p > "$OUT/tee-after-direction.png"
   for press in 1 2 3 4; do
-    adb shell input swipe 2260 895 2260 895 190
+    adb shell input swipe 2210 850 2210 850 190
     sleep 0.75
     adb exec-out screencap -p > "$OUT/tee-after-swing-${press}.png"
   done

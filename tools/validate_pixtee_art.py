@@ -20,9 +20,13 @@ CATEGORY_IDS = {
     "menus_and_hud", "animations_and_effects", "branding_and_sponsorship",
 }
 REQUIRED_FRAMES = {
-    "golfer_idle.png", "golfer_backswing.png", "golfer_impact.png",
-    "golfer_follow.png", "tree_round.png", "tree_pine.png",
+    "golfer_idle.png", "golfer_takeaway.png", "golfer_backswing.png",
+    "golfer_top.png", "golfer_downswing.png", "golfer_impact.png",
+    "golfer_follow.png", "golfer_finish.png", "golfer_putt.png",
+    "tree_round.png", "tree_pine.png",
     "spectator_idle.png", "spectator_wave.png",
+    "spectator_photographer.png", "camera_flash.png",
+    "bird_wings_up.png", "bird_wings_down.png",
     "flower_yellow.png", "flower_pink.png",
 }
 ASSET_PATH = Path("pixtee-android/app/src/main/assets/art/production")

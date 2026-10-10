@@ -1,0 +1,25 @@
+name: Pixtee Final Art Size and Source Geometry Contract
+on:
+  push:
+    paths:
+      - "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md"
+      - "spec/pixtee/ASTRA_ART_EXPORT_MANIFEST_v1.json"
+      - "spec/pixtee/ART_REVIEW_REGISTER.json"
+      - "spec/pixtee/SCREEN_RESOLUTION_AND_WORLD_SCALE_2026-10-10.json"
+      - "pixtee-android/app/src/main/assets/art/**"
+      - "pixtee-android/app/src/main/java/com/pixtee/golf/ProductionPixelArt.kt"
+      - "pixtee-android/app/src/main/java/com/pixtee/golf/PixteeSwingRig.kt"
+      - "tools/validate_pixtee_final_art_sizes.py"
+      - ".github/workflows/pixtee-final-art-contract.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Validate proposed asset export sizes and true original-game world reference
+        run: python tools/validate_pixtee_final_art_sizes.py

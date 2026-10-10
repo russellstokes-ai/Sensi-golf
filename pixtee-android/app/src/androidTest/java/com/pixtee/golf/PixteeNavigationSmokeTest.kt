@@ -21,6 +21,11 @@ class PixteeNavigationSmokeTest {
 
     @Before
     fun launchFresh() {
+        // A fresh API 35 emulator opens the platform ImmersiveModeConfirmation
+        // system window over a fullscreen app. It silently swallows menu taps
+        // until dismissed, so this is test environment setup, not a game fix.
+        device.executeShellCommand("settings put secure immersive_mode_confirmations confirmed")
+        device.pressHome()
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
         val intent = ctx.packageManager.getLaunchIntentForPackage(ctx.packageName)!!
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)

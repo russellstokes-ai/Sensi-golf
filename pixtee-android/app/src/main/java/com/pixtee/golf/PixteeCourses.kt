@@ -170,7 +170,7 @@ data class HoleScore(val hole: Int, val par: Int, val strokes: Int, val penaltie
                      val putts: Int, val length: Float) {
     val relative: Int get() = strokes-par
 }
-enum class RoundMode { PRACTICE, QUICK, CAREER, TOURNAMENT }
+enum class RoundMode { PRACTICE, QUICK, CAREER, TOURNAMENT, TOUR }
 
 class PixteeRound(val courseIndex: Int, val length: Int, val mode: RoundMode) {
     init {

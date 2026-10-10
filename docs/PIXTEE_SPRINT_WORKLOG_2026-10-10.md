@@ -54,3 +54,12 @@ Do not import proprietary game code, maps, artwork, samples or course data witho
 ## Test evidence conventions
 
 Record every reported claim with commit SHA, run ID, green/failing tests, screen size, actual screenshots/video and whether a **real emulator or hardware** was involved. JVM tests and successful Gradle `assembleDebug` alone cannot establish gameplay. While tests are failing, status is **red/blocked**, even if packaging succeeds.
+
+## Latest native-device evidence — subsequent commits
+
+- The previously persistent emulator navigation failures came from Android's **ImmersiveModeConfirmation** system window overlay, which intercepted screen touches and set the focused package to `android` despite the game remaining underneath. The test-only emulator setup now sets `settings put secure immersive_mode_confirmations confirmed` before launching the game.
+- **Green baseline:** commit `c6712cb29c85dc335e1bf17891e53c5cc8393c19`, [Actions 38059603934](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38059603934): `build=success`, `Android emulator interactive gameplay smoke tests=success`, **3 of 3 Android tests passed** (menu/options navigation and full three-press shot). This proves the tested paths, not full commercial readiness.
+- Original numerical research documents confirm approximately **70 Hz** original gameplay clock and important lie/putt/meter behaviour. Pixtee currently uses an independently authored **60 Hz** approximation; exact shot parity is not yet shown.
+- Follow-up commits corrected maximum Welly power to the **top** of its semicircle, visibly show negative-side late hits, varied the red zone by lie and added a fourth real emulator test for scrolling to an offscreen button in a compact portrait/Fold-like viewport.
+- The follow-up four-test Android gate has to pass before the new Welly/Fold code is accepted. Do not describe the latest development commit as hardware-validated until that result is available.
+- The game still only contains one authored hole, and placeholder career/course screens are NOT finished features. The no-APK-until-polished release rule remains in force.

@@ -9,7 +9,7 @@ import java.util.Random
 
 /**
  * Original, reproducible course geometry, authored specifically for Pixtee.
- * The catalog has 25 independent themes with 18 holes each. Layouts are
+ * The catalog has 35 distinct course identities with 18 seeded holes each. Layouts are
  * deterministic combinations of a per-course seed and individual hole design.
  * They do NOT copy course coordinates, bitmap tiles, names or hazard placements
  * from any existing golf game.
@@ -116,9 +116,11 @@ object PixteeCourseCatalog {
         "Coastline", "Mossy Glen", "Silver Dunes", "Redwood Park", "Emerald Bay",
         "Copper Ridge", "High Mesa", "Willow Marsh", "Blue Lagoon", "Misty Moor",
         "Desert Bloom", "Cherry Hills", "Pebble Cove", "Frostwood", "Golden Sands",
-        "Thornfield", "Moonstone", "Summit Lakes", "Crimson Cliffs", "Glacier Point"
+        "Thornfield", "Moonstone", "Summit Lakes", "Crimson Cliffs", "Glacier Point",
+        "Cypress Run", "Foxglove Downs", "Coral Key", "Alder Creek", "Ironstone",
+        "Seabright", "Twilight Vale", "Juniper Pass", "Lotus Springs", "Northlight"
     ).mapIndexed { i, name ->
-        PixteeCourse(name.lowercase().replace(" ", "-"), name, i % 5)
+        PixteeCourse(name.lowercase().replace(" ", "-"), name, i % CourseArtDirection.PALETTES.size)
     }
 
     /** Every hole has different tee, green, path and hazard geometry. */

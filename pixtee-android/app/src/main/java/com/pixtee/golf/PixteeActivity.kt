@@ -65,6 +65,9 @@ private class PixteeCanvas(context: Context) : View(context) {
         }
     }
 
+    private fun logicalScreenHeight(): Float =
+        height.coerceAtLeast(1) * 360f / width.coerceAtLeast(1)
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val now = System.nanoTime()
@@ -79,7 +82,10 @@ private class PixteeCanvas(context: Context) : View(context) {
         }
         lastNs = now
         canvas.save()
-        canvas.scale(width / 360f, height / 760f)
+        // One X/Y scale: a tall handset reveals MORE world vertically;
+        // neither golfers nor collision geometry get stretched.
+        val pixelScale = width / 360f
+        canvas.scale(pixelScale, pixelScale)
         when (screen) {
             Screen.MAIN -> drawMain(canvas)
             Screen.COURSES -> drawCourses(canvas)
@@ -188,11 +194,15 @@ private class PixteeCanvas(context: Context) : View(context) {
     /** First original Pixtee hole: newly-authored terrain data and renderer. */
     private fun course(c: Canvas) {
         fill(c, Color.rgb(37, 121, 19))
-        // World is 300 x 510; map to whole portrait display.
-        c.save(); c.scale(360f / PixteeCore.WIDTH, 760f / PixteeCore.HEIGHT)
-        rect(c, 0f, 0f, 300f, 510f, Color.rgb(48, 131, 25))
+        // No fake stretched 4:3 bitmap: the portrait viewport exposes
+        // extra world above and below the original-sized hole.
+        val viewport = CourseViewport(360f, logicalScreenHeight())
+        c.save()
+        c.scale(viewport.worldScale, viewport.worldScale)
+        c.translate(0f, -viewport.topWorld)
+        rect(c, 0f, viewport.topWorld, 300f, viewport.bottomWorld, Color.rgb(48, 131, 25))
         // Alternating rough checkerboard/pixel dithering from new procedural art.
-        for (y in 0..510 step 10) for (x in 0..300 step 11)
+        for (y in (viewport.topWorld.toInt() - 10)..(viewport.bottomWorld.toInt() + 10) step 10) for (x in 0..300 step 11)
             if ((x * 17 + y * 13) % 7 < 3)
                 rect(c, x.toFloat(), y.toFloat(), x + 3f, y + 3f, Color.rgb(53, 139, 26))
         for (y in 72..462 step 3) {
@@ -246,8 +256,9 @@ private class PixteeCanvas(context: Context) : View(context) {
 
     private fun drawPlaying(c: Canvas) {
         course(c)
-        val bx = g.x * 360f / PixteeCore.WIDTH
-        val by = g.y * 760f / PixteeCore.HEIGHT
+        val viewport = CourseViewport(360f, logicalScreenHeight())
+        val bx = viewport.screenX(g.x)
+        val by = viewport.screenY(g.y)
         // Underlying tiny golfer drawn a small distance beside the ball.
         golfer(c, bx - 12f, by)
         circle(c, bx, by + 3f, 3f, Color.rgb(27, 70, 20))
@@ -269,10 +280,11 @@ private class PixteeCanvas(context: Context) : View(context) {
             text(c, "TAP FOR SCORECARD", 183f, 407f, 15f, cream, true)
         }
         // Unobtrusive bottom overlay; course still bleeds fully to every screen edge.
-        woodButton(c, "< AIM", 3f, 703f, 82f, 50f)
-        woodButton(c, "CLUB", 92f, 703f, 78f, 50f)
-        woodButton(c, "AIM >", 177f, 703f, 82f, 50f)
-        woodButton(c, "WHACK", 266f, 703f, 91f, 50f)
+        val bottomControlY = logicalScreenHeight() - 57f
+        woodButton(c, "< AIM", 3f, bottomControlY, 82f, 50f)
+        woodButton(c, "CLUB", 92f, bottomControlY, 78f, 50f)
+        woodButton(c, "AIM >", 177f, bottomControlY, 82f, 50f)
+        woodButton(c, "WHACK", 266f, bottomControlY, 91f, 50f)
     }
     private fun drawHUD(c: Canvas) {
         rect(c, 2f, 38f, 110f, 279f, Color.BLACK)
@@ -386,7 +398,7 @@ private class PixteeCanvas(context: Context) : View(context) {
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = event.x * 360f / width.coerceAtLeast(1)
-        val y = event.y * 760f / height.coerceAtLeast(1)
+        val y = event.y * 360f / width.coerceAtLeast(1)
         if (event.actionMasked == MotionEvent.ACTION_DOWN) {
             downX = x; downY = y; return true
         }
@@ -416,7 +428,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             }
             Screen.PLAYING -> when {
                 g.stage == GameStage.HOLED -> finishHole()
-                y > 685f -> when {
+                y > logicalScreenHeight() - 75f -> when {
                     x < 87f -> g.steer(-3.5f)
                     x < 172f -> g.changeClub(1)
                     x < 263f -> g.steer(3.5f)

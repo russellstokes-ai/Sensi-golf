@@ -676,13 +676,43 @@ private class PixteeCanvas(context: Context) : View(context) {
         text(c, "TO PIN", 8f, 209f, 13f)
         text(c, g.toPin.toInt().toString() + " YDS", 8f, 228f, 14f, gold)
         text(c, "WIND OFF", 8f, 260f, 12f)
-        // Tiny top right hole overview; do not allow a tall full-screen map.
-        rect(c, 319f, 38f, 354f, 151f, Color.BLACK)
-        rect(c, 321f, 40f, 352f, 149f, Color.rgb(13, 86, 16))
-        rect(c, 331f, 56f, 343f, 130f, Color.rgb(73, 181, 30))
-        circle(c, 336f, 55f, 8f, Color.rgb(106, 212, 59))
-        circle(c, 337f, 137f, 3f, gold)
-        flag(c, 336f, 53f)
+        // Real full-hole tactical overview. Every shape follows the live
+        // collision geometry, including hazards, instead of a fake map.
+        val hole=g.activeHole
+        val minimap=CourseMiniMap()
+        rect(c,319f,38f,354f,151f,Color.BLACK)
+        rect(c,321f,40f,352f,149f,Color.rgb(14,74,29))
+        if(hole!=null) {
+            c.save()
+            c.clipRect(321f,40f,352f,149f)
+            for(y in hole.pinY.toInt()..hole.teeY.toInt() step 5) {
+                val worldY=y.toFloat()
+                val centre=hole.fairwayCentre(worldY)
+                val half=hole.width*.5f
+                val left=minimap.sx(centre-half)
+                val right=minimap.sx(centre+half)
+                val top=minimap.sy(worldY)
+                rect(c,left,top,right,top+2f,Color.rgb(90,164,39))
+            }
+            hole.waters.forEach { patch ->
+                rect(c,minimap.sx(patch.l),minimap.sy(patch.t),
+                    minimap.sx(patch.r),minimap.sy(patch.b),
+                    Color.rgb(23,110,195))
+            }
+            hole.bunkers.forEach { patch ->
+                val rx=patch.rx*minimap.width/PixteeCore.WIDTH
+                val ry=patch.ry*minimap.height/PixteeCore.HEIGHT
+                ellipse(c,minimap.sx(patch.x)-rx,minimap.sy(patch.y)-ry,
+                    minimap.sx(patch.x)+rx,minimap.sy(patch.y)+ry,
+                    Color.rgb(214,195,121))
+            }
+            val (gx,gy)=minimap.green(hole)
+            circle(c,gx,gy,3.5f,Color.rgb(143,219,82))
+            val (tx,ty)=minimap.tee(hole)
+            circle(c,tx,ty,1.8f,gold)
+            circle(c,minimap.sx(g.x),minimap.sy(g.y),2f,Color.WHITE)
+            c.restore()
+        }
     }
     /**
      * Welly-inspired semicircular arc, not the earlier horizontal prototype bar.

@@ -6,6 +6,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: pixtee-android-development
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -42,12 +45,9 @@ jobs:
           fi
           mkdir -p out
           cp "$APK" out/Pixtee-Golf-0.1.1-sponsor-boards-portrait.apk
-      - name: Publish test APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Pixtee-Golf-0.1.1-sponsor-boards-portrait
-          path: out/Pixtee-Golf-0.1.1-sponsor-boards-portrait.apk
-          retention-days: 14
+      # No APK is handed out from this development-only workflow.
+      # The user requested only a polished, complete game release. A binary
+      # existing after compilation does not mean a playable release exists.
 
   android-device-tests:
     name: Android emulator interactive gameplay smoke tests

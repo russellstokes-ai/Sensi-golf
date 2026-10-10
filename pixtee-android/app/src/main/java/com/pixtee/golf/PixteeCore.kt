@@ -96,12 +96,16 @@ class PixteeCore {
                 stage = GameStage.POWER
             }
             GameStage.POWER -> {
+                // A downswing returns along the SAME meter arc; do not restart at zero.
                 chosenPower = meter.coerceIn(0.05f, 1f)
-                meter = 0f; meterDirection = 1f
+                meter = chosenPower
+                meterDirection = -1f
                 stage = GameStage.ACCURACY
             }
             GameStage.ACCURACY -> {
-                accuracy = meter.coerceIn(0f, 1f)
+                // Zero is the straight-shot red zone at the bottom of the arc.
+                // Pressing early/late gives the two opposite shot curves.
+                accuracy = (0.5f + meter * 1.6f).coerceIn(0f, 1f)
                 commitShot()
             }
             else -> Unit
@@ -112,11 +116,19 @@ class PixteeCore {
     /** Fixed 60Hz gameplay clock, independent of Android render frames. */
     fun tick() {
         when (stage) {
-        GameStage.POWER, GameStage.ACCURACY -> {
-            val step = if (stage == GameStage.POWER) 1.14f / 60f else 1.55f / 60f
-            meter += meterDirection * step
+        GameStage.POWER -> {
+            meter += meterDirection * (1.14f / 60f)
             if (meter >= 1f) { meter = 1f; meterDirection = -1f }
             if (meter <= 0f) { meter = 0f; meterDirection = 1f }
+        }
+        GameStage.ACCURACY -> {
+            // Stronger swings cross the narrow accuracy zone faster.
+            meter -= (1.1f + chosenPower * 0.95f) / 60f
+            if (meter <= -0.32f) {
+                meter = -0.32f
+                accuracy = 0f
+                commitShot() // missed the accuracy window entirely
+            }
         }
         GameStage.FLIGHT -> {
             shotTime += 1f / 60f

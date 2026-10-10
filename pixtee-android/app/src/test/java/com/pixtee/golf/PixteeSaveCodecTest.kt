@@ -21,7 +21,7 @@ class PixteeSaveCodecTest {
         val r=PixteeRound(0,3,RoundMode.QUICK)
         val value=PixteeSaveCodec.encode(r,null)
         assertNull(PixteeSaveCodec.decode(value.dropLast(1)))
-        assertNull(PixteeSaveCodec.decode(value.replace("PX2","PX1")))
+        assertNull(PixteeSaveCodec.decode(value.replaceFirst("PX3|","PX1|")))
         assertNull(PixteeSaveCodec.decode(null))
         assertNotNull(PixteeSaveCodec.decode(value))
     }

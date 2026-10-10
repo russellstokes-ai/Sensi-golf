@@ -81,7 +81,7 @@ class PixteePhysicsFidelityTest {
             0f,74f,listOf(WaterPatch(231f,185f,300f,302f)),emptyList(),17L)
         val g=PixteeCore()
         g.startHole(custom)
-        g.restoreBall(StableBall(223f,240f,0,0,0,12,85f))
+        g.restoreBall(StableBall(229f,240f,0,0,0,12,85f))
         val start=g.x to g.y
         assertEquals(Ground.ROUGH,g.groundAt(g.x,g.y))
         g.whack()

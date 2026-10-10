@@ -581,12 +581,14 @@ private class PixteeCanvas(context: Context) : View(context) {
         val bx = viewport.screenX(g.x)
         val by = viewport.screenY(g.y)
         val modelScale=viewport.worldScale
-        // Golfer and ball are projected at the SAME scale as the terrain.
-        // Approved production sprite pixels keep their true world proportions.
-        val golferX=bx-12f*modelScale
+        // Golfer stays at the shot address point during ball flight and roll.
+        // Both are world projected but do NOT move together.
+        val addressX=viewport.screenX(g.golferWorldX)
+        val addressY=viewport.screenY(g.golferWorldY)
+        val golferX=addressX-12f*modelScale
         c.save()
-        c.scale(modelScale,modelScale,golferX,by)
-        golfer(c,golferX,by)
+        c.scale(modelScale,modelScale,golferX,addressY)
+        golfer(c,golferX,addressY)
         c.restore()
         circle(c, bx, by + 3f*modelScale, 3f*modelScale,
             Color.rgb(27, 70, 20))

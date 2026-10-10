@@ -80,7 +80,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             PixteeWardrobe.encode(equipment,progress())).apply()
     }
     private fun screenContentHeight() = when(screen) {
-        Screen.COURSES -> 1620f
+        Screen.COURSES -> 132f + PixteeCourseCatalog.courses.size * 56f + 140f
         Screen.TROPHIES -> 2400f
         Screen.MAIN -> 840f
         else -> MenuInput.CONTENT_HEIGHT
@@ -305,13 +305,13 @@ private class PixteeCanvas(context: Context) : View(context) {
     }
     private fun drawCourses(c: Canvas) {
         pageHeader(c, "SELECT GOLF COURSE")
-        text(c, "25 PIXTEE COURSES", 180f, 108f, 13f, gold, true)
+        text(c, "${holes.size} PIXTEE COURSES", 180f, 108f, 13f, gold, true)
         holes.forEachIndexed { i, course ->
             val y = 132f + i * 56f
             woodButton(c, course.title.uppercase(), 37f, y, 286f, 45f)
             text(c, "18 HOLES", 294f, y + 29f, 9f, cream, true)
         }
-        woodButton(c, "BACK", 75f, 1550f, 210f, 46f)
+        woodButton(c, "BACK", 75f, 132f + holes.size * 56f + 20f, 210f, 46f)
     }
     private fun drawPlayer(c: Canvas) {
         pageHeader(c, "PLAYER SELECT")
@@ -914,7 +914,7 @@ private class PixteeCanvas(context: Context) : View(context) {
                 }
             }
             Screen.COURSES -> {
-                if(hit(6f,24f,348f,47f) || hit(75f,1550f,210f,46f)) {
+                if(hit(6f,24f,348f,47f) || hit(75f,132f + holes.size * 56f + 20f,210f,46f)) {
                     screen=Screen.MAIN;return
                 }
                 PixteeCourseCatalog.courses.forEachIndexed { i,_ ->

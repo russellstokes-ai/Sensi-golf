@@ -27,6 +27,10 @@ class PixteeNavigationSmokeTest {
         device.executeShellCommand("settings put secure immersive_mode_confirmations confirmed")
         device.pressHome()
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
+        // The opening scene must be moving regardless of whether another
+        // test changed the persisted reduced-motion option previously.
+        ctx.getSharedPreferences("pixtee_options_v1",android.content.Context.MODE_PRIVATE)
+            .edit().putBoolean("course_motion",true).commit()
         val intent = ctx.packageManager.getLaunchIntentForPackage(ctx.packageName)!!
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         ctx.startActivity(intent)
@@ -78,6 +82,23 @@ class PixteeNavigationSmokeTest {
                 .take(800)
             throw AssertionError("Expected [$match], actual [$actual], bounds=[$bounds], package=[$activeWindow]; focus=[$focus]; native-touch-events=[$traces]")
         }
+    }
+
+    @Test
+    fun liveCourseMenuAdvancesRealPhysicsBeforeSelectingRound() {
+        val initial=device.findObject(By.descContains("Pixtee screen: MAIN"))!!
+        val before=initial.contentDescription.toString()
+        assertTrue("Live menu must expose simulated time: $before",
+            before.contains("demo seconds:"))
+        Thread.sleep(2300L)
+        val current=device.findObject(By.descContains("Pixtee screen: MAIN"))!!
+        val after=current.contentDescription.toString()
+        val oldSec=before.substringAfter("demo seconds: ").substringBefore(';').trim().toLong()
+        val newSec=after.substringAfter("demo seconds: ").substringBefore(';').trim().toLong()
+        assertTrue("Menu was static; no real golfer simulation ticks: $before -> $after",
+            newSec>oldSec)
+        tap(180f,300f)
+        waitFor("COURSES")
     }
 
     @Test

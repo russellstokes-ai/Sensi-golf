@@ -41,7 +41,10 @@ def requiredArtFrames = [
     'golfer_downswing', 'golfer_impact', 'golfer_follow', 'golfer_finish',
     'golfer_putt', 'tree_round', 'tree_pine', 'spectator_idle',
     'spectator_wave', 'spectator_photographer', 'camera_flash',
-    'bird_wings_up', 'bird_wings_down', 'flower_yellow', 'flower_pink'
+    'bird_wings_up', 'bird_wings_down', 'flower_yellow', 'flower_pink',
+    'terrain_rough', 'terrain_fairway', 'terrain_green',
+    'terrain_sand', 'terrain_water', 'ui_pixtee_logo',
+    'ui_wood_button', 'ui_hud_panel', 'ui_sponsor_board'
 ]
 tasks.register('verifyApprovedProductionArt') {
     group = 'verification'

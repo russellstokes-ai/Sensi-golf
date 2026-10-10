@@ -175,12 +175,14 @@ class PixteeCore {
     fun groundAt(tx: Float, ty: Float): Ground {
         val green = hypot(tx - PIN_X, (ty - PIN_Y) * 1.12f)
         if (green <= 33f) return Ground.GREEN
+        // Tee is a distinct collision surface nested inside fairway geometry.
+        // Resolve local tee collision BEFORE the wider fairway test.
+        if (hypot(tx - TEE_X, ty - TEE_Y) <= 16f) return Ground.TEE
         if (tx > 231f && ty in 185f..302f) return Ground.WATER
         if ((tx in 73f..104f && ty in 104f..158f) ||
             (tx in 208f..240f && ty in 122f..174f)) return Ground.SAND
         val centre = 148f + sin(ty / 79f) * 28f
         if (abs(tx - centre) < 43f && ty in 72f..461f) return Ground.FAIRWAY
-        if (hypot(tx - TEE_X, ty - TEE_Y) <= 16f) return Ground.TEE
         return Ground.ROUGH
     }
 

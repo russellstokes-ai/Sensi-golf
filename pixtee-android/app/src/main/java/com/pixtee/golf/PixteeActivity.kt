@@ -348,35 +348,29 @@ private class PixteeCanvas(context: Context) : View(context) {
     /** Each hole renders from the exact same authored geometry used for collisions. */
     private fun course(c: Canvas) {
         val layout = g.activeHole ?: return
-        fill(c, Color.rgb(37, 121, 19))
+        val palette = CourseArtDirection.palette(layout.course.theme)
+        fill(c, palette.rough)
         val viewport = CourseViewport(360f, logicalScreenHeight())
         c.save()
         c.scale(viewport.worldScale, viewport.worldScale)
         c.translate(0f, -viewport.topWorld)
-        val dark = when(layout.course.theme) {
-            1 -> Color.rgb(39, 113, 30)
-            2 -> Color.rgb(77, 128, 38)
-            3 -> Color.rgb(43, 130, 25)
-            4 -> Color.rgb(61, 131, 22)
-            else -> Color.rgb(48, 131, 25)
-        }
-        rect(c, 0f, viewport.topWorld, 300f, viewport.bottomWorld, dark)
+        rect(c, 0f, viewport.topWorld, 300f, viewport.bottomWorld, palette.rough)
         for (y in (viewport.topWorld.toInt()-10)..(viewport.bottomWorld.toInt()+10) step 10)
             for (x in 0..300 step 11)
                 if ((x*17+y*13+layout.seed.toInt())%7 < 3)
                     rect(c,x.toFloat(),y.toFloat(),x+3f,y+3f,
-                        Color.rgb(56,146,31))
+                        palette.fairway)
         for (y in layout.pinY.toInt()..layout.teeY.toInt() step 3) {
             val centre = layout.fairwayCentre(y.toFloat())
             val half=layout.width*.5f
             rect(c,centre-half-7f,y.toFloat(),centre+half+7f,y+3f,
-                Color.rgb(52,153,23))
+                palette.fairway)
             rect(c,centre-half,y.toFloat(),centre+half,y+3f,
-                if ((y/21)%2==0) Color.rgb(72,185,33) else Color.rgb(62,173,25))
+                if ((y/21)%2==0) palette.fairway else tinted(palette.fairway, 0.90f))
         }
         val frame = CourseAmbient.frame(android.os.SystemClock.uptimeMillis(),courseMotion)
         layout.waters.forEach { patch ->
-            rect(c,patch.l,patch.t,patch.r,patch.b,Color.rgb(8,79,174))
+            rect(c,patch.l,patch.t,patch.r,patch.b,palette.water)
             var row=0
             var yy=patch.t+5f
             while(yy<patch.b-4f) {
@@ -384,7 +378,7 @@ private class PixteeCanvas(context: Context) : View(context) {
                 var xx=patch.l+4f+shift
                 while(xx<patch.r-7f) {
                     rect(c,xx,yy,xx+6f,yy+2f,
-                        if(row%3==0) Color.rgb(86,165,241) else Color.rgb(29,118,211))
+                        if(row%3==0) tinted(palette.water, 1.38f) else tinted(palette.water, 1.12f))
                     xx+=17f
                 }
                 yy+=9f;row++
@@ -392,32 +386,35 @@ private class PixteeCanvas(context: Context) : View(context) {
         }
         layout.bunkers.forEach {
             ellipse(c,it.x-it.rx,it.y-it.ry,it.x+it.rx,it.y+it.ry,
-                Color.rgb(225,200,110))
+                palette.sand)
         }
         ellipse(c, layout.pinX-30f,layout.pinY-24f,
-            layout.pinX+30f,layout.pinY+24f,Color.rgb(82,185,41))
+            layout.pinX+30f,layout.pinY+24f,tinted(palette.green, .85f))
         ellipse(c, layout.pinX-24f,layout.pinY-20f,
-            layout.pinX+24f,layout.pinY+20f,Color.rgb(111,207,47))
+            layout.pinX+24f,layout.pinY+20f,palette.green)
         for((i,spot) in grassSpots.withIndex()) {
             val (gx,gy)=spot
             if (layout.groundAt(gx,gy)!=Ground.ROUGH) continue
             val sway=CourseAmbient.grassSway(i,frame).toFloat()
-            line(c,gx,gy+2f,gx+sway,gy-1f,Color.rgb(81,174,46))
+            line(c,gx,gy+2f,gx+sway,gy-1f,palette.fairway)
         }
         for((i,spot) in flowers.withIndex()) {
             val (fx,fy)=spot
             if(layout.groundAt(fx,fy)!=Ground.ROUGH) continue
             val sway=CourseAmbient.grassSway(i+3,frame).toFloat()
-            line(c,fx,fy+2f,fx+sway,fy-1f,Color.rgb(23,100,23))
-            rect(c,fx+sway-1f,fy-3f,fx+sway+2f,fy-1f,
-                if(i%3==0) Color.rgb(255,233,108) else Color.rgb(248,214,229))
+            drawPixelSprite(c,
+                if(i%3==0) PixteeSpriteAtlas.flowerA else PixteeSpriteAtlas.flowerB,
+                fx+sway, fy+2f, mapOf(
+                    'f' to Color.rgb(255,233,108),
+                    'x' to palette.accent,
+                    'w' to tinted(palette.rough, .74f)))
         }
-        layout.trees.forEach { tree(c,it.x,it.y) }
+        layout.trees.forEach { tree(c,it.x,it.y,it.variant,palette) }
         layout.spectators.forEachIndexed { i,spot ->
             spectator(c,spot.x,spot.y,i,frame)
         }
         rect(c, layout.teeX-21f,layout.teeY-10f,layout.teeX+21f,layout.teeY+9f,
-            Color.rgb(83,185,40))
+            palette.green)
         circle(c,layout.teeX-14f,layout.teeY+5f,2.2f,Color.WHITE)
         circle(c,layout.teeX+14f,layout.teeY+5f,2.2f,Color.WHITE)
         flag(c,layout.pinX,layout.pinY)
@@ -430,29 +427,53 @@ private class PixteeCanvas(context: Context) : View(context) {
         }
         c.restore()
     }
-    private fun tree(c: Canvas, x: Float, y: Float) {
-        rect(c, x - 2f, y + 2f, x + 2f, y + 7f, Color.rgb(91, 53, 16))
-        circle(c, x + 1f, y - 1f, 8f, Color.rgb(14, 72, 13))
-        circle(c, x - 3f, y - 4f, 7f, Color.rgb(22, 98, 19))
-        circle(c, x + 3f, y - 6f, 5f, Color.rgb(32, 129, 24))
-        rect(c, x - 4f, y - 9f, x - 1f, y - 7f, Color.rgb(56, 154, 31))
-    }
-    /** Tiny two-pose spectators: occasional arm wave; no physics objects. */
-    private fun spectator(c: Canvas, x: Float, y: Float, index: Int, frame: Int) {
-        val shirt = when (index % 4) {
-            0 -> Color.rgb(248, 201, 53)
-            1 -> Color.rgb(44, 68, 200)
-            2 -> Color.rgb(219, 70, 69)
-            else -> Color.rgb(242, 237, 210)
+    /** Nearest-neighbour glyph sprites drawn at exact world scale, no interpolation. */
+    private fun drawPixelSprite(
+        c: Canvas, sprite: PixelSprite, x: Float, bottomY: Float,
+        colours: Map<Char, Int>, scale: Float=1f
+    ) {
+        val originX = x - sprite.width * scale * .5f
+        val originY = bottomY - sprite.height * scale
+        for (row in 0 until sprite.height) {
+            for (col in 0 until sprite.width) {
+                val token = sprite.token(col,row)
+                if(token=='.') continue
+                val colour=colours[token] ?: continue
+                val px=originX+col*scale
+                val py=originY+row*scale
+                rect(c,px,py,px+scale,py+scale,colour)
+            }
         }
-        val waving = courseMotion && CourseAmbient.spectatorWave(index, frame)
-        circle(c, x, y - 8f, 2f, Color.rgb(234, 190, 129))
-        rect(c, x - 3f, y - 11f, x + 3f, y - 9f, Color.rgb(39, 39, 51))
-        rect(c, x - 2f, y - 6f, x + 2f, y - 1f, shirt)
-        rect(c, x - 2f, y - 1f, x - 0.5f, y + 3f, Color.rgb(45, 45, 58))
-        rect(c, x + 0.5f, y - 1f, x + 2f, y + 3f, Color.rgb(45, 45, 58))
-        line(c, x + 2f, y - 5f, x + 4f, if (waving) y - 10f else y - 2f,
-            Color.rgb(239, 191, 127), 1.3f)
+    }
+
+    private fun tinted(argb: Int, strength: Float): Int = Color.rgb(
+        (Color.red(argb)*strength).toInt().coerceIn(0,255),
+        (Color.green(argb)*strength).toInt().coerceIn(0,255),
+        (Color.blue(argb)*strength).toInt().coerceIn(0,255))
+
+    /** Course palettes alter visual sprites only, never material collision. */
+    private fun tree(c: Canvas, x: Float, y: Float, variant: Int, palette: CoursePalette) {
+        drawPixelSprite(c,PixteeSpriteAtlas.tree(variant),x,y+7f,mapOf(
+            'd' to tinted(palette.rough,.66f),
+            'm' to palette.fairway,
+            'l' to palette.green,
+            'w' to Color.rgb(98,64,30)))
+    }
+
+    private fun spectator(c: Canvas, x: Float, y: Float, index: Int, frame: Int) {
+        val shirt = when(index%4) {
+            0 -> Color.rgb(248,201,53)
+            1 -> Color.rgb(44,68,200)
+            2 -> Color.rgb(219,70,69)
+            else -> Color.rgb(242,237,210)
+        }
+        val waving = courseMotion && CourseAmbient.spectatorWave(index,frame)
+        drawPixelSprite(c,PixteeSpriteAtlas.spectator(waving),x,y+3f,mapOf(
+            'O' to Color.rgb(42,41,52),
+            'S' to Color.rgb(235,190,129),
+            'u' to shirt,
+            'P' to Color.rgb(47,46,62),
+            'K' to Color.rgb(30,31,43)))
     }
 
     private fun flag(c: Canvas, x: Float, y: Float) {
@@ -461,18 +482,18 @@ private class PixteeCanvas(context: Context) : View(context) {
         circle(c, x, y, 1.5f, Color.BLACK)
     }
     private fun golfer(c: Canvas, x: Float, y: Float) {
-        // Purpose-made 10x14 pixel figure at the same tiny world scale as classic overhead golf.
-        rect(c,x-2f,y-14f,x+3f,y-11f,gearColour(StyleSlot.HAT))
-        rect(c,x-3f,y-12f,x+4f,y-10f,gearColour(StyleSlot.SKIN))
-        rect(c,x-3f,y-10f,x+3f,y-4f,gearColour(StyleSlot.TOP))
-        rect(c,x-3f,y-4f,x-1f,y+1f,gearColour(StyleSlot.TROUSERS))
-        rect(c,x+1f,y-4f,x+3f,y+1f,gearColour(StyleSlot.TROUSERS))
-        line(c,x+3f,y-7f,x+8f,y-2f,gearColour(StyleSlot.CLUB))
-        // Identical tiny bag and wristband models across all equipment colours.
-        rect(c,x-7f,y-6f,x-4f,y+1f,gearColour(StyleSlot.BAG))
-        rect(c,x-6f,y-8f,x-5f,y-6f,gearColour(StyleSlot.ACCESSORY))
+        val sprite=PixteeSpriteAtlas.golfer(g.stage)
+        drawPixelSprite(c,sprite,x,y+1f,mapOf(
+            'H' to gearColour(StyleSlot.HAT),
+            'S' to gearColour(StyleSlot.SKIN),
+            'T' to gearColour(StyleSlot.TOP),
+            'P' to gearColour(StyleSlot.TROUSERS),
+            'K' to tinted(gearColour(StyleSlot.TROUSERS),.6f),
+            'C' to gearColour(StyleSlot.CLUB),
+            'B' to gearColour(StyleSlot.BAG),
+            'A' to gearColour(StyleSlot.ACCESSORY),
+            'O' to Color.rgb(38,41,39)))
     }
-
 
     /**
      * Sponsorship creatives are locally bundled and explicitly approved.

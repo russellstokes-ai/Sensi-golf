@@ -22,6 +22,14 @@ def inject_once(source: str, anchor: str, addition: str) -> tuple[str,bool]:
     return source.replace(anchor,addition+anchor,1),True
 
 
+def inject_after_once(source: str, anchor: str, addition: str) -> str:
+    if addition in source:
+        return source
+    if source.count(anchor) != 1:
+        raise ValueError(f"Pinned LibretroDroid anchor changed: {anchor!r}")
+    return source.replace(anchor, anchor + addition, 1)
+
+
 def patch_header(source: str) -> str:
     declaration="""    // Registered by libretro Environment when the DOS core requests keys.
     using KeyboardEvent = void (*)(bool, unsigned, uint32_t, uint16_t);
@@ -70,8 +78,7 @@ void Input::setKeyboardCallback(KeyboardEvent callback) {
     }
 """
     anchor="void Input::onKeyEvent(unsigned int port, int action, int keyCode) {\n"
-    return inject_once(source,anchor,anchor+keymapping)[0].replace(
-        anchor+anchor+keymapping,anchor+keymapping,1)
+    return inject_after_once(source, anchor, keymapping)
 
 
 def patch_environment(source: str) -> str:
@@ -84,11 +91,8 @@ def patch_environment(source: str) -> str:
 
 """
     source=inject_once(source,"        case RETRO_ENVIRONMENT_SET_PIXEL_FORMAT:",environment_case)[0]
-    source=inject_once(source,"void Environment::deinitialize() {\n",
-                       "void Environment::deinitialize() {\n    libretrodroid::Input::setKeyboardCallback(nullptr);\n")[0]
-    return source.replace(
-        "void Environment::deinitialize() {\nvoid Environment::deinitialize() {\n",
-        "void Environment::deinitialize() {\n",1)
+    return inject_after_once(source, "void Environment::deinitialize() {\\n",
+                             "    libretrodroid::Input::setKeyboardCallback(nullptr);\\n")
 
 
 def main() -> None:

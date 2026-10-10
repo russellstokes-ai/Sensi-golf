@@ -27,3 +27,49 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
 }
+
+
+/*
+ * Production-art hard stop:
+ * A real release cannot ship empty, rejected, temporary, borrowed, procedural
+ * or unapproved character/scenery sprites. Debug builds may run the engine
+ * without sprites for automated physics/control testing; no dummy art is used.
+ * The approval marker must only be committed AFTER explicit owner sign-off.
+ */
+def requiredArtFrames = [
+    'golfer_idle', 'golfer_backswing', 'golfer_impact', 'golfer_follow',
+    'tree_round', 'tree_pine', 'spectator_idle', 'spectator_wave',
+    'flower_yellow', 'flower_pink'
+]
+tasks.register('verifyApprovedProductionArt') {
+    group = 'verification'
+    description = 'Block Pixtee release while visual assets are missing or unapproved'
+    doLast {
+        def root = file('src/main/assets/art/production')
+        def approval = new File(root, 'APPROVED_v1.txt')
+        if (!approval.isFile() ||
+            approval.getText('UTF-8').trim() != 'PIXTEE_PRODUCTION_ART_APPROVED_V1') {
+            throw new GradleException('RELEASE BLOCKED: Pixtee production artwork has not been explicitly approved.')
+        }
+        requiredArtFrames.each { id ->
+            def frame = new File(root, "${id}.png")
+            if (!frame.isFile() || frame.length() < 128L) {
+                throw new GradleException("RELEASE BLOCKED: missing approved pixel artwork: ${frame.path}")
+            }
+            // Validate the PNG signature so accidental text or zero-byte
+            // files never satisfy the art gate.
+            def magic = frame.withInputStream { input ->
+                byte[] bytes = new byte[8]
+                return input.read(bytes) == 8 ? bytes : new byte[0]
+            }
+            if (magic.length != 8 || (magic[0] & 0xff) != 137 ||
+                (magic[1] & 0xff) != 80 || (magic[2] & 0xff) != 78 ||
+                (magic[3] & 0xff) != 71) {
+                throw new GradleException("RELEASE BLOCKED: not a PNG: ${frame.path}")
+            }
+        }
+    }
+}
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach {
+    dependsOn tasks.named('verifyApprovedProductionArt')
+}

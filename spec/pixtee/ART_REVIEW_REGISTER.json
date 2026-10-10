@@ -1,0 +1,64 @@
+{
+  "schema": "pixtee.art-review.v1",
+  "ownerApprovalRequired": true,
+  "approvalStatement": "No proposed or production artwork is approved at this time; explicit owner sign-off required for EACH visual asset or defined set before integration.",
+  "categories": [
+    {
+      "id": "golfer_and_ball",
+      "name": "Golfer, ball, club, shadows, swing frames",
+      "status": "awaiting_art_proposal"
+    },
+    {
+      "id": "terrain_and_scenery",
+      "name": "Grass, fairway, greens, bunkers, water, trees, flowers, spectators",
+      "status": "awaiting_art_proposal"
+    },
+    {
+      "id": "course_compositions",
+      "name": "Each of 35 courses: unique visual layout, landscape details and themes",
+      "status": "awaiting_art_proposal"
+    },
+    {
+      "id": "menus_and_hud",
+      "name": "Main menu, UI controls, Welly-o-meter, scoreboards, season/career screens",
+      "status": "awaiting_art_proposal"
+    },
+    {
+      "id": "animations_and_effects",
+      "name": "Motion, transitions, shot effects, rewards and trophies",
+      "status": "awaiting_art_proposal"
+    },
+    {
+      "id": "branding_and_sponsorship",
+      "name": "Game branding, course sponsor boards, icons, logos",
+      "status": "awaiting_art_proposal"
+    }
+  ],
+  "approvedAssets": [],
+  "rejectedAssets": [
+    {
+      "revision": "programmatic-glyph-v1",
+      "decision": "rejected",
+      "reason": "Owner rejected all crude programmatic pixel sprite prototypes; zero placeholders permitted",
+      "productionAllowed": false
+    }
+  ],
+  "requirements": {
+    "entryRequiredFields": [
+      "file",
+      "sha256",
+      "category",
+      "ownerApprovalReference",
+      "revision"
+    ],
+    "previewFormat": "Realistic in-game screenshot at actual phone size, with enlarged detail crop; SVG-only GitHub preview is insufficient",
+    "implementationRule": "Never bundle an artwork file until approval entry and content hash match",
+    "reviewStates": [
+      "proposed",
+      "changes_requested",
+      "approved",
+      "implemented",
+      "device_verified"
+    ]
+  }
+}

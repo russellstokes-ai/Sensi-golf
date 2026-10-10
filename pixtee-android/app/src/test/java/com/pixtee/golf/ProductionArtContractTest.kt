@@ -8,6 +8,11 @@ class ProductionArtContractTest {
     @Test fun expectedProductionSpriteNamesAreStableAndUnique() {
         val ids = ProductionArtContract.REQUIRED_SPRITES
         assertEquals(19,ids.size)
+        assertEquals(5,ProductionArtContract.TERRAIN_TILES.size)
+        assertEquals(4,ProductionArtContract.UI_ART.size)
+        assertEquals(28,(
+            ids+ProductionArtContract.TERRAIN_TILES+ProductionArtContract.UI_ART
+        ).distinct().size)
         assertEquals(ids.size,ids.distinct().size)
         assertTrue(ids.all { it.matches(Regex("[a-z][a-z_]+")) })
         assertEquals("art/production/APPROVED_v1.txt",ProductionArtContract.MANIFEST)

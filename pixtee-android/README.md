@@ -9,7 +9,8 @@
 - Keep original-style pacing and no-wind classic rules. Wind optional OFF by default.
 - New course layouts, branding and independently authored pixels. Career, statistics, trophies as additive screens. No gameplay buffs or pay-to-win.
 - The user-approved phone-screen concept collage (10 Oct 2026) is a design direction, *not* pixel-perfect approval: relative UI size and meter still require refinement.
-- No packaged third-party material; no file-import or emulator setup.
+- No original-game files or import/emulator setup.
+- Small non-interactive course sponsor signs **near tee and green**, 4 inventory slots per hole, advertiser creative only if approved, active and family-safe. House-brand default, world-projected with physics isolation, optional ON/OFF. No full-screen or video ads.
 
 ## Build
 From a machine with Android SDK/Java 17 and Gradle 8.9 installed:

@@ -45,7 +45,7 @@ class PixteeCourseMasteryTest {
         assertEquals(MasteryMedal.PLATINUM,m.medal(8))
         assertEquals(4,m.records[8]!!.completedRounds)
         assertEquals(-9,m.records[8]!!.bestRelativeToPar)
-        m=m.record(finished(8,strokesAbovePar=100))
+        m=m.record(finished(8,strokesAbovePar=6))
         assertEquals(MasteryMedal.PLATINUM,m.medal(8))
     }
 

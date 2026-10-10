@@ -22,7 +22,9 @@ CATEGORY_IDS = {
 REQUIRED_FRAMES = {
     "golfer_idle.png", "golfer_takeaway.png", "golfer_backswing.png",
     "golfer_top.png", "golfer_downswing.png", "golfer_impact.png",
-    "golfer_follow.png", "golfer_finish.png", "golfer_putt.png",
+    "golfer_follow.png", "golfer_finish.png",
+    "golfer_putt_ready.png", "golfer_putt_back.png",
+    "golfer_putt_impact.png", "golfer_putt_finish.png",
     "tree_round.png", "tree_pine.png",
     "spectator_idle.png", "spectator_wave.png",
     "spectator_photographer.png", "camera_flash.png",

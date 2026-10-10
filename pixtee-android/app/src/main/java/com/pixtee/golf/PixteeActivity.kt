@@ -68,9 +68,12 @@ private class PixteeCanvas(context: Context) : View(context) {
         else MenuInput.CONTENT_HEIGHT
     private fun startRound(mode: RoundMode, length: Int = selectedLength) {
         selectedMode = mode
+        lastReward = ""
+        if(mode != RoundMode.CAREER) careerEventIndex=-1
         round = PixteeRound(selectedCourse,length,mode)
         g.startHole(round!!.layout())
         g.practice = mode == RoundMode.PRACTICE
+        saveSession(null)
         screen = Screen.TEE
     }
     private fun nextAfterScore() {
@@ -78,10 +81,41 @@ private class PixteeCanvas(context: Context) : View(context) {
         if (played.isComplete) screen = Screen.RESULTS
         else {
             g.startHole(played.layout())
+            saveSession(null)
             screen = Screen.TEE
         }
     }
     private val stats = context.getSharedPreferences("pixtee_stats_v1", Context.MODE_PRIVATE)
+    private val gameSave = context.getSharedPreferences("pixtee_round_save_v2",Context.MODE_PRIVATE)
+    private var lastSaved = ""
+    private fun savedGame(): SavedPixteeGame? =
+        PixteeSaveCodec.decode(gameSave.getString("active",null))
+    private fun saveSession(ball: StableBall? = null) {
+        val r=round ?: return
+        val value=PixteeSaveCodec.encode(r,ball)
+        if(value!=lastSaved) {
+            gameSave.edit().putString("active",value).apply()
+            lastSaved=value
+        }
+    }
+    private fun continueRound() {
+        val restored=savedGame() ?: return
+        round=restored.round
+        selectedCourse=restored.round.courseIndex
+        selectedLength=restored.round.length
+        selectedMode=restored.round.mode
+        lastSaved=""
+        if(restored.round.isComplete) screen=Screen.RESULTS
+        else {
+            g.startHole(restored.round.layout())
+            val ball=restored.ball
+            if(ball!=null) {
+                g.restoreBall(ball)
+                screen=Screen.PLAYING
+                lastNs=0L;accumulator=0f
+            } else screen=Screen.TEE
+        }
+    }
     private var screen = Screen.MAIN
     private var lastNs = 0L
     private var accumulator = 0f
@@ -154,6 +188,10 @@ private class PixteeCanvas(context: Context) : View(context) {
             }
         }
         lastNs = now
+        // Persist only settled ball coordinates. Pending swings resume from
+        // the last fully completed shot, not a partially simulated frame.
+        if(screen==Screen.PLAYING && g.stage==GameStage.READY)
+            saveSession(g.stableBall())
         canvas.save()
         // One X/Y scale: a tall handset reveals MORE world vertically;
         // neither golfers nor collision geometry get stretched.
@@ -232,7 +270,8 @@ private class PixteeCanvas(context: Context) : View(context) {
         navyBackdrop(c)
         text(c, "PIXTEE", 180f, 164f, 64f, Color.rgb(255, 193, 31), true)
         text(c, "GOLF", 180f, 228f, 56f, Color.rgb(63, 212, 53), true)
-        val buttons = listOf("PLAY ROUND", "CAREER", "PRACTICE HOLE",
+        val buttons = listOf("PLAY ROUND", "CAREER",
+            if(savedGame()!=null) "RESUME ROUND" else "PRACTICE HOLE",
             "STATISTICS", "TROPHIES", "OPTIONS")
         for ((i, label) in buttons.withIndex())
             woodButton(c, label, 44f, 279f + i * 66f, 272f, 49f)
@@ -749,6 +788,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             }
         }
         e.apply()
+        saveSession(null)
         screen=Screen.SCORE
     }
 
@@ -808,7 +848,8 @@ private class PixteeCanvas(context: Context) : View(context) {
                     when(i) {
                         0 -> screen=Screen.COURSES
                         1 -> screen=Screen.CAREER
-                        2 -> startRound(RoundMode.PRACTICE,1)
+                        2 -> if(savedGame()!=null) continueRound()
+                             else startRound(RoundMode.PRACTICE,1)
                         3 -> screen=Screen.STATS
                         4 -> screen=Screen.TROPHIES
                         5 -> screen=Screen.OPTIONS

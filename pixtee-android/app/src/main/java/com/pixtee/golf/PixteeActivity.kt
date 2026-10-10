@@ -2,6 +2,9 @@ package com.pixtee.golf
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.RectF
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -17,6 +20,7 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.random.Random
+import org.json.JSONObject
 
 /** Pure original Pixtee frontend. No DOS emulator, purchased files or internet required. */
 class PixteeActivity : Activity() {
@@ -47,6 +51,14 @@ private class PixteeCanvas(context: Context) : View(context) {
     private var downY = 0f
     private var selection = 0
     private var sound = true
+    private val courseOptions = context.getSharedPreferences("pixtee_options_v1", Context.MODE_PRIVATE)
+    private var sponsorBoards = courseOptions.getBoolean("course_boards", true)
+    private val sponsorCampaigns = readSponsorManifest(context)
+    private val logoCache = mutableMapOf<String, Bitmap?>()
+    private val sponsorSlots = SponsorInventory.slots(
+        SponsorInventory.DEFAULT_COURSE_ID, 1,
+        PixteeCore.TEE_X, PixteeCore.TEE_Y, PixteeCore.PIN_X, PixteeCore.PIN_Y
+    )
     private val navy = Color.rgb(3, 8, 91)
     private val navyDark = Color.rgb(0, 3, 38)
     private val gold = Color.rgb(255, 184, 34)
@@ -230,6 +242,15 @@ private class PixteeCanvas(context: Context) : View(context) {
         circle(c, 137f, 464f, 2.2f, Color.WHITE)
         circle(c, 165f, 464f, 2.2f, Color.WHITE)
         flag(c, PixteeCore.PIN_X, PixteeCore.PIN_Y)
+        // Signs are world-space decoration, not collision objects or HUD ads.
+        // Draw AFTER terrain/trees, BEFORE phone HUD and swing controls.
+        if (sponsorBoards) {
+            val shown = SponsorInventory.show(
+                sponsorSlots, sponsorCampaigns, true,
+                System.currentTimeMillis() / 1000L
+            )
+            for (board in shown) drawSponsorBoard(c, board)
+        }
         c.restore()
     }
     private fun tree(c: Canvas, x: Float, y: Float) {
@@ -252,6 +273,96 @@ private class PixteeCanvas(context: Context) : View(context) {
         rect(c, x - 3f, y - 4f, x - 1f, y + 1f, Color.rgb(18, 29, 41))
         rect(c, x + 1f, y - 4f, x + 3f, y + 1f, Color.rgb(18, 29, 41))
         line(c, x + 3f, y - 7f, x + 8f, y - 2f, Color.WHITE)
+    }
+
+
+    /**
+     * Sponsorship creatives are locally bundled and explicitly approved.
+     * No ad SDK, tracking, advertising ID, external image URLs, WebView or
+     * gameplay physics changes. Future publisher tooling creates this JSON.
+     */
+    private fun readSponsorManifest(context: Context): List<SponsorCampaign> {
+        return try {
+            val content = context.assets.open("sponsors/placements.v1.json")
+                .bufferedReader().use { it.readText() }
+            val rows = JSONObject(content).getJSONArray("campaigns")
+            val result = mutableListOf<SponsorCampaign>()
+            for (i in 0 until rows.length()) {
+                val item = rows.getJSONObject(i)
+                val positions = item.getJSONArray("slotIds")
+                val assigned = mutableSetOf<String>()
+                for (j in 0 until positions.length()) assigned.add(positions.getString(j))
+                val logo = item.optString("logoFile", "").takeIf {
+                    it.matches(Regex("[a-z0-9][a-z0-9_-]{0,49}[.]png"))
+                }
+                result.add(SponsorCampaign(
+                    id=item.getString("id"),
+                    advertiser=item.getString("advertiser"),
+                    boardText=item.getString("boardText"),
+                    slotIds=assigned,
+                    startUtcSeconds=item.getLong("startUtcSeconds"),
+                    endUtcSeconds=item.getLong("endUtcSeconds"),
+                    approved=item.optBoolean("approved", false),
+                    familySafe=item.optBoolean("familySafe", false),
+                    logoFile=logo,
+                    backgroundRgb=Color.parseColor(item.optString("backgroundColor", "#162F52")),
+                    foregroundRgb=Color.parseColor(item.optString("foregroundColor", "#FFFFFF"))
+                ))
+            }
+            result
+        } catch (_: Exception) {
+            // Broken or absent creative catalog must NEVER break game launch.
+            emptyList()
+        }
+    }
+
+    private fun boardLogo(name: String): Bitmap? {
+        if (!name.matches(Regex("[a-z0-9][a-z0-9_-]{0,49}[.]png"))) return null
+        if (!logoCache.containsKey(name)) {
+            logoCache[name] = try {
+                context.assets.open("sponsors/logos/" + name)
+                    .use { BitmapFactory.decodeStream(it) }
+            } catch (_: Exception) { null }
+        }
+        return logoCache[name]
+    }
+
+    /**
+     * Small, stationary, physical golf-course signs with two wooden posts;
+     * approximately 36 game-world units wide, rendered through the SAME
+     * uniform world transform as golfer/ball. Non-clickable.
+     */
+    private fun drawSponsorBoard(c: Canvas, sign: SponsorBoardView) {
+        val x = sign.slot.x
+        val y = sign.slot.y
+        val w = 35f
+        val h = 13f
+        val left = x - w / 2f
+        rect(c, left + 3f, y + 2f, left + 5f, y + 8f, Color.rgb(89, 52, 23))
+        rect(c, left + w - 5f, y + 2f, left + w - 3f, y + 8f, Color.rgb(89, 52, 23))
+        rect(c, left - 1f, y - h - 1f, left + w + 1f, y + 3f, Color.BLACK)
+        rect(c, left, y - h, left + w, y + 1f, Color.rgb(151, 85, 34))
+        rect(c, left + 2f, y - h + 2f, left + w - 2f, y - 1f,
+            Color.rgb((sign.backgroundRgb shr 16) and 255,
+                (sign.backgroundRgb shr 8) and 255, sign.backgroundRgb and 255))
+        val logo = sign.logoFile?.let { boardLogo(it) }
+        if (logo != null) {
+            p.color = Color.WHITE
+            p.isFilterBitmap = false
+            c.drawBitmap(logo, null, RectF(left + 2f, y - h + 2f,
+                left + w - 2f, y - 1f), p)
+        } else {
+            val colour = Color.rgb((sign.foregroundRgb shr 16) and 255,
+                (sign.foregroundRgb shr 8) and 255, sign.foregroundRgb and 255)
+            text(c, sign.copy.take(11), x, y - 4.2f,
+                if (sign.copy.length > 7) 4.3f else 5.5f, colour, true)
+        }
+        if (sign.paid) {
+            // Embedded disclosure within the sign; no separate UI banner.
+            rect(c, left + w - 5f, y - h, left + w + 1f, y - h + 5f,
+                Color.rgb(255, 203, 52))
+            text(c, "AD", left + w - 2f, y - h + 3.7f, 3.2f, Color.BLACK, true)
+        }
     }
 
     private fun drawPlaying(c: Canvas) {
@@ -381,7 +492,9 @@ private class PixteeCanvas(context: Context) : View(context) {
         woodButton(c, "PIXEL GRAPHICS", 30f, 247f, 300f, 53f)
         woodButton(c, "WIND: OFF", 30f, 332f, 300f, 53f)
         woodButton(c, if (sound) "SOUND: ON" else "SOUND: OFF", 30f, 417f, 300f, 53f)
-        text(c, "TOUCH ONLY - NO GAME FILE NEEDED", 180f, 583f, 12f, cream, true)
+        woodButton(c, if (sponsorBoards) "COURSE BOARDS: ON" else "COURSE BOARDS: OFF",
+            30f, 502f, 300f, 53f)
+        text(c, "PIXTEE SPONSOR SIGNS IN COURSE", 180f, 588f, 12f, cream, true)
         woodButton(c, "BACK", 74f, 670f, 212f, 47f)
     }
 
@@ -452,6 +565,10 @@ private class PixteeCanvas(context: Context) : View(context) {
             Screen.OPTIONS -> when {
                 y < 80f || y > 652f -> screen = Screen.MAIN
                 y in 413f..483f -> sound = !sound
+                y in 497f..568f -> {
+                    sponsorBoards = !sponsorBoards
+                    courseOptions.edit().putBoolean("course_boards", sponsorBoards).apply()
+                }
             }
         }
         invalidate()

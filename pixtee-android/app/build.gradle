@@ -39,7 +39,8 @@ dependencies {
 def requiredArtFrames = [
     'golfer_idle', 'golfer_takeaway', 'golfer_backswing', 'golfer_top',
     'golfer_downswing', 'golfer_impact', 'golfer_follow', 'golfer_finish',
-    'golfer_putt', 'tree_round', 'tree_pine', 'spectator_idle',
+    'golfer_putt_ready', 'golfer_putt_back', 'golfer_putt_impact',
+    'golfer_putt_finish', 'tree_round', 'tree_pine', 'spectator_idle',
     'spectator_wave', 'spectator_photographer', 'camera_flash',
     'bird_wings_up', 'bird_wings_down', 'flower_yellow', 'flower_pink',
     'terrain_rough', 'terrain_fairway', 'terrain_green',

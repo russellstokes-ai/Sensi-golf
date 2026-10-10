@@ -110,6 +110,32 @@ class PixteeNavigationSmokeTest {
     }
 
     @Test
+    fun shortFoldLikePortraitScreenScrollsToOffscreenOptions() {
+        // A narrowed window reproduces the short usable height encountered
+        // in Fold multi-window and some unfolded portrait configurations.
+        device.executeShellCommand("wm size 1080x1500")
+        try {
+            var bounds = device.findObject(By.descContains("Pixtee screen:"))!!.visibleBounds
+            repeat(20) {
+                if (bounds.height() <= 1550) return@repeat
+                Thread.sleep(150L)
+                bounds = device.findObject(By.descContains("Pixtee screen:"))!!.visibleBounds
+            }
+            assertTrue("Emulator did not adopt a compact viewport: $bounds",
+                bounds.height() <= 1550)
+            val middleX = bounds.left + bounds.width() / 2
+            device.swipe(middleX, bounds.top + 1200, middleX, bounds.top + 480, 30)
+            waitFor("MAIN")
+            // OPTIONS is offscreen before scrolling (logical y 609..658).
+            // A 240 logical-unit scroll places it near y 370..420.
+            tap(180f, 392f)
+            waitFor("OPTIONS")
+        } finally {
+            device.executeShellCommand("wm size reset")
+        }
+    }
+
+    @Test
     fun secondaryScreensCanBeOpenedAndExited() {
         tap(180f, 368f); waitFor("CAREER")
         tap(180f, 47f); waitFor("MAIN")

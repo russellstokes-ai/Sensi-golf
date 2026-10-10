@@ -36,7 +36,7 @@ class PixteeActivity : Activity() {
     }
 }
 
-private enum class Screen { MAIN, COURSES, PLAYER, TEE, PLAYING, SCORE, RESULTS, PAUSE, CAREER, STATS, TROPHIES, OPTIONS }
+private enum class Screen { MAIN, COURSES, PLAYER, TEE, PLAYING, SCORE, RESULTS, PAUSE, CAREER, STATS, TROPHIES, OPTIONS, WARDROBE }
 
 /** Every UI element is laid out against a TALL 360x760 logical phone, then scaled edge-to-edge. */
 private class PixteeCanvas(context: Context) : View(context) {
@@ -64,8 +64,22 @@ private class PixteeCanvas(context: Context) : View(context) {
     )
     private val tourNames = listOf("AMATEUR TOUR", "REGIONAL TOUR", "NATIONAL TOUR",
         "PRO TOUR", "WORLD TOUR")
-    private fun screenContentHeight() = if (screen == Screen.COURSES) 1620f
-        else MenuInput.CONTENT_HEIGHT
+    private var currentStyle = StyleSlot.HAT
+    private val equipmentPrefs = context.getSharedPreferences("pixtee_equipment_v1", Context.MODE_PRIVATE)
+    private var equipment = PixteeWardrobe.decode(equipmentPrefs.getString("gear",null),progress())
+    private fun gear(slot:StyleSlot):StyleItem =
+        PixteeWardrobe.equippedItem(slot,equipment,progress())
+    private fun gearColour(slot:StyleSlot):Int =
+        gear(slot).colour or 0xFF000000.toInt()
+    private fun saveGear() {
+        equipmentPrefs.edit().putString("gear",
+            PixteeWardrobe.encode(equipment,progress())).apply()
+    }
+    private fun screenContentHeight() = when(screen) {
+        Screen.COURSES -> 1620f
+        Screen.MAIN -> 840f
+        else -> MenuInput.CONTENT_HEIGHT
+    }
     private fun startRound(mode: RoundMode, length: Int = selectedLength) {
         selectedMode = mode
         lastReward = ""
@@ -212,6 +226,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             Screen.STATS -> drawStats(canvas)
             Screen.TROPHIES -> drawTrophies(canvas)
             Screen.OPTIONS -> drawOptions(canvas)
+            Screen.WARDROBE -> drawWardrobe(canvas)
         }
         canvas.restore()
         val state = "Pixtee screen: ${screen.name}" +
@@ -272,10 +287,10 @@ private class PixteeCanvas(context: Context) : View(context) {
         text(c, "GOLF", 180f, 228f, 56f, Color.rgb(63, 212, 53), true)
         val buttons = listOf("PLAY ROUND", "CAREER",
             if(savedGame()!=null) "RESUME ROUND" else "PRACTICE HOLE",
-            "STATISTICS", "TROPHIES", "OPTIONS")
+            "STATISTICS", "TROPHIES", "OPTIONS", "CUSTOMIZE GOLFER")
         for ((i, label) in buttons.withIndex())
             woodButton(c, label, 44f, 279f + i * 66f, 272f, 49f)
-        text(c, "CLASSIC 2D ARCADE GOLF", 180f, 732f, 11f, cream, true)
+        text(c, "CLASSIC 2D ARCADE GOLF", 180f, 790f, 11f, cream, true)
     }
     private fun drawCourses(c: Canvas) {
         pageHeader(c, "SELECT GOLF COURSE")
@@ -436,12 +451,12 @@ private class PixteeCanvas(context: Context) : View(context) {
     }
     private fun golfer(c: Canvas, x: Float, y: Float) {
         // Purpose-made 10x14 pixel figure at the same tiny world scale as classic overhead golf.
-        rect(c, x - 2f, y - 14f, x + 3f, y - 11f, Color.rgb(245, 210, 69))
-        rect(c, x - 3f, y - 12f, x + 4f, y - 10f, Color.rgb(227, 178, 42))
-        rect(c, x - 3f, y - 10f, x + 3f, y - 4f, Color.rgb(42, 73, 200))
-        rect(c, x - 3f, y - 4f, x - 1f, y + 1f, Color.rgb(18, 29, 41))
-        rect(c, x + 1f, y - 4f, x + 3f, y + 1f, Color.rgb(18, 29, 41))
-        line(c, x + 3f, y - 7f, x + 8f, y - 2f, Color.WHITE)
+        rect(c,x-2f,y-14f,x+3f,y-11f,gearColour(StyleSlot.HAT))
+        rect(c,x-3f,y-12f,x+4f,y-10f,gearColour(StyleSlot.SKIN))
+        rect(c,x-3f,y-10f,x+3f,y-4f,gearColour(StyleSlot.TOP))
+        rect(c,x-3f,y-4f,x-1f,y+1f,gearColour(StyleSlot.TROUSERS))
+        rect(c,x+1f,y-4f,x+3f,y+1f,gearColour(StyleSlot.TROUSERS))
+        line(c,x+3f,y-7f,x+8f,y-2f,gearColour(StyleSlot.CLUB))
     }
 
 
@@ -544,7 +559,7 @@ private class PixteeCanvas(context: Context) : View(context) {
         circle(c, bx, by + 3f, 3f, Color.rgb(27, 70, 20))
         val lift = min(32f, g.height * 0.55f)
         if (g.height > 1f) circle(c, bx, by - lift, 3f, Color.rgb(255, 244, 174))
-        else circle(c, bx, by, 2.5f, Color.WHITE)
+        else circle(c, bx, by, 2.5f, gearColour(StyleSlot.BALL))
         drawHUD(c)
         woodButton(c, "II", 305f, 3f, 49f, 30f)
         if (g.stage == GameStage.READY) {
@@ -599,7 +614,7 @@ private class PixteeCanvas(context: Context) : View(context) {
     private fun drawMeter(c: Canvas) {
         rect(c, 91f, 319f, 354f, 469f, Color.BLACK)
         rect(c, 94f, 322f, 351f, 466f, navyDark)
-        woodButton(c, "WELLY-O-METER", 103f, 331f, 239f, 28f)
+        woodButton(c, "WHACK-O-METER", 103f, 331f, 239f, 28f)
         text(c, if (g.stage == GameStage.POWER) "BACKSWING: POWER"
             else "DOWNSWING: ACCURACY", 224f, 382f, 11.5f, gold, true)
 
@@ -741,6 +756,32 @@ private class PixteeCanvas(context: Context) : View(context) {
             180f,655f,13f,gold,true)
         woodButton(c,"BACK",74f,667f,212f,47f)
     }
+    private fun drawWardrobe(c: Canvas) {
+        pageHeader(c, "CUSTOMIZE GOLFER")
+        text(c,"EARN COSMETICS BY PLAYING",180f,105f,12f,gold,true)
+        // Four-times enlarged preview; course art and physics remain unchanged.
+        c.save()
+        c.translate(180f,170f)
+        c.scale(4.1f,4.1f)
+        golfer(c,0f,0f)
+        c.restore()
+        text(c,"LEVEL ${progress().level}  -  ${progress().xp} XP",
+            180f,194f,13f,gold,true)
+        StyleSlot.values().forEachIndexed { i,slot ->
+            val y=209f+i*48f
+            woodButton(c,"${slot.name}: ${gear(slot).name}".take(29),
+                26f,y,308f,40f,slot==currentStyle)
+        }
+        val unlocked=PixteeWardrobe.available(currentStyle,progress())
+        text(c,"${unlocked.size} OF ${PixteeWardrobe.items.count{it.slot==currentStyle}} UNLOCKED",
+            180f,610f,12f,gold,true)
+        text(c,"EQUIPPED: ${gear(currentStyle).name}",
+            180f,634f,12f,cream,true)
+        woodButton(c,"< PREV",19f,649f,155f,46f)
+        woodButton(c,"NEXT >",186f,649f,155f,46f)
+        woodButton(c,"BACK",74f,706f,212f,43f)
+    }
+
     private fun drawOptions(c: Canvas) {
         pageHeader(c, "OPTIONS")
         woodButton(c, "PORTRAIT FULL SCREEN", 30f, 162f, 300f, 53f)
@@ -843,7 +884,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             MenuInput.contains(x, y, l, t, l + w, t + h)
         when(screen) {
             Screen.MAIN -> {
-                for(i in 0..5) {
+                for(i in 0..6) {
                     if(!hit(44f,279f+i*66f,272f,49f))continue
                     when(i) {
                         0 -> screen=Screen.COURSES
@@ -853,6 +894,7 @@ private class PixteeCanvas(context: Context) : View(context) {
                         3 -> screen=Screen.STATS
                         4 -> screen=Screen.TROPHIES
                         5 -> screen=Screen.OPTIONS
+                        6 -> screen=Screen.WARDROBE
                     }
                     return
                 }
@@ -928,6 +970,26 @@ private class PixteeCanvas(context: Context) : View(context) {
                 hit(74f,674f,212f,46f)) screen=Screen.MAIN
             Screen.TROPHIES -> if(hit(6f,24f,348f,47f) ||
                 hit(74f,667f,212f,47f)) screen=Screen.MAIN
+            Screen.WARDROBE -> when {
+                hit(6f,24f,348f,47f) || hit(74f,706f,212f,43f) ->
+                    screen=Screen.MAIN
+                hit(19f,649f,322f,46f) -> {
+                    val items=PixteeWardrobe.available(currentStyle,progress())
+                    if(items.isNotEmpty()) {
+                        val current=items.indexOfFirst{it.id==gear(currentStyle).id}
+                        val delta=if(x<178f)-1 else 1
+                        val next=(current+delta+items.size)%items.size
+                        equipment=PixteeWardrobe.equip(equipment,items[next].id,progress())
+                        saveGear()
+                    }
+                }
+                else -> StyleSlot.values().forEachIndexed { i,slot ->
+                    if(hit(26f,209f+i*48f,308f,40f)) {
+                        currentStyle=slot
+                        return
+                    }
+                }
+            }
             Screen.OPTIONS -> when {
                 hit(6f,24f,348f,47f) || hit(74f,670f,212f,47f) ->
                     screen=Screen.MAIN

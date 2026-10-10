@@ -95,7 +95,8 @@ def source_assets(sprite):
         if r["file"].endswith(".MCH"):
             frames=r["frame_details"]
             bbox=[f["painted_bbox"] for f in frames if "painted_bbox" in f]
-            # Some legitimate original MCH frames contain no painted pixels.\n            # Preserve the frame/timing slot with a null painted rectangle.
+            # Some legitimate original MCH frames contain no painted pixels.
+            # Preserve the frame/timing slot with a null painted rectangle.
             basic.update({
               "frames":len(frames),
               "original_frames":[{"frame":f["frame"],
@@ -105,7 +106,8 @@ def source_assets(sprite):
                        for f in frames],
               "frame_size_variants":r["unique_frame_sizes"],
               "painted_width_range":metrics([b["width_px"] for b in bbox]),
-              "painted_height_range":metrics([b["height_px"] for b in bbox]),\n              "blank_frame_count":len(frames)-len(bbox)
+              "painted_height_range":metrics([b["height_px"] for b in bbox]),
+              "blank_frame_count":len(frames)-len(bbox)
             })
         else:
             basic.update({"original_bitmap_px":[r.get("width_px"),r.get("height_px")],

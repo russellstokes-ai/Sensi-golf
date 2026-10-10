@@ -771,64 +771,96 @@ private class PixteeCanvas(context: Context) : View(context) {
     private fun tapMenu(x: Float, y: Float) {
         fun hit(l: Float, t: Float, w: Float, h: Float): Boolean =
             MenuInput.contains(x, y, l, t, l + w, t + h)
-        when (screen) {
+        when(screen) {
             Screen.MAIN -> {
-                for (i in 0..5) {
-                    if (!hit(44f, 279f + i * 66f, 272f, 49f)) continue
-                    when (i) {
-                        0 -> screen = Screen.COURSES
-                        1 -> screen = Screen.CAREER
-                        2 -> { g.restart(); g.practice = true; screen = Screen.TEE }
-                        3 -> screen = Screen.STATS
-                        4 -> screen = Screen.TROPHIES
-                        5 -> screen = Screen.OPTIONS
+                for(i in 0..5) {
+                    if(!hit(44f,279f+i*66f,272f,49f))continue
+                    when(i) {
+                        0 -> screen=Screen.COURSES
+                        1 -> screen=Screen.CAREER
+                        2 -> startRound(RoundMode.PRACTICE,1)
+                        3 -> screen=Screen.STATS
+                        4 -> screen=Screen.TROPHIES
+                        5 -> screen=Screen.OPTIONS
                     }
                     return
                 }
             }
-            Screen.COURSES -> when {
-                hit(6f, 24f, 348f, 47f) || hit(75f, 677f, 210f, 46f) -> screen = Screen.MAIN
-                hit(37f, 132f, 286f, 51f) -> screen = Screen.PLAYER
-                // Unbuilt course entries deliberately cannot launch a placeholder hole.
+            Screen.COURSES -> {
+                if(hit(6f,24f,348f,47f) || hit(75f,1550f,210f,46f)) {
+                    screen=Screen.MAIN;return
+                }
+                PixteeCourseCatalog.courses.forEachIndexed { i,_ ->
+                    if(hit(37f,132f+i*56f,286f,45f)) {
+                        selectedCourse=i
+                        screen=Screen.PLAYER
+                        return
+                    }
+                }
             }
             Screen.PLAYER -> when {
-                hit(76f, 527f, 208f, 51f) -> screen = Screen.TEE
-                hit(6f, 24f, 348f, 47f) || hit(76f, 600f, 208f, 51f) ->
-                    screen = Screen.COURSES
+                hit(6f,24f,348f,47f) || hit(76f,600f,208f,51f) ->
+                    screen=Screen.COURSES
+                hit(76f,527f,208f,51f) -> startRound(RoundMode.QUICK)
+                y in 448f..496f -> {
+                    listOf(1,3,9,18).forEachIndexed { i,n ->
+                        if(hit(21f+i*81f,448f,73f,48f)) selectedLength=n
+                    }
+                }
             }
             Screen.TEE -> when {
-                hit(63f, 611f, 234f, 60f) -> {
-                    g.restart(); screen = Screen.PLAYING; lastNs = 0L; accumulator = 0f
+                hit(63f,611f,234f,60f) -> {
+                    screen=Screen.PLAYING;lastNs=0L;accumulator=0f
                 }
-                hit(6f, 24f, 348f, 47f) -> screen = Screen.PLAYER
+                hit(6f,24f,348f,47f) -> screen=Screen.MAIN
             }
             Screen.SCORE -> when {
-                hit(50f, 545f, 260f, 52f) -> { g.restart(); screen = Screen.TEE }
-                hit(50f, 625f, 260f, 52f) || hit(6f, 24f, 348f, 47f) ->
-                    screen = Screen.MAIN
+                hit(50f,545f,260f,52f) -> nextAfterScore()
+                hit(50f,625f,260f,52f) || hit(6f,24f,348f,47f) ->
+                    screen=Screen.MAIN
+            }
+            Screen.RESULTS -> when {
+                hit(52f,544f,256f,52f) -> startRound(selectedMode,
+                    round?.length ?: selectedLength)
+                hit(52f,628f,256f,52f) || hit(6f,24f,348f,47f) ->
+                    screen=Screen.MAIN
+            }
+            Screen.PAUSE -> when {
+                hit(50f,350f,260f,58f) -> {
+                    screen=Screen.PLAYING;lastNs=0L;accumulator=0f
+                }
+                hit(50f,440f,260f,58f) -> screen=Screen.MAIN
             }
             Screen.CAREER -> when {
-                hit(6f, 24f, 348f, 47f) -> screen = Screen.MAIN
-                hit(37f, 652f, 286f, 45f) -> {
-                    g.restart(); g.practice = true; screen = Screen.TEE
+                hit(6f,24f,348f,47f) -> screen=Screen.MAIN
+                hit(37f,652f,286f,45f) -> startRound(RoundMode.PRACTICE,1)
+                else -> {
+                    val unlocked=stats.getInt("career_titles",0)
+                    tourNames.forEachIndexed { i,_ ->
+                        if(i <= unlocked && hit(33f,282f+i*60f,294f,43f)) {
+                            careerTier=i
+                            selectedCourse=(i*5).coerceAtMost(24)
+                            startRound(RoundMode.CAREER,when(i){0->3;1->3;2->9;else->18})
+                            return
+                        }
+                    }
                 }
             }
-            Screen.STATS, Screen.TROPHIES -> {
-                if (hit(6f, 24f, 348f, 47f) || hit(74f, 667f, 212f, 53f)) {
-                    screen = Screen.MAIN
-                }
-            }
+            Screen.STATS -> if(hit(6f,24f,348f,47f) ||
+                hit(74f,674f,212f,46f)) screen=Screen.MAIN
+            Screen.TROPHIES -> if(hit(6f,24f,348f,47f) ||
+                hit(74f,667f,212f,47f)) screen=Screen.MAIN
             Screen.OPTIONS -> when {
-                hit(6f, 24f, 348f, 47f) || hit(74f, 670f, 212f, 47f) ->
-                    screen = Screen.MAIN
-                hit(30f, 417f, 300f, 53f) -> sound = !sound
-                hit(30f, 502f, 300f, 53f) -> {
-                    sponsorBoards = !sponsorBoards
-                    courseOptions.edit().putBoolean("course_boards", sponsorBoards).apply()
+                hit(6f,24f,348f,47f) || hit(74f,670f,212f,47f) ->
+                    screen=Screen.MAIN
+                hit(30f,417f,300f,53f) -> sound=!sound
+                hit(30f,502f,300f,53f) -> {
+                    sponsorBoards=!sponsorBoards
+                    courseOptions.edit().putBoolean("course_boards",sponsorBoards).apply()
                 }
-                hit(30f, 585f, 300f, 49f) -> {
-                    courseMotion = !courseMotion
-                    courseOptions.edit().putBoolean("course_motion", courseMotion).apply()
+                hit(30f,585f,300f,49f) -> {
+                    courseMotion=!courseMotion
+                    courseOptions.edit().putBoolean("course_motion",courseMotion).apply()
                 }
             }
             Screen.PLAYING -> Unit
@@ -847,8 +879,8 @@ private class PixteeCanvas(context: Context) : View(context) {
             g.stage == GameStage.READY && abs(x - downX) > 20f ->
                 g.steer((x - downX) / 5f)
             g.stage == GameStage.POWER || g.stage == GameStage.ACCURACY -> g.whack()
-            // Keep the upper strip as an explicit exit gesture until pause is implemented.
-            y < 38f -> screen = Screen.MAIN
+            // Visible top-right pause control, never silently discards a round.
+            y < 38f && x > 286f -> screen = Screen.PAUSE
         }
     }
 }

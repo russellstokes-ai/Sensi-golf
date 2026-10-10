@@ -146,6 +146,32 @@ jobs:
           name: original-full-game-android-poc-boot-evidence
           path: analysis/private/android-full-boot/
           retention-days: 14
+      # Make a legally distributable user-test frontend AFTER the native
+      # original-game compatibility run. Never upload an APK containing the
+      # unlicensed original DOS executable or course assets to a public repo.
+      - name: Package installable no-game test APK
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f android-full/app/src/main/assets/game/SensibleGolf.dosz
+          gradle -p android-full --no-daemon :app:assembleDebug
+          mkdir -p analysis/private/android-user-test
+          src=android-full/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$src"
+          if unzip -Z1 "$src" | grep -Fq 'assets/game/SensibleGolf.dosz'; then
+            echo "::error::Refusing to distribute APK with original commercial game."
+            exit 1
+          fi
+          cp "$src" analysis/private/android-user-test/SensiGolf-Original-Android-Import-TEST.apk
+          echo "PASS: user-test APK has native emulator and on-device ZIP importer; no original commercial game assets."
+      - name: Upload installable no-game test APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SensiGolf-Original-Android-Import-TEST
+          path: analysis/private/android-user-test/SensiGolf-Original-Android-Import-TEST.apk
+          retention-days: 7
       # Android emulator boot is best-effort on hosted runners; absence of KVM
       # or ADB connectivity must not invalidate successful native compilation.
       # Do not label a compile-only result as an end-to-end full-game pass.

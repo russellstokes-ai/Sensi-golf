@@ -111,7 +111,7 @@ private class PixteeCanvas(context: Context) : View(context) {
         PixteeSaveCodec.decode(gameSave.getString("active",null))
     private fun saveSession(ball: StableBall? = null) {
         val r=round ?: return
-        val value=PixteeSaveCodec.encode(r,ball)
+        val value=PixteeSaveCodec.encode(r,ball,careerEventIndex)
         if(value!=lastSaved) {
             gameSave.edit().putString("active",value).apply()
             lastSaved=value
@@ -123,6 +123,7 @@ private class PixteeCanvas(context: Context) : View(context) {
         selectedCourse=restored.round.courseIndex
         selectedLength=restored.round.length
         selectedMode=restored.round.mode
+        careerEventIndex=restored.careerEventIndex
         lastSaved=""
         if(restored.round.isComplete) screen=Screen.RESULTS
         else {

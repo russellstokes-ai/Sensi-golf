@@ -87,13 +87,18 @@ class PixteeNavigationSmokeTest {
         tap(180f, 550f); waitFor("TEE")
         tap(180f, 642f); waitFor("PLAYING", "READY")
         tapWhack(); waitFor("PLAYING", "POWER")
-        Thread.sleep(650L)
-        tapWhack(); waitFor("PLAYING", "ACCURACY")
-        Thread.sleep(300L)
-        tapWhack(); waitFor("PLAYING", "FLIGHT")
-        // A full human-controlled stroke must make it back to READY or HOLED.
+        Thread.sleep(540L)
+        // Welly accuracy is intentionally a short moving window. UiAutomator's
+        // accessibility wait itself can last longer than that window; issue
+        // the real second and third taps without waiting for a transient label.
+        tapWhack()
+        Thread.sleep(100L)
+        tapWhack()
+        // Separate JVM tests assert the exact READY->POWER->ACCURACY->FLIGHT
+        // progression; here Android must accept a real three-tap full shot.
         val match = By.descContains("Pixtee screen: PLAYING; stage: READY; strokes: 1")
-        assertTrue("Shot did not finish", device.wait(Until.hasObject(match), 12000))
+        assertTrue("Android three-tap shot did not finish",
+            device.wait(Until.hasObject(match), 12000))
     }
 
     @Test

@@ -99,6 +99,21 @@ class PixteeCore {
         restart()
     }
 
+    fun stableBall(): StableBall? =
+        if (stage != GameStage.READY) null
+        else StableBall(x,y,strokes,penalties,putts,clubIndex,aimDegrees)
+
+    fun restoreBall(state: StableBall) {
+        require(activeHole != null) { "Load the authored hole before restoring a ball" }
+        x=state.x; y=state.y; strokes=state.strokes
+        penalties=state.penalties; putts=state.putts
+        clubIndex=state.club; aimDegrees=state.aim
+        lastLie=groundAt(x,y)
+        stage=GameStage.READY; height=0f
+        meter=0f;chosenPower=0f;accuracy=.5f
+        rollTime=0f;rollVx=0f;rollVy=0f
+    }
+
     fun steer(degrees: Float) {
         if (stage == GameStage.READY) aimDegrees = (aimDegrees + degrees).coerceIn(-85f, 85f)
     }

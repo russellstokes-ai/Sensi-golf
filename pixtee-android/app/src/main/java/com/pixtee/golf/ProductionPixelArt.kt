@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
 import java.io.IOException
 
 /**
@@ -30,6 +32,21 @@ object ProductionArtContract {
         GameStage.ACCURACY -> "golfer_impact"
         GameStage.FLIGHT -> "golfer_follow"
         else -> "golfer_idle"
+    }
+
+    /**
+     * Candidate world-space size, NOT an art approval. Source PNG resolution
+     * may be higher to permit detailed/cuter character art, but on-course
+     * proportions remain stable and independent of that resolution.
+     * Exact targets must be approved using a native phone-scale screenshot.
+     */
+    fun candidateWorldHeight(id: String): Float = when (id) {
+        "golfer_idle", "golfer_backswing", "golfer_impact", "golfer_follow" -> 13.5f
+        "tree_round" -> 37f
+        "tree_pine" -> 42f
+        "spectator_idle", "spectator_wave" -> 12f
+        "flower_yellow", "flower_pink" -> 4f
+        else -> throw IllegalArgumentException("Unknown production sprite: $id")
     }
 }
 
@@ -66,7 +83,12 @@ class ProductionPixelArt(private val context: Context) {
             frames[id] = loaded
             loaded
         } ?: return
-        canvas.drawBitmap(bitmap, centreX-bitmap.width/2f,
-            bottomY-bitmap.height.toFloat(),paint)
+        val worldHeight=ProductionArtContract.candidateWorldHeight(id)
+        val worldWidth=worldHeight*bitmap.width/bitmap.height.coerceAtLeast(1).toFloat()
+        // Nearest-neighbour only. Preserve artwork aspect ratio, center on
+        // ball/world anchor, and use the SAME camera zoom as other geometry.
+        val dst=RectF(centreX-worldWidth/2f,bottomY-worldHeight,
+            centreX+worldWidth/2f,bottomY)
+        canvas.drawBitmap(bitmap,Rect(0,0,bitmap.width,bitmap.height),dst,paint)
     }
 }

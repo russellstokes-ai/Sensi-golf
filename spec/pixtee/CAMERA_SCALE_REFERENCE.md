@@ -31,10 +31,12 @@ the current candidate as measured pixel-perfect parity.
   depend on camera scale.
 - Old viewport represented the whole 300 world units horizontally and revealed
   almost all 510 vertically on tall portrait screens; feedback: **too small**.
-- New reference-camera candidate: uniform zoom 1.9x. The visible width is
-  300 / 1.9 = about **158 world units**, height at 360x760 is
-  760 / 1.9 = **400 world units** (versus 510 total). This crops rather
-  than shrinking the game world.
+- New reference-camera candidate: uniform zoom 1.9x relative to
+  the earlier phone-world projection. The base 360 / 300 = 1.2
+  logical screen units per world unit, so actual worldScale = **2.28**.
+  The visible width is 360 / 2.28 ≈ **158 world units**, height at
+  360x760 is 760 / 2.28 ≈ **333 world units** (versus 510 total).
+  This crops rather than shrinking the game world.
 - Camera follows the actual ball's world coordinates with 52 world units of
   anticipation toward the green, clamping gracefully at world edges. HUD,
   meter and pause remain screen-space controls.
@@ -46,9 +48,10 @@ the current candidate as measured pixel-perfect parity.
 
 ## Asset-size review gate — candidate ratios, not final dimensions
 
-With ~158 world units visible across the playfield, a 10–14 world-unit
-golfer is approximately 6.3–8.9% of playfield width, before device scaling.
-That range is a **visual review hypothesis**, not an exact recovered original
+With ~158 world units visible across the playfield, an
+11.5-world-unit golfer projects to about **26 logical pixels high** on a
+360-wide preview, or about **7.3% of gameplay width**. This is a
+**visual review hypothesis**, not an exact recovered original
 sprite size. Approve only after direct original-to-Pixtee screenshots with
 the same subject (golfer beside ball, green and bunker) at matching apparent
 zoom and playback state.

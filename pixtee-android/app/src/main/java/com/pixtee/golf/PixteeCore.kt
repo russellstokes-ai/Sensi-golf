@@ -48,6 +48,8 @@ class PixteeCore {
         )
     }
 
+    var activeHole: HoleLayout? = null; private set
+    var putts = 0; private set
     var x = TEE_X; private set
     var y = TEE_Y; private set
     var height = 0f; private set
@@ -75,17 +77,26 @@ class PixteeCore {
     private var previousX = TEE_X
     private var previousY = TEE_Y
 
-    val toPin: Float get() = hypot(x - PIN_X, y - PIN_Y)
+    val toPin: Float get() = hypot(x - (activeHole?.pinX ?: PIN_X),
+        y - (activeHole?.pinY ?: PIN_Y))
     val club: Club get() = CLUBS[clubIndex]
     val scoreRelative: Int get() = strokes - par
 
     fun restart() {
-        x = TEE_X; y = TEE_Y; height = 0f; stage = GameStage.READY
+        x = activeHole?.teeX ?: TEE_X; y = activeHole?.teeY ?: TEE_Y
+        height = 0f; stage = GameStage.READY
         meter = 0f; chosenPower = 0f; accuracy = 0.5f
         aimDegrees = 0f; strokes = 0; penalties = 0; clubIndex = 0
-        lastLie = Ground.TEE; shots.clear(); holeNumber = 1
+        lastLie = Ground.TEE; shots.clear(); holeNumber = activeHole?.number ?: 1
+        par = activeHole?.par ?: 4; putts = 0
         meterDirection = 1f
         rollTime = 0f; rollVx = 0f; rollVy = 0f
+    }
+
+    /** Begin a distinct playable hole without losing the enclosing round. */
+    fun startHole(hole: HoleLayout) {
+        activeHole = hole
+        restart()
     }
 
     fun steer(degrees: Float) {
@@ -205,6 +216,7 @@ class PixteeCore {
         rollVx = directionX * speed
         rollVy = directionY * speed
         strokes++
+        if (clubIndex == CLUBS.lastIndex && lastLie == Ground.GREEN) putts++
         // A putt travels along the ground. Woods and irons first fly, then roll.
         if (clubIndex == CLUBS.lastIndex) {
             destX = x; destY = y
@@ -223,8 +235,12 @@ class PixteeCore {
         }
         shots.add(ShotRecord(club.label, chosenPower, accuracy, startX, startY, x, y,
             if (landing == Ground.WATER) 1 else 0, lastLie))
-        if (toPin < 5f) {
-            x = PIN_X; y = PIN_Y; stage = GameStage.HOLED
+        if (toPin < 5f || strokes >= 12) {
+            if (toPin < 5f) {
+                x = activeHole?.pinX ?: PIN_X
+                y = activeHole?.pinY ?: PIN_Y
+            }
+            stage = GameStage.HOLED
         } else {
             stage = GameStage.READY
             if (toPin < 35f) clubIndex = CLUBS.lastIndex
@@ -232,6 +248,7 @@ class PixteeCore {
     }
 
     fun groundAt(tx: Float, ty: Float): Ground {
+        activeHole?.let { return it.groundAt(tx,ty) }
         val green = hypot(tx - PIN_X, (ty - PIN_Y) * 1.12f)
         if (green <= 33f) return Ground.GREEN
         // Tee is a distinct collision surface nested inside fairway geometry.

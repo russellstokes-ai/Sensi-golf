@@ -58,6 +58,10 @@ class PixteeCore {
     var y = TEE_Y; private set
     var height = 0f; private set
     var stage = GameStage.READY; private set
+    /** Visual animation clocks only; these do not modify shot physics. */
+    var backswingTicks = 0; private set
+    var downswingTicks = 0; private set
+    var postContactTicks = 0; private set
     var meter = 0f; private set
     var chosenPower = 0f; private set
     var accuracy = 0.5f; private set
@@ -106,6 +110,7 @@ class PixteeCore {
         lastLie = Ground.TEE; shots.clear(); holeNumber = activeHole?.number ?: 1
         par = activeHole?.par ?: 4; putts = 0
         meterDirection = 1f
+        backswingTicks=0;downswingTicks=0;postContactTicks=0
         rollTime = 0f; rollVx = 0f; rollVy = 0f
         flightCurveX = 0f; flightCurveY = 0f
     }
@@ -129,6 +134,7 @@ class PixteeCore {
         stage=GameStage.READY; height=0f
         meter=0f;chosenPower=0f;accuracy=.5f
         rollTime=0f;rollVx=0f;rollVy=0f
+        backswingTicks=0;downswingTicks=0;postContactTicks=0
     }
 
     fun steer(degrees: Float) {
@@ -144,6 +150,7 @@ class PixteeCore {
         when (stage) {
             GameStage.READY -> {
                 meter = 0f; meterDirection = 1f
+                backswingTicks=0;downswingTicks=0;postContactTicks=0
                 stage = GameStage.POWER
             }
             GameStage.POWER -> {
@@ -153,6 +160,7 @@ class PixteeCore {
                 // Keep the cursor at its physical arc location for downswing.
                 meter = cursorPosition
                 meterDirection = -1f
+                downswingTicks=0
                 stage = GameStage.ACCURACY
             }
             GameStage.ACCURACY -> {
@@ -170,11 +178,13 @@ class PixteeCore {
     fun tick() {
         when (stage) {
         GameStage.POWER -> {
+            backswingTicks++
             meter += meterDirection * (1.14f * TICK_SECONDS)
             if (meter >= 1f) { meter = 1f; meterDirection = -1f }
             if (meter <= 0f) { meter = 0f; meterDirection = 1f }
         }
         GameStage.ACCURACY -> {
+            downswingTicks++
             // Stronger swings cross the narrow accuracy zone faster.
             meter -= (1.1f + chosenPower * 0.95f) * TICK_SECONDS
             if (meter <= -0.32f) {
@@ -184,6 +194,7 @@ class PixteeCore {
             }
         }
         GameStage.FLIGHT -> {
+            postContactTicks++
             shotTime += TICK_SECONDS
             val t = min(1f, shotTime / shotDuration)
             // Side-spin changes the trajectory during flight, not only the
@@ -206,6 +217,7 @@ class PixteeCore {
             }
         }
         GameStage.ROLL -> {
+            postContactTicks++
             val dt = TICK_SECONDS
             rollTime += dt
             // Course-specific gentle green break. No wind by default.
@@ -267,6 +279,7 @@ class PixteeCore {
         flightCurveX = -directionY*lateral
         flightCurveY = directionX*lateral
         shotTime = 0f
+        postContactTicks=0
         // Independently calibrated arcade pacing: a full-power driver now
         // lands after ~80 logical 70Hz steps (~1.14s), rather than ~170.
         // Taller lofts float a little longer. This does not copy source code.

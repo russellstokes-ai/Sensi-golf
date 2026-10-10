@@ -23,6 +23,19 @@ class PixteeCoreTest {
         assertEquals(1, g.strokes)
     }
 
+    @Test fun powerPeaksAtTopOfWellyArc() {
+        assertEquals(0f, PixteeCore.powerForMeter(0f), 0.0001f)
+        assertEquals(1f, PixteeCore.powerForMeter(0.5f), 0.0001f)
+        assertEquals(0f, PixteeCore.powerForMeter(1f), 0.0001f)
+        assertEquals(PixteeCore.powerForMeter(0.25f),
+            PixteeCore.powerForMeter(0.75f), 0.0001f)
+        val g = PixteeCore()
+        g.whack()
+        repeat(26) { g.tick() } // near the physical top of the arch
+        assertEquals(GameStage.ACCURACY, g.whack())
+        assertTrue("Top-of-arc press must produce a strong shot", g.chosenPower > 0.95f)
+    }
+
     @Test fun aimAndClubsLockedDuringWhack() {
         val g = PixteeCore()
         g.whack()

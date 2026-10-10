@@ -1,0 +1,53 @@
+name: Pixtee Original Binary Gameplay Hard Data
+
+on:
+  push:
+    paths:
+      - ".github/workflows/pixtee-original-binary-hard-data.yml"
+      - "tools/extract_pixtee_original_binary_hard_data.py"
+      - "spec/pixtee/ORIGINAL_PHYSICS_RESEARCH.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extract-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate committed numerical reference first
+        run: python tools/validate_pixtee_physics_reference.py
+      - name: Retrieve verified original v1.014 game files to ignored private workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 4 --retry-delay 3 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/pixtee-original-ingest.json
+      - name: Produce real original binary and EPF gameplay hard-data report
+        shell: bash
+        run: |
+          set -euo pipefail
+          WIN_EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          EPF="$(find analysis/private/step2/input -type f -iname 'GOLF.EPF' -print -quit)"
+          test -n "$WIN_EXE" && test -n "$EPF"
+          python tools/extract_pixtee_original_binary_hard_data.py \
+            --exe "$WIN_EXE" \
+            --epf "$EPF" \
+            --epf-root analysis/private/step2/extracted/epf \
+            --output analysis/private/pixtee-original-hard-data.json
+          python -m json.tool analysis/private/pixtee-original-hard-data.json >/dev/null
+      - name: Upload derived numeric evidence — no original copyrighted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-binary-hard-data
+          path: analysis/private/pixtee-original-hard-data.json
+          if-no-files-found: error
+          retention-days: 30

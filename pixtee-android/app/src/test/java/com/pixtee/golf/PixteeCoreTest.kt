@@ -51,4 +51,34 @@ class PixteeCoreTest {
         assertEquals(GameStage.READY, g.stage)
         assertEquals(388f, g.toPin, 8f)
     }
+    @Test fun wellyDownswingContinuesSameArcAndCanHitStraight() {
+        val g = PixteeCore()
+        assertEquals(GameStage.POWER, g.whack())
+        repeat(38) { g.tick() }
+        val power = g.meter
+        assertTrue(power > 0.5f)
+        assertEquals(GameStage.ACCURACY, g.whack())
+        assertEquals(power, g.meter, 0.00001f) // no restart on second press
+        var ticks = 0
+        while (g.meter > 0.015f && ticks < 100) {
+            g.tick()
+            ticks++
+        }
+        assertEquals(GameStage.ACCURACY, g.stage)
+        assertEquals(GameStage.FLIGHT, g.whack())
+        assertEquals(1, g.strokes)
+        assertEquals(0.5f, g.accuracy, 0.05f)
+    }
+
+    @Test fun waitingTooLongOnDownswingCannotLeaveMeterStuck() {
+        val g = PixteeCore()
+        g.whack()
+        repeat(52) { g.tick() }
+        g.whack()
+        repeat(200) { g.tick() }
+        assertTrue(g.stage == GameStage.FLIGHT || g.stage == GameStage.ROLL ||
+            g.stage == GameStage.READY)
+        assertEquals(1, g.strokes)
+    }
+
 }

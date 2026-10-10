@@ -85,6 +85,16 @@ class PixteeCore {
 
     val toPin: Float get() = hypot(x - (activeHole?.pinX ?: PIN_X),
         y - (activeHole?.pinY ?: PIN_Y))
+    /**
+     * The golfer stands at the last address point throughout the ball's flight
+     * and roll. The ball moves independently. This also supplies an exact
+     * frame-zero contact anchor for the approved animation rig.
+     */
+    val golferWorldX: Float get() = if(stage==GameStage.FLIGHT ||
+        stage==GameStage.ROLL) startX else x
+    val golferWorldY: Float get() = if(stage==GameStage.FLIGHT ||
+        stage==GameStage.ROLL) startY else y
+
     val club: Club get() = CLUBS[clubIndex]
     val scoreRelative: Int get() = strokes - par
 

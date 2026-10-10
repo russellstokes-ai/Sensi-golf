@@ -15,8 +15,27 @@ import java.util.Random
  * from any existing golf game.
  */
 data class PixteeCourse(val id: String, val title: String, val theme: Int)
-data class WaterPatch(val l: Float, val t: Float, val r: Float, val b: Float) {
-    fun contains(x: Float, y: Float) = x >= l && x <= r && y >= t && y <= b
+/** Water collision shape and art mask share one authored, optional winding outline. */
+data class WaterPatch(
+    val l: Float, val t: Float, val r: Float, val b: Float,
+    val outline: List<Pair<Float,Float>> = emptyList()
+) {
+    init { require(l<r && t<b); require(outline.isEmpty() || outline.size>=3) }
+    fun contains(x: Float, y: Float): Boolean {
+        if(x<l || x>r || y<t || y>b) return false
+        if(outline.isEmpty()) return true
+        // Even/odd polygon fill: no divergence between hazard physics and rendering.
+        var inside=false
+        var j=outline.size-1
+        for(i in outline.indices) {
+            val (xi,yi)=outline[i]
+            val (xj,yj)=outline[j]
+            if((yi>y)!=(yj>y) &&
+                x < (xj-xi)*(y-yi)/(yj-yi)+xi) inside=!inside
+            j=i
+        }
+        return inside
+    }
 }
 data class SandPatch(val x: Float, val y: Float, val rx: Float, val ry: Float) {
     fun contains(px: Float, py: Float): Boolean {
@@ -128,6 +147,29 @@ object PixteeCourseCatalog {
         require(courseIndex in courses.indices)
         require(holeNumber in 1..HOLES_PER_COURSE)
         val c = courses[courseIndex]
+        // Signature first hole: original hand-authored 376-yard par-four.
+        // Its creek is a winding collision polygon, not a rectangle or imported
+        // commercial course bitmap. This is the first playable art QA target.
+        if(courseIndex==0 && holeNumber==1) {
+            val waterOutline=listOf(
+                233f to 45f, 226f to 68f, 230f to 95f,
+                225f to 126f, 238f to 161f, 231f to 195f,
+                238f to 232f, 224f to 268f, 233f to 308f,
+                239f to 345f, 231f to 382f, 242f to 422f,
+                299f to 430f, 299f to 45f
+            )
+            return HoleLayout(
+                c,1,4,150f,458f,142f,82f,
+                bend=-18f,width=86f,
+                waters=listOf(WaterPatch(224f,45f,299f,430f,waterOutline)),
+                bunkers=listOf(
+                    SandPatch(91f,141f,19f,20f),
+                    SandPatch(189f,133f,20f,21f),
+                    SandPatch(200f,289f,23f,21f)
+                ),
+                seed=8111L+7919L
+            )
+        }
         val seed = 8111L + courseIndex * 104729L + holeNumber * 7919L
         val rng = Random(seed)
         val par = when ((holeNumber + courseIndex * 3) % 6) {

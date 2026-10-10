@@ -44,8 +44,12 @@ class PixteeNavigationSmokeTest {
     private fun waitFor(screen: String, stage: String? = null) {
         val match = if (stage == null) "Pixtee screen: $screen" else
             "Pixtee screen: $screen; stage: $stage"
-        assertTrue("Timed out waiting for $match",
-            device.wait(Until.hasObject(By.descContains(match)), 12000))
+        val found = device.wait(Until.hasObject(By.descContains(match)), 12000)
+        if (!found) {
+            val current = device.findObject(By.descContains("Pixtee screen:"))
+            android.util.Log.e("PixteeSmoke", "EXPECTED $match; ACTUAL ${current?.contentDescription}; bounds=${current?.visibleBounds}")
+        }
+        assertTrue("Timed out waiting for $match", found)
     }
 
     @Test

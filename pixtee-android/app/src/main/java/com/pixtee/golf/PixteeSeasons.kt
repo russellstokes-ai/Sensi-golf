@@ -84,12 +84,12 @@ object PixteeSeasons {
     fun rivalSeasonTotals(season: Int): List<Int> =
         (0 until 4).map { rival ->
             // Deterministic independent standing against other CPU rivals.
-            (0 until EVENTS_PER_SEASON).sumOf { index ->
+            (0 until EVENTS_PER_SEASON).map { index ->
                 val game=event(season,index)
                 val score=game.rivals[rival].toPar
                 val place=1+game.rivals.count { it.toPar < score }
                 when(place) { 1 -> 25; 2 -> 18; 3 -> 12; 4 -> 8; else -> 5 }
-            }
+            }.sum()
         }
 }
 

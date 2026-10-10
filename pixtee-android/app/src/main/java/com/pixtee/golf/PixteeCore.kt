@@ -103,7 +103,8 @@ class PixteeCore {
         if (stage == GameStage.READY) aimDegrees = (aimDegrees + degrees).coerceIn(-85f, 85f)
     }
     fun changeClub(step: Int) {
-        if (stage == GameStage.READY) clubIndex = (clubIndex + step).coerceIn(0, CLUBS.lastIndex)
+        if (stage == GameStage.READY)
+            clubIndex = ((clubIndex + step) % CLUBS.size + CLUBS.size) % CLUBS.size
     }
 
     /** Each touch release advances EXACTLY one stage of the classic three-click swing. */

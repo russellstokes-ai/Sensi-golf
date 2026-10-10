@@ -54,6 +54,7 @@ private class PixteeCanvas(context: Context) : View(context) {
     private var sound = true
     private val courseOptions = context.getSharedPreferences("pixtee_options_v1", Context.MODE_PRIVATE)
     private var sponsorBoards = courseOptions.getBoolean("course_boards", true)
+    private var courseMotion = courseOptions.getBoolean("course_motion", true)
     private val sponsorCampaigns = readSponsorManifest(context)
     private val logoCache = mutableMapOf<String, Bitmap?>()
     private val sponsorSlots = SponsorInventory.slots(
@@ -77,6 +78,29 @@ private class PixteeCanvas(context: Context) : View(context) {
             if (g.groundAt(x, y) == Ground.ROUGH) add(x to y)
         }
     }
+
+    // Decorative coordinates are deterministic and never part of groundAt().
+    private val grassSpots = buildList {
+        val rng = Random(1249)
+        repeat(135) {
+            val x = 11f + rng.nextFloat() * 276f
+            val y = 15f + rng.nextFloat() * 479f
+            if (g.groundAt(x, y) == Ground.ROUGH) add(x to y)
+        }
+    }
+    private val flowers = buildList {
+        val rng = Random(9281)
+        repeat(65) {
+            val x = 12f + rng.nextFloat() * 274f
+            val y = 15f + rng.nextFloat() * 476f
+            if (g.groundAt(x, y) == Ground.ROUGH) add(x to y)
+        }
+    }
+    private val spectators = listOf(
+        29f to 420f, 37f to 447f, 52f to 483f, 269f to 422f, 281f to 458f,
+        23f to 141f, 32f to 109f, 50f to 82f, 264f to 72f,
+        281f to 104f, 279f to 141f, 31f to 305f
+    )
 
     private fun logicalScreenHeight(): Float =
         height.coerceAtLeast(1) * 360f / width.coerceAtLeast(1)
@@ -228,11 +252,23 @@ private class PixteeCanvas(context: Context) : View(context) {
             rect(c, cx - 43f, y.toFloat(), cx + 43f, y + 3f,
                 if ((y / 21) % 2 == 0) Color.rgb(72, 185, 33) else Color.rgb(62, 173, 25))
         }
-        // Classic flat, fixed-camera hazards; water is a real physics collision region.
-        rect(c, 231f, 185f, 300f, 302f, Color.rgb(9, 81, 199))
-        for (i in 0..250 step 10)
-            line(c, 232f + (i % 6), 187f + (i % 103), 299f, 190f + (i % 103),
-                Color.rgb(33, 119, 236))
+        val ambientFrame = CourseAmbient.frame(android.os.SystemClock.uptimeMillis(), courseMotion)
+        // 8-frame Zelda-era pixel ripple: replaces static blue diagonal scribbles.
+        // The underlying water hazard in PixteeCore.groundAt() is never modified.
+        rect(c, 231f, 185f, 300f, 302f, Color.rgb(8, 79, 174))
+        for (row in 0..13) {
+            val yy = 189f + row * 8f
+            val offset = CourseAmbient.waterRipple(row, ambientFrame)
+            for (column in 0..3) {
+                val xx = 234f + column * 16f + offset
+                val endX = min(298f, xx + 7f)
+                if (endX > xx) {
+                    rect(c, xx, yy, endX, yy + 2f,
+                        if ((row + column) % 3 == 0) Color.rgb(86, 165, 241)
+                        else Color.rgb(29, 118, 211))
+                }
+            }
+        }
         ellipse(c, 73f, 104f, 104f, 158f, Color.rgb(225, 200, 110))
         ellipse(c, 208f, 122f, 240f, 174f, Color.rgb(232, 210, 137))
         circle(c, PixteeCore.PIN_X, PixteeCore.PIN_Y, 35f, Color.rgb(82, 185, 41))
@@ -241,8 +277,30 @@ private class PixteeCanvas(context: Context) : View(context) {
             val gy = 43f + i * 4f
             line(c, 114f, gy, 174f, gy, Color.rgb(107, 197, 46))
         }
+        // Low-amplitude grass, flowers and idle spectators: purely visual sprites.
+        // Coarse frame stepping prevents distracting 60fps shimmering.
+        for ((i, patch) in grassSpots.withIndex()) {
+            val (gx, gy) = patch
+            val offset = CourseAmbient.grassSway(i, ambientFrame).toFloat()
+            line(c, gx, gy + 2f, gx + offset, gy - 1f, Color.rgb(81, 174, 46))
+            rect(c, gx + offset, gy - 2f, gx + offset + 1f, gy - 1f,
+                Color.rgb(116, 197, 51))
+        }
+        for ((i, spot) in flowers.withIndex()) {
+            val (fx, fy) = spot
+            val offset = CourseAmbient.grassSway(i + 3, ambientFrame).toFloat()
+            line(c, fx, fy + 2f, fx + offset, fy - 1f, Color.rgb(23, 100, 23))
+            rect(c, fx + offset - 1f, fy - 3f, fx + offset + 2f, fy - 1f,
+                if (i % 3 == 0) Color.rgb(255, 233, 108)
+                else Color.rgb(248, 214, 229))
+            rect(c, fx + offset, fy - 2.5f, fx + offset + 1f, fy - 1.5f,
+                Color.rgb(246, 170, 38))
+        }
         // Trees are small sprites and NEVER obscure the ball/tee by design.
         for ((tx, ty) in trees) tree(c, tx, ty)
+        for ((i, spot) in spectators.withIndex()) {
+            spectator(c, spot.first, spot.second, i, ambientFrame)
+        }
         rect(c, 130f, 448f, 173f, 468f, Color.rgb(83, 185, 40))
         circle(c, 137f, 464f, 2.2f, Color.WHITE)
         circle(c, 165f, 464f, 2.2f, Color.WHITE)
@@ -265,6 +323,24 @@ private class PixteeCanvas(context: Context) : View(context) {
         circle(c, x + 3f, y - 6f, 5f, Color.rgb(32, 129, 24))
         rect(c, x - 4f, y - 9f, x - 1f, y - 7f, Color.rgb(56, 154, 31))
     }
+    /** Tiny two-pose spectators: occasional arm wave; no physics objects. */
+    private fun spectator(c: Canvas, x: Float, y: Float, index: Int, frame: Int) {
+        val shirt = when (index % 4) {
+            0 -> Color.rgb(248, 201, 53)
+            1 -> Color.rgb(44, 68, 200)
+            2 -> Color.rgb(219, 70, 69)
+            else -> Color.rgb(242, 237, 210)
+        }
+        val waving = courseMotion && CourseAmbient.spectatorWave(index, frame)
+        circle(c, x, y - 8f, 2f, Color.rgb(234, 190, 129))
+        rect(c, x - 3f, y - 11f, x + 3f, y - 9f, Color.rgb(39, 39, 51))
+        rect(c, x - 2f, y - 6f, x + 2f, y - 1f, shirt)
+        rect(c, x - 2f, y - 1f, x - 0.5f, y + 3f, Color.rgb(45, 45, 58))
+        rect(c, x + 0.5f, y - 1f, x + 2f, y + 3f, Color.rgb(45, 45, 58))
+        line(c, x + 2f, y - 5f, x + 4f, if (waving) y - 10f else y - 2f,
+            Color.rgb(239, 191, 127), 1.3f)
+    }
+
     private fun flag(c: Canvas, x: Float, y: Float) {
         line(c, x, y, x, y - 15f, Color.rgb(237, 237, 224), 1.4f)
         rect(c, x, y - 15f, x + 10f, y - 9f, Color.rgb(236, 37, 31))
@@ -499,7 +575,9 @@ private class PixteeCanvas(context: Context) : View(context) {
         woodButton(c, if (sound) "SOUND: ON" else "SOUND: OFF", 30f, 417f, 300f, 53f)
         woodButton(c, if (sponsorBoards) "COURSE BOARDS: ON" else "COURSE BOARDS: OFF",
             30f, 502f, 300f, 53f)
-        text(c, "PIXTEE SPONSOR SIGNS IN COURSE", 180f, 588f, 12f, cream, true)
+        woodButton(c, if (courseMotion) "SCENERY MOTION: ON" else "SCENERY MOTION: OFF",
+            30f, 585f, 300f, 49f)
+        text(c, "PIXEL WATER / GRASS / CROWD", 180f, 652f, 11f, cream, true)
         woodButton(c, "BACK", 74f, 670f, 212f, 47f)
     }
 
@@ -614,6 +692,10 @@ private class PixteeCanvas(context: Context) : View(context) {
                 hit(30f, 502f, 300f, 53f) -> {
                     sponsorBoards = !sponsorBoards
                     courseOptions.edit().putBoolean("course_boards", sponsorBoards).apply()
+                }
+                hit(30f, 585f, 300f, 49f) -> {
+                    courseMotion = !courseMotion
+                    courseOptions.edit().putBoolean("course_motion", courseMotion).apply()
                 }
             }
             Screen.PLAYING -> Unit

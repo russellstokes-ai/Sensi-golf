@@ -114,4 +114,31 @@ class PixteePhysicsFidelityTest {
         assertNotEquals(first.seed,second.seed)
     }
 
+    @Test fun fullPowerDriverLandingAndRestTimeAreWithinClassicPacingWindow() {
+        val g=PixteeCore()
+        g.whack()
+        repeat(31){g.tick()} // near maximum power at top of arc
+        g.whack()
+        repeat(18){g.tick()} // near the Whack-o-Meter accuracy target
+        assertEquals(GameStage.FLIGHT,g.whack())
+        var landingTick=0
+        while(g.stage==GameStage.FLIGHT && landingTick<200) {
+            g.tick()
+            landingTick++
+        }
+        assertEquals(GameStage.ROLL,g.stage)
+        // Documented original full-power driver first contacts around tick 80.
+        // These are tolerance windows, not a claim of exact proprietary traces.
+        assertTrue("Flight took $landingTick ticks, expected arcade pacing",
+            landingTick in 75..85)
+        var restingTick=landingTick
+        while(g.stage==GameStage.ROLL && restingTick<300) {
+            g.tick()
+            restingTick++
+        }
+        assertEquals(GameStage.READY,g.stage)
+        assertTrue("Resting took $restingTick ticks",
+            restingTick in 125..185)
+    }
+
 }

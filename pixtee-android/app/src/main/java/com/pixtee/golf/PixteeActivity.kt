@@ -36,7 +36,7 @@ class PixteeActivity : Activity() {
     }
 }
 
-private enum class Screen { MAIN, COURSES, PLAYER, TEE, PLAYING, SCORE, CAREER, STATS, TROPHIES, OPTIONS }
+private enum class Screen { MAIN, COURSES, PLAYER, TEE, PLAYING, SCORE, RESULTS, PAUSE, CAREER, STATS, TROPHIES, OPTIONS }
 
 /** Every UI element is laid out against a TALL 360x760 logical phone, then scaled edge-to-edge. */
 private class PixteeCanvas(context: Context) : View(context) {
@@ -44,6 +44,30 @@ private class PixteeCanvas(context: Context) : View(context) {
         typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD) }
     private val g = PixteeCore()
     private val menuInput = MenuInput()
+    private var round: PixteeRound? = null
+    private var selectedCourse = 0
+    private var selectedLength = 18
+    private var selectedMode = RoundMode.QUICK
+    private var careerTier = 0
+    private val tourNames = listOf("AMATEUR TOUR", "REGIONAL TOUR", "NATIONAL TOUR",
+        "PRO TOUR", "WORLD TOUR")
+    private fun screenContentHeight() = if (screen == Screen.COURSES) 1620f
+        else MenuInput.CONTENT_HEIGHT
+    private fun startRound(mode: RoundMode, length: Int = selectedLength) {
+        selectedMode = mode
+        round = PixteeRound(selectedCourse,length,mode)
+        g.startHole(round!!.layout())
+        g.practice = mode == RoundMode.PRACTICE
+        screen = Screen.TEE
+    }
+    private fun nextAfterScore() {
+        val played = round ?: run { screen = Screen.MAIN; return }
+        if (played.isComplete) screen = Screen.RESULTS
+        else {
+            g.startHole(played.layout())
+            screen = Screen.TEE
+        }
+    }
     private val stats = context.getSharedPreferences("pixtee_stats_v1", Context.MODE_PRIVATE)
     private var screen = Screen.MAIN
     private var lastNs = 0L
@@ -68,8 +92,7 @@ private class PixteeCanvas(context: Context) : View(context) {
     private val wood = Color.rgb(94, 27, 7)
     private val woodLight = Color.rgb(156, 65, 16)
     private val grass = Color.rgb(49, 176, 20)
-    private val holes = listOf("LAKEWOOD", "RIVERDALE", "OAK VALLEY", "SUNRIDGE",
-        "PINE CREST", "COASTLINE")
+    private val holes get() = PixteeCourseCatalog.courses
     private val trees = buildList {
         val r = Random(1021)
         repeat(120) {
@@ -123,7 +146,8 @@ private class PixteeCanvas(context: Context) : View(context) {
         // neither golfers nor collision geometry get stretched.
         val pixelScale = width / 360f
         canvas.scale(pixelScale, pixelScale)
-        if (screen != Screen.PLAYING) canvas.translate(0f, -menuInput.scrollY)
+        if (screen != Screen.PLAYING && screen != Screen.PAUSE)
+            canvas.translate(0f, -menuInput.scrollY)
         when (screen) {
             Screen.MAIN -> drawMain(canvas)
             Screen.COURSES -> drawCourses(canvas)
@@ -131,6 +155,8 @@ private class PixteeCanvas(context: Context) : View(context) {
             Screen.TEE -> drawTee(canvas)
             Screen.PLAYING -> drawPlaying(canvas)
             Screen.SCORE -> drawScore(canvas)
+            Screen.RESULTS -> drawResults(canvas)
+            Screen.PAUSE -> drawPause(canvas)
             Screen.CAREER -> drawCareer(canvas)
             Screen.STATS -> drawStats(canvas)
             Screen.TROPHIES -> drawTrophies(canvas)
@@ -168,7 +194,7 @@ private class PixteeCanvas(context: Context) : View(context) {
     }
     private fun navyBackdrop(c: Canvas) {
         fill(c, navy)
-        for (y in 0..760 step 14) for (x in 0..360 step 23) {
+        for (y in 0..screenContentHeight().toInt() step 14) for (x in 0..360 step 23) {
             line(c, x.toFloat(), y.toFloat(), x + 4f, y - 7f, Color.rgb(5, 12, 106))
         }
     }
@@ -201,12 +227,13 @@ private class PixteeCanvas(context: Context) : View(context) {
     }
     private fun drawCourses(c: Canvas) {
         pageHeader(c, "SELECT GOLF COURSE")
-        text(c, "ORIGINAL PIXTEE COURSE", 180f, 105f, 13f, gold, true)
-        for ((i, name) in holes.withIndex()) {
-            woodButton(c, name, 37f, 132f + i * 78f, 286f, 51f, i == 0)
-            if (i != 0) text(c, "COMING SOON", 268f, 190f + i * 78f, 10f)
+        text(c, "25 PIXTEE COURSES", 180f, 108f, 13f, gold, true)
+        holes.forEachIndexed { i, course ->
+            val y = 132f + i * 56f
+            woodButton(c, course.title.uppercase(), 37f, y, 286f, 45f)
+            text(c, "18 HOLES", 294f, y + 29f, 9f, cream, true)
         }
-        woodButton(c, "BACK", 75f, 677f, 210f, 46f)
+        woodButton(c, "BACK", 75f, 1550f, 210f, 46f)
     }
     private fun drawPlayer(c: Canvas) {
         pageHeader(c, "PLAYER SELECT")
@@ -218,101 +245,110 @@ private class PixteeCanvas(context: Context) : View(context) {
             woodButton(c, if (i == 0) "TOUCH" else "OFF",
                 200f, 165f + i * 68f, 140f, 48f)
         }
+        text(c, "ROUND LENGTH", 180f, 435f, 15f, gold, true)
+        listOf(1,3,9,18).forEachIndexed { i,n ->
+            woodButton(c, "$n", 21f + i*81f, 448f, 73f, 48f, selectedLength == n)
+        }
         woodButton(c, "OKAY", 76f, 527f, 208f, 51f)
         woodButton(c, "EXIT", 76f, 600f, 208f, 51f)
     }
     private fun drawTee(c: Canvas) {
         pageHeader(c, "NEXT TO THE TEE")
-        woodButton(c, "LAKEWOOD", 40f, 128f, 280f, 54f)
-        woodButton(c, "HOLE 1 (PAR 4)", 40f, 203f, 280f, 51f)
+        val hole = g.activeHole
+        woodButton(c, (hole?.course?.title ?: "PIXTEE").uppercase(), 40f, 128f, 280f, 54f)
+        woodButton(c, "HOLE ${g.holeNumber} (PAR ${g.par})", 40f, 203f, 280f, 51f)
         text(c, "NAME", 81f, 321f, 23f, gold)
         text(c, "SCORE", 231f, 321f, 23f, gold)
         text(c, "HUMAN 1", 50f, 381f, 22f)
-        text(c, "PAR", 244f, 381f, 22f, gold)
+        text(c, if (round?.results?.isEmpty() != false) "PAR"
+            else "${round?.relativeToPar ?: 0}", 244f, 381f, 22f, gold)
+        text(c, "${round?.results?.size ?: 0} / ${round?.length ?: 1} HOLES COMPLETE",
+            180f, 477f, 14f, cream, true)
         woodButton(c, "TEE OFF", 63f, 611f, 234f, 60f)
     }
 
-    /** First original Pixtee hole: newly-authored terrain data and renderer. */
+    /** Each hole renders from the exact same authored geometry used for collisions. */
     private fun course(c: Canvas) {
+        val layout = g.activeHole ?: return
         fill(c, Color.rgb(37, 121, 19))
-        // No fake stretched 4:3 bitmap: the portrait viewport exposes
-        // extra world above and below the original-sized hole.
         val viewport = CourseViewport(360f, logicalScreenHeight())
         c.save()
         c.scale(viewport.worldScale, viewport.worldScale)
         c.translate(0f, -viewport.topWorld)
-        rect(c, 0f, viewport.topWorld, 300f, viewport.bottomWorld, Color.rgb(48, 131, 25))
-        // Alternating rough checkerboard/pixel dithering from new procedural art.
-        for (y in (viewport.topWorld.toInt() - 10)..(viewport.bottomWorld.toInt() + 10) step 10) for (x in 0..300 step 11)
-            if ((x * 17 + y * 13) % 7 < 3)
-                rect(c, x.toFloat(), y.toFloat(), x + 3f, y + 3f, Color.rgb(53, 139, 26))
-        for (y in 72..462 step 3) {
-            val cx = 148f + sin(y / 79f) * 28f
-            rect(c, cx - 51f, y.toFloat(), cx + 51f, y + 3f, Color.rgb(52, 153, 23))
-            rect(c, cx - 43f, y.toFloat(), cx + 43f, y + 3f,
-                if ((y / 21) % 2 == 0) Color.rgb(72, 185, 33) else Color.rgb(62, 173, 25))
+        val dark = when(layout.course.theme) {
+            1 -> Color.rgb(39, 113, 30)
+            2 -> Color.rgb(77, 128, 38)
+            3 -> Color.rgb(43, 130, 25)
+            4 -> Color.rgb(61, 131, 22)
+            else -> Color.rgb(48, 131, 25)
         }
-        val ambientFrame = CourseAmbient.frame(android.os.SystemClock.uptimeMillis(), courseMotion)
-        // 8-frame Zelda-era pixel ripple: replaces static blue diagonal scribbles.
-        // The underlying water hazard in PixteeCore.groundAt() is never modified.
-        rect(c, 231f, 185f, 300f, 302f, Color.rgb(8, 79, 174))
-        for (row in 0..13) {
-            val yy = 189f + row * 8f
-            val offset = CourseAmbient.waterRipple(row, ambientFrame)
-            for (column in 0..3) {
-                val xx = 234f + column * 16f + offset
-                val endX = min(298f, xx + 7f)
-                if (endX > xx) {
-                    rect(c, xx, yy, endX, yy + 2f,
-                        if ((row + column) % 3 == 0) Color.rgb(86, 165, 241)
-                        else Color.rgb(29, 118, 211))
+        rect(c, 0f, viewport.topWorld, 300f, viewport.bottomWorld, dark)
+        for (y in (viewport.topWorld.toInt()-10)..(viewport.bottomWorld.toInt()+10) step 10)
+            for (x in 0..300 step 11)
+                if ((x*17+y*13+layout.seed.toInt())%7 < 3)
+                    rect(c,x.toFloat(),y.toFloat(),x+3f,y+3f,
+                        Color.rgb(56,146,31))
+        for (y in layout.pinY.toInt()..layout.teeY.toInt() step 3) {
+            val centre = layout.fairwayCentre(y.toFloat())
+            val half=layout.width*.5f
+            rect(c,centre-half-7f,y.toFloat(),centre+half+7f,y+3f,
+                Color.rgb(52,153,23))
+            rect(c,centre-half,y.toFloat(),centre+half,y+3f,
+                if ((y/21)%2==0) Color.rgb(72,185,33) else Color.rgb(62,173,25))
+        }
+        val frame = CourseAmbient.frame(android.os.SystemClock.uptimeMillis(),courseMotion)
+        layout.waters.forEach { patch ->
+            rect(c,patch.l,patch.t,patch.r,patch.b,Color.rgb(8,79,174))
+            var row=0
+            var yy=patch.t+5f
+            while(yy<patch.b-4f) {
+                val shift=CourseAmbient.waterRipple(row,frame).toFloat()
+                var xx=patch.l+4f+shift
+                while(xx<patch.r-7f) {
+                    rect(c,xx,yy,xx+6f,yy+2f,
+                        if(row%3==0) Color.rgb(86,165,241) else Color.rgb(29,118,211))
+                    xx+=17f
                 }
+                yy+=9f;row++
             }
         }
-        ellipse(c, 73f, 104f, 104f, 158f, Color.rgb(225, 200, 110))
-        ellipse(c, 208f, 122f, 240f, 174f, Color.rgb(232, 210, 137))
-        circle(c, PixteeCore.PIN_X, PixteeCore.PIN_Y, 35f, Color.rgb(82, 185, 41))
-        circle(c, PixteeCore.PIN_X, PixteeCore.PIN_Y, 28f, Color.rgb(111, 207, 47))
-        for (i in 0 until 13) {
-            val gy = 43f + i * 4f
-            line(c, 114f, gy, 174f, gy, Color.rgb(107, 197, 46))
+        layout.bunkers.forEach {
+            ellipse(c,it.x-it.rx,it.y-it.ry,it.x+it.rx,it.y+it.ry,
+                Color.rgb(225,200,110))
         }
-        // Low-amplitude grass, flowers and idle spectators: purely visual sprites.
-        // Coarse frame stepping prevents distracting 60fps shimmering.
-        for ((i, patch) in grassSpots.withIndex()) {
-            val (gx, gy) = patch
-            val offset = CourseAmbient.grassSway(i, ambientFrame).toFloat()
-            line(c, gx, gy + 2f, gx + offset, gy - 1f, Color.rgb(81, 174, 46))
-            rect(c, gx + offset, gy - 2f, gx + offset + 1f, gy - 1f,
-                Color.rgb(116, 197, 51))
+        ellipse(c, layout.pinX-30f,layout.pinY-24f,
+            layout.pinX+30f,layout.pinY+24f,Color.rgb(82,185,41))
+        ellipse(c, layout.pinX-24f,layout.pinY-20f,
+            layout.pinX+24f,layout.pinY+20f,Color.rgb(111,207,47))
+        for((i,spot) in grassSpots.withIndex()) {
+            val (gx,gy)=spot
+            if (layout.groundAt(gx,gy)!=Ground.ROUGH) continue
+            val sway=CourseAmbient.grassSway(i,frame).toFloat()
+            line(c,gx,gy+2f,gx+sway,gy-1f,Color.rgb(81,174,46))
         }
-        for ((i, spot) in flowers.withIndex()) {
-            val (fx, fy) = spot
-            val offset = CourseAmbient.grassSway(i + 3, ambientFrame).toFloat()
-            line(c, fx, fy + 2f, fx + offset, fy - 1f, Color.rgb(23, 100, 23))
-            rect(c, fx + offset - 1f, fy - 3f, fx + offset + 2f, fy - 1f,
-                if (i % 3 == 0) Color.rgb(255, 233, 108)
-                else Color.rgb(248, 214, 229))
-            rect(c, fx + offset, fy - 2.5f, fx + offset + 1f, fy - 1.5f,
-                Color.rgb(246, 170, 38))
+        for((i,spot) in flowers.withIndex()) {
+            val (fx,fy)=spot
+            if(layout.groundAt(fx,fy)!=Ground.ROUGH) continue
+            val sway=CourseAmbient.grassSway(i+3,frame).toFloat()
+            line(c,fx,fy+2f,fx+sway,fy-1f,Color.rgb(23,100,23))
+            rect(c,fx+sway-1f,fy-3f,fx+sway+2f,fy-1f,
+                if(i%3==0) Color.rgb(255,233,108) else Color.rgb(248,214,229))
         }
-        // Trees are small sprites and NEVER obscure the ball/tee by design.
-        for ((tx, ty) in trees) tree(c, tx, ty)
-        for ((i, spot) in spectators.withIndex()) {
-            spectator(c, spot.first, spot.second, i, ambientFrame)
+        layout.trees.forEach { tree(c,it.x,it.y) }
+        layout.spectators.forEachIndexed { i,spot ->
+            spectator(c,spot.x,spot.y,i,frame)
         }
-        rect(c, 130f, 448f, 173f, 468f, Color.rgb(83, 185, 40))
-        circle(c, 137f, 464f, 2.2f, Color.WHITE)
-        circle(c, 165f, 464f, 2.2f, Color.WHITE)
-        flag(c, PixteeCore.PIN_X, PixteeCore.PIN_Y)
-        // Signs are world-space decoration, not collision objects or HUD ads.
-        // Draw AFTER terrain/trees, BEFORE phone HUD and swing controls.
-        if (sponsorBoards) {
-            val shown = SponsorInventory.show(
-                sponsorSlots, sponsorCampaigns, true,
-                System.currentTimeMillis() / 1000L
-            )
-            for (board in shown) drawSponsorBoard(c, board)
+        rect(c, layout.teeX-21f,layout.teeY-10f,layout.teeX+21f,layout.teeY+9f,
+            Color.rgb(83,185,40))
+        circle(c,layout.teeX-14f,layout.teeY+5f,2.2f,Color.WHITE)
+        circle(c,layout.teeX+14f,layout.teeY+5f,2.2f,Color.WHITE)
+        flag(c,layout.pinX,layout.pinY)
+        if(sponsorBoards) {
+            val slots=SponsorInventory.slots(layout.course.id,layout.number,
+                layout.teeX,layout.teeY,layout.pinX,layout.pinY)
+            val shown=SponsorInventory.show(slots,sponsorCampaigns,true,
+                System.currentTimeMillis()/1000L)
+            shown.forEach { drawSponsorBoard(c,it) }
         }
         c.restore()
     }
@@ -458,6 +494,7 @@ private class PixteeCanvas(context: Context) : View(context) {
         if (g.height > 1f) circle(c, bx, by - lift, 3f, Color.rgb(255, 244, 174))
         else circle(c, bx, by, 2.5f, Color.WHITE)
         drawHUD(c)
+        woodButton(c, "II", 305f, 3f, 49f, 30f)
         if (g.stage == GameStage.READY) {
             // Aim marker stays in course world coordinates; classic full top-down view.
             val angle = Math.toRadians(g.aimDegrees.toDouble())
@@ -469,7 +506,8 @@ private class PixteeCanvas(context: Context) : View(context) {
         if (g.stage == GameStage.POWER || g.stage == GameStage.ACCURACY) drawMeter(c)
         if (g.stage == GameStage.HOLED) {
             rect(c, 52f, 320f, 314f, 446f, navyDark)
-            text(c, "HOLED OUT!", 183f, 365f, 29f, gold, true)
+            text(c, if (g.toPin < 5f) "HOLED OUT!" else "MAX STROKES",
+                183f, 365f, 26f, gold, true)
             text(c, "TAP FOR SCORECARD", 183f, 407f, 15f, cream, true)
         }
         // Unobtrusive bottom overlay; course still bleeds fully to every screen edge.
@@ -483,8 +521,9 @@ private class PixteeCanvas(context: Context) : View(context) {
         rect(c, 2f, 38f, 110f, 279f, Color.BLACK)
         rect(c, 4f, 40f, 108f, 277f, Color.rgb(34, 8, 5))
         for (y in 40..276 step 48) line(c, 4f, y.toFloat(), 108f, y.toFloat(), woodLight, 2f)
-        text(c, "LAKEWOOD", 8f, 61f, 15f, gold)
-        text(c, "HOLE 1 PAR 4", 8f, 81f, 11f)
+        text(c, (g.activeHole?.course?.title ?: "PIXTEE").uppercase().take(10),
+            8f, 61f, 12f, gold)
+        text(c, "HOLE ${g.holeNumber} PAR ${g.par}", 8f, 81f, 11f)
         text(c, "HUMAN 1", 8f, 112f, 15f, gold)
         text(c, "SHOT " + (g.strokes + 1), 8f, 131f, 13f)
         text(c, g.club.label.uppercase().take(10), 8f, 162f, 13f)
@@ -561,28 +600,61 @@ private class PixteeCanvas(context: Context) : View(context) {
     }
     private fun drawScore(c: Canvas) {
         pageHeader(c, "SCORECARD")
-        woodButton(c, "LAKEWOOD - HOLE 1", 37f, 125f, 286f, 49f)
-        text(c, "PAR", 83f, 232f, 22f, gold)
-        text(c, "4", 269f, 232f, 22f)
-        text(c, "STROKES", 52f, 291f, 20f, gold)
-        text(c, g.strokes.toString(), 267f, 291f, 24f)
-        text(c, "PENALTIES", 52f, 350f, 19f, gold)
-        text(c, g.penalties.toString(), 268f, 350f, 24f)
-        text(c, "RELATIVE TO PAR", 47f, 420f, 16f, gold)
-        text(c, (if (g.scoreRelative > 0) "+" else "") + g.scoreRelative, 275f, 420f, 23f)
-        woodButton(c, "REPLAY HOLE", 50f, 545f, 260f, 52f)
-        woodButton(c, "MAIN MENU", 50f, 625f, 260f, 52f)
+        val result = round?.results?.lastOrNull()
+        woodButton(c, "${g.activeHole?.course?.title ?: "PIXTEE"} - HOLE ${g.holeNumber}",
+            30f,125f,300f,49f)
+        text(c, "PAR", 83f,232f,22f,gold)
+        text(c, (result?.par ?: g.par).toString(), 269f,232f,22f)
+        text(c, "STROKES",52f,291f,20f,gold)
+        text(c, (result?.strokes ?: g.strokes).toString(),267f,291f,24f)
+        text(c, "PENALTIES",52f,350f,19f,gold)
+        text(c,(result?.penalties ?: g.penalties).toString(),268f,350f,24f)
+        text(c,"ROUND TO PAR",47f,420f,18f,gold)
+        val relative=round?.relativeToPar ?: g.scoreRelative
+        text(c,(if(relative>0) "+" else "")+relative,275f,420f,23f)
+        text(c, "${round?.results?.size ?: 1} OF ${round?.length ?: 1} HOLES",
+            180f,488f,14f,cream,true)
+        woodButton(c, if(round?.isComplete==true) "ROUND RESULTS" else "NEXT HOLE",
+            50f,545f,260f,52f)
+        woodButton(c,"MAIN MENU",50f,625f,260f,52f)
+    }
+
+    private fun drawResults(c: Canvas) {
+        pageHeader(c, "ROUND RESULTS")
+        val r=round ?: return
+        text(c,r.layout().course.title.uppercase(),180f,122f,19f,gold,true)
+        text(c,"${r.length} HOLES PLAYED",180f,163f,16f,cream,true)
+        woodButton(c,"TOTAL ${r.totalStrokes} / PAR ${r.totalPar}",25f,210f,310f,62f)
+        val rel=r.relativeToPar
+        text(c,(if(rel>0) "+" else "")+rel,180f,345f,74f,gold,true)
+        text(c,"PENALTIES ${r.totalPenalties}   PUTTS ${r.totalPutts}",
+            180f,391f,14f,cream,true)
+        text(c,if(r.mode==RoundMode.CAREER && rel<=0) "CAREER EVENT COMPLETED!"
+            else "ROUND COMPLETE",180f,477f,17f,gold,true)
+        woodButton(c,"PLAY AGAIN",52f,544f,256f,52f)
+        woodButton(c,"MAIN MENU",52f,628f,256f,52f)
+    }
+
+    private fun drawPause(c: Canvas) {
+        navyBackdrop(c)
+        text(c,"PAUSED",180f,245f,47f,gold,true)
+        text(c,"${g.activeHole?.course?.title ?: "PIXTEE"} - HOLE ${g.holeNumber}",
+            180f,295f,18f,cream,true)
+        woodButton(c,"RESUME",50f,350f,260f,58f)
+        woodButton(c,"EXIT ROUND",50f,440f,260f,58f)
     }
     private fun drawCareer(c: Canvas) {
         pageHeader(c, "CAREER")
-        woodButton(c, "SEASON 1 - ROOKIE", 27f, 135f, 306f, 52f)
-        text(c, "TOUR STRUCTURE", 180f, 251f, 20f, gold, true)
-        listOf("AMATEUR TOUR", "REGIONAL TOUR", "NATIONAL TOUR", "PRO TOUR",
-            "WORLD TOUR").forEachIndexed { i, label ->
-            woodButton(c, label, 33f, 282f + i * 60f, 294f, 43f, i == 0)
+        woodButton(c,"PIXTEE TOUR - SEASON 1",27f,135f,306f,52f)
+        text(c,"FIVE TOUR TIERS",180f,251f,20f,gold,true)
+        val titles=stats.getInt("career_titles",0)
+        tourNames.forEachIndexed { i,label ->
+            val unlocked=i<=titles
+            woodButton(c,label,33f,282f+i*60f,294f,43f,unlocked)
+            if(!unlocked) text(c,"LOCKED",290f,310f+i*60f,10f,cream,true)
         }
-        text(c, "CAREER EVENTS IN DEVELOPMENT", 180f, 632f, 12f, cream, true)
-        woodButton(c, "PRACTICE FIRST HOLE", 37f, 652f, 286f, 45f)
+        text(c,"${titles} EVENTS WON",180f,632f,14f,gold,true)
+        woodButton(c,"PRACTICE FIRST HOLE",37f,652f,286f,45f)
     }
     private fun drawStats(c: Canvas) {
         pageHeader(c, "STATISTICS")
@@ -624,14 +696,30 @@ private class PixteeCanvas(context: Context) : View(context) {
     }
 
     private fun finishHole() {
-        val rounds = stats.getInt("rounds", 0) + 1
-        val shots = stats.getInt("shots", 0) + g.strokes
-        val e = stats.edit().putInt("rounds", rounds).putInt("shots", shots)
-            .putInt("penalties", stats.getInt("penalties", 0) + g.penalties)
-        if (g.strokes < g.par) e.putInt("under_par", stats.getInt("under_par", 0) + 1)
-        if (!stats.contains("best") || g.strokes < stats.getInt("best", 999)) e.putInt("best", g.strokes)
+        val current=round ?: run { screen=Screen.MAIN; return }
+        if(current.isComplete) { screen=Screen.SCORE; return }
+        val scored=current.record(g.strokes,g.penalties,g.putts)
+        val e=stats.edit()
+        e.putInt("holes_played",stats.getInt("holes_played",0)+1)
+        e.putInt("shots",stats.getInt("shots",0)+scored.strokes)
+        e.putInt("penalties",stats.getInt("penalties",0)+scored.penalties)
+        e.putInt("putts",stats.getInt("putts",0)+scored.putts)
+        if(scored.relative<0)
+            e.putInt("under_par",stats.getInt("under_par",0)+1)
+        if(scored.relative<=-2)
+            e.putInt("eagles",stats.getInt("eagles",0)+1)
+        if(scored.relative==-1)
+            e.putInt("birdies",stats.getInt("birdies",0)+1)
+        if(!stats.contains("best") || scored.strokes<stats.getInt("best",999))
+            e.putInt("best",scored.strokes)
+        if(current.isComplete) {
+            e.putInt("rounds",stats.getInt("rounds",0)+1)
+            if(current.mode==RoundMode.CAREER && current.relativeToPar<=0) {
+                e.putInt("career_titles",stats.getInt("career_titles",0)+1)
+            }
+        }
         e.apply()
-        screen = Screen.SCORE
+        screen=Screen.SCORE
     }
 
     /** Native touch and scroll handling against the same fixed logical drawing coordinates. */
@@ -647,7 +735,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             }
             MotionEvent.ACTION_MOVE -> {
                 if (screen != Screen.PLAYING) {
-                    menuInput.move(x, y, MenuInput.maxScroll(logicalScreenHeight()))
+                    menuInput.move(x, y, MenuInput.maxScroll(logicalScreenHeight(),screenContentHeight()))
                     invalidate()
                 }
                 return true

@@ -54,7 +54,8 @@ class MenuInput {
 
     companion object {
         const val CONTENT_HEIGHT = 760f
-        fun maxScroll(viewHeight: Float): Float = (CONTENT_HEIGHT - viewHeight).coerceAtLeast(0f)
+        fun maxScroll(viewHeight: Float, contentHeight: Float = CONTENT_HEIGHT): Float =
+            (contentHeight - viewHeight).coerceAtLeast(0f)
         fun contains(x: Float, y: Float, l: Float, t: Float, r: Float, b: Float): Boolean =
             x >= l && x <= r && y >= t && y <= b
     }

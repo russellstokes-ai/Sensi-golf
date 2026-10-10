@@ -171,6 +171,35 @@ class PixteeNavigationSmokeTest {
     }
 
     @Test
+    fun fullThirtyFiveCourseCatalogCanSelectLastCourseOnAndroid() {
+        tap(180f,300f); waitFor("COURSES")
+        val view=device.findObject(By.descContains("Pixtee screen:"))!!
+        val bounds=view.visibleBounds
+        val midX=bounds.centerX()
+        val factor=bounds.width()/360f
+        repeat(4) {
+            device.swipe(midX,(bounds.top+650f*factor).toInt(),
+                midX,(bounds.top+130f*factor).toInt(),30)
+        }
+        // Scrolling clamps to content height; #35 is fully visible near the foot.
+        tap(180f,625f); waitFor("PLAYER")
+        tap(180f,550f); waitFor("TEE")
+        val tee=device.findObject(By.descContains("Pixtee screen: TEE"))!!
+        assertTrue("Last course not selected: ${tee.contentDescription}",
+            tee.contentDescription.toString().contains("course: northlight"))
+    }
+
+    @Test
+    fun replayableTourSeasonCanBeOpenedAndStartedOnAndroid() {
+        tap(180f,368f); waitFor("CAREER")
+        tap(180f,164f); waitFor("SEASON")
+        tap(180f,716f); waitFor("CAREER")
+        tap(180f,164f); waitFor("SEASON")
+        tap(180f,641f); waitFor("TEE")
+        tap(180f,47f); waitFor("MAIN")
+    }
+
+    @Test
     fun secondaryScreensCanBeOpenedAndExited() {
         tap(180f, 368f); waitFor("CAREER")
         tap(180f, 47f); waitFor("MAIN")

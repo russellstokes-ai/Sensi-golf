@@ -48,6 +48,18 @@ class HoleLayout(
     }
     val greenRadius = 30f
 
+    /**
+     * Each original Pixtee green has a stable gentle break. No per-frame RNG
+     * and no external commercial course/physics data. Grade accelerations are
+     * in world units per second squared, for independent tuning.
+     */
+    val greenSlopeX: Float = ((seed % 83L).toFloat() - 41f) / 18f
+    val greenSlopeY: Float = (((seed / 83L) % 97L).toFloat() - 48f) / 21f
+    fun greenRollAcceleration(x: Float, y: Float): Pair<Float, Float> {
+        return if (groundAt(x,y) == Ground.GREEN)
+            greenSlopeX to greenSlopeY else 0f to 0f
+    }
+
     fun fairwayCentre(y: Float): Float {
         val travel = ((teeY - y) / (teeY - pinY)).coerceIn(0f, 1f)
         return teeX + (pinX - teeX) * travel +

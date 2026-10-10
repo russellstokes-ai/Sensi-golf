@@ -29,7 +29,11 @@ def signature(path: Path) -> tuple[float, float, float]:
 
 def is_player_select(path: Path) -> bool:
     blue,brown,green = signature(path)
-    return blue >= 0.65 and brown >= 0.17 and green < 0.08
+    # Two original variants confirmed in real Android screenshots:
+    # single-player Select: blue=.727 brown=.236 (run 38002246293)
+    # four-player Select:  blue=.554 brown=.393 (run 38038070178).
+    # Early blue intro has brown=.038; main menu has blue=.005.
+    return blue >= 0.50 and brown >= 0.15 and green < 0.08
 
 
 def main() -> int:

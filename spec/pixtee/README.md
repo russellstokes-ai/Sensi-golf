@@ -5,6 +5,8 @@
 **Source project:** intended to move into its own clean repository. These are planning/data-contract files only, stored here because the GitHub connection does not expose new-repository creation. Do not link or import the Sensi-golf source tree into Pixtee builds.
 
 ## Documents
+- **[ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md](ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md) — START HERE for real Windows v1.014 executable/EPF-extracted numerical gameplay data; audited club power, all slopes/green resources, exact mechanics, file hashes and unresolved game-file/animation research. Source extraction PASSED on GitHub Actions run 38089050718.**
+- [tools/extract_pixtee_original_binary_hard_data.py](../../tools/extract_pixtee_original_binary_hard_data.py) — reproducibly extract hard source data from the actual game ZIP; includes 72 MAPM/MAPS/SPT resource sets and the MAPI slope histogram. [Source-verification workflow](../../.github/workflows/pixtee-original-binary-hard-data.yml).
 - [FIDELITY_AND_PROVENANCE.md](FIDELITY_AND_PROVENANCE.md) — behavioural targets, what can be independently reproduced, legal boundaries and unknown exact display measurements
 - [ORIGINAL_PHYSICS_REFERENCE.md](ORIGINAL_PHYSICS_REFERENCE.md) — detailed numerical physics, ball states, launch, swing, flight, bounce, putting, slope, hazards, cup, scoring and verified unknowns
 - [ORIGINAL_PHYSICS_RESEARCH.json](ORIGINAL_PHYSICS_RESEARCH.json) — research-only machine-readable 13 clubs, 11 swing profiles, 13×10 lie selector and 77 terrain descriptors

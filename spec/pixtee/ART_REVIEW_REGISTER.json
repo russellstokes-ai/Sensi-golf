@@ -20289,5 +20289,115 @@
       "originalCameraAndApparentScale": "PENDING_REFERENCE",
       "meterZonesAndTiming": "PENDING_REFERENCE"
     }
-  }
+  },
+  "createdSourceSheets": [
+    {
+      "id": "golfer_swing_sheet",
+      "path": "art/previews/creation-batch-01/golfer_swing_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "fec3d58e1c161b4b90a6d89199aff8fb009b5ed64202b4e1b173d8139e454d8e",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "golfer_directions_sheet",
+      "path": "art/previews/creation-batch-01/golfer_directions_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "447aa473681d7249a8880fd35b0272c87cc556df64455188a132ee97d137fbd6",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "golfer_putting_sheet",
+      "path": "art/previews/creation-batch-01/golfer_putting_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "59f990228824d200a64cef180e6fe247d429cae78527ab95dd66427a1e3d8379",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "ball_lies_sheet",
+      "path": "art/previews/creation-batch-01/ball_lies_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "f2809f63a510116c4acdeac9786d1fbc1038e74ace9c04a87cf0819db22a303b",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "terrain_sheet",
+      "path": "art/previews/creation-batch-01/terrain_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "66f5524db7e5cb3629ddf250f02cd6f17f514c02b618179128d6920a9896199f",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "trees_sheet",
+      "path": "art/previews/creation-batch-01/trees_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "942580207af7e68c5f3bb6a73c4e753b664fddfe993cabf25f09d226b4aab054",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "foliage_sway_sheet",
+      "path": "art/previews/creation-batch-01/foliage_sway_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "87d4c73a6256fbd1427bf8641f13d275cf113017df8e3dd59f4761d3dc785c9c",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "spectator_breathing_sheet",
+      "path": "art/previews/creation-batch-01/spectator_breathing_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "8b0b016ee6dbf87e1db918c41ce3f62e5a1b018e4f91fc25d6c19bae84d559bf",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "photographer_sheet",
+      "path": "art/previews/creation-batch-01/photographer_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "3d6af9be242a407d2995909a4d598441ecd7f2b967c561b79f9ec685f7001ef3",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "impact_effects_sheet",
+      "path": "art/previews/creation-batch-01/impact_effects_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "d4bf3dffdce064410d83db998e4eaac5d0b5e7baedae6b987d302966d068317c",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "bird_species_sheet",
+      "path": "art/previews/creation-batch-01/bird_species_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "18b5180694ab09cc421eacb5ddb3adb98bed6e371bd6794b3262f36ee47200f3",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "id": "sponsor_boards_sheet",
+      "path": "art/previews/creation-batch-01/sponsor_boards_sheet.png",
+      "status": "created",
+      "kind": "generated_source_sheet",
+      "sha256": "7fb28de0b748f9a33bd6db81f9aa961376123244bfccfff4ab6babd90da21d4e",
+      "approved": false,
+      "runtimeExportComplete": false
+    }
+  ]
 }

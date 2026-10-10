@@ -21,7 +21,7 @@ Status: **UNAPPROVED PROPOSAL — NOT IN GAME ASSETS**
 - Follows actual ball in X/Y; look-ahead 52 world units toward the green.
 - World model/hazard physics untouched.
 - Production sprite source resolution is decoupled from drawn world size:
-  prototype numerical sizes are golfer 13.5, spectator 12, round tree 37,
+  prototype numerical sizes are golfer 11.5, spectator 12, round tree 37,
   pine tree 42, flowers 4 world units high; **NONE of these art dimensions
   has yet received an explicit approval**.
 - Independent reference comparisons and behavior tests in

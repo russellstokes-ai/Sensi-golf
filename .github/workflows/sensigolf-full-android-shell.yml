@@ -9,6 +9,7 @@ on:
       - 'tools/detect_sensible_player_select.py'
       - 'tools/detect_sensible_course_select.py'
       - 'tools/patch_libretrodroid_touch_mouse.py'
+      - 'tools/patch_libretrodroid_keyboard.py'
       - 'tests/test_touch_mouse_bridge.py'
       - 'tests/test_original_dosz.py'
       - '.github/workflows/sensigolf-full-android-shell.yml'
@@ -70,6 +71,8 @@ jobs:
           set -euo pipefail
           python -m unittest discover -s tests -p 'test_touch_mouse_bridge.py' -v
           python tools/patch_libretrodroid_touch_mouse.py
+          python tools/patch_libretrodroid_keyboard.py
+          python tools/patch_libretrodroid_keyboard.py   # verify patch is idempotent
           bash -n .github/scripts/android_full_game_boot_test.sh
           grep -Fq 'case RETRO_DEVICE_MOUSE: {' android-full/vendor/LibretroDroid/libretrodroid/src/main/cpp/input.cpp
       - name: Compile DOSBox Pure native Android library

@@ -41,7 +41,7 @@ object ProductionArtContract {
      * Exact targets must be approved using a native phone-scale screenshot.
      */
     fun candidateWorldHeight(id: String): Float = when (id) {
-        "golfer_idle", "golfer_backswing", "golfer_impact", "golfer_follow" -> 13.5f
+        "golfer_idle", "golfer_backswing", "golfer_impact", "golfer_follow" -> 11.5f
         "tree_round" -> 37f
         "tree_pine" -> 42f
         "spectator_idle", "spectator_wave" -> 12f

@@ -2,7 +2,7 @@ name: Pixtee Android Portrait
 on:
   push:
     branches: ['feat/pixtee-native-portrait-framework']
-    paths: ['pixtee-android/**', '.github/workflows/pixtee-android-build.yml', 'spec/pixtee/ART_REVIEW_REGISTER.json', 'tools/validate_pixtee_art.py', 'tests/test_validate_pixtee_art.py']
+    paths: ['pixtee-android/**', '.github/workflows/pixtee-android-build.yml', 'spec/pixtee/ART_REVIEW_REGISTER.json', 'tools/validate_pixtee_art.py', 'tests/test_validate_pixtee_art.py', 'tools/validate_pixtee_swing_art.py', 'tests/test_validate_pixtee_swing_art.py']
   workflow_dispatch:
 permissions:
   contents: read
@@ -38,6 +38,10 @@ jobs:
         run: python tools/validate_pixtee_art.py
       - name: Test art-approval enforcement
         run: python -m unittest discover -s tests -p 'test_validate_pixtee_art.py' -v
+      - name: Validate pixel-accurate golfer swing exports
+        run: python tools/validate_pixtee_swing_art.py
+      - name: Test swing-art export requirements
+        run: python -m unittest discover -s tests -p 'test_validate_pixtee_swing_art.py' -v
       - name: Unit tests and APK
         run: gradle -p pixtee-android --no-daemon :app:testDebugUnitTest :app:assembleDebug
       - name: Verify release cannot bypass owner artwork approval

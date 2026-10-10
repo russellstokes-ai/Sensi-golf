@@ -74,16 +74,33 @@ class ProductionPixelArt(private val context: Context) {
                 .use { it.readText().trim() } == ProductionArtContract.APPROVAL_MARKER
         } catch (_: IOException) { false }
     }
+    /**
+     * Unapproved review assets may be rendered ONLY by debuggable Android
+     * builds and ONLY with a conspicuous review-only manifest. They never
+     * become production assets and release Gradle forbids absent approvals.
+     * No review images exist by default, so this cannot invent artwork.
+     */
+    private val reviewOnly: Boolean by lazy {
+        val debuggable=(context.applicationInfo.flags and
+            android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE)!=0
+        if(!debuggable || approved) false else try {
+            context.assets.open("art/review/REVIEW_ONLY.txt").bufferedReader()
+                .use { it.readText().trim() } ==
+                "PIXTEE_ART_REVIEW_ONLY_NOT_APPROVED_V1"
+        } catch (_: IOException) { false }
+    }
     private val frames = mutableMapOf<String, Bitmap?>()
     private val textures = mutableMapOf<String, Paint>()
 
     private fun bitmap(id: String): Bitmap? {
-        if(!approved || id !in ProductionArtContract.REQUIRED_SPRITES &&
+        if(id !in ProductionArtContract.REQUIRED_SPRITES &&
             id !in ProductionArtContract.TERRAIN_TILES &&
             id !in ProductionArtContract.UI_ART) return null
+        if(!approved && !reviewOnly) return null
         if(frames.containsKey(id)) return frames[id]
+        val base=if(approved) "art/production" else "art/review"
         val loaded=try {
-            context.assets.open("art/production/$id.png").use { stream ->
+            context.assets.open("$base/$id.png").use { stream ->
                 BitmapFactory.decodeStream(stream,null,BitmapFactory.Options().apply {
                     inScaled=false
                     inPreferredConfig=Bitmap.Config.ARGB_8888
@@ -139,7 +156,7 @@ class ProductionPixelArt(private val context: Context) {
      * third-party artwork when a frame is missing or rejected.
      */
     fun draw(canvas: Canvas, id: String, centreX: Float, bottomY: Float) {
-        if (!approved || id !in ProductionArtContract.REQUIRED_SPRITES) return
+        if ((!approved && !reviewOnly) || id !in ProductionArtContract.REQUIRED_SPRITES) return
         val bitmap=bitmap(id) ?: return
         val dst=if(id.startsWith("golfer_")) {
             // The golfer frame uses the SAME pixel-to-world ratio across all

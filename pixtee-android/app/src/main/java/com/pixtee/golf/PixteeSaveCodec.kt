@@ -11,7 +11,8 @@ data class StableBall(val x: Float, val y: Float, val strokes: Int,
         require(club in 0..12 && aim in -85f..85f)
     }
 }
-data class SavedPixteeGame(val round: PixteeRound, val ball: StableBall?)
+data class SavedPixteeGame(val round: PixteeRound, val ball: StableBall?,
+    val careerEventIndex: Int = -1)
 
 /**
  * Strict, checksummed offline save. Only save settled positions: a backgrounded
@@ -19,29 +20,39 @@ data class SavedPixteeGame(val round: PixteeRound, val ball: StableBall?)
  * half-frame. Invalid or partial persisted data is rejected, not applied.
  */
 object PixteeSaveCodec {
-    private const val MAGIC="PX2"
+    private const val MAGIC="PX3"
+    private const val LEGACY_MAGIC="PX2"
     private fun checksum(data: String): String {
         val crc=CRC32()
         crc.update(data.toByteArray(Charsets.UTF_8))
         return crc.value.toString(16)
     }
-    fun encode(round: PixteeRound, ball: StableBall?): String {
+    fun encode(round: PixteeRound, ball: StableBall?,
+               careerEventIndex: Int = -1): String {
+        require(careerEventIndex in -1..24)
+        if (careerEventIndex >= 0) {
+            require(round.mode == RoundMode.CAREER)
+            val event=PixteeCareer.events[careerEventIndex]
+            require(event.course==round.courseIndex && event.holes==round.length)
+        }
         val holeRows=round.results.joinToString(";") {
             "${it.strokes},${it.penalties},${it.putts}"
         }
         val position=if(ball==null) "-" else listOf(ball.x,ball.y,ball.strokes,
             ball.penalties,ball.putts,ball.club,ball.aim).joinToString(",")
         val raw=listOf(MAGIC,round.courseIndex,round.length,
-            round.mode.name,holeRows,position).joinToString("|")
+            round.mode.name,holeRows,position,careerEventIndex).joinToString("|")
         return raw+"|"+checksum(raw)
     }
     fun decode(value: String?): SavedPixteeGame? {
         if(value==null || value.length>4096) return null
         return try {
             val parts=value.split('|')
-            if(parts.size!=7 || parts[0]!=MAGIC) return null
-            val raw=parts.take(6).joinToString("|")
-            if(checksum(raw)!=parts[6]) return null
+            val current=parts.size==8 && parts[0]==MAGIC
+            val legacy=parts.size==7 && parts[0]==LEGACY_MAGIC
+            if(!current && !legacy) return null
+            val raw=parts.dropLast(1).joinToString("|")
+            if(checksum(raw)!=parts.last()) return null
             val course=parts[1].toInt()
             val length=parts[2].toInt()
             val mode=RoundMode.valueOf(parts[3])
@@ -64,7 +75,14 @@ object PixteeSaveCodec {
                 StableBall(a[0].toFloat(),a[1].toFloat(),a[2].toInt(),
                     a[3].toInt(),a[4].toInt(),a[5].toInt(),a[6].toFloat())
             }
-            SavedPixteeGame(round,ball)
+            val careerEventIndex=if(current) parts[6].toInt() else -1
+            if(careerEventIndex !in -1..24) return null
+            if(careerEventIndex>=0) {
+                if(mode!=RoundMode.CAREER) return null
+                val event=PixteeCareer.events[careerEventIndex]
+                if(event.course!=course || event.holes!=length) return null
+            }
+            SavedPixteeGame(round,ball,careerEventIndex)
         } catch (_: Exception) { null }
     }
 }

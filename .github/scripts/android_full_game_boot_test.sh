@@ -79,9 +79,57 @@ if python tools/detect_sensible_main_menu.py "$OUT/after-escape-11s.png"; then
       adb exec-out screencap -p > "$OUT/after-early-human-augusta-2s.png"
       sleep 5
       adb exec-out screencap -p > "$OUT/after-early-human-augusta-7s.png"
-      sleep 10
-      adb exec-out screencap -p > "$OUT/after-early-human-augusta-17s.png"
-      echo "EARLY NAVIGATION: original human player, original course, tee screenshots saved."
+      # Run 38042290360 proves the above Augusta tap opens the genuine
+      # ORIGINAL Tournament Leaderboard, HUMAN 1, 'Play Next Hole' button
+      # centered at (1260,845) on the 2400x1080 emulator. This is the
+      # actual missing step; the prior probe exited before pressing it!
+      echo "HUMAN 1 / AUGUSTA: selecting ORIGINAL Play Next Hole (1260,845)."
+      adb shell input swipe 1260 845 1260 845 240
+      sleep 1
+      adb exec-out screencap -p > "$OUT/after-play-next-hole-1s.png"
+      sleep 3
+      adb exec-out screencap -p > "$OUT/after-play-next-hole-4s.png"
+      sleep 5
+      adb exec-out screencap -p > "$OUT/after-play-next-hole-9s.png"
+      # Do not blindly press game controls while still in a blue menu.
+      # The authentic golf course has grass-green terrain. Capture both
+      # the raw tee image and the decision for human inspection.
+      if python - "$OUT/after-play-next-hole-9s.png" <<'PYTEE'
+from PIL import Image
+import sys
+im=Image.open(sys.argv[1]).convert("RGB")
+w,h=im.size
+pixels=[im.getpixel((x,y)) for y in range(int(h*.25),int(h*.78),14)
+        for x in range(int(w*.26),int(w*.74),14)]
+green=sum(g>55 and g>r*1.25 and g>b*1.15 for r,g,b in pixels)/len(pixels)
+print(f"ORIGINAL TEE CANDIDATE: sampled grass-green={green:.3f}; "
+      f"gameplay verification requires screenshot review")
+raise SystemExit(0 if green > .18 else 1)
+PYTEE
+      then
+        # Probe the actual native Android overlay, NOT a separate game
+        # implementation. Toggle Pad and press SWING three times through
+        # its touch-to-Keyboard-CTRL binding; retain every intermediate
+        # original DOS frame for verification of the three-click meter.
+        echo "TEE COLOR PRESENT: testing original on-screen direction/SWING."
+        adb shell input tap 2290 86
+        sleep 1
+        adb exec-out screencap -p > "$OUT/tee-pad-expanded.png"
+        adb shell input swipe 2140 880 2140 880 350
+        sleep 1
+        adb exec-out screencap -p > "$OUT/tee-after-direction.png"
+        for press in 1 2 3; do
+          adb shell input swipe 2260 895 2260 895 190
+          sleep 0.75
+          adb exec-out screencap -p > "$OUT/tee-after-swing-${press}.png"
+        done
+        sleep 4
+        adb exec-out screencap -p > "$OUT/tee-after-swing-flight-4s.png"
+      else
+        echo "NOT TEE: retained post-Play Next Hole frames; do not assert playability."
+      fi
+      adb shell pidof "$PKG" > "$OUT/human-after-play-next-hole-pid.txt"
+      echo "EARLY HUMAN GAMEPLAY PROBE COMPLETE: inspect real tee / swing screenshots."
       exit 0
     fi
   fi

@@ -465,3 +465,19 @@ The earlier 384 count is **superseded by 576** because address and shot reaction
 - Machine-readable per-animation export specs in **[ASTRA_AMBIENCE_AND_IMPACT_MANIFEST_v2.json](ASTRA_AMBIENCE_AND_IMPACT_MANIFEST_v2.json)**. Current core [ASTRA_ART_EXPORT_MANIFEST_v1.json](ASTRA_ART_EXPORT_MANIFEST_v1.json) covers the original 31 IDs **only**; do not conflate that with complete production coverage.
 - QA for every animated set: exact per-frame export pixel canvas, frame counts, world footprints, named event trigger and animation clock, transparent padding, stable pivot, screen-captured animation/impact on normal portrait phone, graceful Fold layout, no occlusion of the ball/WHACK-O-METER, correct ambience for **each course**, visible board fronts facing tee/green, no gameplay physics deltas with cosmetic layers on/off.
 - **All 35 original authored courses × 18 holes (630 unique holes)** need selected biome, bird species, foliage, crowds, four sign slots, impact event visibility, tree type and authentic slopes. Do not count 630 random seeded course arrangements as fully artist-authored/polished layouts. The classic source physics/extracted dimensions remain frozen independent of this new art.
+
+
+### 11.8 Subtle idle breathing and grounded micro-motion — mandatory final art
+
+**Owner's final visual note:** Golfer and people on the course must never look rigid while waiting. Use modern premium-pixel-art-style *breathing and weight shifts*, **not hopping**. All movement is cosmetic: world coordinates, feet contact point, hitbox, ball contact, club orientation and source-game physics remain unchanged.
+
+| Asset/pose | Art target | Rule |
+|---|---|---|
+| Golfer idle/address, all eight directions | 256×128 RGBA; existing `golfer_idle_<dir>_f00..f03.png` and `golfer_address_<dir>_f00..f03.png` | 4 frames, subtle torso/shoulder lift with planted feet and fixed clubface ball registration; breathing must stop/transition cleanly into three-tap swing and putt |
+| Golfer watching a shot | 256×128; `golfer_watch_shot_<dir>_f00..f05.png` | 6-frame gentle shift of shoulders/head while ball flies, never alters launch/shadow or camera |
+| Standing/seated crowd | 96×96 per individual | 4–6 frame loops by variant; head, shoulders and torso only, grounded shoes/chair; do not move everyone in sync |
+| Photographer idle | 96×96; `spectator_photographer_idle_f00..f03.png` | 4-frame quiet breathing before actual raise/shutter/flash/lower sequence; flash tied to shutter event |
+
+**Proposed original-art animation amplitude:** approximately **1–2 authored pixels** at 8 source pixels/world; keep foot/pivot fixed and avoid shifting the entire 256×128 or 96×96 bitmap. Use gentle slow cyclic timing with per-person cosmetic clock offsets/seeded phases, 4–6 unique frames where useful, no simultaneous crowd bounce. This is proposed Pixtee visual polish, **not a measured Sensible Golf original animation cadence**. Respect Android reduced-motion/accessibility preference: suppress/limit idle loops and camera-flash bursts as appropriate. Normal portrait phone screenshot and sprite overlay comparisons must demonstrate no silhouette jitter or foot drift. No new gameplay RNG calls, terrain collisions, physics ticks or shot variations may result from breathing/idle loops.
+
+**Acceptance:** explicitly test idle, address, watch-shot, seated/standing spectator and photographer idle states at 720×1600 and 1080×2400 portrait and Fold closed/open. No idle animation is production-approved until the full sequence is captured and reviewed at actual game zoom.

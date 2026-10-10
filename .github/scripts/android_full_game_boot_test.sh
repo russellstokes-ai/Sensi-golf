@@ -30,11 +30,111 @@ boot_failure_diagnostics() {
 }
 trap boot_failure_diagnostics ERR
 
-
-# Single shared navigation probe for BOTH early and delayed Player Select.
-# Always press the original Augusta leaderboard Play Next Hole before exiting.
+# Shared true Human 1/ Augusta tee-and-swing probe for all menu timings.
 probe_original_human_tee() {
-  probe_original_human_tee
+# Run 38042290360 proves the above Augusta tap opens the genuine
+# ORIGINAL Tournament Leaderboard, HUMAN 1, 'Play Next Hole' button
+# centered at (1260,845) on the 2400x1080 emulator. This is the
+# actual missing step; the prior probe exited before pressing it!
+echo "HUMAN 1 / AUGUSTA: selecting ORIGINAL Play Next Hole (1260,845)."
+adb shell input swipe 1260 845 1260 845 240
+sleep 1
+adb exec-out screencap -p > "$OUT/after-play-next-hole-1s.png"
+sleep 3
+adb exec-out screencap -p > "$OUT/after-play-next-hole-4s.png"
+sleep 5
+adb exec-out screencap -p > "$OUT/after-play-next-hole-9s.png"
+# Do not blindly press game controls while still in a blue menu.
+# The authentic golf course has grass-green terrain. Capture both
+# the raw tee image and the decision for human inspection.
+if python - "$OUT/after-play-next-hole-9s.png" <<'PYTEE'
+from PIL import Image
+import sys
+im=Image.open(sys.argv[1]).convert("RGB")
+w,h=im.size
+pixels=[im.getpixel((x,y)) for y in range(int(h*.25),int(h*.78),14)
+  for x in range(int(w*.26),int(w*.74),14)]
+green=sum(g>55 and g>r*1.25 and g>b*1.15 for r,g,b in pixels)/len(pixels)
+print(f"ORIGINAL TEE CANDIDATE: sampled grass-green={green:.3f}; "
+f"gameplay verification requires screenshot review")
+raise SystemExit(0 if green > .18 else 1)
+PYTEE
+then
+  # Probe the actual native Android overlay, NOT a separate game
+  # implementation. Toggle Pad and press SWING three times through
+  # its touch-to-Keyboard-CTRL binding; retain every intermediate
+  # original DOS frame for verification of the three-click meter.
+  echo "TEE COLOR PRESENT: testing original on-screen direction/SWING."
+  adb shell input tap 2290 86
+  sleep 1
+  adb exec-out screencap -p > "$OUT/tee-pad-expanded.png"
+  adb shell input swipe 320 870 320 870 350
+  sleep 1
+  adb exec-out screencap -p > "$OUT/tee-after-direction.png"
+  for press in 1 2 3 4; do
+    adb shell input swipe 2260 895 2260 895 190
+    sleep 0.75
+    adb exec-out screencap -p > "$OUT/tee-after-swing-${press}.png"
+  done
+  sleep 4
+  adb exec-out screencap -p > "$OUT/tee-after-swing-flight-4s.png"
+else
+  echo "NOT TEE: retained post-Play Next Hole frames; do not assert playability."
+fi
+adb shell pidof "$PKG" > "$OUT/human-after-play-next-hole-pid.txt"
+echo "HUMAN GAMEPLAY PROBE COMPLETE: inspect real tee / swing screenshots."
+}
+
+test -s "$APK"
+adb install -r "$APK"
+
+# Prevent the first-run Android immersive-mode tutorial from obscuring
+# the original game in automated screenshots; not a game setting.
+adb shell settings put secure immersive_mode_confirmations confirmed || true
+
+adb shell am start -W -n "$ACT" | tee "$OUT/activity-launch.txt"
+sleep 8
+adb shell pidof "$PKG" | tee "$OUT/first-pid.txt"
+adb exec-out screencap -p > "$OUT/intro-8s.png"
+test -s "$OUT/intro-8s.png"
+
+# Probe classic DOS splash skip keys through the Android->libretro key bridge.
+# The emulator menu is disabled; these must go to the actual game executable.
+adb shell input keyevent 111  # ESCAPE
+sleep 3
+adb exec-out screencap -p > "$OUT/after-escape-11s.png"
+test -s "$OUT/after-escape-11s.png"
+
+# Keyboard forwarding now works. In verified run 38041416122, ESC
+# reveals the REAL main menu here, long before the legacy 149s wait.
+# Take Play Round immediately, while the original menu is on screen.
+if python tools/detect_sensible_main_menu.py "$OUT/after-escape-11s.png"; then
+  cp "$OUT/after-escape-11s.png" "$OUT/early-main-menu-11s.png"
+  adb shell input swipe 1260 380 1260 380 230
+  sleep 1
+  adb exec-out screencap -p > "$OUT/after-early-play-round.png"
+  if python tools/detect_sensible_player_select.py "$OUT/after-early-play-round.png"; then
+    cp "$OUT/after-early-play-round.png" "$OUT/early-human-player-select.png"
+    adb shell input swipe 1250 840 1250 840 230
+    sleep 1
+    adb exec-out screencap -p > "$OUT/after-early-human-okay.png"
+    early_course_frame="$OUT/after-early-human-okay.png"
+    if ! python tools/detect_sensible_course_select.py "$early_course_frame"; then
+      # Preserve the failed first click evidence. A true Android ESC/ENTER
+      # is now forwarded to the original game by our libretro key callback.
+      adb shell input keyevent 66
+      sleep 1
+      adb exec-out screencap -p > "$OUT/after-early-human-enter.png"
+      early_course_frame="$OUT/after-early-human-enter.png"
+    fi
+    if python tools/detect_sensible_course_select.py "$early_course_frame"; then
+      cp "$early_course_frame" "$OUT/early-human-course-menu.png"
+      adb shell input swipe 1260 310 1260 310 230
+      sleep 2
+      adb exec-out screencap -p > "$OUT/after-early-human-augusta-2s.png"
+      sleep 5
+      adb exec-out screencap -p > "$OUT/after-early-human-augusta-7s.png"
+      probe_original_human_tee
       exit 0
     fi
   fi
@@ -135,8 +235,6 @@ player_select_probe() {
     adb shell input swipe 1260 310 1260 310 230
     sleep 1
     adb exec-out screencap -p > "$OUT/after-augusta-1s.png"
-    # The previous test stopped at the genuine Human 1 Augusta leaderboard.
-    # Now use the SAME first-tee probe regardless of early or fallback path.
     probe_original_human_tee
   else
     echo "::warning::Human Player Select did not reach detected course list."

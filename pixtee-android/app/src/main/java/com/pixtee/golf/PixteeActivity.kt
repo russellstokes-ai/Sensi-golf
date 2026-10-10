@@ -77,6 +77,7 @@ private class PixteeCanvas(context: Context) : View(context) {
     }
     private fun screenContentHeight() = when(screen) {
         Screen.COURSES -> 1620f
+        Screen.TROPHIES -> 2400f
         Screen.MAIN -> 840f
         else -> MenuInput.CONTENT_HEIGHT
     }
@@ -759,8 +760,8 @@ private class PixteeCanvas(context: Context) : View(context) {
                 17f,y,326f,50f,a.unlocked)
         }
         text(c,"${rewards.count{it.unlocked}} / ${rewards.size} AWARDS",
-            180f,655f,13f,gold,true)
-        woodButton(c,"BACK",74f,667f,212f,47f)
+            180f,2305f,13f,gold,true)
+        woodButton(c,"BACK",74f,2340f,212f,47f)
     }
     private fun drawWardrobe(c: Canvas) {
         pageHeader(c, "CUSTOMIZE GOLFER")
@@ -975,7 +976,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             Screen.STATS -> if(hit(6f,24f,348f,47f) ||
                 hit(74f,674f,212f,46f)) screen=Screen.MAIN
             Screen.TROPHIES -> if(hit(6f,24f,348f,47f) ||
-                hit(74f,667f,212f,47f)) screen=Screen.MAIN
+                hit(74f,2340f,212f,47f)) screen=Screen.MAIN
             Screen.WARDROBE -> when {
                 hit(6f,24f,348f,47f) || hit(74f,706f,212f,43f) ->
                     screen=Screen.MAIN

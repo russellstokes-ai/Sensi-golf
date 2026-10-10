@@ -96,63 +96,76 @@ player_select_probe() {
   fi
   cp "$frame" "$OUT/original-player-select-confirmed.png"
   echo "CONFIRMED: original DOS Player Select reached before attract mode."
-  # ORIGINAL Player Select defaults to 'Keyboard'. Since the Android UI has
-  # native direct-touch mouse, probe the Type field to learn whether a
-  # touchscreen user can select Mouse as their control device.
-  # The original presents two legitimate layouts. In the one-player page,
-  # the Type field is at y=416; in the full four-row page it is at y=365.
-  # A static y=416 in the four-row page would click player TWO's Off field,
-  # which must never be mistaken for configuring Human 1 to use Mouse.
-  type_y=$(python - "$frame" <<'PYTYPE'
-import sys
-from PIL import Image
-with Image.open(sys.argv[1]) as image:
-    r,g,b=image.convert("RGB").getpixel((1490,550))
-    four_rows=(r>40 and r>g*1.4 and r>b*1.75)
-print(365 if four_rows else 416)
-PYTYPE
-)
-  echo "Player Select layout: Human 1 Type control at screen (1490,$type_y)."
-  adb shell input swipe 1490 "$type_y" 1490 "$type_y" 180
-  sleep 0.5
-  adb exec-out screencap -p > "$OUT/after-player-type-tap.png"
-  # Keep the original game authoritative: tap the observed Okay control.
-  # Screen positions are measured at 2400x1080, not hard-coded in the app.
-  adb shell input swipe 1250 840 1250 840 180
+  # Preserve the original HUMAN 1 / Keyboard selection. Earlier CI
+  # tapped the Type field once, inadvertently changing Human 1 into a CPU
+  # player (York / CPU Easy). A CPU golf round is NOT a human-playability
+  # test. Leave this field untouched in the normal compatibility run.
+  echo "Testing native Human 1 default control, not CPU AI."
+  adb shell input swipe 1250 840 1250 840 230
   sleep 1
   adb exec-out screencap -p > "$OUT/after-player-okay-1s.png"
   sleep 2
   adb exec-out screencap -p > "$OUT/after-player-okay-3s.png"
-  sleep 4
-  adb exec-out screencap -p > "$OUT/after-player-okay-7s.png"
+  # The exact ORIGINAL course list was confirmed in Android run
+  # 38038987483: Augusta is at (1260,310), but only touch it AFTER
+  # the non-OCR course-state detector has verified this is that screen.
+  course_frame=""
+  for frame in "$OUT/after-player-okay-1s.png" "$OUT/after-player-okay-3s.png"; do
+    if python tools/detect_sensible_course_select.py "$frame"; then
+      course_frame="$frame"
+      break
+    fi
+  done
+  if [ -n "$course_frame" ]; then
+    cp "$course_frame" "$OUT/original-course-select-confirmed.png"
+    echo "CONFIRMED: real original COURSE SELECTION after HUMAN player."
+    adb shell input swipe 1260 310 1260 310 230
+    sleep 1
+    adb exec-out screencap -p > "$OUT/after-augusta-1s.png"
+    sleep 3
+    adb exec-out screencap -p > "$OUT/after-augusta-4s.png"
+    sleep 5
+    adb exec-out screencap -p > "$OUT/after-augusta-9s.png"
+    sleep 11
+    adb exec-out screencap -p > "$OUT/after-augusta-20s.png"
+  else
+    echo "::warning::Human Player Select did not reach detected course list."
+    sleep 4
+    adb exec-out screencap -p > "$OUT/after-player-okay-7s.png"
+  fi
   python - "$OUT" <<'PYPLAYER'
 import hashlib,json,sys
 from pathlib import Path
 sys.path.insert(0,"tools")
-from detect_sensible_player_select import is_player_select,signature
+from detect_sensible_player_select import is_player_select
+from detect_sensible_course_select import is_course_select
 root=Path(sys.argv[1])
-names=["original-player-select-confirmed.png","after-player-type-tap.png",
-       "after-player-okay-1s.png","after-player-okay-3s.png",
+names=["original-player-select-confirmed.png","after-player-okay-1s.png",
+       "after-player-okay-3s.png","original-course-select-confirmed.png",
+       "after-augusta-1s.png","after-augusta-4s.png",
+       "after-augusta-9s.png","after-augusta-20s.png",
        "after-player-okay-7s.png"]
 frames=[]
 for name in names:
     p=root/name
+    if not p.is_file(): continue
     frames.append({"file":name,"sha256":hashlib.sha256(p.read_bytes()).hexdigest(),
-       "original_player_select":is_player_select(p),
-       "blue_brown_green":[round(x,4) for x in signature(p)]})
-(root/"player-select-navigation.json").write_text(json.dumps({
-  "player_select_reached":True,
-  "control_type_tap_x":1490,"control_type_tap_y":"chosen from Player Select row layout",
-  "okay_tap_xy":[1250,840],
-  "hold_ms":180,
-  "next_screen_in_game_verified":False,
-  "actual_round_or_shot_verified":False,
-  "screenshots":frames},indent=2)+"\n")
+         "original_player_select":is_player_select(p),
+         "original_course_select":is_course_select(p)})
+course_accepted=(root/"original-course-select-confirmed.png").exists()
+(root/"original-human-round-navigation.json").write_text(json.dumps({
+  "original_human_player_select_reached":True,
+  "human_1_control_type":"Keyboard (original untouched default)",
+  "player_okay_screen_xy":[1250,840],
+  "original_course_selection_reached":course_accepted,
+  "augusta_tap_screen_xy":[1260,310] if course_accepted else None,
+  "original_first_tee_verified":False,
+  "human_aim_swing_score_verified":False,
+  "touch_hold_ms":230,
+  "screenshots":frames},indent=2)+"\\n")
 print(json.dumps(frames,indent=2))
-if all(f["original_player_select"] for f in frames[2:]):
-    print("NOT ADVANCED: Player Select remains visible after Okay; inspect controls.")
-else:
-    print("VISUAL CHANGE: must inspect post-Okay screenshots before calling playable.")
+print("ORIGINAL COURSE MENU:",course_accepted,
+      "original playable tee still REQUIRES screenshot inspection.")
 PYPLAYER
   adb shell pidof "$PKG" > "$OUT/post-player-select-pid.txt"
   adb logcat -d -s AndroidRuntime:E libretrodroid:E > "$OUT/android-errors.txt"

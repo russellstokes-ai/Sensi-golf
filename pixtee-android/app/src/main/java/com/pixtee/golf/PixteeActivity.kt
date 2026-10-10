@@ -624,11 +624,13 @@ private class PixteeCanvas(context: Context) : View(context) {
         val left = x - w / 2f
         rect(c, left + 3f, y + 2f, left + 5f, y + 8f, Color.rgb(89, 52, 23))
         rect(c, left + w - 5f, y + 2f, left + w - 3f, y + 8f, Color.rgb(89, 52, 23))
-        rect(c, left - 1f, y - h - 1f, left + w + 1f, y + 3f, Color.BLACK)
-        rect(c, left, y - h, left + w, y + 1f, Color.rgb(151, 85, 34))
-        rect(c, left + 2f, y - h + 2f, left + w - 2f, y - 1f,
-            Color.rgb((sign.backgroundRgb shr 16) and 255,
-                (sign.backgroundRgb shr 8) and 255, sign.backgroundRgb and 255))
+        if(!art.ui(c,"ui_sponsor_board",left-1f,y-h-1f,left+w+1f,y+3f)) {
+            rect(c, left - 1f, y - h - 1f, left + w + 1f, y + 3f, Color.BLACK)
+            rect(c, left, y - h, left + w, y + 1f, Color.rgb(151, 85, 34))
+            rect(c, left + 2f, y - h + 2f, left + w - 2f, y - 1f,
+                Color.rgb((sign.backgroundRgb shr 16) and 255,
+                    (sign.backgroundRgb shr 8) and 255, sign.backgroundRgb and 255))
+        }
         val logo = sign.logoFile?.let { boardLogo(it) }
         if (logo != null) {
             p.color = Color.WHITE

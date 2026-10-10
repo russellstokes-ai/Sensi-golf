@@ -1,58 +1,41 @@
-# Pixtee Golf — On-course sponsorship sales & creative contract
+# Pixtee Golf — Automatic in-course advertising (canonical)
 
-## Commercial idea (approved scope)
-Use small pixel-art **physical sponsor boards** beside tees and greens, like real tournament boards. No advertising banners, interstitials, video ads, pop-ups, forced waits or intrusive floating logos. Boards remain fixed to course coordinates, keep the original-era 2D presentation, and have no physics/collision effect. Unsold inventory is a subtle PIXTEE house sign.
+## Product decision — 10 October 2026
 
-## Inventory & packages
-- Per course and hole: `<course-id>-h<01..18>-tee-a`, `tee-b`, `green-a`, `green-b` (4 placements per hole).
-- Each complete 18-hole course has **72 independent saleable slots**. Number of total course slots is `number_of_18_hole_courses × 72`, once the final matching course count is verified. **Do not infer the course count from UI placeholders.**
-- Can sell: one board, the tee pair, the green pair, four-board hole exclusive, course-wide sponsorship, tournament sponsorship, multi-course seasonal package, series/event bundles. Advertisers get agreed IDs, exclusivity scope, time window, creative rights and reporting obligations.
-- Sales price, commercial terms and invoicing are NOT fixed or invented by the game framework.
+**No manual sponsorship sales, negotiation, inventory leases, invoicing or account management.** The publisher wants normal *programmatic* game ad monetization: demand sourced, filled, measured and paid by an approved advertising network. What is different is the presentation: **small, authentic, non-colliding golf-course signs beside tees and greens**, rather than generic screen-edge banner strips.
 
-## Technical model implemented in v0.1
-`SponsorInventory.kt` generates ID-stable, small, world-coordinate placements; `SponsorCampaign` carries advertiser name, 2–11-character sign wording, optional PNG logo filename, RGB face/letter colours, slot assignment, approval/family-safe booleans and UTC start/end seconds. Only active approved campaigns appear; default fallback is PIXTEE house boards, with global setting OFF removing all signs. Calendar expiry is evaluated locally and requires no network.
+This supersedes the old direct-sales/back-office plan. Legacy `SponsorInventory` IDs and the bundled manifest validator remain retained as compatibility/test tooling only. They are **NOT** the production business model and manually bundled sample signs must never be claimed to earn revenue.
 
-Approved creative manifest: `pixtee-android/app/src/main/assets/sponsors/placements.v1.json`, e.g.:
-```json
-{
-  "schemaVersion": 1,
-  "campaigns": [
-    {
-      "id": "brand-a-2027",
-      "advertiser": "Example Sponsor",
-      "boardText": "EXAMPLE",
-      "slotIds": ["lakewood-h01-tee-a", "lakewood-h01-green-b"],
-      "startUtcSeconds": 1800000000,
-      "endUtcSeconds": 1810000000,
-      "approved": true,
-      "familySafe": true,
-      "backgroundColor": "#132843",
-      "foregroundColor": "#FFFFFF",
-      "logoFile": "example.png"
-    }
-  ]
-}
-```
-This is an illustrative example, NOT a paid contract or live campaign. For a logo, bundle authorised PNG at `app/src/main/assets/sponsors/logos/example.png`. Recommend an original **96×24 px** legible horizontal mark; assets are locally packaged, never fetched/tracked from a third party.
+## Preferred provider and platform limitations
 
-Before publishing: `python tools/validate_pixtee_sponsors.py`. It rejects unapproved/unsafe entries, invalid creative, missing artwork and overlapping leases of the same slot. Android unit tests cover lifetime eligibility, the off switch, inventory counts and unchanged ball trajectories.
+- Preferred candidate: Adverty In-Play / Custom Engine integration, subject to the provider accepting this native Android Canvas-based, 2D pixel-art game, placement visibility at realistic handset size, age targeting and minimum audience requirements. Documentation: https://adverty.com/documentation-custom-engine/
+- Google AdMob standard banners are **not interchangeable textures** that can be distorted, cropped or arbitrarily painted onto game-world billboards. Google itself discourages fixed banners during highly interactive gameplay. AdMob native ads also have attribution, AdChoices, media and click-handling requirements; do not silently substitute or simulate them. See https://support.google.com/admob/answer/6128877 and https://support.google.com/admob/answer/6239795.
+- If the preferred network does not accept 2D pixel boards at sufficiently legible size, seek another **approved in-game/intrinsic** ad provider instead. Do not fake a connection or adopt an unapproved banner workaround.
 
-## Advertising sales process (future back office)
-1. Seller selects an available course/hole/position package in an inventory calendar.
-2. Create written sponsorship contract/authorisation, price, start/end UTC, usage rights, creative delivery and category restrictions; record invoice/payment out of band.
-3. Approve brand and artwork for visibility, suitability to children and local laws. Reject gambling, vaping, tobacco, alcohol, adult, deceptive or behaviour-targeted adverts.
-4. Reserve slots exclusively, publish validated campaign manifest, release branded APK. Future secure sponsor portal may manage time windows, artwork, booking, invoicing and remote campaign sync; NOT yet built.
-5. Expiry returns to PIXTEE. **A packaged ad cannot be instantly revoked across offline installed apps**; withdrawal currently needs an app update.
+## Required runtime and billing behaviour
 
-## Privacy, fairness, accessibility
-- No SDK for ad targeting, advertising IDs, impression tracking, external click-through links, sponsorship-based player buffs or physics modifications.
-- Paid sponsor face includes a small **AD** marking. If advertising disclosure is not adequately legible at runtime, revise board design before commercial deployment.
-- Boards are non-colliding world decoration, not a new obstacle. Player can turn all signs OFF under Options.
-- Before external commercial deployment obtain applicable child-directed advertising, UK GDPR and advertiser-brand/IP reviews. Sponsor approval is never automated from a public upload.
+1. The player opens a free Pixtee Golf game. The game can run completely offline with unobtrusive PIXTEE house signs in unsold/unfilled positions.
+2. After valid privacy/age and consent checks, the network SDK may request eligible demand for the four world-space ad placements on each authored hole, with IDs identifying both tee boards and green boards.
+3. When demand is returned, the **network's licensed rendering path** provides the creative, expiry/refresh, attribution and accurate measurement. The app must NOT count its own PIXTEE sign as a paid view.
+4. SDK viewability and visibility tests must verify on-screen presence, no overlay obstruction, adequate readable board size and appropriate session timing. The ad network, not `PixteeCore`, determines billable impressions and payout.
+5. An ad cannot change aim, shot timing, W(h)ack-o-Meter, physics, terrain, rewards or character upgrades. Gameplay should continue if consent is declined, there is no fill, the SDK fails, the user is offline or an ad request times out.
+6. The network manages advertisers, auction/fill, campaign rotation, estimated earnings and publisher payout. Manual Pixtee advertising sales are **out of scope**.
 
-## Acceptance tests
-- 4 world-space signs per hole (2 tee, 2 green) with unique stable IDs, across full course roster once built.
-- A player can enable/disable signs without changing ball trajectory, collisions, score or shot timing.
-- Expired/unapproved/unsafe sponsor never appears. Overlapping leases fail validation.
-- Visible tee/green signs respect model/camera scale and avoid HUD, golfer, green/cup, putting line and Whack-o-meter on tall closed-phone and Fold portrait viewports.
-- QA must verify actual screenshots and performance; unit test passing is not proof of final presentation quality.
+## Current implementation status
+
+`InCourseAds.kt` supplies a provider-agnostic contract, approved state checks, safe offline fallback, stable four-board/hole world positions and unit tests. `SponsorInventory.kt` still draws local placeholders. **No production network SDK, account keys, live ad creative or billable advertising traffic are integrated yet. No revenue is currently being generated by this code.**
+
+Before claiming automatic advertising is operational:
+- Obtain publisher/network access and game/content approval; confirm that tiny 2D signs qualify.
+- Integrate the licensed SDK with the Android/NDK runtime. Its APIs and binaries must be supplied under an authorized agreement.
+- Validate age/consent, child-suitability, GDPR/UK requirements, placement size, minimum viewability and advertiser brand-safety requirements.
+- Test sandbox/live distinction, disabled/offline/no-fill/consent-declined cases on native Android devices and track **provider-reported** impressions and earnings only.
+- Confirm Google Play and the network's own advertising policies, and add any required app disclosures.
+
+## Course placement contract
+
+Four small signs per hole (two at the tee, two by the green) using stable IDs `<course>-h<01..18>-tee-a`, `tee-b`, `green-a`, `green-b`. Keep physical boards stylistically consistent with premium pixel art. Avoid collision boxes and shot obstruction. Draw real creatives only through the network-approved renderer, with any mandatory ad labeling visible. If the network requires larger units for measured viewability, adjust world-space board size/location conservatively and independently from game physics. Never stretch/crop ads to fit a tiny decorative sprite.
+
+## QA acceptance
+
+No blank ads causing UI glitches, no in-game popups, no accidental clicks while aiming, no overlay over score/W(h)ack meter, no FPS regression, no blocked gameplay, and no reporting simulated impressions or revenue. Native emulator + handset/fold screenshots and network reporting must agree before release.

@@ -36,7 +36,7 @@ class PixteeActivity : Activity() {
     }
 }
 
-private enum class Screen { MAIN, COURSES, PLAYER, TEE, PLAYING, SCORE, RESULTS, PAUSE, CAREER, STATS, TROPHIES, OPTIONS, WARDROBE }
+private enum class Screen { MAIN, COURSES, PLAYER, TEE, PLAYING, SCORE, RESULTS, PAUSE, CAREER, SEASON, STATS, TROPHIES, OPTIONS, WARDROBE }
 
 /** Every UI element is laid out against a TALL 360x760 logical phone, then scaled edge-to-edge. */
 private class PixteeCanvas(context: Context) : View(context) {
@@ -51,6 +51,17 @@ private class PixteeCanvas(context: Context) : View(context) {
     private var careerTier = 0
     private var careerEventIndex = -1
     private var lastReward = ""
+    private val tourPrefs = context.getSharedPreferences("pixtee_tour_season_v1",Context.MODE_PRIVATE)
+    private fun tourSeason(): TourSeason =
+        PixteeSeasonCodec.decode(tourPrefs.getString("active",null)) ?: TourSeason()
+    private fun saveTourSeason(season: TourSeason) {
+        tourPrefs.edit().putString("active",PixteeSeasonCodec.encode(season)).apply()
+    }
+    private fun playTourEvent() {
+        val event=tourSeason().next ?: return
+        selectedCourse=event.courseIndex
+        startRound(RoundMode.TOUR,event.holes)
+    }
     private fun progress(): ReaderStats = ReaderStats(
         holes=stats.getInt("holes_played",0),
         rounds=stats.getInt("rounds",0),
@@ -232,6 +243,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             Screen.RESULTS -> drawResults(canvas)
             Screen.PAUSE -> drawPause(canvas)
             Screen.CAREER -> drawCareer(canvas)
+            Screen.SEASON -> drawSeason(canvas)
             Screen.STATS -> drawStats(canvas)
             Screen.TROPHIES -> drawTrophies(canvas)
             Screen.OPTIONS -> drawOptions(canvas)
@@ -749,7 +761,8 @@ private class PixteeCanvas(context: Context) : View(context) {
         pageHeader(c, "PIXTEE CAREER")
         val mask=stats.getLong("career_mask",0L)
         val wins=PixteeCareer.titles(mask)
-        woodButton(c,"SEASON 1 - ${wins} / 25 EVENTS",27f,135f,306f,52f)
+        woodButton(c,"TOUR SEASONS >",27f,135f,306f,52f)
+        text(c,"${wins} OF 25 TOUR MILESTONES",180f,214f,13f,cream,true)
         text(c,"TOUR PROGRESSION",180f,246f,20f,gold,true)
         tourNames.forEachIndexed { i,label ->
             val unlocked=PixteeCareer.tierUnlocked(mask,i)
@@ -762,6 +775,31 @@ private class PixteeCanvas(context: Context) : View(context) {
         text(c,"LEVEL ${p.level}   ${p.xp} XP",180f,619f,14f,gold,true)
         woodButton(c,"PRACTICE HOLE",37f,652f,286f,45f)
     }
+    private fun drawSeason(c: Canvas) {
+        pageHeader(c,"TOUR SEASON")
+        val s=tourSeason()
+        val ev=s.next
+        text(c,"SEASON ${s.number}  -  EVENT ${s.results.size} / ${PixteeSeasons.EVENTS_PER_SEASON}",
+            180f,126f,18f,gold,true)
+        woodButton(c,"TOUR POINTS: ${s.points}",32f,158f,296f,52f)
+        text(c,"${s.championships} CHAMPIONSHIPS",180f,249f,16f,gold,true)
+        if(ev!=null) {
+            text(c,"NEXT: ${ev.course.title.uppercase()}",180f,299f,17f,cream,true)
+            text(c,"${ev.holes} HOLES - EVENT ${ev.index+1} / 12",180f,331f,14f,cream,true)
+            text(c,"CPU RIVALS (OFFLINE)",180f,389f,14f,gold,true)
+            ev.rivals.forEachIndexed { i,rival ->
+                text(c,"${rival.name}   ${if(rival.toPar>0) "+" else ""}${rival.toPar}",
+                    180f,420f+i*39f,16f,cream,true)
+            }
+            woodButton(c,"PLAY TOUR EVENT",40f,616f,280f,54f)
+        } else {
+            text(c,"SEASON COMPLETE",180f,332f,26f,gold,true)
+            text(c,"ALL 12 EVENTS PLAYED",180f,381f,15f,cream,true)
+            woodButton(c,"NEXT SEASON",40f,616f,280f,54f)
+        }
+        woodButton(c,"BACK",74f,695f,212f,48f)
+    }
+
     private fun drawStats(c: Canvas) {
         pageHeader(c, "STATISTICS")
         val p=progress()
@@ -853,6 +891,19 @@ private class PixteeCanvas(context: Context) : View(context) {
             lastReward=""
             if(current.length>=9 && current.results.take(9).all{it.strokes<=it.par})
                 e.putInt("clean_nine",stats.getInt("clean_nine",0)+1)
+            if(current.mode==RoundMode.TOUR) {
+                val state=tourSeason()
+                val event=state.next
+                // Only the scheduled active event can award points, even after a
+                // background resume. Re-entering old results never duplicates it.
+                if(event!=null && event.courseIndex==current.courseIndex &&
+                   event.holes==current.length) {
+                    val next=state.record(current.relativeToPar)
+                    saveTourSeason(next)
+                    val result=next.results.last()
+                    lastReward="TOUR: #${result.placing}, +${result.points} POINTS"
+                }
+            }
             if(current.mode==RoundMode.CAREER && careerEventIndex in 0..24) {
                 val mask=stats.getLong("career_mask",0L)
                 val event=PixteeCareer.events[careerEventIndex]
@@ -981,6 +1032,7 @@ private class PixteeCanvas(context: Context) : View(context) {
             }
             Screen.CAREER -> when {
                 hit(6f,24f,348f,47f) -> screen=Screen.MAIN
+                hit(27f,135f,306f,52f) -> screen=Screen.SEASON
                 hit(37f,652f,286f,45f) -> startRound(RoundMode.PRACTICE,1)
                 else -> {
                     val mask=stats.getLong("career_mask",0L)
@@ -999,6 +1051,15 @@ private class PixteeCanvas(context: Context) : View(context) {
                             return
                         }
                     }
+                }
+            }
+            Screen.SEASON -> when {
+                hit(6f,24f,348f,47f) || hit(74f,695f,212f,48f) ->
+                    screen=Screen.CAREER
+                hit(40f,616f,280f,54f) -> {
+                    val state=tourSeason()
+                    if(state.finished) saveTourSeason(state.advance())
+                    else playTourEvent()
                 }
             }
             Screen.STATS -> if(hit(6f,24f,348f,47f) ||

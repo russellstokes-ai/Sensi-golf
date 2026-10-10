@@ -49,6 +49,35 @@ adb shell input keyevent 111  # ESCAPE
 sleep 3
 adb exec-out screencap -p > "$OUT/after-escape-11s.png"
 test -s "$OUT/after-escape-11s.png"
+
+# Keyboard forwarding now works. In verified run 38041416122, ESC
+# reveals the REAL main menu here, long before the legacy 149s wait.
+# Take Play Round immediately, while the original menu is on screen.
+if python tools/detect_sensible_main_menu.py "$OUT/after-escape-11s.png"; then
+  cp "$OUT/after-escape-11s.png" "$OUT/early-main-menu-11s.png"
+  adb shell input swipe 1260 380 1260 380 230
+  sleep 1
+  adb exec-out screencap -p > "$OUT/after-early-play-round.png"
+  if python tools/detect_sensible_player_select.py "$OUT/after-early-play-round.png"; then
+    cp "$OUT/after-early-play-round.png" "$OUT/early-human-player-select.png"
+    adb shell input swipe 1250 840 1250 840 230
+    sleep 1
+    adb exec-out screencap -p > "$OUT/after-early-human-okay.png"
+    if python tools/detect_sensible_course_select.py "$OUT/after-early-human-okay.png"; then
+      cp "$OUT/after-early-human-okay.png" "$OUT/early-human-course-menu.png"
+      adb shell input swipe 1260 310 1260 310 230
+      sleep 2
+      adb exec-out screencap -p > "$OUT/after-early-human-augusta-2s.png"
+      sleep 5
+      adb exec-out screencap -p > "$OUT/after-early-human-augusta-7s.png"
+      sleep 10
+      adb exec-out screencap -p > "$OUT/after-early-human-augusta-17s.png"
+      echo "EARLY NAVIGATION: original human player, original course, tee screenshots saved."
+      exit 0
+    fi
+  fi
+fi
+
 adb shell input keyevent 62   # SPACE
 sleep 5
 adb exec-out screencap -p > "$OUT/after-space-16s.png"

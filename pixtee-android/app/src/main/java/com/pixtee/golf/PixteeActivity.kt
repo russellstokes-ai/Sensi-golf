@@ -140,7 +140,10 @@ private class PixteeCanvas(context: Context) : View(context) {
     private val courseOptions = context.getSharedPreferences("pixtee_options_v1", Context.MODE_PRIVATE)
     private var sponsorBoards = courseOptions.getBoolean("course_boards", true)
     private var courseMotion = courseOptions.getBoolean("course_motion", true)
-    private val sponsorCampaigns = readSponsorManifest(context)
+    // Legacy hand-sold sponsor manifests are disabled: publisher requires automatic
+    // network fill only. Until an approved SDK is installed, render house signs.
+    private val sponsorCampaigns = emptyList<SponsorCampaign>()
+    private val networkAds: InCourseAdNetwork = OfflineInCourseAds()
     private val logoCache = mutableMapOf<String, Bitmap?>()
     private val sponsorSlots = SponsorInventory.slots(
         SponsorInventory.DEFAULT_COURSE_ID, 1,
@@ -457,6 +460,9 @@ private class PixteeCanvas(context: Context) : View(context) {
         rect(c,x-3f,y-4f,x-1f,y+1f,gearColour(StyleSlot.TROUSERS))
         rect(c,x+1f,y-4f,x+3f,y+1f,gearColour(StyleSlot.TROUSERS))
         line(c,x+3f,y-7f,x+8f,y-2f,gearColour(StyleSlot.CLUB))
+        // Identical tiny bag and wristband models across all equipment colours.
+        rect(c,x-7f,y-6f,x-4f,y+1f,gearColour(StyleSlot.BAG))
+        rect(c,x-6f,y-8f,x-5f,y-6f,gearColour(StyleSlot.ACCESSORY))
     }
 
 

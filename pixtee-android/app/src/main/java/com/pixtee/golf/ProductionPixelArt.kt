@@ -22,17 +22,16 @@ object ProductionArtContract {
     const val MANIFEST = "art/production/APPROVED_v1.txt"
 
     val REQUIRED_SPRITES: List<String> = listOf(
-        "golfer_idle", "golfer_backswing", "golfer_impact", "golfer_follow",
-        "tree_round", "tree_pine", "spectator_idle", "spectator_wave",
-        "flower_yellow", "flower_pink"
+        "golfer_idle", "golfer_takeaway", "golfer_backswing", "golfer_top",
+        "golfer_downswing", "golfer_impact", "golfer_follow", "golfer_finish",
+        "golfer_putt", "tree_round", "tree_pine", "spectator_idle",
+        "spectator_wave", "spectator_photographer", "camera_flash",
+        "bird_wings_up", "bird_wings_down", "flower_yellow", "flower_pink"
     )
 
-    fun golferFrame(stage: GameStage): String = when (stage) {
-        GameStage.POWER -> "golfer_backswing"
-        GameStage.ACCURACY -> "golfer_impact"
-        GameStage.FLIGHT -> "golfer_follow"
-        else -> "golfer_idle"
-    }
+    /** All poses, including a corrected club direction after impact. */
+    fun golferFrame(game: PixteeCore): String =
+        PixteeSwingRig.phase(game).spriteId
 
     /**
      * Candidate world-space size, NOT an art approval. Source PNG resolution
@@ -41,10 +40,12 @@ object ProductionArtContract {
      * Exact targets must be approved using a native phone-scale screenshot.
      */
     fun candidateWorldHeight(id: String): Float = when (id) {
-        "golfer_idle", "golfer_backswing", "golfer_impact", "golfer_follow" -> 11.5f
+        in PixteeSwingRig.FULL_SWING.map { it.spriteId }, "golfer_putt" -> 11.5f
         "tree_round" -> 37f
         "tree_pine" -> 42f
-        "spectator_idle", "spectator_wave" -> 12f
+        "spectator_idle", "spectator_wave", "spectator_photographer" -> 12f
+        "camera_flash" -> 5f
+        "bird_wings_up", "bird_wings_down" -> 7f
         "flower_yellow", "flower_pink" -> 4f
         else -> throw IllegalArgumentException("Unknown production sprite: $id")
     }

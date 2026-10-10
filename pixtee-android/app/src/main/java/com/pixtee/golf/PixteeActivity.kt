@@ -66,7 +66,11 @@ private class PixteeCanvas(context: Context) : View(context) {
         "PRO TOUR", "WORLD TOUR")
     private var currentStyle = StyleSlot.HAT
     private val equipmentPrefs = context.getSharedPreferences("pixtee_equipment_v1", Context.MODE_PRIVATE)
-    private var equipment = PixteeWardrobe.decode(equipmentPrefs.getString("gear",null),progress())
+    // Lazy loading avoids calling progress() before stats SharedPreferences is initialized.
+    // Android Canvas constructors initialize fields in declaration order.
+    private val equipment: MutableMap<StyleSlot,String> by lazy {
+        PixteeWardrobe.decode(equipmentPrefs.getString("gear",null),progress()).toMutableMap()
+    }
     private fun gear(slot:StyleSlot):StyleItem =
         PixteeWardrobe.equippedItem(slot,equipment,progress())
     private fun gearColour(slot:StyleSlot):Int =
@@ -986,7 +990,9 @@ private class PixteeCanvas(context: Context) : View(context) {
                         val current=items.indexOfFirst{it.id==gear(currentStyle).id}
                         val delta=if(x<178f)-1 else 1
                         val next=(current+delta+items.size)%items.size
-                        equipment=PixteeWardrobe.equip(equipment,items[next].id,progress())
+                        val nextEquipment=PixteeWardrobe.equip(equipment,items[next].id,progress())
+                        equipment.clear()
+                        equipment.putAll(nextEquipment)
                         saveGear()
                     }
                 }

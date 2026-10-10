@@ -35,7 +35,8 @@ object ProductionArtContract {
     val REQUIRED_SPRITES: List<String> = listOf(
         "golfer_idle", "golfer_takeaway", "golfer_backswing", "golfer_top",
         "golfer_downswing", "golfer_impact", "golfer_follow", "golfer_finish",
-        "golfer_putt", "tree_round", "tree_pine", "spectator_idle",
+        "golfer_putt_ready", "golfer_putt_back", "golfer_putt_impact",
+        "golfer_putt_finish", "tree_round", "tree_pine", "spectator_idle",
         "spectator_wave", "spectator_photographer", "camera_flash",
         "bird_wings_up", "bird_wings_down", "flower_yellow", "flower_pink"
     )
@@ -51,7 +52,8 @@ object ProductionArtContract {
      * Exact targets must be approved using a native phone-scale screenshot.
      */
     fun candidateWorldHeight(id: String): Float = when (id) {
-        in PixteeSwingRig.FULL_SWING.map { it.spriteId }, "golfer_putt" -> 11.5f
+        in PixteeSwingRig.FULL_SWING.map { it.spriteId },
+        in PixteeSwingRig.PUTTING.map { it.spriteId } -> 11.5f
         "tree_round" -> 37f
         "tree_pine" -> 42f
         "spectator_idle", "spectator_wave", "spectator_photographer" -> 12f

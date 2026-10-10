@@ -22,7 +22,7 @@ enum class SwingPose(val spriteId: String) {
 
 object PixteeSwingRig {
     /** World-space horizontal ball offset from the golfer's registered feet. */
-    const val BALL_OFFSET_X = 12f
+    const val BALL_OFFSET_X = 3.5f
     /** World-space ball Y equals ground-level golfer feet Y at address. */
     const val BALL_OFFSET_Y = 0f
 
@@ -30,18 +30,18 @@ object PixteeSwingRig {
      * Mandatory matching transparent canvas for all production golfer poses.
      * Registration is measured from PIXEL ANCHORS, not bitmap centering.
      *
-     * Pivot of both shoes = (40, 60) and contact clubface pixel = (92, 60).
-     * 52 art pixels represent exactly 12 world units, so the clubface meets
+     * Pivot of both shoes = (40, 58) and contact clubface pixel = (54, 58).
+     * 14 source pixels represent 3.5 world units, so the clubface meets
      * the physical ball at shot launch without stretching frames.
      *
-     * This is a PROPOSED export contract until the user approves real PNGs.
+     * These pixel anchors are measured against the approved Pixtee source sheet,\n     * not the arbitrary previous 52-pixel ball separation. The actual PNG\n     * export, original-game parity and on-device ball contact still require\n     * visual validation before production approval.
      */
     const val FRAME_PX_W = 128
     const val FRAME_PX_H = 64
     const val FEET_PX_X = 40f
-    const val FEET_PX_Y = 60f
-    const val IMPACT_CLUB_PX_X = 92f
-    const val IMPACT_CLUB_PX_Y = 60f
+    const val FEET_PX_Y = 58f
+    const val IMPACT_CLUB_PX_X = 54f
+    const val IMPACT_CLUB_PX_Y = 58f
     const val SOURCE_PIXELS_PER_WORLD =
         (IMPACT_CLUB_PX_X-FEET_PX_X)/BALL_OFFSET_X
 

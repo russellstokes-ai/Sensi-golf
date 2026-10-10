@@ -12,7 +12,7 @@ class PixteeSpriteAtlasTest {
         for(s in PixteeSpriteAtlas.all) {
             assertTrue("No empty sprite: ${s.id}",s.opaqueCells>=4)
             assertTrue(s.rows.all { it.length == s.width })
-            assertTrue(s.rows.flatten().none { it !in ".HSTPKCBAOdmlwusfx" })
+            assertTrue(s.rows.flatMap { it.toList() }.none { it !in ".HSTPKCBAOdmlwusfx" })
         }
     }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate real transparent Pixtee golfer frames before any Android preview.
 
-Eight full-swing frames plus four distinct putter poses must be identical 128x64 RGBA PNGs.
+Eight full-swing frames plus four distinct putter poses must be identical 256x128 RGBA PNGs.
 A common feet pivot and contact point protect the exact game-world geometry.
 This checks exported pixels, not aesthetic quality, swing continuity, or
 copyright/owner approval. Those still require human review and sign-off.
@@ -18,9 +18,9 @@ GOLFER_IDS = (
     "golfer_finish", "golfer_putt_ready", "golfer_putt_back",
     "golfer_putt_impact", "golfer_putt_finish",
 )
-WIDTH, HEIGHT = 128, 64
-FEET = (40, 58)
-CONTACT = (54, 58)
+WIDTH, HEIGHT = 256, 128
+FEET = (80, 116)
+CONTACT = (108, 116)
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 
@@ -43,7 +43,7 @@ def decode_alpha(p: Path) -> list[bytes]:
                 struct.unpack(">IIBBBBB", payload))
             if ((width, height) != (WIDTH, HEIGHT) or depth != 8 or
                 mode != 6 or compression or filter_kind or interlace):
-                raise ValueError("golfer frames must be 128x64 RGBA8 noninterlaced PNGs")
+                raise ValueError("golfer frames must be 256x128 RGBA8 noninterlaced PNGs")
             dimensions = True
         elif label == b"IDAT":
             image_data.extend(payload)

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
@@ -121,7 +122,12 @@ class ProductionPixelArt(private val context: Context) {
         val tilePaint=textures.getOrPut(id) {
             Paint().apply {
                 isAntiAlias=false;isFilterBitmap=false;isDither=false
-                shader=BitmapShader(bitmap,Shader.TileMode.REPEAT,Shader.TileMode.REPEAT)
+                shader=BitmapShader(bitmap,Shader.TileMode.REPEAT,Shader.TileMode.REPEAT).apply {
+                    // Artwork density does not change the 16 x 8 world tile.
+                    setLocalMatrix(Matrix().apply {
+                        setScale(16f / bitmap.width, 8f / bitmap.height)
+                    })
+                }
             }
         }
         canvas.drawRect(l,t,r,b,tilePaint)
@@ -135,7 +141,12 @@ class ProductionPixelArt(private val context: Context) {
         val tilePaint=textures.getOrPut(id) {
             Paint().apply {
                 isAntiAlias=false;isFilterBitmap=false;isDither=false
-                shader=BitmapShader(bitmap,Shader.TileMode.REPEAT,Shader.TileMode.REPEAT)
+                shader=BitmapShader(bitmap,Shader.TileMode.REPEAT,Shader.TileMode.REPEAT).apply {
+                    // Artwork density does not change the 16 x 8 world tile.
+                    setLocalMatrix(Matrix().apply {
+                        setScale(16f / bitmap.width, 8f / bitmap.height)
+                    })
+                }
             }
         }
         canvas.drawOval(l,t,r,b,tilePaint)
@@ -164,7 +175,8 @@ class ProductionPixelArt(private val context: Context) {
             // The golfer frame uses the SAME pixel-to-world ratio across all
             // poses, even when the club rotates above the head. Image bounds
             // are never scaled relative to opaque contents or cropped.
-            if(!PixteeSwingRig.isValidFrameSize(bitmap.width,bitmap.height))
+            if(!PixteeSwingRig.isValidFrameSize(bitmap.width,bitmap.height) &&
+                !(reviewOnly && PixteeSwingRig.isLegacyFrameSize(bitmap.width,bitmap.height)))
                 return
             val r=PixteeSwingRig.artFrameRect(centreX,bottomY)
             RectF(r[0],r[1],r[2],r[3])

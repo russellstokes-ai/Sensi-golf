@@ -30,23 +30,28 @@ object PixteeSwingRig {
      * Mandatory matching transparent canvas for all production golfer poses.
      * Registration is measured from PIXEL ANCHORS, not bitmap centering.
      *
-     * Pivot of both shoes = (40, 58) and contact clubface pixel = (54, 58).
-     * 14 source pixels represent 3.5 world units, so the clubface meets
+     * Pivot of both shoes = (80, 116) and contact clubface pixel = (108, 116).
+     * 28 source pixels represent 3.5 world units, so the clubface meets
      * the physical ball at shot launch without stretching frames.
      *
-     * These pixel anchors are measured against the approved Pixtee source sheet,\n     * not the arbitrary previous 52-pixel ball separation. The actual PNG\n     * export, original-game parity and on-device ball contact still require\n     * visual validation before production approval.
+     * These are proposed final export anchors from the production brief.
+     * Original-game parity and on-device contact still require visual review.
      */
-    const val FRAME_PX_W = 128
-    const val FRAME_PX_H = 64
-    const val FEET_PX_X = 40f
-    const val FEET_PX_Y = 58f
-    const val IMPACT_CLUB_PX_X = 54f
-    const val IMPACT_CLUB_PX_Y = 58f
+    const val FRAME_PX_W = 256
+    const val FRAME_PX_H = 128
+    const val FEET_PX_X = 80f
+    const val FEET_PX_Y = 116f
+    const val IMPACT_CLUB_PX_X = 108f
+    const val IMPACT_CLUB_PX_Y = 116f
     const val SOURCE_PIXELS_PER_WORLD =
         (IMPACT_CLUB_PX_X-FEET_PX_X)/BALL_OFFSET_X
 
     fun isValidFrameSize(width: Int, height: Int): Boolean =
         width==FRAME_PX_W && height==FRAME_PX_H
+
+    /** Temporary debug-only compatibility; callers must enforce the debug gate. */
+    fun isLegacyFrameSize(width: Int, height: Int): Boolean =
+        width == 128 && height == 64
 
     fun artFrameRect(feetWorldX: Float, feetWorldY: Float): FloatArray {
         val left=feetWorldX-FEET_PX_X/SOURCE_PIXELS_PER_WORLD

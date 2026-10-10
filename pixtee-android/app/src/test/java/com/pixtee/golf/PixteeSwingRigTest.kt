@@ -78,18 +78,22 @@ class PixteeSwingRigTest {
     }
 
     @Test fun allFullSwingFramesShareRegistrationAndContactExactly() {
-        assertTrue(PixteeSwingRig.isValidFrameSize(128,64))
-        assertFalse(PixteeSwingRig.isValidFrameSize(127,64))
-        assertFalse(PixteeSwingRig.isValidFrameSize(128,63))
+        assertTrue(PixteeSwingRig.isValidFrameSize(256,128))
+        assertFalse(PixteeSwingRig.isValidFrameSize(255,128))
+        assertFalse(PixteeSwingRig.isValidFrameSize(256,127))
+        assertFalse(PixteeSwingRig.isValidFrameSize(128,64))
+        assertTrue(PixteeSwingRig.isLegacyFrameSize(128,64))
+        assertEquals(8f,PixteeSwingRig.SOURCE_PIXELS_PER_WORLD,0f)
         val feetX=150f;val feetY=459f
         val rect=PixteeSwingRig.artFrameRect(feetX,feetY)
+        assertArrayEquals(floatArrayOf(140f,444.5f,172f,460.5f),rect,0.0001f)
         val contact=PixteeSwingRig.contactFromFrameRect(rect)
         val expected=PixteeSwingRig.expectedBallPosition(feetX,feetY)
         assertEquals(expected.first,contact.first,0.0001f)
         assertEquals(expected.second,contact.second,0.0001f)
-        assertEquals(128f/PixteeSwingRig.SOURCE_PIXELS_PER_WORLD,
+        assertEquals(256f/PixteeSwingRig.SOURCE_PIXELS_PER_WORLD,
             rect[2]-rect[0],0.0001f)
-        assertEquals(64f/PixteeSwingRig.SOURCE_PIXELS_PER_WORLD,
+        assertEquals(128f/PixteeSwingRig.SOURCE_PIXELS_PER_WORLD,
             rect[3]-rect[1],0.0001f)
         // Direction/camera scaling must never move the clubhead relative
         // to the actual physical ball at shot release.

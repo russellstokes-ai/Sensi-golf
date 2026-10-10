@@ -1,6 +1,15 @@
 package com.russellstokes.sensigolf.fullgame
 
 import android.app.AlertDialog
+import android.net.Uri
+import android.widget.LinearLayout
+import android.widget.Button
+import androidx.activity.result.contract.ActivityResultContracts
+import java.io.ByteArrayOutputStream
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
+import java.util.zip.ZipEntry
+
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
@@ -42,6 +51,26 @@ class FullGameActivity : ComponentActivity() {
     private var cutoutTop = 0
     private var cutoutRight = 0
     private var cutoutBottom = 0
+    // Distributable frontend carries no commercial game binary. The owner's
+    // original ZIP is imported locally once. The CI compatibility build may
+    // still use an injected private archive without showing this picker.
+    private val chooseOriginalArchive = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                importOriginalGameArchive(uri)
+                recreate()
+            } catch (error: Exception) {
+                AlertDialog.Builder(this)
+                    .setTitle("Cannot import game")
+                    .setMessage(error.message ?: "Select a ZIP containing the original DOS game files.")
+                    .setPositiveButton("OK", null)
+                    .show()
+            }
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +83,18 @@ class FullGameActivity : ComponentActivity() {
         // It is injected into the APK only during a rights-approved build.
         val archive = File(filesDir, "SensibleGolf.dosz")
         if (!archive.isFile || archive.length() == 0L) {
-            val packaged = assets.open("game/SensibleGolf.dosz")
+            // The private CI reference build supplies a prepacked archive.
+            // Public test APKs deliberately omit it; show a one-time import
+            // rather than crashing or making users use the command line.
+            val packaged = try {
+                assets.open("game/SensibleGolf.dosz")
+            } catch (_: java.io.FileNotFoundException) {
+                null
+            }
+            if (packaged == null) {
+                showOriginalGameImportScreen()
+                return
+            }
             FileOutputStream(archive).use { dst -> packaged.use { src -> src.copyTo(dst) } }
         }
 
@@ -138,6 +178,116 @@ class FullGameActivity : ComponentActivity() {
             }.start()
         }, 3200L)
         initialized = true
+    }
+
+    /**
+     * Import any *operator-supplied* ZIP containing the original DOS game.
+     * Like tools/build_original_dosz.py, flatten a one-level or nested ZIP,
+     * omit the Windows executable and package only the DOS game support files.
+     * No network connection, uploads, emulation change or game rewrite.
+     */
+    private fun importOriginalGameArchive(uri: Uri) {
+        val archive = File(filesDir, "SensibleGolf.dosz")
+        val temp = File(filesDir, "SensibleGolf.dosz.tmp")
+        val entries = linkedMapOf<String, ByteArray>()
+        var total = 0L
+        var count = 0
+        try {
+            val stream = contentResolver.openInputStream(uri)
+                ?: throw IllegalArgumentException("Cannot open the selected ZIP.")
+            ZipInputStream(stream.buffered()).use { zip ->
+                var item = zip.nextEntry
+                while (item != null) {
+                    if (!item.isDirectory) {
+                        count++
+                        if (count > 1000) throw IllegalArgumentException("Too many files in ZIP.")
+                        val name = item.name.replace('\\', '/').substringAfterLast('/').uppercase()
+                        if (name.isNotBlank() && name != "." && name != ".." &&
+                            name != "GOLFWIN.EXE" &&
+                            (name == "GOLFDOS.EXE" ||
+                             !(name.endsWith(".EXE") || name.endsWith(".COM") ||
+                               name.endsWith(".BAT")))) {
+                            if (entries.containsKey(name)) {
+                                throw IllegalArgumentException("Duplicate game file: $name")
+                            }
+                            val bytes = ByteArrayOutputStream()
+                            val buffer = ByteArray(8192)
+                            while (true) {
+                                val read = zip.read(buffer)
+                                if (read < 0) break
+                                bytes.write(buffer, 0, read)
+                                if (bytes.size() > 40 * 1024 * 1024) {
+                                    throw IllegalArgumentException("Game file too large: $name")
+                                }
+                            }
+                            total += bytes.size().toLong()
+                            if (total > 80L * 1024 * 1024) {
+                                throw IllegalArgumentException("Game archive exceeds 80 MB.")
+                            }
+                            entries[name] = bytes.toByteArray()
+                        }
+                    }
+                    zip.closeEntry()
+                    item = zip.nextEntry
+                }
+            }
+            val missing = listOf("GOLFDOS.EXE", "GOLF.EPF").filterNot { entries.containsKey(it) }
+            if (missing.isNotEmpty()) {
+                throw IllegalArgumentException("This is not the original DOS Sensible Golf archive. Missing: ${missing.joinToString()}")
+            }
+            ZipOutputStream(FileOutputStream(temp).buffered()).use { zip ->
+                for ((name, bytes) in entries.toSortedMap()) {
+                    zip.putNextEntry(ZipEntry(name))
+                    zip.write(bytes)
+                    zip.closeEntry()
+                }
+            }
+            if (archive.exists() && !archive.delete()) {
+                throw java.io.IOException("Cannot replace previous game archive.")
+            }
+            if (!temp.renameTo(archive)) {
+                temp.copyTo(archive, overwrite = true)
+                temp.delete()
+            }
+        } catch (e: Exception) {
+            temp.delete()
+            throw e
+        }
+    }
+
+    private fun showOriginalGameImportScreen() {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(Color.rgb(13, 27, 23))
+            setPadding(30, 30, 30, 30)
+        }
+        val title = TextView(this).apply {
+            text = "Sensible Golf"
+            textSize = 28f
+            gravity = Gravity.CENTER
+            setTextColor(Color.WHITE)
+        }
+        val description = TextView(this).apply {
+            text = "Choose your own original DOS Sensible Golf ZIP file to play. " +
+                "Your game stays on this device."
+            gravity = Gravity.CENTER
+            setTextColor(Color.LTGRAY)
+            textSize = 15f
+            setPadding(0, 24, 0, 24)
+        }
+        val button = Button(this).apply {
+            text = "Choose original game ZIP"
+            setOnClickListener {
+                chooseOriginalArchive.launch(arrayOf(
+                    "application/zip", "application/octet-stream", "*/*"
+                ))
+            }
+        }
+        layout.addView(title)
+        layout.addView(description)
+        layout.addView(button)
+        setContentView(layout)
     }
 
     /**

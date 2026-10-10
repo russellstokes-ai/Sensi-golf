@@ -110,7 +110,8 @@ class PixteeCore {
     }
 
     /** Fixed 60Hz gameplay clock, independent of Android render frames. */
-    fun tick() = when (stage) {
+    fun tick() {
+        when (stage) {
         GameStage.POWER, GameStage.ACCURACY -> {
             val step = if (stage == GameStage.POWER) 1.14f / 60f else 1.55f / 60f
             meter += meterDirection * step
@@ -130,6 +131,7 @@ class PixteeCore {
             if (rollTime >= 0.38f) finishShot()
         }
         else -> Unit
+        }
     }
 
     private fun commitShot() {

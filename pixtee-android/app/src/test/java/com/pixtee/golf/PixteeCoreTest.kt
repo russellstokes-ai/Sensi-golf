@@ -129,4 +129,27 @@ class PixteeCoreTest {
         assertTrue("Small post-landing bounce must show a lift", g.height > 0f)
     }
 
+    @Test fun stableBallResumePreservesShotLocationAndClub() {
+        val layout=PixteeCourseCatalog.hole(7,3)
+        val g=PixteeCore()
+        g.startHole(layout)
+        g.changeClub(4)
+        g.steer(12f)
+        g.whack()
+        repeat(25){g.tick()}
+        g.whack()
+        repeat(22){g.tick()}
+        g.whack()
+        repeat(500){g.tick()}
+        assertTrue(g.stage==GameStage.READY || g.stage==GameStage.HOLED)
+        if(g.stage==GameStage.READY) {
+            val save=g.stableBall()!!
+            val rebuilt=PixteeCore()
+            rebuilt.startHole(layout)
+            rebuilt.restoreBall(save)
+            assertEquals(save,rebuilt.stableBall())
+            assertEquals(g.toPin,rebuilt.toPin,0.0001f)
+        }
+    }
+
 }

@@ -448,7 +448,8 @@ private class PixteeCanvas(context: Context) : View(context) {
             rect(c,centre-half,y.toFloat(),centre+half,y+3f,
                 if ((y/21)%2==0) palette.fairway else tinted(palette.fairway, 0.90f))
         }
-        val frame = CourseAmbient.frame(android.os.SystemClock.uptimeMillis(),courseMotion)
+        val ambientMs=android.os.SystemClock.uptimeMillis()
+        val frame=CourseAmbient.frame(ambientMs,courseMotion)
         layout.waters.forEach { patch ->
             rect(c,patch.l,patch.t,patch.r,patch.b,palette.water)
             var row=0
@@ -487,7 +488,17 @@ private class PixteeCanvas(context: Context) : View(context) {
         }
         layout.trees.forEach { tree(c,it.x,it.y,it.variant) }
         layout.spectators.forEachIndexed { i,spot ->
-            spectator(c,spot.x,spot.y,i,frame)
+            spectator(c,spot.x,spot.y,i,frame,ambientMs)
+        }
+        // Occasional sky visitors use approved bird frames only. These are
+        // strictly decorative: no collision, scores or flight interference.
+        CourseAmbient.birdFlyover(ambientMs,layout.seed,courseMotion)?.let { bird ->
+            c.save()
+            if(!bird.movingRight) c.scale(-1f,1f,bird.x,bird.y)
+            val id=if(bird.wingsUp) "bird_wings_up" else "bird_wings_down"
+            art.draw(c,id,bird.x,bird.y)
+            art.draw(c,id,bird.x-11f,bird.y+7f)
+            c.restore()
         }
         rect(c, layout.teeX-21f,layout.teeY-10f,layout.teeX+21f,layout.teeY+9f,
             palette.green)
@@ -515,9 +526,16 @@ private class PixteeCanvas(context: Context) : View(context) {
         art.draw(c,if(variant%3==0) "tree_pine" else "tree_round",x,y+7f)
     }
 
-    private fun spectator(c: Canvas, x: Float, y: Float, index: Int, frame: Int) {
-        val waving=courseMotion && CourseAmbient.spectatorWave(index,frame)
-        art.draw(c,if(waving) "spectator_wave" else "spectator_idle",x,y+3f)
+    private fun spectator(c: Canvas, x: Float, y: Float, index: Int,
+                          frame: Int, elapsedMs: Long) {
+        if(index%9==3) {
+            art.draw(c,"spectator_photographer",x,y+3f)
+            if(CourseAmbient.photographerFlash(elapsedMs,index,courseMotion))
+                art.draw(c,"camera_flash",x+4f,y-7f)
+        } else {
+            val waving=courseMotion && CourseAmbient.spectatorWave(index,frame)
+            art.draw(c,if(waving) "spectator_wave" else "spectator_idle",x,y+3f)
+        }
     }
 
     private fun flag(c: Canvas, x: Float, y: Float) {

@@ -81,4 +81,39 @@ class PixteeCoreTest {
         assertEquals(1, g.strokes)
     }
 
+    @Test fun putterMovesAlongGroundAndFinishes() {
+        val g = PixteeCore()
+        g.changeClub(12)
+        assertEquals("Putter", g.club.label)
+        g.whack()
+        repeat(36) { g.tick() }
+        g.whack()
+        repeat(18) { g.tick() }
+        assertEquals(GameStage.ROLL, g.whack())
+        val startingY = g.y
+        repeat(5) { g.tick() }
+        assertTrue("Putter should actually travel on the green/ground", g.y < startingY)
+        assertEquals(0f, g.height, 0.0001f)
+        repeat(280) { g.tick() }
+        assertTrue(g.stage == GameStage.READY || g.stage == GameStage.HOLED)
+    }
+
+    @Test fun woodsMoveDuringRollRatherThanFakeWaiting() {
+        val g = PixteeCore()
+        g.whack()
+        repeat(37) { g.tick() }
+        g.whack()
+        repeat(19) { g.tick() }
+        g.whack()
+        for (i in 0 until 300) {
+            if (g.stage == GameStage.ROLL) break
+            g.tick()
+        }
+        assertEquals(GameStage.ROLL, g.stage)
+        val landingY = g.y
+        g.tick()
+        assertTrue("Roll phase should continue moving", g.y < landingY)
+        assertTrue("Small post-landing bounce must show a lift", g.height > 0f)
+    }
+
 }

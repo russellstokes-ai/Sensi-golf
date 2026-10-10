@@ -37,9 +37,11 @@ dependencies {
  * The approval marker must only be committed AFTER explicit owner sign-off.
  */
 def requiredArtFrames = [
-    'golfer_idle', 'golfer_backswing', 'golfer_impact', 'golfer_follow',
-    'tree_round', 'tree_pine', 'spectator_idle', 'spectator_wave',
-    'flower_yellow', 'flower_pink'
+    'golfer_idle', 'golfer_takeaway', 'golfer_backswing', 'golfer_top',
+    'golfer_downswing', 'golfer_impact', 'golfer_follow', 'golfer_finish',
+    'golfer_putt', 'tree_round', 'tree_pine', 'spectator_idle',
+    'spectator_wave', 'spectator_photographer', 'camera_flash',
+    'bird_wings_up', 'bird_wings_down', 'flower_yellow', 'flower_pink'
 ]
 tasks.register('verifyApprovedProductionArt') {
     group = 'verification'

@@ -100,7 +100,36 @@ jobs:
             RESULT=$?
             echo '=== Pixtee coordinate and navigation instrumentation logs ==='
             adb logcat -d -s PixteeSmoke:I PixteeTouch:I AndroidRuntime:E '*:S' | tail -n 250 || true
+            echo '=== Capture TRUE in-app Android screenshots (no generated or concept art) ==='
+            mkdir -p pixtee-android/app/build/actual-device-screenshots
+            adb shell settings put secure immersive_mode_confirmations confirmed
+            adb shell wm size 1080x2400
+            adb shell am force-stop com.pixtee.golf || true
+            adb shell am start -n com.pixtee.golf/.PixteeActivity
+            sleep 3
+            adb shell screencap -p /sdcard/pixtee-actual-menu.png
+            adb pull /sdcard/pixtee-actual-menu.png pixtee-android/app/build/actual-device-screenshots/actual-menu.png || true
+            adb shell input tap 540 900
+            sleep 2
+            adb shell screencap -p /sdcard/pixtee-actual-courses.png
+            adb pull /sdcard/pixtee-actual-courses.png pixtee-android/app/build/actual-device-screenshots/actual-courses.png || true
+            adb shell input tap 540 480
+            sleep 1
+            adb shell input tap 540 1650
+            sleep 1
+            adb shell input tap 540 1926
+            sleep 3
+            adb shell screencap -p /sdcard/pixtee-actual-gameplay.png
+            adb pull /sdcard/pixtee-actual-gameplay.png pixtee-android/app/build/actual-device-screenshots/actual-gameplay.png || true
+            adb shell wm size reset
             exit $RESULT
+      - name: Upload actual Android screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pixtee-Actual-Android-Screenshots
+          path: pixtee-android/app/build/actual-device-screenshots/*.png
+          if-no-files-found: warn
       - name: Upload on-device results
         if: always()
         uses: actions/upload-artifact@v4

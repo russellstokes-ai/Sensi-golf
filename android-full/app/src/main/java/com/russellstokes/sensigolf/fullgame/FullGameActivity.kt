@@ -127,15 +127,14 @@ class FullGameActivity : ComponentActivity() {
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         ))
         setContentView(frame)
-        // Optional, retractable phone controls. The entire original DOS video
-        // stays untouched; these map ONLY to the original keyboard. They are
-        // hidden until requested, so menus and artwork remain canonical.
-        attachOptionalTouchControls(frame)
         // Runtime screen capture validation must confirm the core has reached the
         // actual game before uncovering it; this delay alone is NOT that proof.
         splash.postDelayed({
             splash.animate().alpha(0f).setDuration(250).withEndAction {
                 frame.removeView(splash)
+                // Reveal the optional controller toggle only AFTER the
+                // untouched eagle splash has completely faded.
+                attachOptionalTouchControls(frame)
             }.start()
         }, 3200L)
         initialized = true

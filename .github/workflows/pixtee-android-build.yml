@@ -77,7 +77,13 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: gradle -p pixtee-android --no-daemon :app:connectedDebugAndroidTest
+          script: |
+            set +e
+            gradle -p pixtee-android --no-daemon :app:connectedDebugAndroidTest
+            RESULT=$?
+            echo '=== Pixtee coordinate and navigation instrumentation logs ==='
+            adb logcat -d -s PixteeSmoke:I PixteeTouch:I AndroidRuntime:E '*:S' | tail -n 250 || true
+            exit $RESULT
       - name: Upload on-device results
         if: always()
         uses: actions/upload-artifact@v4

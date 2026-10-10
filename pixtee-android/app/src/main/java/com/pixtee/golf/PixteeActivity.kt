@@ -499,23 +499,43 @@ private class PixteeCanvas(context: Context) : View(context) {
         circle(c, 337f, 137f, 3f, gold)
         flag(c, 336f, 53f)
     }
+    /**
+     * Welly-inspired semicircular arc, not the earlier horizontal prototype bar.
+     * The cursor ascends for power and returns down the SAME arc for accuracy.
+     * Exact timing/colours remain a reference comparison gate.
+     */
     private fun drawMeter(c: Canvas) {
-        rect(c, 91f, 324f, 353f, 464f, Color.BLACK)
-        rect(c, 95f, 328f, 349f, 460f, navyDark)
-        woodButton(c, "WHACK-O-METER", 104f, 335f, 236f, 32f)
-        text(c, if (g.stage == GameStage.POWER) "1. SET POWER" else "2. SET ACCURACY",
-            222f, 389f, 16f, gold, true)
-        for (i in 0 until 30) {
-            val color = when {
-                i in 11..18 -> Color.rgb(72, 218, 35)
-                i in 6..10 || i in 19..23 -> Color.rgb(245, 216, 36)
-                else -> Color.rgb(242, 75, 30)
+        rect(c, 91f, 319f, 354f, 469f, Color.BLACK)
+        rect(c, 94f, 322f, 351f, 466f, navyDark)
+        woodButton(c, "WELLY-O-METER", 103f, 331f, 239f, 28f)
+        text(c, if (g.stage == GameStage.POWER) "BACKSWING: POWER"
+            else "DOWNSWING: ACCURACY", 224f, 382f, 11.5f, gold, true)
+
+        val cx = 223f
+        val cy = 450f
+        // Original-era solid pixel steps create a crisp arch at mobile scale.
+        for (i in 0..64) {
+            val radians = Math.PI * (1.0 - i / 64.0)
+            val px = cx + cos(radians).toFloat() * 100f
+            val py = cy - sin(radians).toFloat() * 78f
+            val colour = when {
+                i <= 6 -> Color.rgb(242, 52, 35) // straight-hit red zone
+                i in 25..39 -> Color.rgb(246, 183, 29) // strong-power zone
+                i in 19..24 || i in 40..45 -> Color.rgb(103, 204, 42)
+                else -> Color.rgb(237, 231, 186)
             }
-            rect(c, 107f + i * 7.6f, 399f, 114f + i * 7.6f, 420f, color)
+            rect(c, px - 3f, py - 3f, px + 4f, py + 4f, Color.BLACK)
+            rect(c, px - 2f, py - 2f, px + 3f, py + 3f, colour)
         }
-        val markerX = 107f + g.meter * 228f
-        rect(c, markerX - 2f, 394f, markerX + 2f, 428f, cream)
-        text(c, "TAP WHACK TO STOP", 223f, 446f, 13f, cream, true)
+        val t = g.meter.coerceIn(0f, 1f)
+        val radians = Math.PI * (1.0 - t.toDouble())
+        val cursorX = cx + cos(radians).toFloat() * 100f
+        val cursorY = cy - sin(radians).toFloat() * 78f
+        circle(c, cursorX, cursorY, 5.2f, Color.BLACK)
+        circle(c, cursorX, cursorY, 3.7f, Color.WHITE)
+        text(c, "MAX", cx, 369f, 10f, cream, true)
+        text(c, if (g.stage == GameStage.POWER) "TAP TO SET POWER" else "TAP AT RED TO HIT",
+            cx, 439f, 11f, cream, true)
     }
     private fun drawScore(c: Canvas) {
         pageHeader(c, "SCORECARD")

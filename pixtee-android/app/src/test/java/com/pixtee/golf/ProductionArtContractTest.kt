@@ -27,4 +27,32 @@ class ProductionArtContractTest {
         assertEquals("golfer_follow",ProductionArtContract.golferFrame(GameStage.FLIGHT))
         assertEquals("golfer_idle",ProductionArtContract.golferFrame(GameStage.ROLL))
     }
+
+    @Test fun artPixelResolutionCannotChangeWorldSpaceGolferScale() {
+        val zoomed=CourseViewport(360f,760f,zoom=1.9f,
+            focusX=150f,focusY=400f)
+        val worldHeight=ProductionArtContract.candidateWorldHeight("golfer_idle")
+        val rendered=zoomed.renderedModelHeight(worldHeight)
+        assertTrue("Classic-size candidate should be legible",rendered>=22f)
+        assertTrue("Character must not dominate the course",rendered<=29f)
+        assertEquals(worldHeight,
+            ProductionArtContract.candidateWorldHeight("golfer_follow"),0f)
+        assertEquals(worldHeight,
+            ProductionArtContract.candidateWorldHeight("golfer_impact"),0f)
+        assertEquals(12f,
+            ProductionArtContract.candidateWorldHeight("spectator_wave"),0f)
+        assertTrue(ProductionArtContract.candidateWorldHeight("tree_round") >
+            ProductionArtContract.candidateWorldHeight("golfer_idle"))
+    }
+
+    @Test fun everyApprovedSpriteSlotHasAWorldSize() {
+        ProductionArtContract.REQUIRED_SPRITES.forEach { id ->
+            assertTrue("$id has no playable scale",
+                ProductionArtContract.candidateWorldHeight(id) in 1f..60f)
+        }
+        try {
+            ProductionArtContract.candidateWorldHeight("unreviewed_placeholder")
+            fail("Unapproved sprite name was accepted")
+        } catch (_: IllegalArgumentException) { }
+    }
 }

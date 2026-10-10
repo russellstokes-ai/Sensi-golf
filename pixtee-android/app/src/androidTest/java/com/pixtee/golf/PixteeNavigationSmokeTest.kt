@@ -57,9 +57,11 @@ class PixteeNavigationSmokeTest {
         val found = device.wait(Until.hasObject(By.descContains(match)), 12000)
         if (!found) {
             val current = device.findObject(By.descContains("Pixtee screen:"))
-            android.util.Log.e("PixteeSmoke", "EXPECTED $match; ACTUAL ${current?.contentDescription}; bounds=${current?.visibleBounds}")
+            val activeWindow = device.currentPackageName
+            val actual = current?.contentDescription?.toString() ?: "missing view"
+            val bounds = current?.visibleBounds?.toString() ?: "no bounds"
+            throw AssertionError("Expected [$match], actual [$actual], bounds=[$bounds], package=[$activeWindow]")
         }
-        assertTrue("Timed out waiting for $match", found)
     }
 
     @Test

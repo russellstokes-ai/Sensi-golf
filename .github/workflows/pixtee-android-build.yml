@@ -40,6 +40,15 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_validate_pixtee_art.py' -v
       - name: Unit tests and APK
         run: gradle -p pixtee-android --no-daemon :app:testDebugUnitTest :app:assembleDebug
+      - name: Verify release cannot bypass owner artwork approval
+        run: |
+          set -euo pipefail
+          if gradle -p pixtee-android --no-daemon :app:verifyApprovedProductionArt; then
+            echo "::error::Unapproved Pixtee artwork was allowed for release"
+            exit 1
+          fi
+          gradle -p pixtee-android --no-daemon :app:assembleRelease --dry-run |
+            grep ':app:verifyApprovedProductionArt'
       - name: Verify standalone Pixtee package
         run: |
           APK=pixtee-android/app/build/outputs/apk/debug/app-debug.apk

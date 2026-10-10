@@ -29,8 +29,16 @@ class PixteeNavigationSmokeTest {
     }
 
     private fun tap(x: Float, y: Float) {
-        val scale = device.displayWidth / 360f
-        device.click((x * scale).toInt(), (y * scale).toInt())
+        // Android 15 and Fold viewport insets can offset a custom View from
+        // device (0,0). Always map against the ACTUAL visible canvas bounds.
+        val view = device.findObject(By.descContains("Pixtee screen:"))
+            ?: error("Pixtee canvas is missing from the Android accessibility tree")
+        val bounds = view.visibleBounds
+        val scale = bounds.width() / 360f
+        val touchX = (bounds.left + x * scale).toInt()
+        val touchY = (bounds.top + y * scale).toInt()
+        android.util.Log.i("PixteeSmoke", "Tap $x,$y -> $touchX,$touchY; bounds=$bounds; screen=${view.contentDescription}")
+        device.click(touchX, touchY)
     }
 
     private fun waitFor(screen: String, stage: String? = null) {

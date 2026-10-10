@@ -69,4 +69,30 @@ class PixteeSwingRigTest {
         assertEquals(SwingPose.FOLLOW_THROUGH,PixteeSwingRig.phase(
             GameStage.FLIGHT,30,10,2,false))
     }
+
+    @Test fun allFullSwingFramesShareRegistrationAndContactExactly() {
+        assertTrue(PixteeSwingRig.isValidFrameSize(128,64))
+        assertFalse(PixteeSwingRig.isValidFrameSize(127,64))
+        assertFalse(PixteeSwingRig.isValidFrameSize(128,63))
+        val feetX=150f;val feetY=459f
+        val rect=PixteeSwingRig.artFrameRect(feetX,feetY)
+        val contact=PixteeSwingRig.contactFromFrameRect(rect)
+        val expected=PixteeSwingRig.expectedBallPosition(feetX,feetY)
+        assertEquals(expected.first,contact.first,0.0001f)
+        assertEquals(expected.second,contact.second,0.0001f)
+        assertEquals(128f/PixteeSwingRig.SOURCE_PIXELS_PER_WORLD,
+            rect[2]-rect[0],0.0001f)
+        assertEquals(64f/PixteeSwingRig.SOURCE_PIXELS_PER_WORLD,
+            rect[3]-rect[1],0.0001f)
+        // Direction/camera scaling must never move the clubhead relative
+        // to the actual physical ball at shot release.
+        for(h in listOf(720f,800f,920f)) {
+            val camera=CourseViewport(360f,h,
+                zoom=CourseViewport.REFERENCE_ZOOM_CANDIDATE,
+                focusX=150f,focusY=420f)
+            val shotBall=camera.screenX(contact.first)
+            val shaftTarget=camera.screenX(expected.first)
+            assertEquals(shotBall,shaftTarget,0.0001f)
+        }
+    }
 }

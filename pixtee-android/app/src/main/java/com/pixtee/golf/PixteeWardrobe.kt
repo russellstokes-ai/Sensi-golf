@@ -38,7 +38,8 @@ object PixteeWardrobe {
                     slot==StyleSlot.ACCESSORY && i>=4 -> 3
                     else -> 0
                 }
-                val level=if(slot==StyleSlot.SKIN) 1 else 1+i/2
+                val level=if(slot==StyleSlot.SKIN) 1
+                    else 1+(i*26/(palette.size-1).coerceAtLeast(1))
                 add(StyleItem("${slot.name.lowercase()}-$i",slot,
                     if(i==0) "CLASSIC" else "${slot.name} ${i+1}",
                     col,level,badge,wins))

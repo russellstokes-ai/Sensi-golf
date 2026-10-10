@@ -7,6 +7,7 @@ on:
       - 'tools/build_original_dosz.py'
       - 'tools/detect_sensible_main_menu.py'
       - 'tools/detect_sensible_player_select.py'
+      - 'tools/detect_sensible_course_select.py'
       - 'tools/patch_libretrodroid_touch_mouse.py'
       - 'tests/test_touch_mouse_bridge.py'
       - 'tests/test_original_dosz.py'

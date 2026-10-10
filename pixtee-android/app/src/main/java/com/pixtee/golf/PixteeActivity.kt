@@ -43,6 +43,7 @@ private class PixteeCanvas(context: Context) : View(context) {
     private val p = Paint().apply { isAntiAlias = false; isFilterBitmap = false
         typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD) }
     private val g = PixteeCore()
+    private val art = ProductionPixelArt(context)
     private val menuInput = MenuInput()
     private var round: PixteeRound? = null
     private var selectedCourse = 0
@@ -414,14 +415,10 @@ private class PixteeCanvas(context: Context) : View(context) {
             val (fx,fy)=spot
             if(layout.groundAt(fx,fy)!=Ground.ROUGH) continue
             val sway=CourseAmbient.grassSway(i+3,frame).toFloat()
-            drawPixelSprite(c,
-                if(i%3==0) PixteeSpriteAtlas.flowerA else PixteeSpriteAtlas.flowerB,
-                fx+sway, fy+2f, mapOf(
-                    'f' to Color.rgb(255,233,108),
-                    'x' to palette.accent,
-                    'w' to tinted(palette.rough, .74f)))
+            art.draw(c,if(i%3==0) "flower_yellow" else "flower_pink",
+                fx+sway,fy+2f)
         }
-        layout.trees.forEach { tree(c,it.x,it.y,it.variant,palette) }
+        layout.trees.forEach { tree(c,it.x,it.y,it.variant) }
         layout.spectators.forEachIndexed { i,spot ->
             spectator(c,spot.x,spot.y,i,frame)
         }
@@ -439,53 +436,21 @@ private class PixteeCanvas(context: Context) : View(context) {
         }
         c.restore()
     }
-    /** Nearest-neighbour glyph sprites drawn at exact world scale, no interpolation. */
-    private fun drawPixelSprite(
-        c: Canvas, sprite: PixelSprite, x: Float, bottomY: Float,
-        colours: Map<Char, Int>, scale: Float=1f
-    ) {
-        val originX = x - sprite.width * scale * .5f
-        val originY = bottomY - sprite.height * scale
-        for (row in 0 until sprite.height) {
-            for (col in 0 until sprite.width) {
-                val token = sprite.token(col,row)
-                if(token=='.') continue
-                val colour=colours[token] ?: continue
-                val px=originX+col*scale
-                val py=originY+row*scale
-                rect(c,px,py,px+scale,py+scale,colour)
-            }
-        }
-    }
-
+    // Missing or unapproved character/scenery artwork is NEVER replaced with
+    // fake geometric or programmer-authored pixel sprites.
     private fun tinted(argb: Int, strength: Float): Int = Color.rgb(
         (Color.red(argb)*strength).toInt().coerceIn(0,255),
         (Color.green(argb)*strength).toInt().coerceIn(0,255),
         (Color.blue(argb)*strength).toInt().coerceIn(0,255))
 
-    /** Course palettes alter visual sprites only, never material collision. */
-    private fun tree(c: Canvas, x: Float, y: Float, variant: Int, palette: CoursePalette) {
-        drawPixelSprite(c,PixteeSpriteAtlas.tree(variant),x,y+7f,mapOf(
-            'd' to tinted(palette.rough,.66f),
-            'm' to palette.fairway,
-            'l' to palette.green,
-            'w' to Color.rgb(98,64,30)))
+
+    private fun tree(c: Canvas, x: Float, y: Float, variant: Int) {
+        art.draw(c,if(variant%3==0) "tree_pine" else "tree_round",x,y+7f)
     }
 
     private fun spectator(c: Canvas, x: Float, y: Float, index: Int, frame: Int) {
-        val shirt = when(index%4) {
-            0 -> Color.rgb(248,201,53)
-            1 -> Color.rgb(44,68,200)
-            2 -> Color.rgb(219,70,69)
-            else -> Color.rgb(242,237,210)
-        }
-        val waving = courseMotion && CourseAmbient.spectatorWave(index,frame)
-        drawPixelSprite(c,PixteeSpriteAtlas.spectator(waving),x,y+3f,mapOf(
-            'O' to Color.rgb(42,41,52),
-            'S' to Color.rgb(235,190,129),
-            'u' to shirt,
-            'P' to Color.rgb(47,46,62),
-            'K' to Color.rgb(30,31,43)))
+        val waving=courseMotion && CourseAmbient.spectatorWave(index,frame)
+        art.draw(c,if(waving) "spectator_wave" else "spectator_idle",x,y+3f)
     }
 
     private fun flag(c: Canvas, x: Float, y: Float) {
@@ -494,17 +459,7 @@ private class PixteeCanvas(context: Context) : View(context) {
         circle(c, x, y, 1.5f, Color.BLACK)
     }
     private fun golfer(c: Canvas, x: Float, y: Float) {
-        val sprite=PixteeSpriteAtlas.golfer(g.stage)
-        drawPixelSprite(c,sprite,x,y+1f,mapOf(
-            'H' to gearColour(StyleSlot.HAT),
-            'S' to gearColour(StyleSlot.SKIN),
-            'T' to gearColour(StyleSlot.TOP),
-            'P' to gearColour(StyleSlot.TROUSERS),
-            'K' to tinted(gearColour(StyleSlot.TROUSERS),.6f),
-            'C' to gearColour(StyleSlot.CLUB),
-            'B' to gearColour(StyleSlot.BAG),
-            'A' to gearColour(StyleSlot.ACCESSORY),
-            'O' to Color.rgb(38,41,39)))
+        art.draw(c,ProductionArtContract.golferFrame(g.stage),x,y+1f)
     }
 
     /**

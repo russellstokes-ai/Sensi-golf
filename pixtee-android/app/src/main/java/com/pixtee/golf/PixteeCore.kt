@@ -66,6 +66,8 @@ class PixteeCore {
     private var shotTime = 0f
     private var shotDuration = 1f
     private var rollTime = 0f
+    private var rollVx = 0f
+    private var rollVy = 0f
     private var previousX = TEE_X
     private var previousY = TEE_Y
 
@@ -79,6 +81,7 @@ class PixteeCore {
         aimDegrees = 0f; strokes = 0; penalties = 0; clubIndex = 0
         lastLie = Ground.TEE; shots.clear(); holeNumber = 1
         meterDirection = 1f
+        rollTime = 0f; rollVx = 0f; rollVy = 0f
     }
 
     fun steer(degrees: Float) {
@@ -139,8 +142,33 @@ class PixteeCore {
             if (t >= 1f) { stage = GameStage.ROLL; rollTime = 0f; height = 0f }
         }
         GameStage.ROLL -> {
-            rollTime += 1f / 60f
-            if (rollTime >= 0.38f) finishShot()
+            val dt = 1f / 60f
+            rollTime += dt
+            val nextX = x + rollVx * dt
+            val nextY = y + rollVy * dt
+            val boundary = nextX !in 5f..(WIDTH - 5f) ||
+                nextY !in 5f..(HEIGHT - 5f)
+            x = nextX.coerceIn(5f, WIDTH - 5f)
+            y = nextY.coerceIn(5f, HEIGHT - 5f)
+            val lie = groundAt(x, y)
+            // Damping is per fixed 60Hz tick, independent of Android FPS.
+            val damping = when (lie) {
+                Ground.GREEN -> 0.971f
+                Ground.TEE -> 0.923f
+                Ground.FAIRWAY -> 0.925f
+                Ground.ROUGH -> 0.841f
+                Ground.SAND -> 0.712f
+                Ground.WATER -> 0f
+            }
+            rollVx *= damping
+            rollVy *= damping
+            val speedSquared = rollVx * rollVx + rollVy * rollVy
+            // One tiny post-landing hop is purely visual; position is ground-based.
+            height = if (clubIndex != CLUBS.lastIndex && rollTime < 0.29f)
+                sin(rollTime / 0.29f * PI).toFloat().coerceAtLeast(0f) *
+                    chosenPower * 3.1f else 0f
+            if (lie == Ground.WATER || boundary || speedSquared < 0.12f ||
+                rollTime >= 4.5f || toPin <= 2.3f) finishShot()
         }
         else -> Unit
         }
@@ -159,15 +187,28 @@ class PixteeCore {
         }
         val intended = club.yards * chosenPower * (1f - 0.23f * miss) * lieModifier
         val angle = Math.toRadians((aimDegrees + (accuracy - 0.5f) * 16f).toDouble())
-        destX = (x + sin(angle).toFloat() * intended).coerceIn(5f, WIDTH - 5f)
-        destY = (y - cos(angle).toFloat() * intended).coerceIn(5f, HEIGHT - 5f)
+        val directionX = sin(angle).toFloat()
+        val directionY = -cos(angle).toFloat()
+        destX = (x + directionX * intended).coerceIn(5f, WIDTH - 5f)
+        destY = (y + directionY * intended).coerceIn(5f, HEIGHT - 5f)
         shotTime = 0f
-        shotDuration = if (club.label == "Putter") 0.6f else (0.9f + intended / 180f)
+        shotDuration = 0.9f + intended / 180f
+        rollTime = 0f
+        val speed = if (clubIndex == CLUBS.lastIndex) intended * 1.75f
+            else (5f + intended * 0.08f) * (1f - miss * 0.2f)
+        rollVx = directionX * speed
+        rollVy = directionY * speed
         strokes++
-        stage = GameStage.FLIGHT
+        // A putt travels along the ground. Woods and irons first fly, then roll.
+        if (clubIndex == CLUBS.lastIndex) {
+            destX = x; destY = y
+            stage = GameStage.ROLL
+        } else stage = GameStage.FLIGHT
     }
 
     private fun finishShot() {
+        height = 0f
+        rollVx = 0f; rollVy = 0f
         val landing = groundAt(x, y)
         if (landing == Ground.WATER) {
             x = previousX; y = previousY; penalties++; strokes++; lastLie = groundAt(x, y)

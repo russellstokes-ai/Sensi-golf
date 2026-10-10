@@ -65,8 +65,7 @@ environments was explicitly approved as the visual target:
 **Gate C — menus and gameplay interface**
 - Live menu composition: PIXTEE GOLF logo, wooden buttons, backdrop course,
   animated golfers, world-space ads; title remains legible on compact phones.
-- Welly-o-meter visually matches the approved classic semicircle feel. Exact
-  timing and contact cues validated with real emulator interaction tests.
+- **Owner-updated 10 Oct:** Welly-o-meter is a **horizontal** combined power-and-accuracy indicator: moving marker runs left-to-right for the power tap, then returns for the accuracy tap. The extracted source-game timing and red/yellow accuracy region must be recovered from original executable/graphics, not guessed. Exact timing/contact cues must pass device tests. The historic semicircular display description is superseded.
 - Course selector, scorecards, career, achievement and statistics art should
   be a consistent family with the title/menu.
 

@@ -44,21 +44,43 @@ data class ReaderStats(
 ) {
     val xp: Int get() = holes * 4 + rounds * 25 + birdies * 12 +
         eagles * 30 + PixteeCareer.titles(careerMask)*50
-    val level: Int get() {
-        val cutoffs = listOf(0,150,450,950,1650,2700,4200,6000,9000,13000)
-        return (cutoffs.indexOfLast { xp>=it }+1).coerceAtLeast(1)
+    val level: Int get() = (1..30).lastOrNull { xp >= requiredXp(it) } ?: 1
+    val nextLevelXp: Int get() = requiredXp((level+1).coerceAtMost(30))
+    companion object {
+        const val MAX_LEVEL=30
+        fun requiredXp(level:Int): Int {
+            require(level in 1..30)
+            return (105.0 * Math.pow((level-1).toDouble(),1.7)).toInt()
+        }
     }
 }
 data class PixteeAchievement(val id: String, val title: String, val unlocked: Boolean)
 object PixteeRewards {
-    fun achievements(s: ReaderStats): List<PixteeAchievement> = listOf(
-        PixteeAchievement("first-hole","FIRST HOLE",s.holes>=1),
-        PixteeAchievement("birdie","FIRST BIRDIE",s.birdies>=1),
-        PixteeAchievement("eagle","FIRST EAGLE",s.eagles>=1),
-        PixteeAchievement("clean-nine","BOGEY-FREE NINE",s.cleanNine>=1),
-        PixteeAchievement("ten-rounds","TEN ROUNDS",s.rounds>=10),
-        PixteeAchievement("tour-title","TOUR CHAMPION",PixteeCareer.titles(s.careerMask)>=5),
-        PixteeAchievement("putting","100 PUTTS",s.putts>=100),
-        PixteeAchievement("world","WORLD TOUR MASTER",PixteeCareer.titles(s.careerMask)>=25)
-    )
+    /** Stable IDs and monotonic thresholds: rewards only unlock via recorded games. */
+    fun achievements(s: ReaderStats): List<PixteeAchievement> = buildList {
+        add(PixteeAchievement("first-hole","FIRST HOLE",s.holes>=1))
+        add(PixteeAchievement("birdie","FIRST BIRDIE",s.birdies>=1))
+        add(PixteeAchievement("eagle","FIRST EAGLE",s.eagles>=1))
+        add(PixteeAchievement("clean-nine","BOGEY-FREE NINE",s.cleanNine>=1))
+        add(PixteeAchievement("ten-rounds","TEN ROUNDS",s.rounds>=10))
+        add(PixteeAchievement("tour-title","TOUR CHAMPION",PixteeCareer.titles(s.careerMask)>=5))
+        add(PixteeAchievement("putting","100 PUTTS",s.putts>=100))
+        add(PixteeAchievement("world","WORLD TOUR MASTER",PixteeCareer.titles(s.careerMask)>=25))
+        listOf(10,25,50,100,250,500,1000).forEach { count ->
+            add(PixteeAchievement("holes-$count","$count HOLES PLAYED",s.holes>=count))
+        }
+        listOf(3,5,25,50,100,250).forEach { count ->
+            add(PixteeAchievement("rounds-$count","$count ROUNDS COMPLETED",s.rounds>=count))
+        }
+        listOf(5,10,25,50,100).forEach { count ->
+            add(PixteeAchievement("birdies-$count","$count BIRDIES",s.birdies>=count))
+        }
+        listOf(3,5,10,25).forEach { count ->
+            add(PixteeAchievement("eagles-$count","$count EAGLES",s.eagles>=count))
+        }
+        listOf(5,15,25).forEach { count ->
+            add(PixteeAchievement("career-$count","$count TOUR EVENTS WON",
+                PixteeCareer.titles(s.careerMask)>=count))
+        }
+    }
 }

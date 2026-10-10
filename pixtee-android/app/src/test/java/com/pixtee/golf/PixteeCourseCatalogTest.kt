@@ -4,10 +4,10 @@ import org.junit.Test
 import org.junit.Assert.*
 
 class PixteeCourseCatalogTest {
-    @Test fun fullRosterProvides450AuthoredSeededHoles() {
-        assertEquals(25, PixteeCourseCatalog.courses.size)
-        assertEquals(450, PixteeCourseCatalog.allHoleCount())
-        assertEquals(25, PixteeCourseCatalog.courses.map { it.id }.toSet().size)
+    @Test fun fullRosterProvides630SeededHoles() {
+        assertEquals(35, PixteeCourseCatalog.courses.size)
+        assertEquals(630, PixteeCourseCatalog.allHoleCount())
+        assertEquals(35, PixteeCourseCatalog.courses.map { it.id }.toSet().size)
         for (c in PixteeCourseCatalog.courses.indices) {
             val variants = (1..18).map { h ->
                 val l=PixteeCourseCatalog.hole(c,h)

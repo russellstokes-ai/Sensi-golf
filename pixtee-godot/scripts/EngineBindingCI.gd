@@ -47,6 +47,28 @@ func _initialize() -> void:
         push_error("Recovered native 18-hole round initialization failed: " + round_host.last_error())
         quit(1)
         return
+    # Verified original machine-code multiplayer choice through real Godot ABI.
+    # Metric 17 ties favor last eligible player. Eliminated player skipped.
+    var chosen = round_host.original_next_player_choice(
+        4, 0,
+        PackedInt32Array([17, 17, 17, 3]),
+        PackedInt32Array([0, 0, 1, 0]),
+        PackedInt32Array([0, 1, 2, 3])
+    )
+    if chosen != 1:
+        push_error("Original x86 multiplayer chooser gave unexpected selection: " + str(chosen))
+        quit(1)
+        return
+    var forced = round_host.original_next_player_choice(
+        4, 1,
+        PackedInt32Array([17, 17, 17, 3]),
+        PackedInt32Array([0, 0, 1, 0]),
+        PackedInt32Array([0, 1, 2, 3])
+    )
+    if forced != 3:
+        push_error("Original x86 forced multiplayer chooser failed")
+        quit(1)
+        return
     var req = round_host.requested_course()
     if int(req.get("resource_id",0)) != 1:
         push_error("Original round controller did not request hole one")

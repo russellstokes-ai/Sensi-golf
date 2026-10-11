@@ -72,6 +72,7 @@ def vectors():
     ]
     forces=[-2147483648,-65536,-8448,-5,-1,0,1,5,8448,65536,2147483647]
     flags=[0,1,2,3,0x8000,0x8001,0xffff]
+    random_flags=tuple(flags)
     clubs=[0,3,11,12]
     # 2,000+ boundary cases across course flags, signed heights and both clubs.
     rows=[]
@@ -83,7 +84,7 @@ def vectors():
     for _ in range(3800):
         code=rng.choice((35,50))
         club=rng.choice((0,1,11,12,12,13))
-        flags=rng.choice(flags)
+        flags=rng.choice(random_flags)
         height=rng.choice(heights+[rng.randint(-2147483648,2147483647)])
         if code==35 and signed_high_word(height)>200:
             height=(200<<16)|(height&0xffff)

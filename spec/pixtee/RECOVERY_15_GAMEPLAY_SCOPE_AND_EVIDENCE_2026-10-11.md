@@ -18,7 +18,7 @@ Branch: `feat/pixtee-godot-recovered-core`. Source payloads and unlicensed artwo
 |---|---|---|
 | 1 `welly_accurate_meter_timing` | x86 per-callback meter source 1,986/1,986 and native bridge/rejection handling | Original outer input scheduler, debounce and whole timing sequence |
 | 2 `welly_colour_boundaries` | Original raw meter values and accuracy windows | Original display-to-input matching; visual art itself deferred |
-| 3 `swing_accuracy_extremes` | Original 990 launch cases including 668 no-flight out-of-profile results | Complete game-level invalid swing/retry/penalty flow |
+| 3 `swing_accuracy_extremes` | Original 990 x86 launch cases: 668 no-flight attempts AND 322 launches **all charge +1 hole stroke/+1 total stroke**; native hole/round controller corrected | Full UI retry/attempt ownership and all mode-specific penalties |
 | 4 `tree_collision_activation` | Original event address map and course collision lookup framework | Exact tree object identity/mask and 3D impact activation |
 | 5 `tree_height_deflection` | Source collision PRNG math for some events | Exact tree impact height and direction changes with original-machine dynamic proof |
 | 6 `flag_collision` | Original contact branch **2,712/2,712**, seeded deflection helper | Original course flag object existence and full collision path in live gameplay |

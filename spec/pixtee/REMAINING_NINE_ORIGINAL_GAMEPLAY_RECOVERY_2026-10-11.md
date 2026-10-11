@@ -10,8 +10,8 @@ User instruction: complete the *actual original Sensible Golf Windows v1.014 gam
 ### 1. Welly-o-Meter — advanced, not fully closed
 - Already proven **1,986/1,986** original binary vs C++ per-callback Welly states. Source: `tools/trace_original_welly_machine_code.py`; original-source [CI 38159584005](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38159584005).
 - This pass **connected** `OriginalWellyTick` to `PixteeRoundRuntime` with `start_original_welly` and `tick_original_welly`, and exposed both through the Godot `PixteeRoundBridge` along with original power, accuracy, angle and step data.
-- The original two-press sequence is adapted to the core's atomic three-phase shot request. It prevents aim/club changes during the source-authenticated sweep and keeps timeout and out-of-profile no-launch from creating fake strokes. Native regression includes a no-input timeout, valid capture and rejected-then-valid retry. [Native CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161291827).
-- **Missing:** verified game-level callback scheduling, click debounce, exact graphical colour zones and original outer retry/penalty UI. Our safe no-stroke fallback is not asserted to be the complete original rejection flow.
+- The original two-press sequence is adapted to the core's atomic three-phase shot request. It prevents aim/club changes during the source-authenticated sweep and prevents incomplete/no-input meter timeouts from creating strokes; **source-authenticated completed out-of-profile swings charge one stroke even with no ball flight**. Native regression includes a no-input timeout, valid capture and rejected-then-valid retry. [Native CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161291827).
+- **Missing:** verified game-level callback scheduling, click debounce, exact graphical colour zones and original outer retry/penalty UI. Completed out-of-profile source attempts now have the original +1/+1 counters; incomplete click sequences still are not counted. The full original outer retry/display lifecycle remains unverified.
 
 ### 2–5. Trees, flag, cup, green codes 9/10, event dispatcher — advanced, incomplete
 - Captured an original binary instruction/control-flow atlas from actual SHA-verified v1.014: [CI 38161351577](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161351577), [extractor](../../tools/trace_remaining_original_dispatchers.py).
@@ -42,7 +42,7 @@ User instruction: complete the *actual original Sensible Golf Windows v1.014 gam
 
 ### 9. Scoring/putts/penalties — native core validated, not fully closed
 - Existing source-derived single-player scoring, putter/green slopes, original code-8 cup and water/hazard recovery, **18-hole score progression/replay**, and 256/256 original-green putt oracle comparisons remain preserved.
-- This pass adds original per-meter invalid-profile no-launch handling without falsely incrementing a stroke.
+- Expanded 990-vector original-machine accounting proves **both counters increment once even for a no-flight, out-of-profile accuracy attempt**. The native hole and Godot round adapters now charge that attempt, preserve the stationary ball and re-enable the meter for a new paid stroke; stable replay for this case is explicitly gated until its journal support is recovered.
 - **Missing:** edge cases around cup lip bounce, code 9/10 resume, per-player scoring, all original penalties/modes and original shot-attempt/accounting semantics.
 
 

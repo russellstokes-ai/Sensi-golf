@@ -64,8 +64,9 @@ bool accuracy_within_original_profile_bounds(
 // Club index 12 shares this launch initializer; its per-tick motion then uses
 // the separately recovered putter/green path.
 //
-// Out-of-profile-bound accuracy behavior remains intentionally unimplemented
-// until its surrounding state semantics are parity-tested.
+// This primitive intentionally throws on an out-of-profile reading: the
+// ClassicHoleSession outer original game-flow layer now records the authentic
+// +1/+1 stroke attempt without launching. Full UI retry/turn flow is pending.
 FlightState launch_normal_shot(const LaunchInput& input);
 
 enum class AirborneStepResult : std::uint8_t {

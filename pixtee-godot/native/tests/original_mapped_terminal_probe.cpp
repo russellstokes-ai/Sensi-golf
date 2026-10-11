@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <iostream>
+#include <vector>
 #include "sensigolf/recovered_mapped_terminal.hpp"
 
 int main() {
@@ -15,18 +16,18 @@ int main() {
         for(auto& word:words)std::cin >> word;
         for(auto& mask:selectors)std::cin >> mask;
         if(!(std::cin >> club >> pf >> cf >> v >> h >> z))return 2;
-        std::array<std::uint8_t,8> desc{},sel{};
+        std::vector<std::uint8_t> desc((tile+1u)*8u);
+        std::vector<std::uint8_t> sel((tile+1u)*8u);
         for(unsigned i=0;i<4;++i) {
-            desc[2*i]=static_cast<std::uint8_t>(words[i]>>8);
-            desc[2*i+1]=static_cast<std::uint8_t>(words[i]);
+            desc[tile*8u+2*i]=static_cast<std::uint8_t>(words[i]>>8);
+            desc[tile*8u+2*i+1]=static_cast<std::uint8_t>(words[i]);
         }
-        for(unsigned i=0;i<8;++i)sel[i]=static_cast<std::uint8_t>(selectors[i]);
+        for(unsigned i=0;i<8;++i)sel[tile*8u+i]=static_cast<std::uint8_t>(selectors[i]);
         sensigolf::recovered::OriginalMappedTerminalInput in{};
         in.descriptor_bank=desc.data();in.descriptor_size=desc.size();
         in.selector_bank=sel.data();in.selector_size=sel.size();
-        // Tile 0 is the selected record; original map tiles vary and will
-        // be exercised by the emulator using the same 8-byte record.
-        in.tile_index=0;
+        // The original selected tile offset remains byte-for-byte identical.
+        in.tile_index=static_cast<std::uint16_t>(tile);
         in.x_subcell=static_cast<std::uint8_t>(x);
         in.y_subcell=static_cast<std::uint8_t>(y);
         in.club_index=static_cast<std::uint16_t>(club);

@@ -234,7 +234,12 @@ bool ClassicHoleSession::apply_original_post_stop_recovery() {
     input.green_mode = green_mode_;
 
     const auto recovered_state =
-        recovered::recover_hazard_position(input);
+        last_hazard_kind_ == ClassicNamedHazard::OutsideWorld
+            // Original 0x40AACF unconditionally enters 0x40A871, even
+            // when ball high-word == map dimension (lookup itself uses
+            // JGE whereas the separate 0x40A823 check uses JA).
+            ? recovered::original_world_oob_restore({input,0,0,0}).relocated
+            : recovered::recover_hazard_position(input);
 
     if (recovered_state.used_safe_anchor && !safe_anchor_valid_) {
         phase_ = HoleSessionPhase::UnsupportedTerrain;

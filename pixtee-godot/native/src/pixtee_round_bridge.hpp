@@ -18,6 +18,9 @@ protected:
 public:
     // Pure original v1.014 next-player decision; caller supplies the
     // original per-player priority/eligibility state, not invented metrics.
+    Dictionary original_cpu_shot_variation(
+        bool bypass, int power, int variation,
+        int random100, int random_power, int random_direction);
     Dictionary original_cpu_search_parameters(int original_mode, bool special_flag);
     int original_cpu_candidate_choice(
         const PackedInt32Array& primary_status,

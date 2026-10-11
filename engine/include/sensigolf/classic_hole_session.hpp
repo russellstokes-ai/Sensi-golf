@@ -76,6 +76,7 @@ public:
     ClassicCoursePoint hole_position() const;
     std::optional<std::uint16_t> unsupported_descriptor() const noexcept;
     std::uint16_t hazard_pause_remaining() const noexcept;
+    ClassicNamedHazard last_hazard_kind() const noexcept;
     std::uint16_t special_green_pause_remaining() const noexcept;
     const ClassicRecoveredCounters& recovered_counters() const noexcept;
     std::uint32_t distance_to_hole() const noexcept;
@@ -108,6 +109,7 @@ private:
     std::int32_t safe_anchor_y_raw_ = 0;
     bool safe_anchor_valid_ = false;
     std::uint16_t hazard_pause_remaining_ = 0;
+    ClassicNamedHazard last_hazard_kind_ = ClassicNamedHazard::None;
     std::uint16_t special_green_pause_remaining_ = 0;
     bool special_green_continuation_ready_ = false;
     ClassicRecoveredCounters recovered_counters_{};

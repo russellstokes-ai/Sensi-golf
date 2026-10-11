@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from original_v1014_oracle import build_uc,REFERENCE_SHA256,ru16,w16,wu32
 from unicorn import UC_HOOK_CODE
-from unicorn.x86_const import UC_X86_REG_EBX,UC_X86_REG_EBP,UC_X86_REG_ESI
+from unicorn.x86_const import UC_X86_REG_EBX,UC_X86_REG_EBP,UC_X86_REG_ESI,UC_X86_REG_EIP
 MODE=0x42558e;ACTIVE=0x4255de;BALL0=0x4287d6;BALL1=0x428802
 FLAG0=0x4255b2;FLAG1=0x4255b4;SLOTS=0x4255cc;PREV0=0x4255da;PREV1=0x4255dc
 END=0x40c16d;SKIP=0x40c1b7
@@ -33,7 +33,7 @@ def original(uc,args):
     token=uc.hook_add(UC_HOOK_CODE,hook)
     try:uc.emu_start(0x40c098,0,count=400)
     finally:uc.hook_del(token)
-    if not stop:raise RuntimeError("unexpected original match turn mode path")
+    if not stop:raise RuntimeError(f"unexpected original match turn mode path: input={args}, EIP={uc.reg_read(UC_X86_REG_EIP):#x}")
     if stop[0]==SKIP:
         return [-1,-1,-1,ru16(uc,ACTIVE),ru16(uc,PREV0),ru16(uc,PREV1)]
     ebx=uc.reg_read(UC_X86_REG_EBX)

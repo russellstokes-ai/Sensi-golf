@@ -48,6 +48,33 @@ void hit_cup(pixtee::PixteeRoundRuntime& rt) {
 }
 } // namespace
 int main() {
+    // Actual original x86 counter is the authority for Welly inputs.
+    // Rejected/timeout samples do not manufacture strokes or modify rounds.
+    {
+        auto timed=make_runtime();
+        auto fixture=original_rule_fixture();
+        timed.register_course(1,fixture);
+        timed.load_next_hole();
+        timed.set_club(12);
+        timed.start_original_welly();
+        bool threw=false;
+        try {timed.set_club(0);} catch(const std::logic_error&) {threw=true;}
+        assert(threw); // no club mutation during original meter
+        for(int tick=0;tick<176;++tick)
+            assert(!timed.tick_original_welly(false));
+        assert(!timed.original_welly_active());
+        assert(timed.original_welly_rejected());
+        assert(timed.hole().strokes()==0);
+        timed.start_original_welly();
+        bool submitted=false;
+        for(int tick=0;tick<=114;++tick)
+            submitted=timed.tick_original_welly(tick==12 || tick==114) || submitted;
+        assert(submitted);
+        assert(timed.hole().strokes()==1);
+        assert(!timed.original_welly_rejected());
+        // A phase-zero meter must not be ticked again; loop above must
+        // therefore use exactly the original 176 sampled callback count.
+    }
     auto game=make_runtime();
     auto empty=original_rule_fixture();
     for(unsigned id=1;id<=18;++id)

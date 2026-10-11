@@ -33,17 +33,22 @@ Code9Contact original_code9_contact(
 bool original_flag_coordinate_hit(
     const FlightState& state, std::int16_t flag_x,
     std::int16_t flag_y, bool on_green_map) noexcept {
-    if(on_green_map || state.height>0xA0000 || state.height<0)
+    if(on_green_map || state.height>0xA0000)
         return false;
-    // Original 0x40A51C: SAR CX,1 uses the signed INTEGER height word.
+    // Original v1.014 0x40A50B..0x40A538:
+    // DX = WORD[ball + 2], NOT WORD[ball + 6]. This is the high X
+    // word. The source compares X to flag X, and (X - height_hi/2)
+    // to flag Y. Ball Y is NOT referenced in this branch.
+    // Preserve x86 signed SAR and 16-bit wrap rather than assuming
+    // physically intuitive 2D coordinates.
     const auto x=static_cast<std::int16_t>(
         static_cast<std::uint32_t>(state.x)>>16);
-    const auto y=static_cast<std::int16_t>(
-        static_cast<std::uint32_t>(state.y)>>16);
     const auto hi=static_cast<std::int16_t>(
         static_cast<std::uint32_t>(state.height)>>16);
+    const auto height_half=static_cast<std::int16_t>(hi >> 1);
     const auto adjusted=static_cast<std::int16_t>(
-        static_cast<std::uint16_t>(y)-static_cast<std::uint16_t>(hi>>1));
+        static_cast<std::uint16_t>(x)
+        - static_cast<std::uint16_t>(height_half));
     return x==flag_x && adjusted==flag_y;
 }
 

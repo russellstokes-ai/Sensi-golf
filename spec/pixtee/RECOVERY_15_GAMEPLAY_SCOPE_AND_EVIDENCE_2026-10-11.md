@@ -69,3 +69,10 @@ The original machine-code source at `0x40C6B2..0x40C77F` has yielded:
 - **Remaining**: full original outer presentation/UI player-turn scheduler and 60-count post-recovery event flow, plus complete original code9/code10 round replay parity. Native round/regression CI for the newly connected relocation is a separate mandatory acceptance gate; do not claim all-session success until it passes.
 
 **All remaining 15 full gameplay systems retain their original-machine end-to-end signoff requirements. The eight visual/audio requirements remain deferred.**
+
+### Replay regression: paid no-flight original swings (native integration)
+
+- The original Windows v1.014 **668/668** out-of-profile attempts charge a stroke but leave the ball stationary (machine proof above). This pass fixes only deterministic platform replay of that already-recovered rule; it does **not** assert the original Windows game contained the same mobile save format.
+- `PixteeRoundRuntime` now appends completed no-flight inputs as ordinary version-1 replay frames, and `ClassicReplayJournal::replay_into` independently re-executes and validates phase, coordinates, distance, stroke count and green mode.
+- Manual three-click and original Welly 2-press paths each have round-trip save/reload tests. Godot adapter CI: [run 38174394126](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174394126); main native tests: [run 38174398909](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174398909). Both succeeded.
+- **Conservative gate remains:** no-flight attempts made with already-zero distance to the hole cannot yet be replay-signed-off; code-9/10 continuations, unsupported event branches and full original turn scheduler remain unrecovered. None of the fifteen complete original-gameplay requirements is closed by this platform persistence fix.

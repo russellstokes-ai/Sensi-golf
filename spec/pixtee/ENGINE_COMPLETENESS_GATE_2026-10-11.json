@@ -451,8 +451,24 @@
       "source": "engine/src/classic_course_resources.cpp",
       "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
       "status": "unresolved_or_not_integrated",
-      "godot_engine_proof": "not_proven_end_to_end",
-      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+      "godot_engine_proof": "verified isolated original x86 conditions, not complete live action",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original x86 flag activation on actual ball x-high word, arithmetic half-height correction, green-mode gate: 2712/2712 exact",
+          "Previously assumed ball-Y-derived collision and nonnegative height were incorrect; replaced with source machine code behaviour"
+        ],
+        "implemented": [
+          "engine/src/recovered_interactions.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166139060"
+        ],
+        "not_yet_verified": [
+          "Original flag object presence/classification in course resources not verified; activation intentionally gated",
+          "Full PRNG/collision event sequencing on actual course and Android"
+        ]
+      }
     },
     {
       "id": "code8_cup_capture",
@@ -478,22 +494,24 @@
       "source": "engine/src/recovered_interactions.cpp",
       "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
       "status": "unresolved_or_not_integrated",
-      "godot_engine_proof": "not_proven_end_to_end",
+      "godot_engine_proof": "verified isolated original x86 conditions, not complete live action",
       "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
       "partial_original_recovery": {
         "source_verified_subfunctions": [
-          "original low-height code9 branch threshold and seeded PRNG deflection"
+          "original low-height code9 branch threshold and seeded PRNG deflection",
+          "Original x86 code9 no-contact / low-height deflection / 100-tick special-stop activation: 4390/4390 exact"
         ],
         "implemented": [
           "engine/src/recovered_interactions.cpp",
           "engine/src/classic_shot_model.cpp"
         ],
         "evidence": [
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161351577"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161351577",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165847870"
         ],
         "not_yet_verified": [
-          "full code9 post-event continuation",
-          "actual source-game dynamic end-to-end case"
+          "Complete original code9 post-event transition and scorer flow not verified",
+          "Exact real-course dynamic integration for all terrain layouts not verified"
         ]
       }
     },
@@ -512,8 +530,24 @@
       "source": "engine/src/recovered_interactions.cpp",
       "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
       "status": "unresolved_or_not_integrated",
-      "godot_engine_proof": "not_proven_end_to_end",
-      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+      "godot_engine_proof": "verified isolated original x86 conditions, not complete live action",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original actual x86 cup-lip activation across distance, mode, signed-height and horizontal force: 3172/3172 exact",
+          "Corrected missing lower-height clamp and originally signed player-mode check; original bounce PRNG mutation already recovered"
+        ],
+        "implemented": [
+          "engine/src/recovered_interactions.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165941630"
+        ],
+        "not_yet_verified": [
+          "Original mode and distance derived from full gameplay state",
+          "Full live ball/score dispatch and long-run edge cases"
+        ]
+      }
     },
     {
       "id": "low_height_prng_deflection",
@@ -539,8 +573,23 @@
       "source": "engine/src/recovered_interactions.cpp",
       "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
       "status": "unresolved_or_not_integrated",
-      "godot_engine_proof": "not_proven_end_to_end",
-      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+      "godot_engine_proof": "verified isolated original x86 conditions, not complete live action",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Verified source-machine original code9 gate 4390/4390, lip gate 3172/3172, flag gate 2712/2712"
+        ],
+        "implemented": [
+          "tools/trace_remaining_original_dispatchers.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165847870"
+        ],
+        "not_yet_verified": [
+          "All other event gate branches and complete original dynamic event sequencing",
+          "Full course object presence and original event-11 continuation"
+        ]
+      }
     },
     {
       "id": "score_counters",
@@ -801,5 +850,5 @@
     }
   ],
   "checked_original_executable_at": "2026-10-11",
-  "current_update": "Source x86 1,620/1,620 computer shot error, 3,192/3,192 multiplayer mode-1 score adjustment, 1,728/1,728 mode4/6 competition turn choice. Full AI, multiplayer, modes and penalties still unresolved."
+  "current_update": "New original executable code9 activation 4390/4390, near-cup lip activation 3172/3172, flag x-high/half-height activation 2712/2712. Corrected two substantive collision math errors. Full 15-gameplay and 8 deferred visual closure still blocked until end-to-end."
 }

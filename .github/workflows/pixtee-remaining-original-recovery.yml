@@ -1,0 +1,43 @@
+name: Pixtee Original Sensible Golf Unresolved Mechanics Recovery
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - '.github/workflows/pixtee-remaining-original-recovery.yml'
+      - 'tools/recover_sensi_remaining_mechanics.py'
+permissions:
+  contents: read
+jobs:
+  recovered-source-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual original executable analysis requirements
+        run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Ingest SHA-verified original Windows Sensible Golf and EPF
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Recover unresolved meter, event, timer and resource structural evidence
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          EPF="$(find analysis/private/step2/input -iname GOLF.EPF -type f -print -quit)"
+          test -n "$EXE" && test -n "$EPF"
+          python tools/recover_sensi_remaining_mechanics.py \
+            --exe "$EXE" --epf "$EPF" \
+            --epf-root analysis/private/step2/extracted/epf \
+            -o analysis/private/pixtee-v1014-remaining-mechanics-recovery.json
+      - name: Keep evidence for independent review (original asset bytes excluded)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-unresolved-mechanics-evidence
+          path: analysis/private/pixtee-v1014-remaining-mechanics-recovery.json
+          retention-days: 30

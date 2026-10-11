@@ -54,6 +54,11 @@ public:
         return outcome_;
     }
 
+    // Original 0x40A318..0x40A34C: terminate an active flight when the
+    // course lookup returns AX=-1 (WORLD boundary). Preserve the ball's
+    // actual off-map position for source recovery from the saved safe anchor.
+    void stop_for_world_boundary();
+
     // Synchronize an original game-flow relocation after the shot has ended.
     // This does not calculate physics; it updates the authoritative snapshot
     // to a recovered position supplied by the session layer.

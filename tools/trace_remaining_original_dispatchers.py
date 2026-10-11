@@ -97,5 +97,9 @@ def main():
            f"{b['call_count']} calls, {b['unknown_indirect_flows']} indirect flows")
      print("  event/terrain compares:",[
            (x["va"],x["immediate"]) for x in b["small_terrain_event_comparisons"][:30]])
+ for key in ("ball_interaction_dispatch","putter_terminal_and_green_events","multiplayer_next_player"):
+     print("\n=== ORIGINAL BINARY VERIFIED INSTRUCTIONS:",key,"===")
+     for row in atlas[key]["full_instructions"]:
+         print(row["va"],row["mnemonic"],row["args"])
  print("PASS exhaustive static original code range catalog; dynamic semantics not claimed")
 if __name__=="__main__":main()

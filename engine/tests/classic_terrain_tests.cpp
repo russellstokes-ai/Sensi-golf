@@ -54,5 +54,17 @@ int main() {
     assert(!classic_landing_code_product_supported(50));
     assert(!classic_landing_code_product_supported(60));
 
+    // Source descriptor names retain a distinct OOB label even though all
+    // these cells use the same original numeric landing code 35.
+    assert(classic_named_hazard(6)==ClassicNamedHazard::Water);
+    assert(classic_named_hazard(14)==ClassicNamedHazard::NoGo);
+    assert(classic_named_hazard(22)==ClassicNamedHazard::OutOfBoundsTile);
+    assert(classic_named_hazard(30)==ClassicNamedHazard::OtherCode35);
+    assert(classic_named_hazard(38)==ClassicNamedHazard::OtherCode35);
+    for(const auto i: {46,54,62,70})
+        assert(classic_named_hazard(i)==ClassicNamedHazard::Water);
+    assert(classic_named_hazard(0)==ClassicNamedHazard::None);
+    assert(classic_named_hazard(47)==ClassicNamedHazard::None);
+
     return 0;
 }

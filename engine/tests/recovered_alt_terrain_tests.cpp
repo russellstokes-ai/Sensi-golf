@@ -2,6 +2,7 @@
 #undef NDEBUG
 #endif
 #include <cassert>
+#include <initializer_list>
 #include "sensigolf/recovered_alt_terrain.hpp"
 using namespace sensigolf::recovered;
 int main() {

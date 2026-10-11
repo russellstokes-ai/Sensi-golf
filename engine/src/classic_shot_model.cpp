@@ -231,6 +231,20 @@ void ClassicShotModel::sync_public_state() {
     public_.surface_index = surface_.landing_code;
 }
 
+void ClassicShotModel::stop_for_world_boundary() {
+    if(!active_) {
+        throw std::logic_error("world boundary stop requires an active shot");
+    }
+    active_=false;
+    outcome_=ClassicShotOutcome::Hazard;
+    public_.hazard=true;
+    public_.phase=ShotPhase::Complete;
+    // Original negative-AX branch does not use the ordinary landing
+    // collision zeroing; flight forces are left untouched until original
+    // position-restoration handling. Do not manufacture a tile-35 impact.
+    sync_public_state();
+}
+
 void ClassicShotModel::relocate_inactive_ball(
     std::int32_t x_raw,
     std::int32_t y_raw,

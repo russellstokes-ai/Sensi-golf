@@ -7,6 +7,10 @@ on:
       - 'tools/verify_original_mapped_terminal_pipeline.py'
       - 'tools/verify_original_real_course_mapped_terminal.py'
       - 'tools/verify_original_putter_preterminal_gate.py'
+      - 'tools/verify_original_shot_admission.py'
+      - 'pixtee-godot/native/tests/original_shot_admission_probe.cpp'
+      - 'engine/src/recovered_shot_admission.cpp'
+      - 'engine/include/sensigolf/recovered_shot_admission.hpp'
       - 'pixtee-godot/native/tests/original_putter_preterminal_probe.cpp'
       - 'pixtee-godot/native/tests/original_mapped_terminal_probe.cpp'
       - 'engine/src/recovered_mapped_terminal.cpp'
@@ -78,6 +82,16 @@ jobs:
             --descriptor-bank "$ROOT/MAPI01.RAW" \
             --selector-bank "$ROOT/MAPI02.RAW" \
             -o analysis/private/original-putter-preterminal-real-x86.json
+      - name: Verify original upstream shot-entry player status and CPU delegation
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_shot_admission.cpp \
+            pixtee-godot/native/tests/original_shot_admission_probe.cpp \
+            -o /tmp/pixtee-original-shot-admission
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_shot_admission.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-shot-admission \
+            -o analysis/private/original-shot-admission-x86.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-map-to-terminal-x86
@@ -86,4 +100,5 @@ jobs:
             analysis/private/original-real-MAPM01-terminal-x86.json
             analysis/private/original-putter-preterminal-synthetic-x86.json
             analysis/private/original-putter-preterminal-real-x86.json
+            analysis/private/original-shot-admission-x86.json
           retention-days: 30

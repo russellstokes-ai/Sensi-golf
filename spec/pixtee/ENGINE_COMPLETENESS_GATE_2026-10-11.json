@@ -471,22 +471,28 @@
           "Original out-of-map 0x409535 negative AX -> 0x40A318 two-stroke-counter increment +100 pause event 0x40CD00: 5010/5010 source x86 parity",
           "Original descriptor 22 OOB tile uses shared 35 event path; no extra world-boundary penalty",
           "Source 0x40AACF world bit2 unconditional safe-anchor post-event restore (native implementation; independent source x86 restore oracle pending)",
-          "Original source 0x40AACF -> 0x40A871 unconditional safe anchor and signed player mode recovery: 4416/4416 exact; combined OOB 9426/9426"
+          "Original source 0x40AACF -> 0x40A871 unconditional safe anchor and signed player mode recovery: 4416/4416 exact; combined OOB 9426/9426",
+          "Authentic source 0x40CD00 OOB numeric event handoff 1024/1024, exposed as pending_world_oob_event on native live hole session"
         ],
         "implemented": [
           "engine/src/recovered_world_boundary.cpp",
           "engine/src/recovered_hazard_recovery.cpp",
           "engine/src/classic_hole_session.cpp",
           "tools/verify_original_world_boundary_penalty.py",
-          "tools/verify_original_world_oob_restore.py"
+          "tools/verify_original_world_oob_restore.py",
+          "engine/src/recovered_world_boundary.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "tools/verify_original_world_oob_event_handoff.py"
         ],
         "evidence": [
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38181667415",
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38182134331"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38182134331",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38182823777"
         ],
         "not_yet_verified": [
           "Original UI event acknowledgement and full multiplayer handoff after world OOB; complete end-to-end game physics and all 15 gameplay gates remain open",
-          "Final native live hole-session edge safety CI and exact original popup acknowledgement timing are not yet verified"
+          "Final native live hole-session edge safety CI and exact original popup acknowledgement timing are not yet verified",
+          "Complete end-to-end visual/event/mode parity still blocked"
         ]
       }
     },
@@ -518,17 +524,21 @@
       "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
       "partial_original_recovery": {
         "source_verified_subfunctions": [
-          "SHA-verified original collision object/terrain location research"
+          "SHA-verified original collision object/terrain location research",
+          "Original MAPM high-six-bit nonzero only four of 3876 first-hole tiles, 39 x86 map refs and seven original terrain lookup callers; source tree object activation still unproven"
         ],
         "implemented": [
-          "engine/src/recovered_interactions.cpp"
+          "engine/src/recovered_interactions.cpp",
+          "tools/research_original_mapm_object_bits.py"
         ],
         "evidence": [
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161351577"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161351577",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38183207814"
         ],
         "not_yet_verified": [
           "actual tree object classification and presence masks",
-          "original ball-height/tree impact activation against source cases"
+          "original ball-height/tree impact activation against source cases",
+          "Original tree identity, height geometry and hit activation still unknown"
         ]
       }
     },
@@ -598,23 +608,28 @@
           "Original x86 code9 no-contact / low-height deflection / 100-tick special-stop activation: 4390/4390 exact",
           "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact",
           "Original source 0x40A7E0..0x40A7F1 signed WORD pause tick exactly 1230/1230 source-machine matches",
-          "Live ClassicHoleSession special-green timer now waits original extra zero tick (100 to 0 then underflow) before host continuation acknowledgement"
+          "Live ClassicHoleSession special-green timer now waits original extra zero tick (100 to 0 then underflow) before host continuation acknowledgement",
+          "Original source early 0x40A403 code9 extra stroke on both counters, 2438/2438 exact cases; live session corrected"
         ],
         "implemented": [
           "engine/src/recovered_interactions.cpp",
           "engine/src/classic_shot_model.cpp",
           "engine/src/recovered_putter_terminal.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "engine/src/recovered_interactions.cpp",
           "engine/src/classic_hole_session.cpp"
         ],
         "evidence": [
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161351577",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165847870",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327",
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169920597"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169920597",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38183067005"
         ],
         "not_yet_verified": [
           "Original downstream post-expiry course/ball/player-state relocation after 0x40A7F1 not yet reconstructed fully",
-          "Original event11 code9 dynamic game and scoring continuations"
+          "Original event11 code9 dynamic game and scoring continuations",
+          "Complete end-to-end visual/event/mode parity still blocked"
         ]
       }
     },
@@ -630,18 +645,23 @@
         "source_verified_subfunctions": [
           "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact",
           "Original x86 pause WORD signed decrement and UI-latch 1230/1230 exact (shared code9/code10 delay)",
-          "ClassicHoleSession code10 timer now models original 101st call as continuation gate, not 100th call"
+          "ClassicHoleSession code10 timer now models original 101st call as continuation gate, not 100th call",
+          "Original source direct 0x40A40B code10 no extra stroke on both counters, 2422/2422 exact cases; live session corrected"
         ],
         "implemented": [
           "engine/src/recovered_putter_terminal.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "engine/src/recovered_interactions.cpp",
           "engine/src/classic_hole_session.cpp"
         ],
         "evidence": [
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327",
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169920597"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169920597",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38183067005"
         ],
         "not_yet_verified": [
-          "Original code10 subsequent 0x40A7F1 terrain/player/game event continuation not yet end-to-end parity-proven"
+          "Original code10 subsequent 0x40A7F1 terrain/player/game event continuation not yet end-to-end parity-proven",
+          "Complete end-to-end visual/event/mode parity still blocked"
         ]
       }
     },
@@ -705,7 +725,8 @@
           "Separate original airborne high-code x86 0x40A5D3..0x40A5F2 entry to event-11 stop or event-1 rebound: 11112/11112 native exact",
           "Original 0x409535 MAPI lookup -> 0x41DFF7 source numeric terrain -> grounded x86 terminal 5312/5312 synthetic plus 2414/2414 real first-hole exact",
           "Original pre-putter signed height/contact latch reset and six original route targets, 6712 synthetic + 2664 real-course exact",
-          "Original player-state 0x40A2B0 upstream five route decision and CPU callback-request state, 7160/7160 source x86 exact"
+          "Original player-state 0x40A2B0 upstream five route decision and CPU callback-request state, 7160/7160 source x86 exact",
+          "Source x86 0x40CD00 original event display command numeric memory writes fully matched 1024/1024; broader event families remain unverified"
         ],
         "implemented": [
           "tools/trace_remaining_original_dispatchers.py",
@@ -725,7 +746,9 @@
           "engine/src/recovered_mapped_terminal.cpp",
           "engine/src/recovered_shot_admission.cpp",
           "tools/verify_original_putter_preterminal_gate.py",
-          "tools/verify_original_shot_admission.py"
+          "tools/verify_original_shot_admission.py",
+          "engine/src/recovered_world_boundary.cpp",
+          "tools/verify_original_world_oob_event_handoff.py"
         ],
         "evidence": [
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165847870",
@@ -738,12 +761,14 @@
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38179477201",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180193973",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180790837",
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180934289"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180934289",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38182823777"
         ],
         "not_yet_verified": [
           "All other event gate branches and complete original dynamic event sequencing",
           "Full course object presence and original event-11 continuation",
-          "Complete upstream shot tick helpers, real collision admission in active full-shot physics, source CPU callback side effects and full gameplay modes"
+          "Complete upstream shot tick helpers, real collision admission in active full-shot physics, source CPU callback side effects and full gameplay modes",
+          "Complete end-to-end visual/event/mode parity still blocked"
         ]
       }
     },
@@ -1036,5 +1061,5 @@
     }
   ],
   "checked_original_executable_at": "2026-10-11",
-  "current_update": "Validated original 24-row AI search table (1274/1274 x86), 4605 heading candidates (120/120), 1230/1230 signed special pause counters with original post-stop relocation in native, and corrected stroke accounting: ALL 668 original extreme accuracy no-flight attempts charge hole and total strokes +1/+1, as do 322 valid launches. Native 18 tests pass. 15 full engine signoff items remain partially recovered. Native source-verified paid no-flight stroke replay round-trip now passes manual and original Welly regression, except zero-cup-distance edge remains blocked (CI 38174394126). Authenticated terminal code35/code50 event routing 2730/2730 exact; original tree identity and all full game interaction paths still unverified (run 38174782111). Additional isolated authentic 0x40A7BD rebound 4524/4524 and original 0x40A79D event-bit-zero latch plus rebound 3912/3912 exact; combined 8436 machine cases. Actual original tree collision and end-to-end event activation are still open. Original source numeric special terrain code35/code50 terminal sequence now independently native proven 8336/8336 x86 cases (ball force/height, terminal flags, event CALL argument, continuation); original course/object presence and full callback side effects still unproven (run 38179160345). Separate airborne high-terrain entry x86 0x40A5D3..0x40A5F2 11112/11112 exact, including code35 high-vs-low threshold event11/event1 routes and different grounded-terminal fallback. Current work total 19448 exact original machine cases. Source real-course object classification/live activation still blocked. Composed actual original MAPM/MAPI terrain source lookup into grounded terminal physics, 5312/5312 synthetic and 2414/2414 genuine first-hole source-machine exact cases (7726 total). First-hole original MAPM sampled numeric code35 (5693 eligible subcells) and code50 (14); original tree/object geometry and upstream shot activation unproven (run 38180193973). Verified original source 0x40A575 pre-putter admission 6712/6712 synthetic and 2664/2664 real-MAPM01 (9376 total) including 13520 descriptor7 first-hole subcells, contact latch reset >=20 and six x86 routes. Verified earlier player tick 0x40A2B0 route 7160/7160 with CPU callback requested 573 times. Total new source exact 16536; original full shot and tree/object activation still blocked. Out-of-bounds now splits source-authentic descriptor22 code35 tile from negative-AX world coordinate failure. Original 0x409535->0x40A318 source 5010/5010 exact, world penalty both stroke counters +1 and 100 pause/0x40CD00; native hole session detects before invalid map tile lookup and restores via unconditional bit2 0x40AACF->0x40A871 anchor, independent x86 restore oracle pending. Original full UI acknowledgement and multiplayer still unresolved. Independent source recovery 0x40AACF->0x40A871 verified 4416/4416, combined world OOB source proofs 9426/9426 (run 38182134331). Initial native live-session OOB edge case failed in Release; source-proven forced-anchor and host-safe first-tick anchor setup fixes committed, latest tests pending. Do not mark 15 gameplay gates green yet."
+  "current_update": "Validated original 24-row AI search table (1274/1274 x86), 4605 heading candidates (120/120), 1230/1230 signed special pause counters with original post-stop relocation in native, and corrected stroke accounting: ALL 668 original extreme accuracy no-flight attempts charge hole and total strokes +1/+1, as do 322 valid launches. Native 18 tests pass. 15 full engine signoff items remain partially recovered. Native source-verified paid no-flight stroke replay round-trip now passes manual and original Welly regression, except zero-cup-distance edge remains blocked (CI 38174394126). Authenticated terminal code35/code50 event routing 2730/2730 exact; original tree identity and all full game interaction paths still unverified (run 38174782111). Additional isolated authentic 0x40A7BD rebound 4524/4524 and original 0x40A79D event-bit-zero latch plus rebound 3912/3912 exact; combined 8436 machine cases. Actual original tree collision and end-to-end event activation are still open. Original source numeric special terrain code35/code50 terminal sequence now independently native proven 8336/8336 x86 cases (ball force/height, terminal flags, event CALL argument, continuation); original course/object presence and full callback side effects still unproven (run 38179160345). Separate airborne high-terrain entry x86 0x40A5D3..0x40A5F2 11112/11112 exact, including code35 high-vs-low threshold event11/event1 routes and different grounded-terminal fallback. Current work total 19448 exact original machine cases. Source real-course object classification/live activation still blocked. Composed actual original MAPM/MAPI terrain source lookup into grounded terminal physics, 5312/5312 synthetic and 2414/2414 genuine first-hole source-machine exact cases (7726 total). First-hole original MAPM sampled numeric code35 (5693 eligible subcells) and code50 (14); original tree/object geometry and upstream shot activation unproven (run 38180193973). Verified original source 0x40A575 pre-putter admission 6712/6712 synthetic and 2664/2664 real-MAPM01 (9376 total) including 13520 descriptor7 first-hole subcells, contact latch reset >=20 and six x86 routes. Verified earlier player tick 0x40A2B0 route 7160/7160 with CPU callback requested 573 times. Total new source exact 16536; original full shot and tree/object activation still blocked. Out-of-bounds now splits source-authentic descriptor22 code35 tile from negative-AX world coordinate failure. Original 0x409535->0x40A318 source 5010/5010 exact, world penalty both stroke counters +1 and 100 pause/0x40CD00; native hole session detects before invalid map tile lookup and restores via unconditional bit2 0x40AACF->0x40A871 anchor, independent x86 restore oracle pending. Original full UI acknowledgement and multiplayer still unresolved. Independent source recovery 0x40AACF->0x40A871 verified 4416/4416, combined world OOB source proofs 9426/9426 (run 38182134331). Initial native live-session OOB edge case failed in Release; source-proven forced-anchor and host-safe first-tick anchor setup fixes committed, latest tests pending. Do not mark 15 gameplay gates green yet. 12 October: out-of-world original popup/event numeric handoff 1024/1024 x86 matched and host event getter; original early code9 +1 stroke vs direct code10 no increment 4860/4860 x86 matched and live native/Godot CI green (38183162346). Original tree identity research found 4 MAPM upper-bit cells/3876 first-hole tiles, 39 map xrefs and 7 source map-lookup callers, not tree presence proof. All 15 end-to-end gates remain open."
 }

@@ -72,6 +72,22 @@ OriginalSpecialTerminalTerrainResult original_airborne_high_code_contact(
     std::uint16_t player_state_flags, std::int32_t vertical_force,
     std::int32_t horizontal_force, std::int32_t ball_height) noexcept;
 
+// Original source 0x40A403..0x40A436, reached from original
+// low-height landing-code-9 earlier contact branch, versus later
+// putter direct entry at 0x40A40B (including code-10).
+// Only the *early* route increments stroke counters. This accounts for
+// original extra penalty attempts without assuming event/UI completion.
+struct OriginalSpecialGreenStopState {
+    std::uint16_t player_flags = 0;
+    std::uint16_t counter_52 = 0;
+    std::uint16_t counter_56 = 0;
+    std::uint16_t ball_pause = 0;
+    std::uint16_t event_gate = 0;
+};
+OriginalSpecialGreenStopState original_special_green_stop_state(
+    bool entered_early_code9_path,
+    OriginalSpecialGreenStopState state) noexcept;
+
 Code9Contact original_code9_contact(
     std::uint16_t landing_code, std::uint16_t club_index,
     std::int32_t vertical_force, std::int32_t ball_height_raw) noexcept;

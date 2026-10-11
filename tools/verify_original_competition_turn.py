@@ -48,6 +48,10 @@ def cases():
     for mode,side,d0,d1,f0,f1,p0,p1,slots in product(
         (1,4,6,7),(0,1),(0,1),(0,1),(0,1),(0,1),
         (0,1,2),(0,1,2),((0,1,2,3),(2,3,0,1))):
+        # Both original ball distances zero loops between 0x40C0B8 and
+        # 0x40C110 indefinitely. That setup is outside valid original
+        # active-turn inputs; do not call it a successfully selected turn.
+        if d0==0 and d1==0:continue
         out.append((mode,side,d0,d1,f0,f1,p0,p1,*slots))
     return out
 

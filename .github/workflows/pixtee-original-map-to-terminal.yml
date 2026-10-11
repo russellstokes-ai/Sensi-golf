@@ -110,6 +110,7 @@ jobs:
       - name: Original course-world OOB penalty code and stroke accounting
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_hazard_recovery.cpp \
             engine/src/recovered_world_boundary.cpp \
             pixtee-godot/native/tests/original_world_boundary_probe.cpp \
             -o /tmp/pixtee-original-world-oob

@@ -1,0 +1,44 @@
+name: Pixtee Original Cup Lip Activation Machine Code
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - '.github/workflows/pixtee-original-cup-lip-activation.yml'
+      - 'tools/verify_original_cup_lip_activation.py'
+      - 'pixtee-godot/native/tests/original_cup_lip_gate_probe.cpp'
+      - 'engine/src/recovered_interactions.cpp'
+permissions:
+  contents: read
+jobs:
+  source_x86_lip_gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Iengine/include \
+            engine/src/recovered_prng.cpp \
+            engine/src/recovered_interactions.cpp \
+            pixtee-godot/native/tests/original_cup_lip_gate_probe.cpp \
+            -o /tmp/original-cup-lip
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_cup_lip_activation.py \
+            --exe "$EXE" --probe /tmp/original-cup-lip \
+            -o analysis/private/original-cup-lip-gate-x86.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-cup-lip-source-branch-exact-parity
+          path: analysis/private/original-cup-lip-gate-x86.json
+          if-no-files-found: warn
+          retention-days: 30

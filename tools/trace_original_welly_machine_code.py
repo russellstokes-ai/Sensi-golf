@@ -28,7 +28,9 @@ def snapshot(uc,tick,club,pressed,entry):
       "captured_power":r16(uc,0x41d59e),
       "accuracy_counter":r16(uc,0x41d5a0),
       "capture_flag":r16(uc,0x41d59a),
-      "angle":r16(uc,0x41d594)
+      "angle":r16(uc,0x41d594),
+      "aim_step_setting":r16(uc,0x41d5a2),
+      "captured_angle":r16(uc,0x41d59c)
     }
 def session(exe,club,pressed_on_rise,pressed_on_fall):
     uc,digest=build_uc(exe)
@@ -40,7 +42,7 @@ def session(exe,club,pressed_on_rise,pressed_on_fall):
     w8(uc,0x42db56,0)
     records=[]
     fell_on=-1
-    for t in range(125):
+    for t in range(185):
         phase=r16(uc,0x41d58c)
         if phase==0:break
         if phase==1:entry=0x40768b
@@ -63,7 +65,7 @@ def main():
     if hashlib.sha256(a.exe.read_bytes()).hexdigest()!=REFERENCE_SHA256:raise RuntimeError("wrong original binary")
     scenarios=[]
     for club in (0,12):
-      for rise,fall in ((12,10),(0,0),(80,69),(-1,-1)):
+      for rise,fall in ((12,10),(0,0),(80,69),(-1,-1),(-1,10),(12,-1)):
         scenarios.append(session(a.exe,club,rise,fall))
     report={"schema":"sensible-v1014-original-welly-machine-code-trace.v1",
       "original_exe_sha256":REFERENCE_SHA256,

@@ -30,21 +30,30 @@ void PixteeRoundRuntime::load_next_hole() {
     controls_.reset();
     controls_.sync_hole(game_->active_hole());
     pending_.reset();
+    original_welly_active_=false;
+    original_welly_first_press_=false;
+    original_welly_rejected_=false;
+    original_welly_.reset();
 }
 void PixteeRoundRuntime::set_aim_raw(std::uint16_t raw) {
+    if(original_welly_active_) throw std::logic_error("aim locked during original Welly");
     controls_.set_aim_raw(raw);
 }
 void PixteeRoundRuntime::nudge_aim_raw(std::int32_t delta) {
+    if(original_welly_active_) throw std::logic_error("aim locked during original Welly");
     controls_.nudge_aim(delta);
 }
 void PixteeRoundRuntime::set_club(std::uint16_t index) {
+    if(original_welly_active_) throw std::logic_error("club locked during original Welly");
     controls_.set_club(index);
 }
 void PixteeRoundRuntime::cycle_club(int delta) {
+    if(original_welly_active_) throw std::logic_error("club locked during original Welly");
     controls_.cycle_club(delta);
 }
 void PixteeRoundRuntime::meter_click_raw(std::uint16_t sample) {
     if(!game_->has_active_hole()) throw std::logic_error("no active native hole");
+    if(original_welly_active_) throw std::logic_error("cannot mix original meter with manual samples");
     controls_.meter_click(sample); // Recovered atomic three-press sequence.
     if(controls_.stage()!=ClassicMeterStage::ShotQueued) return;
     const auto shot=*controls_.queued_shot();
@@ -52,7 +61,65 @@ void PixteeRoundRuntime::meter_click_raw(std::uint16_t sample) {
         throw std::runtime_error("original core rejected queued shot");
     pending_=shot;
 }
-void PixteeRoundRuntime::cancel_meter() noexcept {controls_.cancel_meter();}
+
+void PixteeRoundRuntime::start_original_welly() {
+    if(original_welly_active_ || !game_->has_active_hole() ||
+       !controls_.enabled() || controls_.stage()!=ClassicMeterStage::Idle)
+        throw std::logic_error("original Welly needs an idle playable hole");
+    original_welly_.reset();
+    original_welly_active_=true;
+    original_welly_first_press_=false;
+    original_welly_rejected_=false;
+}
+bool PixteeRoundRuntime::tick_original_welly(bool pressed) {
+    if(!original_welly_active_)
+        throw std::logic_error("original Welly was not started");
+    const auto before=original_welly_.state();
+    original_welly_.step(pressed,controls_.club_index());
+    const auto& after=original_welly_.state();
+    if(after.capture_flag) original_welly_first_press_=true;
+    if(after.stage!=0) return false;
+    original_welly_active_=false;
+    // Exact original meter producer was tested against actual v1.014 x86.
+    // No stroke is created by incomplete/timeout input. The full original
+    // rejection/retry event sequence is not yet recovered; do not invent it.
+    const bool second_press=pressed && before.stage==2 &&
+                             before.capture_flag!=0;
+    if(!original_welly_first_press_ || !second_press ||
+       after.counter>105 || after.captured_power>105) {
+        original_welly_rejected_=true;
+        return false;
+    }
+    try {
+        controls_.meter_click(0); // adapter's first press starts meter
+        controls_.meter_click(after.captured_power);
+        controls_.meter_click(after.counter);
+        const auto request=*controls_.queued_shot();
+        if(!controls_.dispatch_to(game_->active_hole()))
+            throw std::logic_error("classic original shot rejected");
+        pending_=request;
+        return true;
+    } catch(...) {
+        controls_.cancel_meter();
+        original_welly_rejected_=true;
+        throw;
+    }
+}
+bool PixteeRoundRuntime::original_welly_active() const noexcept {
+    return original_welly_active_;
+}
+bool PixteeRoundRuntime::original_welly_rejected() const noexcept {
+    return original_welly_rejected_;
+}
+const OriginalWellyTickState&
+PixteeRoundRuntime::original_welly_state() const noexcept {
+    return original_welly_.state();
+}
+
+void PixteeRoundRuntime::cancel_meter() noexcept {
+    original_welly_active_=false;
+    controls_.cancel_meter();
+}
 
 void PixteeRoundRuntime::maybe_record_stable_shot() {
     if(!pending_ || !game_->has_active_hole()) return;
@@ -115,6 +182,10 @@ void PixteeRoundRuntime::restore_replay(const std::string& checkpoint) {
     replay_supported_=true;
     pending_.reset();
     controls_.reset();
+    original_welly_active_=false;
+    original_welly_first_press_=false;
+    original_welly_rejected_=false;
+    original_welly_.reset();
     if(game_->has_active_hole())
         controls_.sync_hole(game_->active_hole());
 }

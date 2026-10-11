@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include "sensigolf/recovered_hazard_recovery.hpp"
 
 namespace sensigolf::recovered {
 
@@ -34,5 +35,21 @@ struct OriginalWorldBoundaryResult {
 // original green-map exit 0x40A351 takes a different path.
 OriginalWorldBoundaryResult original_world_boundary_check(
     const OriginalWorldBoundaryInput& input) noexcept;
+
+// Original 0x40AACF..0x40A871..0x40A8D6 after OOB event
+// acknowledgement. Source uses saved safe anchor +15 and 60-pause.
+struct OriginalWorldOobRestoreInput {
+    HazardRecoveryInput coordinates{};
+    std::uint16_t player_mode_5a = 0;
+    std::uint16_t player_mode_5c = 0;
+    std::uint16_t player_mode_62 = 0;
+};
+struct OriginalWorldOobRestoreResult {
+    HazardRecoveryState relocated{};
+    std::uint16_t player_mode_5c = 0;
+    std::uint16_t player_mode_62 = 0;
+};
+OriginalWorldOobRestoreResult original_world_oob_restore(
+    const OriginalWorldOobRestoreInput& input) noexcept;
 
 } // namespace sensigolf::recovered

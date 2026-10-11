@@ -13,6 +13,10 @@ on:
       - 'tools/verify_original_world_oob_restore.py'
       - 'tools/verify_original_world_oob_event_handoff.py'
       - 'tools/verify_original_special_green_stop_accounting.py'
+      - 'tools/verify_original_alt_terrain_tick.py'
+      - 'engine/src/recovered_alt_terrain.cpp'
+      - 'engine/include/sensigolf/recovered_alt_terrain.hpp'
+      - 'pixtee-godot/native/tests/original_alt_terrain_probe.cpp'
       - 'pixtee-godot/native/tests/original_special_green_stop_probe.cpp'
       - 'pixtee-godot/native/tests/original_world_oob_event_probe.cpp'
       - 'pixtee-godot/native/tests/original_world_oob_restore_probe.cpp'
@@ -162,6 +166,18 @@ jobs:
           python tools/verify_original_special_green_stop_accounting.py \
             --exe "$EXE" --probe /tmp/pixtee-original-special-green-stop \
             -o analysis/private/original-special-green-code9-vs-code10-stop-x86.json
+      - name: Original second course terrain code60 and rebound physics source-machine parity
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_prng.cpp \
+            engine/src/recovered_interactions.cpp \
+            engine/src/recovered_alt_terrain.cpp \
+            pixtee-godot/native/tests/original_alt_terrain_probe.cpp \
+            -o /tmp/pixtee-original-alt-terrain
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_alt_terrain_tick.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-alt-terrain \
+            -o analysis/private/original-alt-terrain-source-x86.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-map-to-terminal-x86
@@ -176,4 +192,5 @@ jobs:
             analysis/private/original-world-oob-safe-anchor-restore-x86.json
             analysis/private/original-world-oob-event-x86.json
             analysis/private/original-special-green-code9-vs-code10-stop-x86.json
+            analysis/private/original-alt-terrain-source-x86.json
           retention-days: 30

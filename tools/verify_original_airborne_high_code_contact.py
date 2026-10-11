@@ -30,7 +30,7 @@ def vectors():
             rng.choice(flags),
             rng.randint(-2147483648,2147483647),
             rng.randint(-2147483648,2147483647),
-            rng.choice(heights+[rng.randint(-2147483648,2147483647)])
+            rng.choice(heights+(rng.randint(-2147483648,2147483647),))
         ))
     return rows
 

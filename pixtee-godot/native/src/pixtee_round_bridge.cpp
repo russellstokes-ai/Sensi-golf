@@ -2,6 +2,7 @@
 #include "original_next_player.hpp"
 #include "original_cpu_difficulty.hpp"
 #include "original_cpu_shot_variation.hpp"
+#include "original_turn_score_adjust.hpp"
 #include "original_cpu_candidate.hpp"
 #include <array>
 #include <cstdint>
@@ -25,6 +26,10 @@ void PixteeRoundBridge::_bind_methods() {
         D_METHOD("original_cpu_candidate_choice","primary_status",
                  "secondary_status","candidate_metrics"),
         &PixteeRoundBridge::original_cpu_candidate_choice);
+    ClassDB::bind_method(
+        D_METHOD("original_turn_score_adjust","player_count",
+                 "strokes","totals","completed","ball_distances"),
+        &PixteeRoundBridge::original_turn_score_adjust);
     ClassDB::bind_method(
         D_METHOD("original_cpu_shot_variation",
                  "bypass","power","variation",
@@ -90,6 +95,54 @@ int PixteeRoundBridge::original_cpu_candidate_choice(
         last_error_=String(e.what());
         return -1;
     }
+}
+Dictionary PixteeRoundBridge::original_turn_score_adjust(
+    int count, const PackedInt32Array& strokes,
+    const PackedInt32Array& totals,
+    const PackedInt32Array& completed,
+    const PackedInt32Array& distances) {
+    Dictionary d;
+    if(count<1 || count>4 ||
+       strokes.size()<count || totals.size()<count ||
+       completed.size()<count || distances.size()<count) {
+        last_error_="original multiplayer mode1 requires 1..4 valid player score arrays";
+        d["verified"]=false;
+        return d;
+    }
+    pixtee::OriginalTurnScores raw{};
+    raw.count=static_cast<std::uint8_t>(count);
+    for(int i=0;i<count;++i){
+        for(const auto val : {strokes[i],totals[i],completed[i]}) {
+            if(val<0 || val>65535) {
+                last_error_="original multiplayer score counters require word range 0..65535";
+                d["verified"]=false;
+                return d;
+            }
+        }
+        if(distances[i]<0) {
+            last_error_="original multiplayer distance requires nonnegative word range";
+            d["verified"]=false;
+            return d;
+        }
+        raw.strokes[i]=static_cast<std::uint16_t>(strokes[i]);
+        raw.total_strokes[i]=static_cast<std::uint16_t>(totals[i]);
+        raw.completed_marker[i]=static_cast<std::uint16_t>(completed[i]);
+        raw.ball_distance[i]=static_cast<std::uint32_t>(distances[i]);
+    }
+    const auto result=pixtee::original_turn_score_adjust(raw);
+    PackedInt32Array out_strokes;
+    PackedInt32Array out_total;
+    for(int i=0;i<count;++i) {
+        out_strokes.append(static_cast<int>(result.result.strokes[i]));
+        out_total.append(static_cast<int>(result.result.total_strokes[i]));
+    }
+    d["verified"]=true;
+    d["corrected_index"]=result.corrected_index;
+    d["strokes"]=out_strokes;
+    d["totals"]=out_total;
+    d["entire_multiplayer_mode_implemented"]=false;
+    last_error_="";
+    return d;
 }
 Dictionary PixteeRoundBridge::original_cpu_shot_variation(
     bool bypass, int power, int variation,

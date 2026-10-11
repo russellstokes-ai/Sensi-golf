@@ -14,6 +14,9 @@ struct OriginalCpuScanGrid {
     std::uint16_t spacing=0;        // 0x420533
     std::uint16_t initial_remainder=0; // 0x420531
 };
+// Authenticated 24-row Windows v1.014 numerical table, rights review pending.
+OriginalCpuScanGrid original_cpu_scan_grid_from_original_table(
+    std::uint16_t mode, std::uint8_t band);
 OriginalCpuScanGrid original_cpu_scan_grid(
     std::uint16_t mode, std::uint8_t band,
     const std::array<std::uint16_t,4>& original_table_words);

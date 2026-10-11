@@ -30,6 +30,11 @@ jobs:
             pixtee-godot/native/src/original_cpu_search_grid.cpp \
             pixtee-godot/native/tests/original_cpu_search_grid_probe.cpp \
             -o /tmp/original-cpu-grid
+          g++ -std=c++17 -Wall -Wextra -Werror -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_search_grid.cpp \
+            pixtee-godot/native/tests/original_cpu_scan_table_tests.cpp \
+            -o /tmp/original-cpu-grid-table
+          /tmp/original-cpu-grid-table
           EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
           python tools/verify_original_cpu_scan_grid.py \
             --exe "$EXE" --probe /tmp/original-cpu-grid \

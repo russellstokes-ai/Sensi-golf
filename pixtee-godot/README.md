@@ -35,6 +35,32 @@ scons platform=linux target=template_debug
 # Android arm64: scons platform=android arch=arm64 target=template_debug
 ```
 
+## Engine-only progress (recovered original mechanics)
+
+- `PixteeGameplay`: one recovered classic hole, original raw aim, 13 clubs,
+  three-click input capture, complete C++ position/velocity/terrain/slope state.
+- `PixteeRoundBridge`: Godot API for the existing recovered
+  `ClassicGameSession`, 18 original-rule hole requests, scoring counters,
+  course resource injection (MAPM/SPT/MAPI/MAPS byte buffers), original
+  hazard and special-green acknowledgements, checked stable-shot replay.
+- `PixteeRoundRuntime`: host-independent C++ round adapter validated with
+  an original-rule 18-hole round and save corruption test.
+- `pixtee_course_adapter.cpp`: independent Pixtee Lakewood geometry is
+  encoded using the real original 8×4 MAPI fine subcells, three green
+  transition markers and a separate MAPS green; all 16x16 original slope
+  nibble combinations are tested. A flat authored green is the default
+  until approved slope geometry is provided—no invented hill values.
+- `reference/`: authenticated Sensible Golf research tables and numeric
+  18-hole original gameplay evidence, integrity checked in CI.
+- `spec/pixtee/ENGINE_COMPLETENESS_GATE_2026-10-11.json`: exhaustive known
+  original-mechanics inventory and strict no-100%-parity release gate.
+- `scripts/EngineBindingCI.gd`: headless Godot engine-only binding test,
+  independent of approved art.
+
+No original commercial course map or binary is part of the playable asset
+pipeline. Recovered numerical evidence/engine redistribution must undergo
+rights clearance before shipping.
+
 The generated native library must match the `bin/pixtee.gdextension`
 filenames/architecture and be placed under `pixtee-godot/bin/`. **Do not
 claim the GDExtension is verified until this build actually succeeds.**
@@ -60,8 +86,9 @@ device rendering, or commercial-use readiness.
    units, 13 original clubs, raw 0..105 power and sweet spot 63.
 5. Three-click power and accuracy sampling must come from a **verified meter
    scheduler**; current CoreSmoke's values are test vectors only.
-6. The Lakewood collision grid is an independently constructed first pass
-   and is too coarse for final player-facing terrain, slopes and cup capture.
+6. The Lakewood collision grid now uses recovered-format original 8×4 fine
+   subcells and a dedicated green map, but final Pixtee course geometry,
+   authored slope fields and original parity for all terminal cases remain gated.
 7. No GUI feature or ambient animation may update the C++ ball state.
 8. No fidelity declaration without original-trace comparison and tests on
    Android portrait and Fold closed/open.

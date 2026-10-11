@@ -26,6 +26,19 @@ sensigolf::ClassicCourseResources original_rule_fixture() {
         std::move(map),std::move(spt),std::move(descriptor),
         std::move(selector));
 }
+sensigolf::ClassicCourseResources away_from_cup_fixture() {
+    // Independently authored test layout: ball at (0,0), cup at (0,64).
+    // A rejected swing must not be accidentally scored by the next tick.
+    constexpr int w=4,h=128;
+    std::vector<std::uint8_t> map(0x60u+w*h*2u,0),spt(50,0);
+    std::vector<std::uint8_t> descriptor(8,0),selector(8,0);
+    be16(map,0x54,w);be16(map,0x56,h);
+    be16(spt,46,64);
+    be16(descriptor,0,7);
+    return sensigolf::ClassicCourseResources(
+        std::move(map),std::move(spt),std::move(descriptor),
+        std::move(selector));
+}
 pixtee::PixteeRoundRuntime make_runtime() {
     std::array<std::uint8_t,18> order{};
     std::array<std::uint8_t,100> pars{};
@@ -76,9 +89,10 @@ int main() {
         // therefore use exactly the original 176 sampled callback count.
     }
     // Original x86 out-of-profile swing creates NO flight but CHARGES one stroke.
+    // Persist the charged stroke as an atomic original-input replay frame.
     {
         auto rejected=make_runtime();
-        auto fixture=original_rule_fixture();
+        auto fixture=away_from_cup_fixture();
         rejected.register_course(1,fixture);
         rejected.load_next_hole();
         rejected.set_club(12);
@@ -90,12 +104,57 @@ int main() {
         assert(rejected.hole().recovered_counters().player_52==1);
         assert(rejected.hole().recovered_counters().player_56==1);
         assert(rejected.controls_enabled());
+        assert(rejected.replay_supported());
+        assert(rejected.saved_shots()==1);
+        const auto checkpoint=rejected.serialize_stable_replay();
+        auto resumed=make_runtime();
+        resumed.register_course(1,fixture);
+        resumed.restore_replay(checkpoint);
+        assert(resumed.has_hole());
+        assert(resumed.hole().strokes()==1);
+        assert(resumed.hole().recovered_counters().player_52==1);
+        assert(resumed.hole().recovered_counters().player_56==1);
+        assert(resumed.saved_shots()==1);
+        assert(resumed.controls_enabled());
+        assert(resumed.serialize_stable_replay()==checkpoint);
         rejected.start_original_welly();
         bool accepted=false;
         for(int tick=0;tick<=111;++tick)
             accepted=rejected.tick_original_welly(tick==12 || tick==111) || accepted;
         assert(accepted);
         assert(rejected.hole().strokes()==2);
+    }
+    // The manual three-click adapter must persist the very same paid,
+    // no-flight original input, including its stationary coordinates.
+    {
+        auto manual=make_runtime();
+        auto fixture=away_from_cup_fixture();
+        manual.register_course(1,fixture);
+        manual.load_next_hole();
+        manual.set_club(12);
+        const auto initial_x=manual.hole().ball_x_raw();
+        const auto initial_y=manual.hole().ball_y_raw();
+        assert(manual.hole().distance_to_hole()>0);
+        manual.meter_click_raw(0);
+        manual.meter_click_raw(30);
+        manual.meter_click_raw(105); // outside authentic club-12 profile
+        assert(manual.hole().phase()==sensigolf::HoleSessionPhase::ReadyForShot);
+        assert(manual.hole().strokes()==1);
+        assert(manual.hole().ball_x_raw()==initial_x);
+        assert(manual.hole().ball_y_raw()==initial_y);
+        assert(manual.controls_enabled());
+        assert(manual.replay_supported());
+        assert(manual.saved_shots()==1);
+        const auto checkpoint=manual.serialize_stable_replay();
+        auto reloaded=make_runtime();
+        reloaded.register_course(1,fixture);
+        reloaded.restore_replay(checkpoint);
+        assert(reloaded.hole().phase()==sensigolf::HoleSessionPhase::ReadyForShot);
+        assert(reloaded.hole().strokes()==1);
+        assert(reloaded.hole().ball_x_raw()==initial_x);
+        assert(reloaded.hole().ball_y_raw()==initial_y);
+        assert(reloaded.saved_shots()==1);
+        assert(reloaded.serialize_stable_replay()==checkpoint);
     }
     auto game=make_runtime();
     auto empty=original_rule_fixture();

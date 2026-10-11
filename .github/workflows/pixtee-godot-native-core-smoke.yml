@@ -35,5 +35,12 @@ jobs:
             pixtee-godot/native/tests/round_runtime_tests.cpp \
             build/engine/libsensigolf_core.a -o build/pixtee-round-parity
           build/pixtee-round-parity
+      - name: Verify native original Welly-o-Meter producer on witnessed x86 traces
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/tests/welly_recovered_native_smoke.cpp \
+            -o build/original-welly-smoke
+          build/original-welly-smoke
       - name: Audit full native suite (known baseline failures are NOT ignored)
         run: ctest --test-dir build --output-on-failure

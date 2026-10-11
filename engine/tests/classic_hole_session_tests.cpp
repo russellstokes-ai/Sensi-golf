@@ -302,7 +302,17 @@ int main() {
         }
         assert(special_putt.phase() == HoleSessionPhase::SpecialGreenStopped);
         assert(special_putt.special_green_pause_remaining() == 0);
-
+        // Original x86 decrements the zero WORD once MORE before
+        // continuing (0 -> 0xffff, signed JNS becomes false).
+        bool zero_ack_blocked=false;
+        try {
+            special_putt.acknowledge_special_green_stop();
+        } catch(const std::logic_error&) {
+            zero_ack_blocked=true;
+        }
+        assert(zero_ack_blocked);
+        special_putt.step(); // original delayed pause underflow
+        assert(special_putt.special_green_pause_remaining() == 0);
         special_putt.acknowledge_special_green_stop();
         assert(special_putt.phase() == HoleSessionPhase::ReadyForShot);
         special_putt.begin_shot(putter_request());

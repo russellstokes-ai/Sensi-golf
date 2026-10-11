@@ -28,6 +28,8 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("cycle_club","delta"),&PixteeRoundBridge::cycle_club);
     ClassDB::bind_method(D_METHOD("meter_click_raw","sample"),&PixteeRoundBridge::meter_click_raw);
     ClassDB::bind_method(D_METHOD("cancel_meter"),&PixteeRoundBridge::cancel_meter);
+    ClassDB::bind_method(D_METHOD("start_original_welly"),&PixteeRoundBridge::start_original_welly);
+    ClassDB::bind_method(D_METHOD("tick_original_welly","pressed"),&PixteeRoundBridge::tick_original_welly);
     ClassDB::bind_method(D_METHOD("acknowledge_hazard"),&PixteeRoundBridge::acknowledge_hazard);
     ClassDB::bind_method(D_METHOD("acknowledge_special_green"),&PixteeRoundBridge::acknowledge_special_green);
     ClassDB::bind_method(D_METHOD("commit_scored_hole"),&PixteeRoundBridge::commit_scored_hole);
@@ -95,6 +97,7 @@ bool PixteeRoundBridge::METHOD { \
     catch(const std::exception& e) {last_error_=String(e.what());return false;} \
 }
 PIXTEE_WRAP_BOOL(load_next_hole(),round_->load_next_hole())
+PIXTEE_WRAP_BOOL(start_original_welly(),round_->start_original_welly())
 PIXTEE_WRAP_BOOL(set_aim_raw(int h),round_->set_aim_raw(static_cast<std::uint16_t>(h)))
 PIXTEE_WRAP_BOOL(nudge_aim_raw(int d),round_->nudge_aim_raw(d))
 PIXTEE_WRAP_BOOL(set_club_index(int i),round_->set_club(static_cast<std::uint16_t>(i)))
@@ -104,6 +107,17 @@ PIXTEE_WRAP_BOOL(acknowledge_hazard(),round_->acknowledge_hazard())
 PIXTEE_WRAP_BOOL(acknowledge_special_green(),round_->acknowledge_special_green())
 PIXTEE_WRAP_BOOL(commit_scored_hole(),round_->commit_scored_hole())
 #undef PIXTEE_WRAP_BOOL
+bool PixteeRoundBridge::tick_original_welly(bool pressed) {
+    if(!round_) {last_error_="Native round not initialized";return false;}
+    try {
+        const auto accepted=round_->tick_original_welly(pressed);
+        last_error_="";
+        return accepted;
+    }catch(const std::exception& e) {
+        last_error_=String(e.what());
+        return false;
+    }
+}
 void PixteeRoundBridge::cancel_meter() {if(round_)round_->cancel_meter();}
 void PixteeRoundBridge::step_tick() {
     if(!round_) return;
@@ -166,7 +180,17 @@ Dictionary PixteeRoundBridge::snapshot() const {
         d["saved_shots"]=static_cast<int64_t>(round_->saved_shots());
         d["replay_supported"]=round_->replay_supported();
         d["meter_stage"]=static_cast<int>(round_->meter_stage());
-        d["can_shoot"]=round_->controls_enabled();
+        d["can_shoot"]=round_->controls_enabled() && !round_->original_welly_active();
+        d["original_welly_active"]=round_->original_welly_active();
+        d["original_welly_rejected"]=round_->original_welly_rejected();
+        const auto& meter=round_->original_welly_state();
+        d["welly_phase"]=static_cast<int>(meter.stage);
+        d["welly_counter"]=static_cast<int>(meter.counter);
+        d["welly_saved_power"]=static_cast<int>(meter.captured_power);
+        d["welly_angle"]=static_cast<int>(meter.angle);
+        d["welly_saved_angle"]=static_cast<int>(meter.saved_angle);
+        d["welly_accuracy_counter"]=static_cast<int>(meter.accuracy_counter);
+        d["welly_step_setting"]=static_cast<int>(meter.step_setting);
         d["club_index"]=static_cast<int>(round_->club_index());
         d["aim_raw"]=static_cast<int>(round_->aim_raw());
         d["has_hole"]=round_->has_hole();

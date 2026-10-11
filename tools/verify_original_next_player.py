@@ -40,12 +40,12 @@ def main():
     for count in range(1,5):
         for metric in product((0,3,17),repeat=count):
             for exclude in product((0,1),repeat=count):
-                rows=[(i+1,exclude[i],metric[i]) for i in range(count)]
-                rows.extend((i+1,0,0) for i in range(count,4))
+                rows=[(i,exclude[i],metric[i]) for i in range(count)]
+                rows.extend((i,0,0) for i in range(count,4))
                 cases.append((count,0,rows))
         # Include special-holder branch for every player identity.
         for holder in range(1,count+1):
-            rows=[(i+1,i%2,17+i) for i in range(4)]
+            rows=[(i,i%2,17+i) for i in range(4)]
             cases.append((count,holder,rows))
     assert len(cases)>1500
     probe_input="".join(f"{n} {forced} "+" ".join(f"{identity} {ex} {metric}" for identity,ex,metric in rows)+"\n"

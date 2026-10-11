@@ -34,4 +34,6 @@ jobs:
           unzip -q /tmp/godot.zip -d /tmp
           chmod +x /tmp/Godot_v4.5-stable_linux.x86_64
           /tmp/Godot_v4.5-stable_linux.x86_64 --headless \
+            --path pixtee-godot --editor --import
+          /tmp/Godot_v4.5-stable_linux.x86_64 --headless \
             --path pixtee-godot --script res://scripts/EngineBindingCI.gd

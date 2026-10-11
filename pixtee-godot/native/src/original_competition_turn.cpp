@@ -8,6 +8,8 @@ OriginalCompetitionTurnSelection original_competition_turn_select(
     result.previous_slot=state.previous_slot;
     if(state.mode!=4 && state.mode!=6)
         return result; // 0x40C0A8 -> 0x40C1B7 ordinary player chooser
+    if(state.ball_distance[0]==0 && state.ball_distance[1]==0)
+        throw std::logic_error("original mode4/6 both-zero ball status loops; requires caller state resolution");
     const auto& slots=state.slot_bytes;
     if(state.side0_flag>1)
         throw std::invalid_argument("original mode pointer slot offset must be 0..1");

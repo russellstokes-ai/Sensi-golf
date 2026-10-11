@@ -25,7 +25,7 @@ Branch: `feat/pixtee-godot-recovered-core`. Source payloads and unlicensed artwo
 | 7 `code9_special_green` | Original activation **4,390/4,390**; putter terminal shared code-9 behaviour **2,160/2,160** | Full original post-event no-flight/scoring state and 100-tick continuation |
 | 8 `code10_special_green` | Code-10 putter terminal part of **2,160/2,160** original checks | Complete original code-10 continuation and unusual-mode transitions |
 | 9 `near_cup_lip` | Full *isolated contact decision* **3,172/3,172**, PRNG impact helper | Real player/mode/distance gate, live ball event sequence and scoring |
-| 10 `misc_course_event_dispatch` | Real original x86 CFG + source-gated code9/lip/flag branches | All other event codes, trigger conditions and full dynamic coverage |
+| 10 `misc_course_event_dispatch` | Real original x86 CFG, source-gated code9/lip/flag branches, and terminal code35/code50 route **2,730/2,730 original-machine exact** | All other event codes, trigger conditions and full dynamic coverage |
 | 11 `multi_player_turn_order` | Original chooser **1,564/1,564**, mode1 score adjust **3,192/3,192**, mode4/6 side/slot **1,728/1,728** | Complete independent per-player live round/turn and result state machine |
 | 12 `original_game_modes` | Original mode1/4/6 branch semantics and source menu strings | Complete all original practice, match, skins, tournament, season gameflows |
 | 13 `computer_opponents` | CPU skill parameters **24/24**, candidate selection **378/378**, shot adjustment **1,620/1,620** | Whole original CPU candidate generation, club/aim/power selection and shot planner |
@@ -76,3 +76,9 @@ The original machine-code source at `0x40C6B2..0x40C77F` has yielded:
 - `PixteeRoundRuntime` now appends completed no-flight inputs as ordinary version-1 replay frames, and `ClassicReplayJournal::replay_into` independently re-executes and validates phase, coordinates, distance, stroke count and green mode.
 - Manual three-click and original Welly 2-press paths each have round-trip save/reload tests. Godot adapter CI: [run 38174394126](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174394126); main native tests: [run 38174398909](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174398909). Both succeeded.
 - **Conservative gate remains:** no-flight attempts made with already-zero distance to the hole cannot yet be replay-signed-off; code-9/10 continuations, unsupported event branches and full original turn scheduler remain unrecovered. None of the fifteen complete original-gameplay requirements is closed by this platform persistence fix.
+
+### More authenticated terminal-dispatch source routing
+
+- Real Windows v1.014 x86 **0x40A686..0x40A6AB** routes terrain code 35 through a signed ball-height high-WORD threshold of **200**, code 50 through a separate branch, and all others to the default route. C++ isolated predicate `original_terminal_stop_contact` matches **2,730/2,730** original source-machine samples across the three routes: [CI 38174782111](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174782111). [Main native CI 38174783233](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174783233) passed.
+- Original 77-entry terrain table uses code 50 for **GREEN D2, GREEN D3, GREEN D4, and MUD D1** descriptors. **Code 50 is not evidence of a tree object.** This routine remains isolated from live terrain collision until activation conditions and complete ball impact effects are proven.
+- This is a new source-verified *subroutine*, **not** sign-off of tree collision, code-50 dynamics, multiplayer, or any of the 15 entire gameplay systems. No art or HTML has been changed.

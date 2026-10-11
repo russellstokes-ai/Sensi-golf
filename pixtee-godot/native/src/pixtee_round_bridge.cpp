@@ -1,6 +1,7 @@
 #include "pixtee_round_bridge.hpp"
 #include "original_next_player.hpp"
 #include "original_cpu_difficulty.hpp"
+#include "original_cpu_shot_variation.hpp"
 #include "original_cpu_candidate.hpp"
 #include <array>
 #include <cstdint>
@@ -24,6 +25,11 @@ void PixteeRoundBridge::_bind_methods() {
         D_METHOD("original_cpu_candidate_choice","primary_status",
                  "secondary_status","candidate_metrics"),
         &PixteeRoundBridge::original_cpu_candidate_choice);
+    ClassDB::bind_method(
+        D_METHOD("original_cpu_shot_variation",
+                 "bypass","power","variation",
+                 "random100","random_power","random_direction"),
+        &PixteeRoundBridge::original_cpu_shot_variation);
     ClassDB::bind_method(
         D_METHOD("original_cpu_search_parameters","original_mode","special_flag"),
         &PixteeRoundBridge::original_cpu_search_parameters);
@@ -84,6 +90,33 @@ int PixteeRoundBridge::original_cpu_candidate_choice(
         last_error_=String(e.what());
         return -1;
     }
+}
+Dictionary PixteeRoundBridge::original_cpu_shot_variation(
+    bool bypass, int power, int variation,
+    int random100, int random_power, int random_direction) {
+    Dictionary d;
+    for(const auto v : {power,variation,random100,random_power,random_direction}) {
+        if(v<0 || v>65535) {
+            last_error_="source CPU error inputs require raw original 16-bit values";
+            d["verified"]=false;
+            return d;
+        }
+    }
+    const auto shot=pixtee::original_cpu_shot_variation(
+        bypass,static_cast<std::uint16_t>(power),
+        static_cast<std::uint16_t>(variation),
+        static_cast<std::uint16_t>(random100),
+        static_cast<std::uint16_t>(random_power),
+        static_cast<std::uint16_t>(random_direction));
+    d["verified"]=true;
+    d["captured_power"]=static_cast<int>(shot.captured_power);
+    d["difficulty_variation"]=static_cast<int>(shot.difficulty_variation);
+    d["swing_adjuster"]=static_cast<int>(shot.swing_adjuster);
+    d["random_calls"]=static_cast<int>(shot.random_calls);
+    d["original_rng_implemented"]=false; // random INPUTS provided; no synthetic RNG
+    d["complete_cpu_shot_planner"]=false;
+    last_error_="";
+    return d;
 }
 Dictionary PixteeRoundBridge::original_cpu_search_parameters(
     int mode, bool special_flag) {

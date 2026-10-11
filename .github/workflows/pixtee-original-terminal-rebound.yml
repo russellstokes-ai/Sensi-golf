@@ -8,6 +8,8 @@ on:
       - 'engine/include/sensigolf/recovered_interactions.hpp'
       - 'tools/verify_original_terminal_rebound.py'
       - 'pixtee-godot/native/tests/original_terminal_rebound_probe.cpp'
+      - 'tools/verify_original_terminal_rebound_latch.py'
+      - 'pixtee-godot/native/tests/original_terminal_rebound_latch_probe.cpp'
       - '.github/workflows/pixtee-original-terminal-rebound.yml'
 permissions:
   contents: read
@@ -37,8 +39,20 @@ jobs:
           python tools/verify_original_terminal_rebound.py \
             --exe "$EXE" --probe /tmp/pixtee-original-rebound \
             -o analysis/private/original-terminal-rebound-x86.json
+      - name: Original event latch and rebound through complete x86 contact path
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_prng.cpp engine/src/recovered_interactions.cpp \
+            pixtee-godot/native/tests/original_terminal_rebound_latch_probe.cpp \
+            -o /tmp/pixtee-original-latch
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_terminal_rebound_latch.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-latch \
+            -o analysis/private/original-terminal-rebound-latch-x86.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-terminal-rebound-oracle
-          path: analysis/private/original-terminal-rebound-x86.json
+          path: |
+            analysis/private/original-terminal-rebound-x86.json
+            analysis/private/original-terminal-rebound-latch-x86.json
           retention-days: 30

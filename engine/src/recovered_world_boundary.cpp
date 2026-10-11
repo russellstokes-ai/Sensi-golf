@@ -47,7 +47,7 @@ OriginalWorldBoundaryResult original_world_boundary_check(
 OriginalWorldOobRestoreResult original_world_oob_restore(
     const OriginalWorldOobRestoreInput& input) noexcept {
     OriginalWorldOobRestoreResult out{};
-    out.relocated=recover_hazard_position(input.coordinates);
+    out.relocated=recover_hazard_from_safe_anchor(input.coordinates);
     // Original 0x40AADA checks signed WORD mode against 4 (JLE).
     const auto mode=input.player_mode_5a;
     const auto signed_mode=mode<=0x7fffu

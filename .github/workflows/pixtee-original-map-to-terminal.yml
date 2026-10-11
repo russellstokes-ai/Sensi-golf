@@ -5,6 +5,7 @@ on:
     branches: [feat/pixtee-godot-recovered-core]
     paths:
       - 'tools/verify_original_mapped_terminal_pipeline.py'
+      - 'tools/verify_original_real_course_mapped_terminal.py'
       - 'pixtee-godot/native/tests/original_mapped_terminal_probe.cpp'
       - 'engine/src/recovered_mapped_terminal.cpp'
       - 'engine/include/sensigolf/recovered_mapped_terminal.hpp'
@@ -44,8 +45,20 @@ jobs:
           python tools/verify_original_mapped_terminal_pipeline.py \
             --exe "$EXE" --probe /tmp/pixtee-original-mapped-terminal \
             -o analysis/private/original-mapped-terminal-source-x86.json
+      - name: Real original hole MAPM and MAPI bytes to source-grounded terminal effects
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          ROOT=analysis/private/step2/extracted/epf
+          python tools/verify_original_real_course_mapped_terminal.py \
+            --exe "$EXE" --mapm "$ROOT/MAPM01.MAP" \
+            --descriptor-bank "$ROOT/MAPI01.RAW" \
+            --selector-bank "$ROOT/MAPI02.RAW" \
+            --probe /tmp/pixtee-original-mapped-terminal --count 3600 \
+            -o analysis/private/original-real-MAPM01-terminal-x86.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-map-to-terminal-x86
-          path: analysis/private/original-mapped-terminal-source-x86.json
+          path: |
+            analysis/private/original-mapped-terminal-source-x86.json
+            analysis/private/original-real-MAPM01-terminal-x86.json
           retention-days: 30

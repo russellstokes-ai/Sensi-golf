@@ -113,8 +113,8 @@ int main() {
     flag_miss.set_surface_context({3,0,0});
     flag_hit.set_ball_origin(0,0);
     flag_miss.set_ball_origin(0,0);
-    flag_hit.set_original_interaction_context(&impact_rng,false,0,0);
-    flag_miss.set_original_interaction_context(&miss_rng,false,20,20);
+    flag_hit.set_original_interaction_context(&impact_rng,false,0,0,true);
+    flag_miss.set_original_interaction_context(&miss_rng,false,20,20,true);
     flag_hit.begin_shot(straight);
     flag_miss.begin_shot(straight);
     flag_hit.step();

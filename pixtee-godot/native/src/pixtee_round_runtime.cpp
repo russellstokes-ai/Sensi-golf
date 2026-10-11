@@ -99,6 +99,12 @@ bool PixteeRoundRuntime::tick_original_welly(bool pressed) {
             throw std::logic_error("classic original shot rejected");
         pending_=request;
         return true;
+    } catch(const std::out_of_range&) {
+        // Original source launcher produces no flight outside accuracy profile.
+        // Return to playable controls without falsely deducting a stroke.
+        controls_.cancel_meter();
+        original_welly_rejected_=true;
+        return false;
     } catch(...) {
         controls_.cancel_meter();
         original_welly_rejected_=true;

@@ -18,6 +18,11 @@ protected:
 public:
     // Pure original v1.014 next-player decision; caller supplies the
     // original per-player priority/eligibility state, not invented metrics.
+    Dictionary original_competition_turn_choice(
+        int mode, int active_side, int ball0_distance, int ball1_distance,
+        int side0_flag, int side1_flag,
+        const PackedInt32Array& slot_bytes,
+        const PackedInt32Array& previous_slots);
     Dictionary original_turn_score_adjust(
         int player_count, const PackedInt32Array& strokes,
         const PackedInt32Array& totals,

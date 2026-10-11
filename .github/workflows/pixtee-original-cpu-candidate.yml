@@ -1,0 +1,42 @@
+name: Pixtee Original CPU Candidate Search Oracle
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'pixtee-godot/native/src/original_cpu_candidate.*'
+      - 'pixtee-godot/native/tests/original_cpu_candidate_probe.cpp'
+      - 'tools/verify_original_cpu_candidate.py'
+      - '.github/workflows/pixtee-original-cpu-candidate.yml'
+permissions:
+  contents: read
+jobs:
+  original_cpu_candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install unicorn==2.1.4
+      - run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_candidate.cpp \
+            pixtee-godot/native/tests/original_cpu_candidate_probe.cpp \
+            -o /tmp/original-cpu-selector
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_cpu_candidate.py --exe "$EXE" \
+            --probe /tmp/original-cpu-selector \
+            -o analysis/private/original-cpu-candidate-x86.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-cpu-candidate-search-x86-evidence
+          path: analysis/private/original-cpu-candidate-x86.json
+          retention-days: 30

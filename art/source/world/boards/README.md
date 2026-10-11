@@ -1,0 +1,3 @@
+# Pixtee sponsor-board source masters — review only
+
+Four individually named front-face board masters and a 320×112 creative mask. These are original overhead-oriented pixel-edged wooden sign frames, with empty central creative zones. **Not approved, not integrated, not paid advertisements.** Sign facing is a *runtime placement rule*, not something the bitmap can enforce: `frontNormal = normalize(tee - sign)` at tee and `normalize(cup - sign)` at green. No collision. Validate apparent size at normal portrait phone before acceptance. Other variants, provider renderer, actual creative attribution and gameplay testing remain pending.

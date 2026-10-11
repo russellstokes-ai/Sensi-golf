@@ -1,0 +1,22 @@
+name: Pixtee Expanded Astra Art Coverage
+on:
+  push:
+    paths:
+      - "spec/pixtee/ASTRA_AMBIENCE_AND_IMPACT_MANIFEST_v2.json"
+      - "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md"
+      - "pixtee-android/app/src/main/java/com/pixtee/golf/PixteeCourses.kt"
+      - "tools/validate_pixtee_expanded_art_coverage.py"
+      - ".github/workflows/pixtee-expanded-art-coverage.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  asset-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Verify 21-species habitat, complete bird-hit, foliage/crowds, hazard effects and board orientations
+        run: python tools/validate_pixtee_expanded_art_coverage.py

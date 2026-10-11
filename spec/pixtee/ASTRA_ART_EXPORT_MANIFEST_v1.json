@@ -1,0 +1,576 @@
+{
+  "schema": "pixtee.art.export-plan.v1",
+  "status": "PLANNED_SIZES_NOT_APPROVED",
+  "asset_count": 31,
+  "source_game_sha256": {
+    "exe": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+    "epf": "58955f2ef89ad1757998b3ceee661a8ab7edcbd88e00bc1c6683009aa123ab1e"
+  },
+  "original_game_measured": {
+    "world_width": 544,
+    "world_height": 912,
+    "collision_cell_world_width": 2,
+    "collision_cell_world_height": 2,
+    "verified_mch_frames": 874
+  },
+  "pixtee_proposed_final": {
+    "art_pixels_per_world": 8,
+    "ui_pixels_per_logical": 4,
+    "reference_logical_width": 360,
+    "golfer": {
+      "frame_px": [
+        256,
+        128
+      ],
+      "feet_pivot_px": [
+        80,
+        116
+      ],
+      "impact_contact_px": [
+        108,
+        116
+      ],
+      "world_padded_wh": [
+        32,
+        16
+      ],
+      "painted_height_target_world": 11.5,
+      "ball_contact_offset_world": [
+        3.5,
+        0
+      ]
+    },
+    "terrain_tile": {
+      "source_px": [
+        128,
+        64
+      ],
+      "world_wh": [
+        16,
+        8
+      ]
+    },
+    "sponsor_sign": {
+      "source_px": [
+        352,
+        160
+      ],
+      "world_wh": [
+        44,
+        20
+      ]
+    }
+  },
+  "current_runtime_compatibility": {
+    "status": "INCOMPATIBLE_UNTIL_UPGRADED",
+    "golfer_required_today": [
+      128,
+      64
+    ],
+    "pixtee_candidate_zoom": 1.9,
+    "world_wh_today": [
+      300,
+      510
+    ],
+    "new_source_8ppw_shader_requires_matrix_scale": 0.125
+  },
+  "note": "Asset dimensions in items are proposed target EXPORT sizes; original source MCH dimensions are different. No actual assets are presently approved. Actual PNG files are audited when introduced. See ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md for expanded 384 animated frames, effects, 35 courses and complete 630-hole art requirements.",
+  "assets": [
+    {
+      "id": "golfer_idle",
+      "category": "golfer",
+      "filename": "golfer_idle.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_idle.png",
+      "source_path": "art/source/golfer/golfer_idle.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_idle.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_takeaway",
+      "category": "golfer",
+      "filename": "golfer_takeaway.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_takeaway.png",
+      "source_path": "art/source/golfer/golfer_takeaway.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_takeaway.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_backswing",
+      "category": "golfer",
+      "filename": "golfer_backswing.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_backswing.png",
+      "source_path": "art/source/golfer/golfer_backswing.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_backswing.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_top",
+      "category": "golfer",
+      "filename": "golfer_top.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_top.png",
+      "source_path": "art/source/golfer/golfer_top.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_top.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_downswing",
+      "category": "golfer",
+      "filename": "golfer_downswing.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_downswing.png",
+      "source_path": "art/source/golfer/golfer_downswing.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_downswing.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_impact",
+      "category": "golfer",
+      "filename": "golfer_impact.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_impact.png",
+      "source_path": "art/source/golfer/golfer_impact.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_impact.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_follow",
+      "category": "golfer",
+      "filename": "golfer_follow.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_follow.png",
+      "source_path": "art/source/golfer/golfer_follow.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_follow.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_finish",
+      "category": "golfer",
+      "filename": "golfer_finish.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_finish.png",
+      "source_path": "art/source/golfer/golfer_finish.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_finish.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_putt_ready",
+      "category": "golfer",
+      "filename": "golfer_putt_ready.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_putt_ready.png",
+      "source_path": "art/source/golfer/golfer_putt_ready.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_putt_ready.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_putt_back",
+      "category": "golfer",
+      "filename": "golfer_putt_back.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_putt_back.png",
+      "source_path": "art/source/golfer/golfer_putt_back.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_putt_back.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_putt_impact",
+      "category": "golfer",
+      "filename": "golfer_putt_impact.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_putt_impact.png",
+      "source_path": "art/source/golfer/golfer_putt_impact.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_putt_impact.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "golfer_putt_finish",
+      "category": "golfer",
+      "filename": "golfer_putt_finish.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/golfer_putt_finish.png",
+      "source_path": "art/source/golfer/golfer_putt_finish.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/golfer_putt_finish.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 128
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "tree_round",
+      "category": "scenery",
+      "filename": "tree_round.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/tree_round.png",
+      "source_path": "art/source/scenery/tree_round.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/tree_round.png",
+      "export_pixels": {
+        "width": 384,
+        "height": 320
+      },
+      "world_height": 37,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "tree_pine",
+      "category": "scenery",
+      "filename": "tree_pine.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/tree_pine.png",
+      "source_path": "art/source/scenery/tree_pine.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/tree_pine.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 352
+      },
+      "world_height": 42,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "spectator_idle",
+      "category": "scenery",
+      "filename": "spectator_idle.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/spectator_idle.png",
+      "source_path": "art/source/scenery/spectator_idle.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/spectator_idle.png",
+      "export_pixels": {
+        "width": 96,
+        "height": 96
+      },
+      "world_height": 12,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "spectator_wave",
+      "category": "scenery",
+      "filename": "spectator_wave.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/spectator_wave.png",
+      "source_path": "art/source/scenery/spectator_wave.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/spectator_wave.png",
+      "export_pixels": {
+        "width": 96,
+        "height": 96
+      },
+      "world_height": 12,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "spectator_photographer",
+      "category": "scenery",
+      "filename": "spectator_photographer.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/spectator_photographer.png",
+      "source_path": "art/source/scenery/spectator_photographer.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/spectator_photographer.png",
+      "export_pixels": {
+        "width": 96,
+        "height": 96
+      },
+      "world_height": 12,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "camera_flash",
+      "category": "scenery",
+      "filename": "camera_flash.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/camera_flash.png",
+      "source_path": "art/source/scenery/camera_flash.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/camera_flash.png",
+      "export_pixels": {
+        "width": 48,
+        "height": 48
+      },
+      "world_height": 5,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "bird_wings_up",
+      "category": "scenery",
+      "filename": "bird_wings_up.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/bird_wings_up.png",
+      "source_path": "art/source/scenery/bird_wings_up.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/bird_wings_up.png",
+      "export_pixels": {
+        "width": 64,
+        "height": 64
+      },
+      "world_height": 7,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "bird_wings_down",
+      "category": "scenery",
+      "filename": "bird_wings_down.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/bird_wings_down.png",
+      "source_path": "art/source/scenery/bird_wings_down.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/bird_wings_down.png",
+      "export_pixels": {
+        "width": 64,
+        "height": 64
+      },
+      "world_height": 7,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "flower_yellow",
+      "category": "scenery",
+      "filename": "flower_yellow.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/flower_yellow.png",
+      "source_path": "art/source/scenery/flower_yellow.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/flower_yellow.png",
+      "export_pixels": {
+        "width": 32,
+        "height": 32
+      },
+      "world_height": 4,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "flower_pink",
+      "category": "scenery",
+      "filename": "flower_pink.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/flower_pink.png",
+      "source_path": "art/source/scenery/flower_pink.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/flower_pink.png",
+      "export_pixels": {
+        "width": 32,
+        "height": 32
+      },
+      "world_height": 4,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "terrain_rough",
+      "category": "terrain",
+      "filename": "terrain_rough.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/terrain_rough.png",
+      "source_path": "art/source/terrain/terrain_rough.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/terrain_rough.png",
+      "export_pixels": {
+        "width": 128,
+        "height": 64
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "terrain_fairway",
+      "category": "terrain",
+      "filename": "terrain_fairway.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/terrain_fairway.png",
+      "source_path": "art/source/terrain/terrain_fairway.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/terrain_fairway.png",
+      "export_pixels": {
+        "width": 128,
+        "height": 64
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "terrain_green",
+      "category": "terrain",
+      "filename": "terrain_green.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/terrain_green.png",
+      "source_path": "art/source/terrain/terrain_green.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/terrain_green.png",
+      "export_pixels": {
+        "width": 128,
+        "height": 64
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "terrain_sand",
+      "category": "terrain",
+      "filename": "terrain_sand.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/terrain_sand.png",
+      "source_path": "art/source/terrain/terrain_sand.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/terrain_sand.png",
+      "export_pixels": {
+        "width": 128,
+        "height": 64
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "terrain_water",
+      "category": "terrain",
+      "filename": "terrain_water.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/terrain_water.png",
+      "source_path": "art/source/terrain/terrain_water.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/terrain_water.png",
+      "export_pixels": {
+        "width": 128,
+        "height": 64
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "ui_pixtee_logo",
+      "category": "ui",
+      "filename": "ui_pixtee_logo.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/ui_pixtee_logo.png",
+      "source_path": "art/source/ui/ui_pixtee_logo.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/ui_pixtee_logo.png",
+      "export_pixels": {
+        "width": 1024,
+        "height": 512
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": 4,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "ui_wood_button",
+      "category": "ui",
+      "filename": "ui_wood_button.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/ui_wood_button.png",
+      "source_path": "art/source/ui/ui_wood_button.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/ui_wood_button.png",
+      "export_pixels": {
+        "width": 256,
+        "height": 96
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": 4,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "ui_hud_panel",
+      "category": "ui",
+      "filename": "ui_hud_panel.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/ui_hud_panel.png",
+      "source_path": "art/source/ui/ui_hud_panel.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/ui_hud_panel.png",
+      "export_pixels": {
+        "width": 432,
+        "height": 964
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": null,
+      "ui_density_pixels_per_logical": 4,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    },
+    {
+      "id": "ui_sponsor_board",
+      "category": "ui",
+      "filename": "ui_sponsor_board.png",
+      "runtime_path": "pixtee-android/app/src/main/assets/art/production/ui_sponsor_board.png",
+      "source_path": "art/source/ui/ui_sponsor_board.aseprite",
+      "review_path": "pixtee-android/app/src/main/assets/art/review/ui_sponsor_board.png",
+      "export_pixels": {
+        "width": 352,
+        "height": 160
+      },
+      "world_height": null,
+      "source_density_pixels_per_world": 8,
+      "ui_density_pixels_per_logical": null,
+      "contract": "PIXTEE_PROPOSED_FINAL_NOT_VERIFIED_OR_APPROVED"
+    }
+  ]
+}

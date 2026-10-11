@@ -1,0 +1,47 @@
+{
+  "note": "Six individual artwork sources. Exact runtime exports pending.",
+  "assets": [
+    {
+      "file": "bridge_stone.png",
+      "sha256": "a31d575c0f77fce06603f4626fd5db8a574c5cf71cd90d2604add04bc001d2c7",
+      "status": "created",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "file": "bridge_wood.png",
+      "sha256": "d7d1fb8643ff3f90c44b38325c30f889d30992e17b867993cfc484b92d1623f7",
+      "status": "created",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "file": "fence_rope.png",
+      "sha256": "5ecaec83d693af2a485c4670d08bfa2b048aed06e4dbb17b2e3d6bbd49505fce",
+      "status": "created",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "file": "golf_bag.png",
+      "sha256": "653d306a98b863bc2c36d2a2ad3de438e539f7362a0f08bf8605943cb18793fa",
+      "status": "created",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "file": "tee_marker_blue.png",
+      "sha256": "1f1985f431424ac5000eedc4178ff197a80250106530d3eb60ab417bd2f4ff01",
+      "status": "created",
+      "approved": false,
+      "runtimeExportComplete": false
+    },
+    {
+      "file": "ui_trophy_cup_small.png",
+      "sha256": "4409acb0a5129dbbdd90421c55ae2ec6f5c5c2405ec0729955de16c54cece87e",
+      "status": "created",
+      "approved": false,
+      "runtimeExportComplete": false
+    }
+  ]
+}

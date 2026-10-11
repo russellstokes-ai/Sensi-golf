@@ -1,0 +1,2330 @@
+{
+  "schema": "pixtee.art-production-work-register.v1",
+  "source": "ASTRA_AMBIENCE_AND_IMPACT_MANIFEST_v2.json",
+  "branch": "feat/pixtee-native-portrait-framework",
+  "approval_policy": "No approval without owner review. No counts from placeholder or duplicated/rotated frames.",
+  "created_at": "2026-10-11",
+  "expected_frames": 1655,
+  "totals_by_class": {
+    "golfer": 576,
+    "bird": 546,
+    "bird_fx": 16,
+    "ambience": 160,
+    "spectators": 196,
+    "impact": 152,
+    "advertising": 9
+  },
+  "groups": [
+    {
+      "index": 0,
+      "asset_class": "golfer",
+      "id_template": "golfer_address_<dir>_f00..f03",
+      "export_px": {
+        "w": 256,
+        "h": 128
+      },
+      "variants": 8,
+      "frames_per_variant": 4,
+      "expected_frames": 32,
+      "trigger": "gameplay visual, registered to actual ball pose",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 1,
+      "asset_class": "golfer",
+      "id_template": "golfer_swing_<dir>_f00..f23",
+      "export_px": {
+        "w": 256,
+        "h": 128
+      },
+      "variants": 8,
+      "frames_per_variant": 24,
+      "expected_frames": 192,
+      "trigger": "gameplay visual, registered to actual ball pose",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 2,
+      "asset_class": "golfer",
+      "id_template": "golfer_putt_<dir>_f00..f11",
+      "export_px": {
+        "w": 256,
+        "h": 128
+      },
+      "variants": 8,
+      "frames_per_variant": 12,
+      "expected_frames": 96,
+      "trigger": "gameplay visual, registered to actual ball pose",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 3,
+      "asset_class": "golfer",
+      "id_template": "golfer_walk_<dir>_f00..f07",
+      "export_px": {
+        "w": 256,
+        "h": 128
+      },
+      "variants": 8,
+      "frames_per_variant": 8,
+      "expected_frames": 64,
+      "trigger": "gameplay visual, registered to actual ball pose",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 4,
+      "asset_class": "golfer",
+      "id_template": "golfer_idle_<dir>_f00..f03",
+      "export_px": {
+        "w": 256,
+        "h": 128
+      },
+      "variants": 8,
+      "frames_per_variant": 4,
+      "expected_frames": 32,
+      "trigger": "gameplay visual, registered to actual ball pose",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 5,
+      "asset_class": "golfer",
+      "id_template": "golfer_watch_shot_<dir>_f00..f05",
+      "export_px": {
+        "w": 256,
+        "h": 128
+      },
+      "variants": 8,
+      "frames_per_variant": 6,
+      "expected_frames": 48,
+      "trigger": "gameplay visual, registered to actual ball pose",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 6,
+      "asset_class": "golfer",
+      "id_template": "golfer_celebrate_<dir>_f00..f07",
+      "export_px": {
+        "w": 256,
+        "h": 128
+      },
+      "variants": 8,
+      "frames_per_variant": 8,
+      "expected_frames": 64,
+      "trigger": "gameplay visual, registered to actual ball pose",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 7,
+      "asset_class": "golfer",
+      "id_template": "golfer_disappointed_<dir>_f00..f05",
+      "export_px": {
+        "w": 256,
+        "h": 128
+      },
+      "variants": 8,
+      "frames_per_variant": 6,
+      "expected_frames": 48,
+      "trigger": "gameplay visual, registered to actual ball pose",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 8,
+      "asset_class": "bird",
+      "id_template": "bird_robin_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 9,
+      "asset_class": "bird",
+      "id_template": "bird_robin_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 10,
+      "asset_class": "bird",
+      "id_template": "bird_robin_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 11,
+      "asset_class": "bird",
+      "id_template": "bird_blackbird_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 12,
+      "asset_class": "bird",
+      "id_template": "bird_blackbird_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 13,
+      "asset_class": "bird",
+      "id_template": "bird_blackbird_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 14,
+      "asset_class": "bird",
+      "id_template": "bird_sparrow_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 15,
+      "asset_class": "bird",
+      "id_template": "bird_sparrow_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 16,
+      "asset_class": "bird",
+      "id_template": "bird_sparrow_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 17,
+      "asset_class": "bird",
+      "id_template": "bird_blue-tit_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 18,
+      "asset_class": "bird",
+      "id_template": "bird_blue-tit_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 19,
+      "asset_class": "bird",
+      "id_template": "bird_blue-tit_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 20,
+      "asset_class": "bird",
+      "id_template": "bird_woodpecker_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 21,
+      "asset_class": "bird",
+      "id_template": "bird_woodpecker_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 22,
+      "asset_class": "bird",
+      "id_template": "bird_woodpecker_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 23,
+      "asset_class": "bird",
+      "id_template": "bird_skylark_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 24,
+      "asset_class": "bird",
+      "id_template": "bird_skylark_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 25,
+      "asset_class": "bird",
+      "id_template": "bird_skylark_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 26,
+      "asset_class": "bird",
+      "id_template": "bird_tern_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 27,
+      "asset_class": "bird",
+      "id_template": "bird_tern_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 28,
+      "asset_class": "bird",
+      "id_template": "bird_tern_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 29,
+      "asset_class": "bird",
+      "id_template": "bird_oystercatcher_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 30,
+      "asset_class": "bird",
+      "id_template": "bird_oystercatcher_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 31,
+      "asset_class": "bird",
+      "id_template": "bird_oystercatcher_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 32,
+      "asset_class": "bird",
+      "id_template": "bird_kingfisher_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 33,
+      "asset_class": "bird",
+      "id_template": "bird_kingfisher_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 34,
+      "asset_class": "bird",
+      "id_template": "bird_kingfisher_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 35,
+      "asset_class": "bird",
+      "id_template": "bird_dove_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 36,
+      "asset_class": "bird",
+      "id_template": "bird_dove_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 37,
+      "asset_class": "bird",
+      "id_template": "bird_dove_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 38,
+      "asset_class": "bird",
+      "id_template": "bird_magpie_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 39,
+      "asset_class": "bird",
+      "id_template": "bird_magpie_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 40,
+      "asset_class": "bird",
+      "id_template": "bird_magpie_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 41,
+      "asset_class": "bird",
+      "id_template": "bird_ptarmigan_fly_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 42,
+      "asset_class": "bird",
+      "id_template": "bird_ptarmigan_hit_f00..f09",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 43,
+      "asset_class": "bird",
+      "id_template": "bird_ptarmigan_recover_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 44,
+      "asset_class": "bird",
+      "id_template": "bird_crow_fly_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 45,
+      "asset_class": "bird",
+      "id_template": "bird_crow_hit_f00..f09",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 46,
+      "asset_class": "bird",
+      "id_template": "bird_crow_recover_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 47,
+      "asset_class": "bird",
+      "id_template": "bird_gull_fly_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 48,
+      "asset_class": "bird",
+      "id_template": "bird_gull_hit_f00..f09",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 49,
+      "asset_class": "bird",
+      "id_template": "bird_gull_recover_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 50,
+      "asset_class": "bird",
+      "id_template": "bird_mallard_fly_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 51,
+      "asset_class": "bird",
+      "id_template": "bird_mallard_hit_f00..f09",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 52,
+      "asset_class": "bird",
+      "id_template": "bird_mallard_recover_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 53,
+      "asset_class": "bird",
+      "id_template": "bird_kestrel_fly_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 54,
+      "asset_class": "bird",
+      "id_template": "bird_kestrel_hit_f00..f09",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 55,
+      "asset_class": "bird",
+      "id_template": "bird_kestrel_recover_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 56,
+      "asset_class": "bird",
+      "id_template": "bird_parrot_fly_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 57,
+      "asset_class": "bird",
+      "id_template": "bird_parrot_hit_f00..f09",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 58,
+      "asset_class": "bird",
+      "id_template": "bird_parrot_recover_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 59,
+      "asset_class": "bird",
+      "id_template": "bird_raven_fly_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 60,
+      "asset_class": "bird",
+      "id_template": "bird_raven_hit_f00..f09",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 61,
+      "asset_class": "bird",
+      "id_template": "bird_raven_recover_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 62,
+      "asset_class": "bird",
+      "id_template": "bird_heron_fly_f00..f07",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 63,
+      "asset_class": "bird",
+      "id_template": "bird_heron_hit_f00..f09",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 64,
+      "asset_class": "bird",
+      "id_template": "bird_heron_recover_f00..f07",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 65,
+      "asset_class": "bird",
+      "id_template": "bird_falcon_fly_f00..f07",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 66,
+      "asset_class": "bird",
+      "id_template": "bird_falcon_hit_f00..f09",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 67,
+      "asset_class": "bird",
+      "id_template": "bird_falcon_recover_f00..f07",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 68,
+      "asset_class": "bird",
+      "id_template": "bird_eagle_fly_f00..f07",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "rare biome-selected world-space crossing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 69,
+      "asset_class": "bird",
+      "id_template": "bird_eagle_hit_f00..f09",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "rare true 3D-height-overlap cosmetic ball interaction",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 70,
+      "asset_class": "bird",
+      "id_template": "bird_eagle_recover_f00..f07",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "safe comical flap-away after hit",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 71,
+      "asset_class": "bird_fx",
+      "id_template": "bird_feathers_f00..f09",
+      "export_px": {
+        "w": 128,
+        "h": 128
+      },
+      "variants": 1,
+      "frames_per_variant": 10,
+      "expected_frames": 10,
+      "trigger": "on rare bird hit, visual-only",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 72,
+      "asset_class": "bird_fx",
+      "id_template": "bird_confused_star_f00..f05",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 6,
+      "expected_frames": 6,
+      "trigger": "visual only",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 73,
+      "asset_class": "ambience",
+      "id_template": "grass_tuft_small_01..03_f00..f05",
+      "export_px": {
+        "w": 48,
+        "h": 48
+      },
+      "variants": 3,
+      "frames_per_variant": 6,
+      "expected_frames": 18,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 74,
+      "asset_class": "ambience",
+      "id_template": "grass_tuft_large_01..03_f00..f05",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 3,
+      "frames_per_variant": 6,
+      "expected_frames": 18,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 75,
+      "asset_class": "ambience",
+      "id_template": "flower_yellow_patch_01..02_f00..f05",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 2,
+      "frames_per_variant": 6,
+      "expected_frames": 12,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 76,
+      "asset_class": "ambience",
+      "id_template": "flower_pink_patch_01..02_f00..f05",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 2,
+      "frames_per_variant": 6,
+      "expected_frames": 12,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 77,
+      "asset_class": "ambience",
+      "id_template": "flower_white_patch_01..02_f00..f05",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 2,
+      "frames_per_variant": 6,
+      "expected_frames": 12,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 78,
+      "asset_class": "ambience",
+      "id_template": "flower_blue_patch_01..02_f00..f05",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 2,
+      "frames_per_variant": 6,
+      "expected_frames": 12,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 79,
+      "asset_class": "ambience",
+      "id_template": "flower_red_patch_01..02_f00..f05",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 2,
+      "frames_per_variant": 6,
+      "expected_frames": 12,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 80,
+      "asset_class": "ambience",
+      "id_template": "reeds_marsh_01..03_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 3,
+      "frames_per_variant": 8,
+      "expected_frames": 24,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 81,
+      "asset_class": "ambience",
+      "id_template": "bush_low_01..04_sway_f00..f03",
+      "export_px": {
+        "w": 192,
+        "h": 128
+      },
+      "variants": 4,
+      "frames_per_variant": 4,
+      "expected_frames": 16,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 82,
+      "asset_class": "ambience",
+      "id_template": "tree_round_sway_f00..f03",
+      "export_px": {
+        "w": 384,
+        "h": 320
+      },
+      "variants": 1,
+      "frames_per_variant": 4,
+      "expected_frames": 4,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 83,
+      "asset_class": "ambience",
+      "id_template": "tree_pine_sway_f00..f03",
+      "export_px": {
+        "w": 256,
+        "h": 352
+      },
+      "variants": 1,
+      "frames_per_variant": 4,
+      "expected_frames": 4,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 84,
+      "asset_class": "ambience",
+      "id_template": "water_ripple_f00..f07",
+      "export_px": {
+        "w": 128,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 85,
+      "asset_class": "ambience",
+      "id_template": "flag_cloth_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "cosmetic ambience loop; separate RNG; reduce-motion alternative",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 86,
+      "asset_class": "spectators",
+      "id_template": "spectator_idle_male_01..03_f00..f03",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 3,
+      "frames_per_variant": 4,
+      "expected_frames": 12,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 87,
+      "asset_class": "spectators",
+      "id_template": "spectator_idle_female_01..03_f00..f03",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 3,
+      "frames_per_variant": 4,
+      "expected_frames": 12,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 88,
+      "asset_class": "spectators",
+      "id_template": "spectator_idle_child_01..02_f00..f03",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 2,
+      "frames_per_variant": 4,
+      "expected_frames": 8,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 89,
+      "asset_class": "spectators",
+      "id_template": "spectator_clap_01..04_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 4,
+      "frames_per_variant": 8,
+      "expected_frames": 32,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 90,
+      "asset_class": "spectators",
+      "id_template": "spectator_cheer_01..04_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 4,
+      "frames_per_variant": 8,
+      "expected_frames": 32,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 91,
+      "asset_class": "spectators",
+      "id_template": "spectator_wave_01..04_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 4,
+      "frames_per_variant": 8,
+      "expected_frames": 32,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 92,
+      "asset_class": "spectators",
+      "id_template": "spectator_turn_head_01..04_f00..f03",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 4,
+      "frames_per_variant": 4,
+      "expected_frames": 16,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 93,
+      "asset_class": "spectators",
+      "id_template": "spectator_seated_01..04_f00..f03",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 4,
+      "frames_per_variant": 4,
+      "expected_frames": 16,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 94,
+      "asset_class": "spectators",
+      "id_template": "spectator_photographer_idle_f00..f03",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 4,
+      "expected_frames": 4,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 95,
+      "asset_class": "spectators",
+      "id_template": "spectator_photographer_raise_f00..f05",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 6,
+      "expected_frames": 6,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 96,
+      "asset_class": "spectators",
+      "id_template": "spectator_photographer_shoot_f00..f03",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 4,
+      "expected_frames": 4,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 97,
+      "asset_class": "spectators",
+      "id_template": "spectator_photographer_lower_f00..f05",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 6,
+      "expected_frames": 6,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 98,
+      "asset_class": "spectators",
+      "id_template": "camera_flash_f00..f03",
+      "export_px": {
+        "w": 48,
+        "h": 48
+      },
+      "variants": 1,
+      "frames_per_variant": 4,
+      "expected_frames": 4,
+      "trigger": "decorative crowd or explicit shutter capture/flash",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 99,
+      "asset_class": "spectators",
+      "id_template": "crowd_cluster_small_01..04",
+      "export_px": {
+        "w": 160,
+        "h": 128
+      },
+      "variants": 4,
+      "frames_per_variant": 1,
+      "expected_frames": 4,
+      "trigger": "decorative grouped spectator composition",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 100,
+      "asset_class": "spectators",
+      "id_template": "crowd_cluster_medium_01..04",
+      "export_px": {
+        "w": 224,
+        "h": 160
+      },
+      "variants": 4,
+      "frames_per_variant": 1,
+      "expected_frames": 4,
+      "trigger": "decorative grouped spectator composition",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 101,
+      "asset_class": "spectators",
+      "id_template": "crowd_cluster_large_01..04",
+      "export_px": {
+        "w": 320,
+        "h": 192
+      },
+      "variants": 4,
+      "frames_per_variant": 1,
+      "expected_frames": 4,
+      "trigger": "decorative grouped spectator composition",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 102,
+      "asset_class": "impact",
+      "id_template": "fx_bunker_ball_impact_f00..f11",
+      "export_px": {
+        "w": 128,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 12,
+      "expected_frames": 12,
+      "trigger": "SAND first contact",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 103,
+      "asset_class": "impact",
+      "id_template": "fx_bunker_ball_bounce_f00..f07",
+      "export_px": {
+        "w": 96,
+        "h": 80
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "SAND second/subsequent collision",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 104,
+      "asset_class": "impact",
+      "id_template": "fx_sand_settle_f00..f05",
+      "export_px": {
+        "w": 96,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 6,
+      "expected_frames": 6,
+      "trigger": "resting sand ball lie",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 105,
+      "asset_class": "impact",
+      "id_template": "fx_bunker_explosion_f00..f11",
+      "export_px": {
+        "w": 160,
+        "h": 128
+      },
+      "variants": 1,
+      "frames_per_variant": 12,
+      "expected_frames": 12,
+      "trigger": "launch FROM sand",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 106,
+      "asset_class": "impact",
+      "id_template": "fx_water_entry_f00..f13",
+      "export_px": {
+        "w": 128,
+        "h": 128
+      },
+      "variants": 1,
+      "frames_per_variant": 14,
+      "expected_frames": 14,
+      "trigger": "WATER contact hazard stop",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 107,
+      "asset_class": "impact",
+      "id_template": "fx_water_ripple_ring_f00..f11",
+      "export_px": {
+        "w": 128,
+        "h": 128
+      },
+      "variants": 1,
+      "frames_per_variant": 12,
+      "expected_frames": 12,
+      "trigger": "WATER aftermath",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 108,
+      "asset_class": "impact",
+      "id_template": "fx_water_sink_f00..f07",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "hazard recovery/ball disappears",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 109,
+      "asset_class": "impact",
+      "id_template": "fx_tree_trunk_hit_f00..f07",
+      "export_px": {
+        "w": 192,
+        "h": 192
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "verified tree trunk collision",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 110,
+      "asset_class": "impact",
+      "id_template": "fx_tree_canopy_hit_f00..f11",
+      "export_px": {
+        "w": 192,
+        "h": 192
+      },
+      "variants": 1,
+      "frames_per_variant": 12,
+      "expected_frames": 12,
+      "trigger": "verified tree canopy collision",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 111,
+      "asset_class": "impact",
+      "id_template": "fx_tree_leaf_scatter_f00..f11",
+      "export_px": {
+        "w": 192,
+        "h": 192
+      },
+      "variants": 1,
+      "frames_per_variant": 12,
+      "expected_frames": 12,
+      "trigger": "verified tree collision / foliage scatter",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 112,
+      "asset_class": "impact",
+      "id_template": "fx_tree_branch_wobble_f00..f07",
+      "export_px": {
+        "w": 256,
+        "h": 192
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "verified tree branch contact",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 113,
+      "asset_class": "impact",
+      "id_template": "fx_rough_grass_impact_f00..f05",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 6,
+      "expected_frames": 6,
+      "trigger": "ROUGH contact",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 114,
+      "asset_class": "impact",
+      "id_template": "fx_fairway_turf_tap_f00..f03",
+      "export_px": {
+        "w": 64,
+        "h": 48
+      },
+      "variants": 1,
+      "frames_per_variant": 4,
+      "expected_frames": 4,
+      "trigger": "FAIRWAY landing",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 115,
+      "asset_class": "impact",
+      "id_template": "fx_obstacle_impact_f00..f07",
+      "export_px": {
+        "w": 128,
+        "h": 128
+      },
+      "variants": 1,
+      "frames_per_variant": 8,
+      "expected_frames": 8,
+      "trigger": "verified object obstacle contact",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 116,
+      "asset_class": "impact",
+      "id_template": "ball_bounce_dust_f00..f05",
+      "export_px": {
+        "w": 96,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 6,
+      "expected_frames": 6,
+      "trigger": "actual repeated ball bounce",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 117,
+      "asset_class": "impact",
+      "id_template": "fx_cup_capture_f00..f11",
+      "export_px": {
+        "w": 96,
+        "h": 96
+      },
+      "variants": 1,
+      "frames_per_variant": 12,
+      "expected_frames": 12,
+      "trigger": "authentic hole terminal",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 118,
+      "asset_class": "impact",
+      "id_template": "green_slope_arrow_f00..f03",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 4,
+      "expected_frames": 4,
+      "trigger": "slope direction intensity from collision map",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 119,
+      "asset_class": "advertising",
+      "id_template": "board_tee_left_front",
+      "export_px": {
+        "w": 352,
+        "h": 160
+      },
+      "variants": 1,
+      "frames_per_variant": 1,
+      "expected_frames": 1,
+      "trigger": "normal faces tee",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 120,
+      "asset_class": "advertising",
+      "id_template": "board_tee_right_front",
+      "export_px": {
+        "w": 352,
+        "h": 160
+      },
+      "variants": 1,
+      "frames_per_variant": 1,
+      "expected_frames": 1,
+      "trigger": "normal faces tee",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 121,
+      "asset_class": "advertising",
+      "id_template": "board_green_left_front",
+      "export_px": {
+        "w": 352,
+        "h": 160
+      },
+      "variants": 1,
+      "frames_per_variant": 1,
+      "expected_frames": 1,
+      "trigger": "normal faces cup and approach",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 122,
+      "asset_class": "advertising",
+      "id_template": "board_green_right_front",
+      "export_px": {
+        "w": 352,
+        "h": 160
+      },
+      "variants": 1,
+      "frames_per_variant": 1,
+      "expected_frames": 1,
+      "trigger": "normal faces cup and approach",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 123,
+      "asset_class": "advertising",
+      "id_template": "board_wood_back",
+      "export_px": {
+        "w": 352,
+        "h": 160
+      },
+      "variants": 1,
+      "frames_per_variant": 1,
+      "expected_frames": 1,
+      "trigger": "non-colliding board component",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 124,
+      "asset_class": "advertising",
+      "id_template": "board_post_shadow",
+      "export_px": {
+        "w": 352,
+        "h": 80
+      },
+      "variants": 1,
+      "frames_per_variant": 1,
+      "expected_frames": 1,
+      "trigger": "non-colliding board component",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 125,
+      "asset_class": "advertising",
+      "id_template": "board_house_pixtee",
+      "export_px": {
+        "w": 352,
+        "h": 160
+      },
+      "variants": 1,
+      "frames_per_variant": 1,
+      "expected_frames": 1,
+      "trigger": "normal faces tee",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 126,
+      "asset_class": "advertising",
+      "id_template": "board_slot_mask",
+      "export_px": {
+        "w": 320,
+        "h": 112
+      },
+      "variants": 1,
+      "frames_per_variant": 1,
+      "expected_frames": 1,
+      "trigger": "non-colliding board component",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    },
+    {
+      "index": 127,
+      "asset_class": "advertising",
+      "id_template": "board_corner_highlight",
+      "export_px": {
+        "w": 64,
+        "h": 64
+      },
+      "variants": 1,
+      "frames_per_variant": 1,
+      "expected_frames": 1,
+      "trigger": "non-colliding board component",
+      "status": "pending",
+      "created": 0,
+      "integrated": 0,
+      "tested": 0,
+      "approved": 0
+    }
+  ],
+  "course_work": {
+    "courses": 35,
+    "holes_per_course": 18,
+    "expected_unique_holes": 630,
+    "authored_and_playtested": 0
+  },
+  "review_status": "NOT_RELEASE_READY"
+}

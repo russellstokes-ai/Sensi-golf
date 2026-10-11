@@ -31,6 +31,14 @@ Achievements: first birdie, first eagle, first ace, first bogey-free 9 holes, fl
 
 No pay-to-win and no physics upgrades. Optional monetization only after a playable, fair base game and clear parental safeguards.
 
+## On-course sponsorship boards (sellable inventory)
+
+- **Four small world-space pixel-art sponsor boards per hole:** two positioned off the teeing corridor, two near the green, sized to look like real course signage. No screen-overlay ads, banners, video, pop-ups or interrupting play.
+- Stable slot IDs `<course>-hNN-tee-a/b` and `<course>-hNN-green-a/b`. At 18 holes, each finished course offers **72 separate placement IDs**. Inventory grows with the independently authored course roster; the final course count remains to be verified.
+- Sponsors can buy a single slot, tee pair, green pair, hole, entire course or seasonal tournament package. The code accepts **approved, family-safe campaigns**, start/end times, readable short names, optional local logo PNG and sign colours. Expired/empty slots display only a Pixtee house sign.
+- In-game Options includes a persistent **Course Boards ON/OFF** switch. Signs have no collision or physics effect; no ad SDK, user profiling, forced clickthrough or player-data collection.
+- **Commercial operations still to build:** sales contracts, billing/invoicing, moderation dashboard, logo upload, time-sensitive revocation and remote delivery. For v1, licensed creatives are incorporated by a validated manifest in app releases. See `spec/pixtee/ON_COURSE_SPONSORSHIP.md`.
+
 ## Artwork and sound inventory
 
 Original authored:

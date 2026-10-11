@@ -1,0 +1,12 @@
+{
+  "note": "Unapproved repair attempt retained for provenance only. Do not treat as verified clipping repair. Owner subsequently requested only birds be redone.",
+  "assets": [
+    {
+      "file": "golfer_swing_repair_attempt.png",
+      "sha256": "6d0a056e397bb5e63d75de393318faa5fcb84ed0316f4893d264ff46c1515b9d",
+      "status": "created",
+      "approved": false,
+      "runtimeExportComplete": false
+    }
+  ]
+}

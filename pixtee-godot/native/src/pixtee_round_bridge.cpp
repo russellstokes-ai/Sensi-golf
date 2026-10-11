@@ -2,6 +2,7 @@
 #include "original_next_player.hpp"
 #include "original_cpu_difficulty.hpp"
 #include "original_cpu_search_grid.hpp"
+#include "original_cpu_heading_sweep.hpp"
 #include "original_cpu_shot_variation.hpp"
 #include "original_turn_score_adjust.hpp"
 #include "original_competition_turn.hpp"
@@ -42,6 +43,9 @@ void PixteeRoundBridge::_bind_methods() {
                  "bypass","power","variation",
                  "random100","random_power","random_direction"),
         &PixteeRoundBridge::original_cpu_shot_variation);
+    ClassDB::bind_method(
+        D_METHOD("original_cpu_heading_sweep","original_mode","course_band","initial_heading"),
+        &PixteeRoundBridge::original_cpu_heading_sweep);
     ClassDB::bind_method(
         D_METHOD("original_cpu_scan_grid","original_mode","course_band"),
         &PixteeRoundBridge::original_cpu_scan_grid);
@@ -236,6 +240,35 @@ Dictionary PixteeRoundBridge::original_cpu_shot_variation(
     d["complete_cpu_shot_planner"]=false;
     last_error_="";
     return d;
+}
+Dictionary PixteeRoundBridge::original_cpu_heading_sweep(
+    int mode,int band,int initial_heading) {
+    Dictionary result;
+    if(mode<4 || mode>9 || band<0 || band>3 || initial_heading<0 || initial_heading>4095) {
+        last_error_="original CPU heading sweep requires mode 4..9, band 0..3, heading 0..4095";
+        result["verified"]=false;
+        return result;
+    }
+    try {
+        const auto source=pixtee::original_cpu_heading_sweep_from_original_table(
+            static_cast<std::uint16_t>(mode),
+            static_cast<std::uint8_t>(band),
+            static_cast<std::uint16_t>(initial_heading));
+        PackedInt32Array headings;
+        for(const auto h:source.candidate_headings)
+            headings.append(static_cast<int>(h));
+        result["verified"]=true;
+        result["headings"]=headings;
+        result["final_ball_heading"]=static_cast<int>(source.final_ball_heading);
+        result["final_player_heading"]=static_cast<int>(source.final_player_heading);
+        result["final_scan_counter"]=static_cast<int>(source.final_scan_counter);
+        result["candidate_quality_evaluation_recovered"]=false;
+        last_error_="";
+    }catch(const std::exception& e) {
+        last_error_=String(e.what());
+        result["verified"]=false;
+    }
+    return result;
 }
 Dictionary PixteeRoundBridge::original_cpu_scan_grid(int mode,int band) {
     Dictionary result;

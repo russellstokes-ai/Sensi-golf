@@ -21,8 +21,8 @@ User instruction: complete the *actual original Sensible Golf Windows v1.014 gam
   - Source 0x40A374..0x40A3E0: landing code 9, club-12 path, descending vertical force, height <=0x140000 and 0x30000 deflect-vs-stop threshold.
   - Source 0x40A50B..0x40A575: exact flagpole integer X, adjusted Y = ball Y − (height integer >> 1), green-mode exclusion, max height 0xA0000; applies already-recovered seeded original PRNG deflection.
   - Source 0x40A456..0x40A4A8: cup distance zero, height <=0x32 raw, player status <4, horizontal force >=0xD000, original lip rebound mutation. **Predicate only**, player-status dependency must be mapped before enabling it in live physics.
-- Source-gated code-9 airborne deflection/stop and flag contact are **now connected to the actual C++ shot loop** via original `OriginalPrng16` from `ClassicGameSession`. The original airborne and flag interactions no longer remain only unattached helper functions.
-- Native tests assert threshold boundaries and that a real source-gated flag strike consumes original PRNG and changes the ball's path versus a miss.
+- Source-gated code-9 airborne deflection/stop is now connected to the actual C++ shot loop. The flag impact is exposed through the same native loop **only when a separately verified flag-object presence marker is supplied**; ordinary course-hole coordinates alone cannot activate it. This protection preserves earlier original-PRNG golden-master expectations on synthetic course fixtures.
+- Native tests assert threshold boundaries; a deliberately armed flag-object test checks PRNG consumption and path deflection versus a miss. This is not yet a real-course object classification proof.
 - **Missing:** original dynamic-code parity proof for those activated branches, tree-object identity/type and ball-height gating, complete PRNG/audio/event control and collision against all original fixtures; complete code-9/code-10 post-terminal continuation; flag/cup corner-case original-state proof and player status; dispatch outside the studied windows.
 - **Do not claim tree parity, complete code-9/10, flag/cup full parity, or exhaustive dispatcher parity yet.** Static exhaustive instruction windows are not game-wide semantic coverage.
 
@@ -51,3 +51,7 @@ User instruction: complete the *actual original Sensible Golf Windows v1.014 gam
 - The full requirements inventory `ENGINE_COMPLETENESS_GATE_2026-10-11.json` remains intentionally **red** until complete original-machine end-to-end comparisons.
 - Artwork/audio/courses from the original are not shipped in Pixtee. Recovered source-derived numerical data and code require an IP/right-to-distribute review before commercial release.
 - **No production playable Android APK has been made or claimed.**
+
+## Collision activation safety correction
+
+The original flag branch compares ball/flag coordinates, but source course collision-object existence is not yet classified. Enabling coordinate collisions for *every* course with a cup would consume extra PRNG values even on synthetic fixture courses and invalidate known tests. The shot API therefore defaults flag-object-verified to **false**; the exact native routine is ready but unverified real-course activation stays gated. The original code-9 conditional branch can execute using a source-confirmed terrain code and original seed. This distinction deliberately avoids claiming full object-collision parity.

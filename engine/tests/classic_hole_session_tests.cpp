@@ -164,6 +164,7 @@ int main() {
     water_session.begin_shot(water_shot);
     run_active(water_session);
     assert(water_session.phase() == HoleSessionPhase::HazardStopped);
+    assert(water_session.last_hazard_kind() == ClassicNamedHazard::Water);
     assert(water_session.ball_state().hazard);
     assert(water_session.hazard_pause_remaining() == 100);
     const auto hazard_x = water_session.ball_x_raw();
@@ -357,6 +358,30 @@ int main() {
     assert(blocked.phase() == HoleSessionPhase::UnsupportedTerrain);
     assert(blocked.unsupported_descriptor().has_value());
     assert(*blocked.unsupported_descriptor() == 47);
+
+    // The original MAPI descriptor 22 is named OUT OF BOUNDS and shares
+    // code35 physics with water; the product must NOT silently label it
+    // water or charge the separate world-boundary penalty here.
+    {
+        auto oob_tile_course = uniform_course(22);
+        ClassicHoleSession oob_tile(oob_tile_course,0,0);
+        oob_tile.begin_shot(water_shot);
+        run_active(oob_tile);
+        assert(oob_tile.phase()==HoleSessionPhase::HazardStopped);
+        assert(oob_tile.last_hazard_kind()==ClassicNamedHazard::OutOfBoundsTile);
+        assert(oob_tile.hazard_pause_remaining()==100);
+        assert(oob_tile.strokes()==1);
+        assert(oob_tile.recovered_counters().player_52==1);
+        assert(oob_tile.recovered_counters().player_56==1);
+        for(int i=0;i<101;++i)oob_tile.step();
+        assert(oob_tile.phase()==HoleSessionPhase::HazardRecovered);
+        assert(oob_tile.last_hazard_kind()==ClassicNamedHazard::OutOfBoundsTile);
+        oob_tile.acknowledge_hazard_recovery();
+        assert(oob_tile.phase()==HoleSessionPhase::ReadyForShot);
+        oob_tile.begin_shot(water_shot);
+        assert(oob_tile.strokes()==2);
+        assert(oob_tile.last_hazard_kind()==ClassicNamedHazard::None);
+    }
 
     return 0;
 }

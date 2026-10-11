@@ -5,6 +5,7 @@
 
 #include "sensigolf/recovered_distance.hpp"
 #include "sensigolf/recovered_hazard_recovery.hpp"
+#include "sensigolf/recovered_world_boundary.hpp"
 #include "sensigolf/recovered_putter_terminal.hpp"
 
 namespace sensigolf {
@@ -325,6 +326,39 @@ void ClassicHoleSession::step() {
         || state.y_raw < std::numeric_limits<std::int32_t>::min()
         || state.y_raw > std::numeric_limits<std::int32_t>::max()) {
         throw std::overflow_error("classic ball coordinate outside recovered 32-bit range");
+    }
+
+    // Original x86 0x409535 rejects signed world coordinates outside
+    // the map before the MAPI descriptor lookup. Do not throw from
+    // resolve_raw_position for a legitimate shot crossing the boundary.
+    // This branch is DISTINCT from in-map descriptor 22 code35.
+    if(!green_mode_) {
+        recovered::OriginalWorldBoundaryInput boundary{};
+        boundary.ball_x=static_cast<std::int32_t>(state.x_raw);
+        boundary.ball_y=static_cast<std::int32_t>(state.y_raw);
+        boundary.x_extent=course_.recovery_x_extent();
+        boundary.y_extent=course_.recovery_y_extent();
+        boundary.strokes_on_hole=recovered_counters_.player_52;
+        boundary.strokes_total=recovered_counters_.player_56;
+        const auto oob=recovered::original_world_boundary_check(boundary);
+        if(oob.outside_world) {
+            // Verified original 0x40A327..0x40A34C: BOTH original
+            // counters increment for the out-of-world penalty, separately
+            // from the stroke already counted at launch.
+            recovered_counters_.player_52=oob.strokes_on_hole;
+            recovered_counters_.player_56=oob.strokes_total;
+            ++strokes_;
+            last_hazard_kind_=ClassicNamedHazard::OutsideWorld;
+            ball_x_raw_=static_cast<std::int32_t>(state.x_raw);
+            ball_y_raw_=static_cast<std::int32_t>(state.y_raw);
+            shot_.stop_for_world_boundary();
+            // Original exits to UI dispatch 0x40CD00 then bit2 state
+            // recovery 0x40AACF -> 0x40A871. A 100-value pause is
+            // source-authentic, but exact UI/ack timing is not yet proven.
+            phase_=HoleSessionPhase::HazardStopped;
+            hazard_pause_remaining_=oob.ball_pause;
+            return;
+        }
     }
 
     const auto surface = course_.resolve_raw_position(

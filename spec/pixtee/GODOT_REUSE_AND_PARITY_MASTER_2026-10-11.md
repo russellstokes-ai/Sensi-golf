@@ -28,6 +28,36 @@ import, course visual polish and animations are explicitly deferred.**
   mechanically accurate, deterministic, headless end-to-end engine testing,
   then return to game presentation.
 
+## New verified engine-only integration milestones (11 October)
+
+- **Fine collisions**: Lakewood now feeds recovered C++ with original-style
+  MAPI 8×4 subcells, 4-word selector bitplanes and MAPM tile indices; no
+  more one-lie-per-tile course adapter. Precise authored boundary approval
+  and real-scenario collision parity remain separate gates.
+- **Green slope**: standalone MAPS green, original green-coordinate transfer,
+  authentic 16-direction / 16-magnitude nibble encoding. All 256 MAPI
+  combinations tested against the recovered parser, plus a native putt run.
+  The original *per-hole* slope values cannot be transplanted as original
+  commercial course geometry; separately authored slopes remain pending.
+- **Full game flow**: the new headless `PixteeRoundRuntime` invokes the
+  real `ClassicGameSession`, `ClassicRoundSession`,
+  `ClassicMobileControls` and `ClassicReplayJournal`.
+  Native tests pass 18 scored holes, correct cumulative counters, resource
+  progression and deterministic checksum-protected replay/restore.
+- **Godot binding**: `PixteeRoundBridge` exposes the native round to GDScript
+  without implementing physics or scores in the presentation host. A genuine
+  Godot headless class-load exercise is the next independent proof gate.
+- **Completeness register**: [ENGINE_COMPLETENESS_GATE_2026-10-11.json](ENGINE_COMPLETENESS_GATE_2026-10-11.json)
+  tracks 73 distinct known original-game requirements, with 23 currently
+  marked unresolved or not integrated. It explicitly forbids a false
+  '100%' release claim.
+
+**None of these improvements mean all original game mechanics have been
+recovered.** Exact complete Welly meter timing, extreme accuracy misses,
+tree/cup/flag special interactions, code 9/10 continuation, multiplayer/
+computer turns and original event timing remain evidence-and-implementation
+work, not arbitrary TODOs to fill with substitutes. Presentation remains deferred.
+
 ## Project state
 
 - [Recovered reference C++ engine](../../engine) remains the source of truth.

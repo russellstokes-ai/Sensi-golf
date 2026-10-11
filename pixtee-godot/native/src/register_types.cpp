@@ -1,4 +1,5 @@
 #include "pixtee_gameplay.hpp"
+#include "pixtee_round_bridge.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/godot.hpp"
 
@@ -7,6 +8,7 @@ using namespace godot;
 void initialize_pixtee(ModuleInitializationLevel level) {
     if (level != MODULE_INITIALIZATION_LEVEL_SCENE) return;
     ClassDB::register_class<PixteeGameplay>();
+    ClassDB::register_class<PixteeRoundBridge>();
 }
 void uninitialize_pixtee(ModuleInitializationLevel level) {
     (void)level;

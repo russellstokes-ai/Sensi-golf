@@ -45,4 +45,31 @@ struct OriginalMappedTerminalResult {
 OriginalMappedTerminalResult original_mapped_terminal_contact(
     const OriginalMappedTerminalInput& input);
 
+
+// Source-original v1.014 0x40A575..0x40A5F2 is the entry preceding
+// the putter-specific MAPI terrain branch. This is an isolated ADMISSION
+// classifier: it intentionally stops *before* any downstream terminal
+// or player/scoring effects. Never treat this as a full shot dispatcher.
+enum class OriginalPutterAdmissionRoute : std::uint8_t {
+    NormalFlight = 0,          // 0x40A603, no terrain lookup
+    RollingSurface = 1,        // 0x40A5F7, landing code <8
+    CupCode8 = 2,              // 0x40A730
+    SpecialGreenCode9Or10 = 3, // 0x40A40B
+    Code35LowHeight = 4,      // 0x40A6E3
+    HighCodeEvent1 = 5,       // 0x40A6AB
+};
+struct OriginalPutterAdmissionResult {
+    OriginalPutterAdmissionRoute route =
+        OriginalPutterAdmissionRoute::NormalFlight;
+    std::uint16_t contact_flags = 0;
+    bool map_lookup_performed = false;
+    std::uint16_t descriptor_index = 0xffffu;
+    std::uint16_t landing_code = 0xffffu;
+};
+// Original source global [0x41F886] is specifically compared to value 1.
+// Values other than 1 do NOT bypass the putter map branch.
+OriginalPutterAdmissionResult original_putter_terrain_admission(
+    const OriginalMappedTerminalInput& input,
+    std::uint8_t original_bounce_marker);
+
 } // namespace sensigolf::recovered

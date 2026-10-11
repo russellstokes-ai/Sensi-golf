@@ -27,7 +27,13 @@ def course_summary(mapm):
     tiles=Counter(value&0x3ff for value in raw)
     combos=Counter((value>>10,value&0x3ff) for value in raw)
     nonzero=sum(n for k,n in high.items() if k!=0)
-    return {"width":w,"height":h,"tiles_total":len(raw),
+    nonzero_positions=[
+        {"x":i%w,"y":i//w,"high_six_bits":v>>10,
+         "low_ten_bits":v&0x3ff}
+        for i,v in enumerate(raw) if v>>10
+    ]
+    return {"upper_nonzero_tile_positions":nonzero_positions,
+        "width":w,"height":h,"tiles_total":len(raw),
         "high_six_bits_distribution":dict(sorted(high.items())),
         "nonzero_high_six_bit_tile_count":nonzero,
         "low_ten_bit_distinct_tiles":len(tiles),
@@ -39,7 +45,13 @@ def original_machine_refs(exe):
     md=Cs(CS_ARCH_X86,CS_MODE_32)
     hits=[];n=0
     for sec in secs:
-        if sec["name"] not in (".text","CODE","TEXT"):
+        # Some original PE section names are nonstandard. Locate the
+        # executable region by the verified 0x409535 machine-code VA,
+        # NOT a guessed '.text' section label (zero matches previously).
+        lookup_rva=0x409535-base
+        start_rva=sec["rva"]
+        section_span=max(sec["virtual_size"],sec["raw_size"])
+        if not (start_rva<=lookup_rva<start_rva+section_span):
             continue
         offset=sec["raw_offset"]
         buf=exe[offset:offset+sec["raw_size"]]
@@ -91,6 +103,8 @@ def main():
     print("Original MAPM high-six distribution:",summary["high_six_bits_distribution"])
     print("Tiles with high bits:",summary["nonzero_high_six_bit_tile_count"],
           "out of",summary["tiles_total"])
+    print("Original x86 instruction count:",x86["disassembled_count"])
+    print("Original upper-bit positions:",summary["upper_nonzero_tile_positions"])
     print("Original x86 resource references:",x86["map_reference_count"],
           "course lookup callers:",x86["terrain_lookup_call_count"],
           "mask/shift candidates:",x86["mask_or_shift_count"])

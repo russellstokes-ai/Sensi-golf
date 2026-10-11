@@ -59,4 +59,11 @@ OriginalWorldOobRestoreResult original_world_oob_restore(
     return out;
 }
 
+OriginalWorldOobEvent original_world_oob_event() noexcept {
+    // Source x86 0x40CD00 MOV [0x420FEF],1; 0x40CD07/11 constant
+    // writes, 0x40CD1B ESI assignment, JMP 0x40CFE9. Does not claim
+    // the 0x40CFE9 renderer/UI acknowledgement has been reproduced.
+    return OriginalWorldOobEvent{1u,0x46u,0x1000du,0x420670u};
+}
+
 } // namespace sensigolf::recovered

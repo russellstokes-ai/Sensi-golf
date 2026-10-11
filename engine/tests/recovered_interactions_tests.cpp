@@ -13,6 +13,30 @@ int main() {
     assert(original_terminal_stop_contact(50,-1)==OriginalStopContact::Code50);
     assert(original_terminal_stop_contact(50,201)==OriginalStopContact::Code50);
     assert(original_terminal_stop_contact(8,200)==OriginalStopContact::Other);
+    // Source 0x40A7BD physical rebound depends on exact x86 arithmetic.
+    {
+        auto out=original_terminal_rebound(-0x2100,0x1000);
+        assert(out.continues_flight);
+        assert(out.vertical_force==0x1080);
+        assert(out.horizontal_force==0x1840);
+    }
+    {
+        auto out=original_terminal_rebound(0,0);
+        assert(!out.continues_flight && out.vertical_force==0
+               && out.horizontal_force==0);
+    }
+    {
+        auto out=original_terminal_rebound(5,2);
+        // NEG 5 => -5; SAR 1 => -3; SAR 1 => -2; 2+(-2)=0.
+        assert(!out.continues_flight);
+        assert(out.vertical_force==0 && out.horizontal_force==0);
+    }
+    {
+        auto out=original_terminal_rebound(INT32_MIN,INT32_MAX);
+        assert(out.continues_flight);
+        assert(out.vertical_force==INT32_MIN/2);
+        assert(out.horizontal_force==INT32_MAX+INT32_MIN/4);
+    }
     // Source-mapped branch boundaries, including special codes 9 and 10:
     assert(original_code9_contact(9,12,0,0) == Code9Contact::SpecialStop);
     assert(original_code9_contact(9,0,-1,0x2ffff) == Code9Contact::SpecialStop);

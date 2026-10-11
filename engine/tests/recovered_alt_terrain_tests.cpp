@@ -22,7 +22,9 @@ int main() {
     assert(o.vertical_force==4224 && o.horizontal_force==52112);
     o=original_alternate_terrain_contact(0,32768,1);
     assert(o.route==OriginalAlternateTerrainRoute::ReturnZero);
-    assert(o.vertical_force==-16384 && o.horizontal_force==0);
+    // Original rebound would give -16384 V, but the source JG fails
+    // because the signed horizontal sum is negative; both forces zero.
+    assert(o.vertical_force==0 && o.horizontal_force==0);
     o=original_alternate_terrain_contact(65535,-8448,50000);
     assert(o.route==OriginalAlternateTerrainRoute::ContinueGround);
 }

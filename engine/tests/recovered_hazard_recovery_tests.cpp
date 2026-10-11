@@ -32,5 +32,15 @@ int main() {
     assert(b.player_x==(85<<16));
     assert(b.player_y==(95<<16));
     assert(b.pause==60);
+    // The OOB game-state flag arm always returns to the safe anchor,
+    // including the strict coordinate-equality discrepancy between
+    // original lookup JGE and generic recovery JA.
+    in.ball_x=(100+0x100)<<16;
+    in.ball_y=(100+0xD0)<<16;
+    auto forced=recover_hazard_from_safe_anchor(in);
+    assert(forced.used_safe_anchor);
+    assert(forced.ball_x==((85+15)<<16));
+    assert(forced.ball_y==((95+15)<<16));
+    assert(forced.pause==60);
     return 0;
 }

@@ -32,6 +32,18 @@ struct OriginalTerminalRebound {
 };
 OriginalTerminalRebound original_terminal_rebound(
     std::int32_t vertical_force, std::int32_t horizontal_force) noexcept;
+
+// Original 0x40A79D..0x40A7BD controls whether the event-zero callback
+// runs once per player flag bit 0, then applies the identical rebound.
+// No sound, animation or terrain/object identity is assumed.
+struct OriginalTerminalLatchRebound {
+    OriginalTerminalRebound rebound{};
+    std::uint16_t player_flags = 0;
+    bool event_zero_requested = false;
+};
+OriginalTerminalLatchRebound original_terminal_rebound_with_latch(
+    std::uint16_t player_flags,
+    std::int32_t vertical_force, std::int32_t horizontal_force) noexcept;
 Code9Contact original_code9_contact(
     std::uint16_t landing_code, std::uint16_t club_index,
     std::int32_t vertical_force, std::int32_t ball_height_raw) noexcept;

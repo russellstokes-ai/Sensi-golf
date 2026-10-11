@@ -51,7 +51,7 @@ bool original_near_cup_lip_contact(
     bool zero_distance, std::uint16_t player_state,
     const FlightState& state) noexcept {
     // Original 0x40A456..0x40A4A8: separate from code-8 capture.
-    return zero_distance && state.height<=0x32 && state.height>=0 &&
+    return zero_distance && state.height<=0x32 &&
            player_state<4 && state.horizontal_force>=0xD000;
 }
 

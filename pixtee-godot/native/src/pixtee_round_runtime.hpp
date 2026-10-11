@@ -10,6 +10,7 @@
 #include "sensigolf/classic_mobile_controls.hpp"
 #include "sensigolf/classic_replay_journal.hpp"
 #include "sensigolf/recovered_prng.hpp"
+#include "recovered_welly_tick.hpp"
 
 namespace pixtee {
 // Headless native host ONLY: never calculates flight, collision, scoring, RNG,
@@ -31,6 +32,11 @@ public:
     void set_club(std::uint16_t index);
     void cycle_club(int delta);
     void meter_click_raw(std::uint16_t sample);
+    void start_original_welly();
+    bool tick_original_welly(bool pressed);
+    bool original_welly_active() const noexcept;
+    bool original_welly_rejected() const noexcept;
+    const OriginalWellyTickState& original_welly_state() const noexcept;
     void cancel_meter() noexcept;
     void step_tick();
     void acknowledge_hazard();
@@ -56,6 +62,10 @@ private:
     std::unique_ptr<sensigolf::ClassicGameSession> game_;
     std::map<std::uint8_t,sensigolf::ClassicCourseResources> courses_;
     sensigolf::ClassicMobileControls controls_;
+    OriginalWellyTick original_welly_{};
+    bool original_welly_active_=false;
+    bool original_welly_first_press_=false;
+    bool original_welly_rejected_=false;
     sensigolf::ClassicReplayJournal journal_;
     std::optional<sensigolf::ClassicShotRequest> pending_;
     bool replay_supported_ = true;

@@ -16,6 +16,13 @@ class PixteeRoundBridge : public RefCounted {
 protected:
     static void _bind_methods();
 public:
+    // Pure original v1.014 next-player decision; caller supplies the
+    // original per-player priority/eligibility state, not invented metrics.
+    int original_next_player_choice(
+        int player_count, int forced_holder,
+        const PackedInt32Array& priority,
+        const PackedInt32Array& eliminated,
+        const PackedInt32Array& identities);
     bool begin_round(const PackedInt32Array& order,
                      const PackedInt32Array& par_by_resource,
                      int seed0,int seed1);

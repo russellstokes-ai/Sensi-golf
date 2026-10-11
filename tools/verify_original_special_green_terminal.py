@@ -53,7 +53,10 @@ def original(uc,case):
         elif a in (SPECIAL,HOLED):
             stop.append(a);machine.emu_stop()
     h=uc.hook_add(UC_HOOK_CODE,hook)
-    try:uc.emu_start(START,0,count=6000)
+    try:
+        uc.emu_start(START,0,count=6000)
+    except Exception as exc:
+        raise RuntimeError(f"Original terminal x86 failure input={case} EIP={uc.reg_read(UC_X86_REG_EIP):#x}, events={events}: {exc}") from exc
     finally:uc.hook_del(h)
     if len(stop)!=1:raise RuntimeError("unrecognized original terminal "+str(case)+" "+str(stop))
     return [1,r16(uc,PLAYER),r16(uc,PLAYER+0x52),r16(uc,PLAYER+0x56),

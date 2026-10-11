@@ -83,6 +83,7 @@ void ClassicHoleSession::reset(
     }
     hazard_pause_remaining_ = 0;
     last_hazard_kind_ = ClassicNamedHazard::None;
+    pending_world_oob_event_.reset();
     special_green_pause_remaining_ = 0;
     special_green_continuation_ready_ = false;
     recovered_counters_ = {};
@@ -243,6 +244,7 @@ void ClassicHoleSession::acknowledge_hazard_recovery() {
     // code-35 stop/recovery fragment. Terminal presentation completion clears
     // the UI/game-flow gate separately; the recovered ball position is already
     // authoritative at this point.
+    pending_world_oob_event_.reset();
     phase_ = HoleSessionPhase::ReadyForShot;
 }
 
@@ -377,6 +379,7 @@ void ClassicHoleSession::step() {
             recovered_counters_.player_56=oob.strokes_total;
             ++strokes_;
             last_hazard_kind_=ClassicNamedHazard::OutsideWorld;
+            pending_world_oob_event_=recovered::original_world_oob_event();
             ball_x_raw_=static_cast<std::int32_t>(state.x_raw);
             ball_y_raw_=static_cast<std::int32_t>(state.y_raw);
             shot_.stop_for_world_boundary();
@@ -509,6 +512,11 @@ ClassicHoleSession::unsupported_descriptor() const noexcept {
 
 ClassicNamedHazard ClassicHoleSession::last_hazard_kind() const noexcept {
     return last_hazard_kind_;
+}
+
+std::optional<recovered::OriginalWorldOobEvent>
+ClassicHoleSession::pending_world_oob_event() const noexcept {
+    return pending_world_oob_event_;
 }
 
 std::uint16_t ClassicHoleSession::hazard_pause_remaining() const noexcept {

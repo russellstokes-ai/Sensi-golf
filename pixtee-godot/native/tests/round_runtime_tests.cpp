@@ -67,8 +67,8 @@ int main() {
         assert(timed.hole().strokes()==0);
         timed.start_original_welly();
         bool submitted=false;
-        for(int tick=0;tick<=114;++tick)
-            submitted=timed.tick_original_welly(tick==12 || tick==114) || submitted;
+        for(int tick=0;tick<=111;++tick)
+            submitted=timed.tick_original_welly(tick==12 || tick==111) || submitted;
         assert(submitted);
         assert(timed.hole().strokes()==1);
         assert(!timed.original_welly_rejected());

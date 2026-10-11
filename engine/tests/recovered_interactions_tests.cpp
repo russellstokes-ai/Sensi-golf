@@ -29,6 +29,8 @@ int main() {
     assert(!original_near_cup_lip_contact(false,0,position));
     position.vertical_force=1;
     assert(original_near_cup_lip_contact(true,0,position));
+    position.height=-1;
+    assert(original_near_cup_lip_contact(true,0,position)); // original x86 CMP/JG has no lower bound
 
     {
         FlightState s{};

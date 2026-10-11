@@ -41,7 +41,7 @@ bool creek(double x,double y) {
 // Independently authored Pixtee surfaces, but every resulting descriptor is
 // encoded using the *actual recovered Sensible Golf* 77-entry surface table.
 std::uint8_t surface_at(double x,double y,bool green_detail) {
-    if (ellipse(x,y,142.,82.,30.,30.*.82)) return 30; // GREEN H4, code 1
+    if (ellipse(x,y,142.,82.,30.,30.*.82)) return 31; // GREEN H4, code 1
     if (green_detail) return 0;                        // original skirt code 2
     if (creek(x,y)) return 6;                          // original water code 35
     if (ellipse(x,y,91,141,19,20) ||
@@ -127,7 +127,7 @@ std::vector<std::uint8_t> rasterize(
                     const auto surface=surface_at(wx,wy,green_mode);
                     // Original 16-bit MAPI schema: high nibble magnitude,
                     // next nibble direction (16 sectors), low byte descriptor.
-                    const std::uint16_t slope=green_mode && surface==30
+                    const std::uint16_t slope=green_mode && surface==31
                         ? static_cast<std::uint16_t>(
                             (magnitude<<12)|(direction<<8)) : 0;
                     cells[sy*8+sx]=static_cast<std::uint16_t>(slope|surface);

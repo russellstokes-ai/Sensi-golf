@@ -500,23 +500,25 @@
         "source_verified_subfunctions": [
           "original low-height code9 branch threshold and seeded PRNG deflection",
           "Original x86 code9 no-contact / low-height deflection / 100-tick special-stop activation: 4390/4390 exact",
-          "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact"
+          "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact",
+          "Original source 0x40A7E0..0x40A7F1 signed WORD pause tick exactly 1230/1230 source-machine matches",
+          "Live ClassicHoleSession special-green timer now waits original extra zero tick (100 to 0 then underflow) before host continuation acknowledgement"
         ],
         "implemented": [
           "engine/src/recovered_interactions.cpp",
           "engine/src/classic_shot_model.cpp",
-          "engine/src/recovered_putter_terminal.cpp"
+          "engine/src/recovered_putter_terminal.cpp",
+          "engine/src/classic_hole_session.cpp"
         ],
         "evidence": [
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161351577",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165847870",
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169920597"
         ],
         "not_yet_verified": [
-          "Complete original code9 post-event transition and scorer flow not verified",
-          "Exact real-course dynamic integration for all terrain layouts not verified",
-          "Original post-event 11 / code9/10 continuation through round transitions not yet full-machine-verified",
-          "Complete dynamic scoring and per-player penalty edge cases"
+          "Original downstream post-expiry course/ball/player-state relocation after 0x40A7F1 not yet reconstructed fully",
+          "Original event11 code9 dynamic game and scoring continuations"
         ]
       }
     },
@@ -530,17 +532,20 @@
       "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
       "partial_original_recovery": {
         "source_verified_subfunctions": [
-          "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact"
+          "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact",
+          "Original x86 pause WORD signed decrement and UI-latch 1230/1230 exact (shared code9/code10 delay)",
+          "ClassicHoleSession code10 timer now models original 101st call as continuation gate, not 100th call"
         ],
         "implemented": [
-          "engine/src/recovered_putter_terminal.cpp"
+          "engine/src/recovered_putter_terminal.cpp",
+          "engine/src/classic_hole_session.cpp"
         ],
         "evidence": [
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169920597"
         ],
         "not_yet_verified": [
-          "Original post-event 11 / code9/10 continuation through round transitions not yet full-machine-verified",
-          "Complete dynamic scoring and per-player penalty edge cases"
+          "Original code10 subsequent 0x40A7F1 terrain/player/game event continuation not yet end-to-end parity-proven"
         ]
       }
     },
@@ -738,23 +743,30 @@
         "source_verified_subfunctions": [
           "x86 0x40C665..0x40C6B2 original CPU search budgets 24/24 exact",
           "x86 0x40C78B..0x40C7C4 candidate ranking 378/378 exact",
-          "x86 0x40C7DD..0x40C84F seeded RNG-return effect on CPU shot captured power, variation, swing adjust, 1,620/1,620 exact"
+          "x86 0x40C7DD..0x40C84F seeded RNG-return effect on CPU shot captured power, variation, swing adjust, 1,620/1,620 exact",
+          "Recovered all 24 original v1.014 CPU aiming-table mode4..9/band0..3 data rows, source x86 scan setup 1274/1274 exact",
+          "Recovered original 0x40C71B..0x40C77F CPU candidate aim-heading sweep: 120/120 full original cases, 4605 candidate headings identical, Godot native callable"
         ],
         "implemented": [
           "pixtee-godot/native/src/original_cpu_difficulty.cpp",
           "pixtee-godot/native/src/original_cpu_candidate.cpp",
           "pixtee-godot/native/src/pixtee_round_bridge.cpp",
-          "pixtee-godot/native/src/original_cpu_shot_variation.cpp"
+          "pixtee-godot/native/src/original_cpu_shot_variation.cpp",
+          "pixtee-godot/native/src/original_cpu_search_grid.cpp",
+          "pixtee-godot/native/src/original_cpu_heading_sweep.cpp",
+          "pixtee-godot/reference/ORIGINAL_CPU_SCAN_TABLE_2026-10-11.json"
         ],
         "evidence": [
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38163091444",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38163324373",
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164319868"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164319868",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169533045",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170143652"
         ],
         "not_yet_verified": [
-          "entire original CPU candidate generation and shot evaluator",
-          "original shot planner and skill-specific decisions",
-          "AI club, power, aim, terminal handling and retries"
+          "Original per-heading shot evaluator 0x40C93E and terrain-dependent candidate generation",
+          "Complete CPU player club/power evaluation, difficulty-driven shot choice and original RNG state",
+          "End-to-end original computer round gameplay and machine parity"
         ]
       }
     },
@@ -875,5 +887,5 @@
     }
   ],
   "checked_original_executable_at": "2026-10-11",
-  "current_update": "Verified original x86 code9 activation 4390/4390, cup lip activation 3172/3172, flag activation 2712/2712, and original codes8/9/10 terminal state 2160/2160, with signed arithmetic and flag X-register corrections implemented; end-to-end gameplay gates still open."
+  "current_update": "Original CPU full aiming grid and 4605 headings verified by real x86; original event11 16bit 101st-tick continuation gate recovered, integrated into ClassicHoleSession, verified 1230/1230. Fifteen full gameplay gates remain open for whole-game parity."
 }

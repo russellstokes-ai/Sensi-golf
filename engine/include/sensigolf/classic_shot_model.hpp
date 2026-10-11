@@ -4,6 +4,7 @@
 
 #include "sensigolf/classic_model.hpp"
 #include "sensigolf/recovered_flight.hpp"
+#include "sensigolf/recovered_prng.hpp"
 
 namespace sensigolf {
 
@@ -39,6 +40,9 @@ public:
     }
 
     void set_surface_context(const ClassicSurfaceContext& context);
+    void set_original_interaction_context(
+        recovered::OriginalPrng16* prng, bool green_mode,
+        std::int16_t flag_x, std::int16_t flag_y) noexcept;
     void update_surface_context_for_tick(
         const ClassicSurfaceContext& context);
     const ClassicSurfaceContext& surface_context() const noexcept;
@@ -76,6 +80,10 @@ private:
     std::uint16_t active_club_ = 0;
     ClassicShotOutcome outcome_ = ClassicShotOutcome::None;
     bool active_ = false;
+    recovered::OriginalPrng16* interaction_prng_ = nullptr;
+    bool interaction_green_mode_ = false;
+    std::int16_t flag_x_ = 0;
+    std::int16_t flag_y_ = 0;
 };
 
 } // namespace sensigolf

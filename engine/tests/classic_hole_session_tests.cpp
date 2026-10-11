@@ -383,5 +383,32 @@ int main() {
         assert(oob_tile.last_hazard_kind()==ClassicNamedHazard::None);
     }
 
+    // Real gameplay world-boundary case: do not crash inside MAPI lookup.
+    // The original world negative-AX branch charges TWO counters +1
+    // over the already counted launch stroke, then uses a saved safe
+    // position. It is distinct from an in-map descriptor-22 hazard.
+    {
+        ClassicHoleSession world_oob(fairway,63<<16,100<<16);
+        world_oob.begin_shot(drive);
+        run_active(world_oob);
+        assert(world_oob.phase()==HoleSessionPhase::HazardStopped);
+        assert(world_oob.last_hazard_kind()==ClassicNamedHazard::OutsideWorld);
+        assert(world_oob.strokes()==2);
+        assert(world_oob.recovered_counters().player_52==2);
+        assert(world_oob.recovered_counters().player_56==2);
+        assert(world_oob.hazard_pause_remaining()==100);
+        for(int tick=0;tick<101;++tick)world_oob.step();
+        assert(world_oob.phase()==HoleSessionPhase::HazardRecovered);
+        // Actual original 0x40AACF -> 0x40A871 uses safe anchor +15
+        // and does not leave the ball outside course dimensions.
+        assert(world_oob.ball_x_raw()>=0);
+        assert(world_oob.ball_x_raw()<(64<<16));
+        assert(world_oob.ball_y_raw()>=0);
+        assert(world_oob.ball_y_raw()<(1024<<16));
+        assert(world_oob.last_hazard_kind()==ClassicNamedHazard::OutsideWorld);
+        world_oob.acknowledge_hazard_recovery();
+        assert(world_oob.phase()==HoleSessionPhase::ReadyForShot);
+    }
+
     return 0;
 }

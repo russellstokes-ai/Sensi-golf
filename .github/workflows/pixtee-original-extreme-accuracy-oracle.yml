@@ -1,0 +1,38 @@
+name: Pixtee Original Extreme Swing Accuracy Machine Code Oracle
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - '.github/workflows/pixtee-original-extreme-accuracy-oracle.yml'
+      - 'tools/probe_original_extreme_accuracy.py'
+permissions:
+  contents: read
+jobs:
+  original-extreme-accuracy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Fetch and verify original Sensible Golf Windows v1.014
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Execute real original launch machine code at extreme accuracy inputs
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/probe_original_extreme_accuracy.py --exe "$EXE" \
+            -o analysis/private/original-extreme-accuracy-source-oracle.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pixtee-original-extreme-accuracy-execution-oracle
+          path: analysis/private/original-extreme-accuracy-source-oracle.json
+          if-no-files-found: warn
+          retention-days: 30

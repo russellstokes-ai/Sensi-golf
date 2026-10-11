@@ -455,11 +455,24 @@ void ClassicHoleSession::step() {
         phase_ = HoleSessionPhase::HazardStopped;
         hazard_pause_remaining_ = 100;
         break;
-    case ClassicShotOutcome::SpecialGreenStop:
+    case ClassicShotOutcome::SpecialGreenStop: {
+        // Original early low-height code-9 contact enters 0x40A403:
+        // it increments BOTH stroke counters before 0x40A40B. The
+        // late putter code-10 route enters 0x40A40B directly and does
+        // NOT increment them. Source-machine parity oracle covers both.
+        recovered::OriginalSpecialGreenStopState stop{};
+        stop.counter_52=recovered_counters_.player_52;
+        stop.counter_56=recovered_counters_.player_56;
+        const bool early_code9=surface.landing_code==9;
+        stop=recovered::original_special_green_stop_state(early_code9,stop);
+        recovered_counters_.player_52=stop.counter_52;
+        recovered_counters_.player_56=stop.counter_56;
+        if(early_code9)++strokes_;
         phase_ = HoleSessionPhase::SpecialGreenStopped;
-        special_green_pause_remaining_ = 100;
+        special_green_pause_remaining_ = stop.ball_pause;
         special_green_continuation_ready_ = false;
         break;
+    }
     case ClassicShotOutcome::Rest:
     case ClassicShotOutcome::None:
         phase_ = HoleSessionPhase::ReadyForShot;

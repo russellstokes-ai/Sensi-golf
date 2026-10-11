@@ -14,8 +14,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build recovered C++ core
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build -j 2
-      - name: Run established engine tests
-        run: ctest --test-dir build --output-on-failure
       - name: Compile independently authored course adapter against real core
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include -Ipixtee-godot/native/src \
@@ -23,3 +21,5 @@ jobs:
             pixtee-godot/native/tests/course_adapter_smoke.cpp \
             build/engine/libsensigolf_core.a -o build/pixtee-adapter-smoke
           build/pixtee-adapter-smoke
+      - name: Audit full native suite (known baseline failures are NOT ignored)
+        run: ctest --test-dir build --output-on-failure

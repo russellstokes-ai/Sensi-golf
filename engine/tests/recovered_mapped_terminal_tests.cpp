@@ -56,4 +56,49 @@ int main() {
     try { in.tile_index=2; (void)original_mapped_terminal_contact(in); }
     catch(const std::out_of_range&) { thrown=true; }
     assert(thrown);
+    // Original 0x40A575..0x40A5F2 pre-putter map admission.
+    {
+        OriginalMappedTerminalInput check{};
+        std::array<std::uint8_t,8> d{0,6,0,7,0,23,0,47};
+        std::array<std::uint8_t,8> m{};
+        check.descriptor_bank=d.data();
+        check.descriptor_size=d.size();
+        check.selector_bank=m.data();
+        check.selector_size=m.size();
+        check.club_index=0;
+        check.contact_flags=0x8001u;
+        check.ball_height=20<<16;
+        auto out=original_putter_terrain_admission(check,0);
+        assert(out.route==OriginalPutterAdmissionRoute::NormalFlight);
+        assert(!out.map_lookup_performed && out.contact_flags==0x8000u);
+        check.ball_height=19<<16;
+        out=original_putter_terrain_admission(check,0);
+        assert(out.contact_flags==0x8001u);
+        check.club_index=12;
+        out=original_putter_terrain_admission(check,1);
+        assert(out.route==OriginalPutterAdmissionRoute::NormalFlight);
+        assert(!out.map_lookup_performed);
+        out=original_putter_terrain_admission(check,2);
+        assert(out.map_lookup_performed && out.landing_code==35);
+        assert(out.route==OriginalPutterAdmissionRoute::Code35LowHeight);
+        check.ball_height=201<<16;
+        out=original_putter_terrain_admission(check,0);
+        assert(out.route==OriginalPutterAdmissionRoute::HighCodeEvent1);
+        m[0]=0x80;
+        out=original_putter_terrain_admission(check,0);
+        assert(out.route==OriginalPutterAdmissionRoute::CupCode8);
+        m[0]=0; m[4]=0x80;
+        out=original_putter_terrain_admission(check,0);
+        assert(out.route==OriginalPutterAdmissionRoute::SpecialGreenCode9Or10);
+        m[0]=0x80;
+        out=original_putter_terrain_admission(check,0);
+        assert(out.route==OriginalPutterAdmissionRoute::HighCodeEvent1);
+        check.club_index=5;
+        check.tile_index=300;
+        // Original nonputter path bypasses MAPI; source-scoped function
+        // must not attempt a lookup on any invalid/unmapped tile.
+        out=original_putter_terrain_admission(check,0);
+        assert(!out.map_lookup_performed);
+    }
+
 }

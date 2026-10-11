@@ -75,6 +75,17 @@ func _initialize() -> void:
         push_error("Original CPU search parameter ABI parity failure")
         quit(1)
         return
+    # Genuine v1.014 24-row CPU search table, backed by actual x86 parity.
+    var source_grid = round_host.original_cpu_scan_grid(4, 0)
+    if not source_grid.get("verified",false) or int(source_grid.get("candidate_count",-1)) != 32 or int(source_grid.get("first_angular_extent",-1)) != 512 or int(source_grid.get("spacing",-1)) != 4 or int(source_grid.get("initial_remainder",-1)) != 128:
+        push_error("Original CPU scan grid data or arithmetic mismatch in Godot")
+        quit(1)
+        return
+    var source_grid_far = round_host.original_cpu_scan_grid(9, 3)
+    if not source_grid_far.get("verified",false) or int(source_grid_far.get("candidate_count",-1)) != 35 or int(source_grid_far.get("second_angular_extent",-1)) != 116:
+        push_error("Original CPU scan table highest proven source band failed")
+        quit(1)
+        return
     var ai_pick = round_host.original_cpu_candidate_choice(
         PackedInt32Array([0, 1, -1]),
         PackedInt32Array([0, 0, 0]),

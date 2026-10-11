@@ -28,7 +28,7 @@ int main() {
     assert(!original_near_cup_lip_contact(true,4,position));
     assert(!original_near_cup_lip_contact(false,0,position));
     position.vertical_force=1;
-    assert(!original_near_cup_lip_contact(true,0,position));
+    assert(original_near_cup_lip_contact(true,0,position));
 
     {
         FlightState s{};

@@ -14,6 +14,7 @@ add_library(sensigolf_core
     src/recovered_course_lookup.cpp
     src/recovered_mapped_terminal.cpp
     src/recovered_shot_admission.cpp
+    src/recovered_world_boundary.cpp
     src/classic_round_session.cpp
     src/classic_hole_plan.cpp
     src/classic_game_session.cpp
@@ -79,6 +80,13 @@ add_executable(sensigolf_recovered_interactions_probe
     tools/recovered_interactions_probe.cpp
 )
 target_link_libraries(sensigolf_recovered_interactions_probe PRIVATE sensigolf_core)
+
+add_executable(sensigolf_recovered_world_boundary_tests
+    tests/recovered_world_boundary_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_world_boundary_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_world_boundary_tests
+    COMMAND sensigolf_recovered_world_boundary_tests)
 
 add_executable(sensigolf_recovered_shot_admission_tests
     tests/recovered_shot_admission_tests.cpp

@@ -1,0 +1,49 @@
+name: Pixtee Original Executable Full Club Lie Launch Matrix
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - '.github/workflows/pixtee-original-launch-full-matrix.yml'
+      - 'tools/verify_original_launch_matrix.py'
+      - 'pixtee-godot/native/tests/original_launch_parity_probe.cpp'
+permissions:
+  contents: read
+jobs:
+  original-verified-zero-tolerance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install exact original CPU emulator
+        run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Obtain and hash-verify original Windows v1.014 EXE
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Build native recovered engine against the original physics test matrix
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --target sensigolf_core -j 2
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            pixtee-godot/native/tests/original_launch_parity_probe.cpp \
+            build/engine/libsensigolf_core.a -o build/launch-reference-probe
+      - name: Execute actual original code for each club, lie, power and accuracy boundary
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_launch_matrix.py \
+            --exe "$EXE" --probe build/launch-reference-probe \
+            -o analysis/private/sensigolf-v1014-launch-matrix.json
+      - name: Save source-derived numeric parity evidence, no EXE bytes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-machine-code-club-lie-power-accuracy-parity
+          path: analysis/private/sensigolf-v1014-launch-matrix.json
+          if-no-files-found: warn
+          retention-days: 30

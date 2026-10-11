@@ -67,6 +67,21 @@ int main() {
     assert(ticks<256);
     assert(shot.state().z_raw==0);
 
+    // Test the *movement*, not just a green arrow's decoded nibble.
+    // The very same original putt should finish at a different actual
+    // ball coordinate when its source-authored slope is non-zero.
+    ClassicShotModel level;
+    level.reset();
+    const auto no_slope=flat.resolve_integer_position(92,84,true);
+    level.set_surface_context(ClassicSurfaceContext{
+        no_slope.landing_code,no_slope.slope_direction,no_slope.slope_magnitude});
+    level.begin_shot(input);
+    int level_ticks=0;
+    while(level.shot_active() && level_ticks++<256) level.step();
+    assert(level_ticks<256);
+    assert(shot.state().x_raw!=level.state().x_raw ||
+           shot.state().y_raw!=level.state().y_raw);
+
     // No original course payload, graphics or SFX are required to run the tests.
     return 0;
 }

@@ -313,6 +313,10 @@ int main() {
         assert(zero_ack_blocked);
         special_putt.step(); // original delayed pause underflow
         assert(special_putt.special_green_pause_remaining() == 0);
+        // Same recovered original relocation primitive as the source
+        // code-35 hazard branch: stopped ball and public origin must agree.
+        assert(special_putt.ball_state().x_raw == special_putt.ball_x_raw());
+        assert(special_putt.ball_state().y_raw == special_putt.ball_y_raw());
         special_putt.acknowledge_special_green_stop();
         assert(special_putt.phase() == HoleSessionPhase::ReadyForShot);
         special_putt.begin_shot(putter_request());

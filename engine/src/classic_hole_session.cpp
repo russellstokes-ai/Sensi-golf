@@ -198,6 +198,37 @@ void ClassicHoleSession::acknowledge_hazard_recovery() {
     phase_ = HoleSessionPhase::ReadyForShot;
 }
 
+bool ClassicHoleSession::apply_original_post_stop_recovery() {
+    recovered::HazardRecoveryInput input{};
+    input.ball_x = ball_x_raw_;
+    input.ball_y = ball_y_raw_;
+    input.safe_anchor_x = safe_anchor_x_raw_;
+    input.safe_anchor_y = safe_anchor_y_raw_;
+    input.x_extent = course_.recovery_x_extent();
+    input.y_extent = course_.recovery_y_extent();
+    input.green_mode = green_mode_;
+
+    const auto recovered_state =
+        recovered::recover_hazard_position(input);
+
+    if (recovered_state.used_safe_anchor && !safe_anchor_valid_) {
+        phase_ = HoleSessionPhase::UnsupportedTerrain;
+        return;
+    }
+
+    ball_x_raw_ = recovered_state.ball_x;
+    ball_y_raw_ = recovered_state.ball_y;
+
+    const auto recovered_surface = course_.resolve_raw_position(
+        ball_x_raw_, ball_y_raw_, green_mode_);
+    shot_.relocate_inactive_ball(
+        ball_x_raw_,
+        ball_y_raw_,
+        recovered_surface.landing_code);
+
+    return true;
+}
+
 void ClassicHoleSession::step() {
     if (phase_ == HoleSessionPhase::SpecialGreenStopped) {
         if (!special_green_continuation_ready_) {
@@ -211,6 +242,12 @@ void ClassicHoleSession::step() {
                 {special_green_pause_remaining_,1,false});
             if (out.expired) {
                 special_green_pause_remaining_ = 0; // host-facing value
+                // Actual original v1.014 0x40A7F1..0x40A8D6
+                // shares the already recovered post-stop course/player
+                // position restoration with code-35 hazard recovery.
+                // Host acknowledgement remains only for presentation
+                // while the outer player-turn scheduler is unverified.
+                if (!apply_original_post_stop_recovery()) return;
                 special_green_continuation_ready_ = true;
             } else {
                 special_green_pause_remaining_ = out.remaining;
@@ -247,32 +284,7 @@ void ClassicHoleSession::step() {
             return;
         }
 
-        recovered::HazardRecoveryInput input{};
-        input.ball_x = ball_x_raw_;
-        input.ball_y = ball_y_raw_;
-        input.safe_anchor_x = safe_anchor_x_raw_;
-        input.safe_anchor_y = safe_anchor_y_raw_;
-        input.x_extent = course_.recovery_x_extent();
-        input.y_extent = course_.recovery_y_extent();
-        input.green_mode = green_mode_;
-
-        const auto recovered_state =
-            recovered::recover_hazard_position(input);
-
-        if (recovered_state.used_safe_anchor && !safe_anchor_valid_) {
-            phase_ = HoleSessionPhase::UnsupportedTerrain;
-            return;
-        }
-
-        ball_x_raw_ = recovered_state.ball_x;
-        ball_y_raw_ = recovered_state.ball_y;
-
-        const auto recovered_surface = course_.resolve_raw_position(
-            ball_x_raw_, ball_y_raw_, green_mode_);
-        shot_.relocate_inactive_ball(
-            ball_x_raw_,
-            ball_y_raw_,
-            recovered_surface.landing_code);
+        if (!apply_original_post_stop_recovery()) return;
 
         phase_ = HoleSessionPhase::HazardRecovered;
         return;

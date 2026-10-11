@@ -37,6 +37,18 @@ int main() {
         assert(out.vertical_force==INT32_MIN/2);
         assert(out.horizontal_force==INT32_MAX+INT32_MIN/4);
     }
+    {
+        auto first=original_terminal_rebound_with_latch(0u,-0x2100,0x1000);
+        assert(first.player_flags==1u && first.event_zero_requested);
+        assert(first.rebound.continues_flight);
+        auto repeat=original_terminal_rebound_with_latch(first.player_flags,
+                                                          -0x2100,0x1000);
+        assert(repeat.player_flags==1u && !repeat.event_zero_requested);
+        assert(repeat.rebound.horizontal_force==first.rebound.horizontal_force);
+        auto other=original_terminal_rebound_with_latch(0x8002u,5,2);
+        assert(other.player_flags==0x8003u && other.event_zero_requested);
+        assert(!other.rebound.continues_flight);
+    }
     // Source-mapped branch boundaries, including special codes 9 and 10:
     assert(original_code9_contact(9,12,0,0) == Code9Contact::SpecialStop);
     assert(original_code9_contact(9,0,-1,0x2ffff) == Code9Contact::SpecialStop);

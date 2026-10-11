@@ -213,7 +213,7 @@ bool ClassicHoleSession::apply_original_post_stop_recovery() {
 
     if (recovered_state.used_safe_anchor && !safe_anchor_valid_) {
         phase_ = HoleSessionPhase::UnsupportedTerrain;
-        return;
+        return false;
     }
 
     ball_x_raw_ = recovered_state.ball_x;

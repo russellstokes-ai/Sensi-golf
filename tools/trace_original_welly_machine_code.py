@@ -71,7 +71,7 @@ def main():
     compared=0
     mismatches=[]
     if a.native_probe:
-        commands="".join(f"{x['club']} {x['press_rise_tick']} {x['press_falling_tick_offset']}\\n" for x in scenarios)
+        commands="".join(f"{x['club']} {x['press_rise_tick']} {x['press_falling_tick_offset']}\n" for x in scenarios)
         native=subprocess.run([str(a.native_probe)],input=commands,
                               capture_output=True,text=True,check=True)
         rows=native.stdout.strip().splitlines()

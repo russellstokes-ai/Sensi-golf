@@ -88,6 +88,25 @@ int main() {
         assert(!original_special_terminal_terrain(9,0,2,-8448,50000,0).handled);
     }
 
+    // Early original code-9 stop enters 0x40A403 and increments both
+    // counters; late putter code-10 route jumps directly into 0x40A40B.
+    {
+        OriginalSpecialGreenStopState st{};
+        st.player_flags=0x8001;
+        st.counter_52=65535;
+        st.counter_56=5;
+        st.ball_pause=3;
+        st.event_gate=7;
+        auto early=original_special_green_stop_state(true,st);
+        assert(early.player_flags==0x8005u);
+        assert(early.counter_52==0 && early.counter_56==6);
+        assert(early.ball_pause==100 && early.event_gate==1);
+        auto late=original_special_green_stop_state(false,st);
+        assert(late.player_flags==0x8005u);
+        assert(late.counter_52==65535 && late.counter_56==5);
+        assert(late.ball_pause==100 && late.event_gate==1);
+    }
+
     assert(original_code9_contact(9,12,0,0) == Code9Contact::SpecialStop);
     assert(original_code9_contact(9,0,-1,0x2ffff) == Code9Contact::SpecialStop);
     assert(original_code9_contact(9,0,-1,0x30000) == Code9Contact::Deflect);

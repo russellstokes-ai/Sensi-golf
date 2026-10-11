@@ -1,6 +1,7 @@
 #include "pixtee_round_bridge.hpp"
 #include "original_next_player.hpp"
 #include "original_cpu_difficulty.hpp"
+#include "original_cpu_search_grid.hpp"
 #include "original_cpu_shot_variation.hpp"
 #include "original_turn_score_adjust.hpp"
 #include "original_competition_turn.hpp"
@@ -41,6 +42,9 @@ void PixteeRoundBridge::_bind_methods() {
                  "bypass","power","variation",
                  "random100","random_power","random_direction"),
         &PixteeRoundBridge::original_cpu_shot_variation);
+    ClassDB::bind_method(
+        D_METHOD("original_cpu_scan_grid","original_mode","course_band"),
+        &PixteeRoundBridge::original_cpu_scan_grid);
     ClassDB::bind_method(
         D_METHOD("original_cpu_search_parameters","original_mode","special_flag"),
         &PixteeRoundBridge::original_cpu_search_parameters);
@@ -232,6 +236,31 @@ Dictionary PixteeRoundBridge::original_cpu_shot_variation(
     d["complete_cpu_shot_planner"]=false;
     last_error_="";
     return d;
+}
+Dictionary PixteeRoundBridge::original_cpu_scan_grid(int mode,int band) {
+    Dictionary result;
+    if(mode<4 || mode>9 || band<0 || band>3) {
+        last_error_="original CPU scan grid requires source-proven mode4..9 and band0..3";
+        result["verified"]=false;
+        return result;
+    }
+    try {
+        const auto source=pixtee::original_cpu_scan_grid_from_original_table(
+            static_cast<std::uint16_t>(mode),static_cast<std::uint8_t>(band));
+        result["verified"]=true;
+        result["candidate_count"]=static_cast<int>(source.table_word_0);
+        result["first_angular_extent"]=static_cast<int>(source.table_word_1);
+        result["second_angular_extent"]=static_cast<int>(source.table_word_2);
+        result["source_fourth_word"]=static_cast<int>(source.table_word_3);
+        result["spacing"]=static_cast<int>(source.spacing);
+        result["initial_remainder"]=static_cast<int>(source.initial_remainder);
+        result["full_computer_opponent_recovered"]=false;
+        last_error_="";
+    }catch(const std::exception& e) {
+        last_error_=String(e.what());
+        result["verified"]=false;
+    }
+    return result;
 }
 Dictionary PixteeRoundBridge::original_cpu_search_parameters(
     int mode, bool special_flag) {

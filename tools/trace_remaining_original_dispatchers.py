@@ -97,7 +97,7 @@ def main():
            f"{b['call_count']} calls, {b['unknown_indirect_flows']} indirect flows")
      print("  event/terrain compares:",[
            (x["va"],x["immediate"]) for x in b["small_terrain_event_comparisons"][:30]])
- for key in ("ball_interaction_dispatch","putter_terminal_and_green_events","multiplayer_next_player"):
+ for key in ("ball_interaction_dispatch","putter_terminal_and_green_events","multiplayer_next_player","water_hazard_player_event","computer_shot_planner","computer_quick_swing"):
      print("\n=== ORIGINAL BINARY VERIFIED INSTRUCTIONS:",key,"===")
      for row in atlas[key]["full_instructions"]:
          print(row["va"],row["mnemonic"],row["args"])

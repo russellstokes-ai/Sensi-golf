@@ -16,8 +16,8 @@ Code9Contact original_code9_contact(
     std::uint16_t landing_code, std::uint16_t club_index,
     std::int32_t vertical_force, std::int32_t ball_height_raw) noexcept;
 
-// Original comparison uses the high 16-bit WORDS of raw ball X/Y and
-// subtracts half the ball's INTEGER height from its integer Y.
+// Original source compares both values against the high WORD of ball X,
+// not ball Y: flag X == Xhi and flag Y == Xhi - arithmetic(Hhi >> 1).
 bool original_flag_coordinate_hit(
     const FlightState& state, std::int16_t flag_x,
     std::int16_t flag_y, bool on_green_map) noexcept;

@@ -11,6 +11,8 @@ on:
       - 'tools/trace_original_oob_bounds.py'
       - 'tools/verify_original_world_boundary_penalty.py'
       - 'tools/verify_original_world_oob_restore.py'
+      - 'tools/verify_original_world_oob_event_handoff.py'
+      - 'pixtee-godot/native/tests/original_world_oob_event_probe.cpp'
       - 'pixtee-godot/native/tests/original_world_oob_restore_probe.cpp'
       - 'engine/src/recovered_hazard_recovery.cpp'
       - 'engine/src/recovered_world_boundary.cpp'
@@ -136,6 +138,17 @@ jobs:
           python tools/verify_original_world_oob_restore.py \
             --exe "$EXE" --probe /tmp/pixtee-original-world-oob-restore \
             -o analysis/private/original-world-oob-safe-anchor-restore-x86.json
+      - name: Original world OOB event 0x40CD00 display payload and handoff
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_hazard_recovery.cpp \
+            engine/src/recovered_world_boundary.cpp \
+            pixtee-godot/native/tests/original_world_oob_event_probe.cpp \
+            -o /tmp/pixtee-original-oob-event
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_world_oob_event_handoff.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-oob-event \
+            -o analysis/private/original-world-oob-event-x86.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-map-to-terminal-x86
@@ -148,4 +161,5 @@ jobs:
             analysis/private/original-oob-course-boundary.json
             analysis/private/original-world-out-of-bounds-penalty-x86.json
             analysis/private/original-world-oob-safe-anchor-restore-x86.json
+            analysis/private/original-world-oob-event-x86.json
           retention-days: 30

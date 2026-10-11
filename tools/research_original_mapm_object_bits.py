@@ -68,7 +68,8 @@ def original_machine_refs(exe):
                     for k in HIGH_IMMEDIATE)
             )
             if not(mapref or indirect_call or highmask):continue
-            nearby=ins[max(0,i-7):min(len(ins),i+8)]
+            radius=46 if indirect_call else 7
+            nearby=ins[max(0,i-radius):min(len(ins),i+radius+1)]
             hits.append({"at":hex(z.address),"kind":"map_reference" if mapref
                 else "source_course_lookup_caller" if indirect_call
                 else "immediate_mask_shift",

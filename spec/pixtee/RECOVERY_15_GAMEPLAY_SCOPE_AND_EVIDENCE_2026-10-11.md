@@ -46,3 +46,26 @@ Branch: `feat/pixtee-godot-recovered-core`. Source payloads and unlicensed artwo
 - `.github/workflows/pixtee-original-special-terminal-matrix.yml`
 
 All compare executed Windows source-machine code with C++ under zero tolerance. Branch-specific evidence does not license the original game or its resources for commercial reuse. Review rights before shipping source-derived logic, data and media.
+
+## Continued engine-only recovery — source-backed progress
+
+**UI/design ownership:** Astra handles the basic HTML style-approval prototype. The engine recovery work here does not create or modify HTML, graphics, sprites or their assets.
+
+### Original CPU shot search reconstruction
+
+The original machine-code source at `0x40C6B2..0x40C77F` has yielded:
+- **24 verified source table records** for original player modes 4–9 and bands 0–3 (four WORD values per entry), stored as research data at `pixtee-godot/reference/ORIGINAL_CPU_SCAN_TABLE_2026-10-11.json`.
+- **1,274/1,274 exact** authentic Windows executable-versus-native scan setup comparisons, including source count, two angular extents, fourth word, 154-unit divider and remainder. [Evidence](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169533045)
+- Original *entire per-heading candidate sweep* over 24 table records and five starting directions: **120/120 exact**, **4,605 individual candidate headings identical**. [Evidence](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170143652)
+- C++ source: `pixtee-godot/native/src/original_cpu_search_grid.{hpp,cpp}`, `original_cpu_heading_sweep.{hpp,cpp}`. Exposed to Godot through the `PixteeRoundBridge.original_cpu_scan_grid` and `original_cpu_heading_sweep` interfaces.
+- **Remaining**: original terrain-aware candidate construction, the original shot evaluator at `0x40C93E`, CPU club selection and overall play strategy, independent per-player round engine and end-to-end original AI matches. Do not sign off `computer_opponents` yet.
+
+### Original code9/code10 special green timer and state recovery
+
+- Original Windows source `0x40A7E0..0x40A7F1`: **1,230/1,230 exact** source-versus-C++ comparison of signed 16-bit pause decrement, expiry and UI latch. [Evidence](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169920597)
+- Critical detail: a 100-count timer waits at `remaining=0` and only enters the original recovery branch on the **101st logical update**, when `0` wraps to `0xFFFF`.
+- Source `engine/src/recovered_putter_terminal.cpp`, now used by `ClassicHoleSession::step`; native regression forbids premature acknowledgement on the 100th tick.
+- After signed timer expiry the original executes `0x40A7F1..0x40A8D6`, the *same already recovered post-stop ball/player relocation* as the code-35 hazard path. The C++ hole session now calls a shared `apply_original_post_stop_recovery()` after expiry for both conditions, avoiding the former unsupported fixed-position resume.
+- **Remaining**: full original outer presentation/UI player-turn scheduler and 60-count post-recovery event flow, plus complete original code9/code10 round replay parity. Native round/regression CI for the newly connected relocation is a separate mandatory acceptance gate; do not claim all-session success until it passes.
+
+**All remaining 15 full gameplay systems retain their original-machine end-to-end signoff requirements. The eight visual/audio requirements remain deferred.**

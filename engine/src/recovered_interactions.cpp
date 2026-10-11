@@ -29,6 +29,32 @@ OriginalStopContact original_terminal_stop_contact(
     return OriginalStopContact::Other;
 }
 
+OriginalTerminalRebound original_terminal_rebound(
+    std::int32_t vertical_force, std::int32_t horizontal_force) noexcept {
+    // x86 original 0x40A7BD: NEG EBX (32-bit wrapping), SAR 1,
+    // write vertical, SAR 1 again, ADD horizontal, JG after ADD.
+    // Avoid implementation-defined signed shift, signed overflow and
+    // truncation-to-zero (x86 SAR rounds negative numbers DOWN).
+    const auto neg_bits=std::uint32_t{0}-static_cast<std::uint32_t>(vertical_force);
+    const auto signed_neg=neg_bits<=0x7fffffffu
+        ? static_cast<std::int64_t>(neg_bits)
+        : static_cast<std::int64_t>(neg_bits)-0x100000000LL;
+    const auto half=(signed_neg-(signed_neg<0 ? 1LL : 0LL))/2;
+    const auto quarter=(half-(half<0 ? 1LL : 0LL))/2;
+    const auto mathematical_sum=static_cast<std::int64_t>(horizontal_force)+quarter;
+    if(mathematical_sum<=0)
+        return {0,0,false};
+    // Preserve 32-bit wrapping resulting ADD even for signed overflow.
+    const auto wrapped=static_cast<std::uint32_t>(horizontal_force)
+        +static_cast<std::uint32_t>(quarter);
+    const auto signed_result=wrapped<=0x7fffffffu
+        ? static_cast<std::int64_t>(wrapped)
+        : static_cast<std::int64_t>(wrapped)-0x100000000LL;
+    return {static_cast<std::int32_t>(half),
+            static_cast<std::int32_t>(signed_result),true};
+}
+
+
 Code9Contact original_code9_contact(
     std::uint16_t landing, std::uint16_t club,
     std::int32_t vertical, std::int32_t height) noexcept {

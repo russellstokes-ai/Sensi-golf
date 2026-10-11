@@ -44,4 +44,19 @@ OriginalWorldBoundaryResult original_world_boundary_check(
     out.requires_out_of_bounds_dispatch=true;
     return out;
 }
+OriginalWorldOobRestoreResult original_world_oob_restore(
+    const OriginalWorldOobRestoreInput& input) noexcept {
+    OriginalWorldOobRestoreResult out{};
+    out.relocated=recover_hazard_position(input.coordinates);
+    // Original 0x40AADA checks signed WORD mode against 4 (JLE).
+    const auto mode=input.player_mode_5a;
+    const auto signed_mode=mode<=0x7fffu
+        ? static_cast<std::int32_t>(mode)
+        : static_cast<std::int32_t>(mode)-65536;
+    out.player_mode_62=signed_mode>4 ? static_cast<std::uint16_t>(1)
+                                   : input.player_mode_62;
+    out.player_mode_5c=0; // original 0x40A8AB
+    return out;
+}
+
 } // namespace sensigolf::recovered

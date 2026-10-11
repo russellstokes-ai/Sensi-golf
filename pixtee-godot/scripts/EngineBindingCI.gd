@@ -84,6 +84,13 @@ func _initialize() -> void:
         push_error("Original x86 computer candidate selection failed")
         quit(1)
         return
+    var cpu_noise = round_host.original_cpu_shot_variation(
+        false, 50, 3, 99, 2, 4
+    )
+    if not cpu_noise.get("verified", false) or int(cpu_noise.get("captured_power", -1)) != 54 or int(cpu_noise.get("difficulty_variation", -1)) != 6 or int(cpu_noise.get("swing_adjuster", -999)) != -2 or int(cpu_noise.get("random_calls", -1)) != 3:
+        push_error("Original computer shot stochastic branch failed native ABI test")
+        quit(1)
+        return
     var req = round_host.requested_course()
     if int(req.get("resource_id",0)) != 1:
         push_error("Original round controller did not request hole one")

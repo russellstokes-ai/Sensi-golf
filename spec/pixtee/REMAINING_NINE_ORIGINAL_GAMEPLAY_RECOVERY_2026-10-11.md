@@ -89,3 +89,7 @@ Actual machine execution evidence:
 - [Competition mode4/6 turn-owner branch 1,728/1,728](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164902939)
 
 **No original gameplay requirement is silently marked COMPLETE solely from a verified subfunction.** The 15 gameplay and 8 deferred presentation full-system gates remain open until original round/game-mode/Android full-session parity passes. The original binary/media are not part of the shipped Pixtee project, and original-source-derived data needs rights review before commercial distribution.
+
+### 11 October continuation — signed terminal terrain event route
+
+Source x86 `0x40A686..0x40A6AB` compared with the new C++ branch classifier: **2,730/2,730 exact** original-machine inputs including signed height boundaries; [authenticated original CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174782111). Code 50 occurs in GREEN D2/D3/D4 and MUD D1 terrain descriptors and is **not proof of a tree collision**. The branch is intentionally not connected to live course objects; actual tree activation remains a separate red requirement. [Full native CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174783233) also passed. This work does not change original graphics or Astra's HTML prototype.

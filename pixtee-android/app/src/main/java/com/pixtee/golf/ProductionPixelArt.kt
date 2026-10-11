@@ -11,6 +11,7 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.BitmapShader
 import java.io.IOException
+import org.json.JSONObject
 
 /**
  * PRODUCTION ART ONLY. There are deliberately no code-generated characters,
@@ -92,13 +93,37 @@ class ProductionPixelArt(private val context: Context) {
                 "PIXTEE_ART_REVIEW_ONLY_NOT_APPROVED_V1"
         } catch (_: IOException) { false }
     }
+    /** Optional versioned inventory. It may extend the fixed 31-ID bootstrap list,
+     * but never overrides the production approval gate or admits path traversal. */
+    private val declaredAssets: Set<String> by lazy {
+        val base = if (approved) "art/production" else "art/review"
+        if (!approved && !reviewOnly) emptySet() else try {
+            val json = context.assets.open("$base/assets.manifest.json")
+                .bufferedReader().use { JSONObject(it.readText()) }
+            val assets = json.optJSONArray("assets")
+            buildSet {
+                if (assets != null) for (i in 0 until assets.length()) {
+                    val item = assets.optJSONObject(i) ?: continue
+                    val id = item.optString("id")
+                    val path = item.optString("path")
+                    if (id.matches(Regex("[a-z][a-z0-9_]{1,100}")) &&
+                        path == "$id.png" && item.optInt("width") > 0 &&
+                        item.optInt("height") > 0) add(id)
+                }
+            }
+        } catch (_: Exception) { emptySet() }
+    }
+
+    private fun permitted(id: String): Boolean =
+        id in ProductionArtContract.REQUIRED_SPRITES ||
+        id in ProductionArtContract.TERRAIN_TILES ||
+        id in ProductionArtContract.UI_ART || id in declaredAssets
+
     private val frames = mutableMapOf<String, Bitmap?>()
     private val textures = mutableMapOf<String, Paint>()
 
     private fun bitmap(id: String): Bitmap? {
-        if(id !in ProductionArtContract.REQUIRED_SPRITES &&
-            id !in ProductionArtContract.TERRAIN_TILES &&
-            id !in ProductionArtContract.UI_ART) return null
+        if (!permitted(id)) return null
         if(!approved && !reviewOnly) return null
         if(frames.containsKey(id)) return frames[id]
         val base=if(approved) "art/production" else "art/review"
@@ -156,7 +181,7 @@ class ProductionPixelArt(private val context: Context) {
     /** Approved logos/panels render independently of the world camera. */
     fun ui(canvas: Canvas, id: String, l: Float, t: Float,
            r: Float, b: Float): Boolean {
-        if(id !in ProductionArtContract.UI_ART) return false
+        if(id !in ProductionArtContract.UI_ART && !id.startsWith("ui_")) return false
         val bitmap=bitmap(id) ?: return false
         canvas.drawBitmap(bitmap,Rect(0,0,bitmap.width,bitmap.height),
             RectF(l,t,r,b),paint)
@@ -169,7 +194,7 @@ class ProductionPixelArt(private val context: Context) {
      * third-party artwork when a frame is missing or rejected.
      */
     fun draw(canvas: Canvas, id: String, centreX: Float, bottomY: Float) {
-        if ((!approved && !reviewOnly) || id !in ProductionArtContract.REQUIRED_SPRITES) return
+        if ((!approved && !reviewOnly) || !permitted(id)) return
         val bitmap=bitmap(id) ?: return
         val dst=if(id.startsWith("golfer_")) {
             // The golfer frame uses the SAME pixel-to-world ratio across all
@@ -181,7 +206,9 @@ class ProductionPixelArt(private val context: Context) {
             val r=PixteeSwingRig.artFrameRect(centreX,bottomY)
             RectF(r[0],r[1],r[2],r[3])
         } else {
-            val worldHeight=ProductionArtContract.candidateWorldHeight(id)
+            val worldHeight=if(id in ProductionArtContract.REQUIRED_SPRITES)
+                ProductionArtContract.candidateWorldHeight(id) else
+                8f * bitmap.height / 64f
             val worldWidth=worldHeight*bitmap.width/
                 bitmap.height.coerceAtLeast(1).toFloat()
             RectF(centreX-worldWidth/2f,bottomY-worldHeight,

@@ -8,6 +8,29 @@ input; **the recovered C++ engine remains authoritative for ball physics and
 gameplay state**. There is no Kotlin, Canvas, or third independently invented
 physics implementation in this project.
 
+## Original executable verified milestones (11 October 2026)
+
+- 650/650 club × lie × power/accuracy original machine-code launch vectors
+  match native recovered C++ **exactly**.
+- 1,986/1,986 original Welly counter and capture callback states match
+  `recovered_welly_tick.cpp` **exactly**; native portable test is in CI.
+  Actual game-loop input timing / colour-zone pixels remain OPEN.
+- 256/256 original Windows putting vectors (16 arrow directions × 16 slope
+  magnitudes, controlled putt) match native C++ final X/Y/ticks **exactly**.
+- Unbounded extreme-accuracy original launcher experiment: 668/668 original
+  out-of-profile samples **did not launch**, 322/322 supported samples did.
+  Whole user-input/penalty behaviour remains OPEN.
+- Original visual measurement: 874 MCH frames, 19 LBM resources,
+  72 course/green geometry sets and original sound/media name hashes.
+- Original AI and tourney source VAs identified, but not reconstructed.
+- Actual Godot 4.5 Linux engine-only GDExtension class load and C++
+  original-rule shot/round smoke **PASS** in GitHub Actions; Android not tested.
+- Remaining original-game parity requirements and original-code rights review:
+  [ORIGINAL_23_RECOVERY_REPORT_2026-10-11.md](../spec/pixtee/ORIGINAL_23_RECOVERY_REPORT_2026-10-11.md).
+
+**No production sprites, menus, playable Android APK, or commercial licence
+are delivered by this engine-only research milestone.**
+
 ## Source provenance
 
 - C++ native authority: `../engine/include/sensigolf`, `../engine/src`.

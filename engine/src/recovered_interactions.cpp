@@ -133,6 +133,19 @@ OriginalSpecialTerminalTerrainResult original_airborne_high_code_contact(
         vertical_force,horizontal_force,ball_height);
 }
 
+OriginalSpecialGreenStopState original_special_green_stop_state(
+    bool entered_early_code9_path,
+    OriginalSpecialGreenStopState state) noexcept {
+    if(entered_early_code9_path) {
+        state.counter_52=static_cast<std::uint16_t>(state.counter_52+1u);
+        state.counter_56=static_cast<std::uint16_t>(state.counter_56+1u);
+    }
+    state.player_flags=static_cast<std::uint16_t>(state.player_flags|4u);
+    state.ball_pause=100;
+    state.event_gate=1;
+    return state;
+}
+
 Code9Contact original_code9_contact(
     std::uint16_t landing, std::uint16_t club,
     std::int32_t vertical, std::int32_t height) noexcept {

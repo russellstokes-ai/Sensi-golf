@@ -1,0 +1,12 @@
+{
+  "note": "21 species redrawn flying horizontally right in side profile, as requested. Supersedes the overhead bird reference for orientation. Individual animation frames remain pending.",
+  "assets": [
+    {
+      "file": "bird_species_side_on.png",
+      "sha256": "ed822766420e60d4c8d1a5c4e28cde00cdbc425ec4cb800a9940526238f57a54",
+      "status": "created",
+      "approved": false,
+      "runtimeExportComplete": false
+    }
+  ]
+}

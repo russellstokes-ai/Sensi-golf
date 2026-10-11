@@ -108,6 +108,7 @@ private:
     bool safe_anchor_valid_ = false;
     std::uint16_t hazard_pause_remaining_ = 0;
     std::uint16_t special_green_pause_remaining_ = 0;
+    bool special_green_continuation_ready_ = false;
     ClassicRecoveredCounters recovered_counters_{};
     std::optional<ClassicHoleMetadata> hole_metadata_{};
     std::optional<std::uint16_t> next_hole_index_{};

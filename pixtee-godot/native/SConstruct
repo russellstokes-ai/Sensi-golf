@@ -12,9 +12,11 @@ if env["platform"] in ("linux", "android", "macos"):
     env.Append(CXXFLAGS=["-fexceptions"])
 engine_sources = Glob("../../engine/src/*.cpp")
 extension_sources = Glob("src/*.cpp")
-suffix = env.get("suffix", "")
-if not suffix:
-    suffix = "." + env["platform"] + "." + env["target"] + "." + env["arch"] + env.subst("$SHLIBSUFFIX")
-output = os.path.join("..", "bin", "libpixtee_gameplay" + suffix)
+# Use a real platform extension; godot-cpp returns an environment where
+# SHLIBSUFFIX can be empty. The .gdextension manifest must match exactly.
+extension = {"linux": ".so", "android": ".so", "windows": ".dll",
+             "macos": ".dylib"}[env["platform"]]
+flavour = env["platform"] + "." + env["target"] + "." + env["arch"]
+output = os.path.join("..", "bin", "libpixtee_gameplay." + flavour + extension)
 library = env.SharedLibrary(target=output, source=engine_sources + extension_sources)
 Default(library)

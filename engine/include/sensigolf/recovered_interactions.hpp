@@ -63,6 +63,15 @@ OriginalSpecialTerminalTerrainResult original_special_terminal_terrain(
     std::uint16_t player_state_flags, std::int32_t vertical_force,
     std::int32_t horizontal_force, std::int32_t ball_height) noexcept;
 
+// Separate source entry 0x40A5D3..0x40A5F2 for airborne high terrain codes.
+// Previous original branches have already excluded code 8, 9, 10 and < 8.
+// In contrast to the 0x40A686 ground terminal branch, code 35 at height_hi
+// above 200 invokes event-1 bounce rather than the generic latch.
+OriginalSpecialTerminalTerrainResult original_airborne_high_code_contact(
+    std::uint16_t landing_code, std::uint16_t club_index,
+    std::uint16_t player_state_flags, std::int32_t vertical_force,
+    std::int32_t horizontal_force, std::int32_t ball_height) noexcept;
+
 Code9Contact original_code9_contact(
     std::uint16_t landing_code, std::uint16_t club_index,
     std::int32_t vertical_force, std::int32_t ball_height_raw) noexcept;

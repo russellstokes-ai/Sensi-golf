@@ -42,7 +42,7 @@ User instruction: complete the *actual original Sensible Golf Windows v1.014 gam
 
 ### 9. Scoring/putts/penalties — native core validated, not fully closed
 - Existing source-derived single-player scoring, putter/green slopes, original code-8 cup and water/hazard recovery, **18-hole score progression/replay**, and 256/256 original-green putt oracle comparisons remain preserved.
-- Expanded 990-vector original-machine accounting proves **both counters increment once even for a no-flight, out-of-profile accuracy attempt**. The native hole and Godot round adapters now charge that attempt, preserve the stationary ball and re-enable the meter for a new paid stroke; stable replay for this case is explicitly gated until its journal support is recovered.
+- Expanded 990-vector original-machine accounting proves **both counters increment once even for a no-flight, out-of-profile accuracy attempt**. The native hole and Godot round adapters now charge that attempt, preserve the stationary ball and re-enable the meter for a new paid stroke; completed no-flight attempts made away from zero cup distance now save and reload with independent core re-execution (manual and original Welly regression verified). The zero-distance case and unverified original special-event continuations remain replay-gated. [Godot bridge CI 38174394126](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174394126).
 - **Missing:** edge cases around cup lip bounce, code 9/10 resume, per-player scoring, all original penalties/modes and original shot-attempt/accounting semantics.
 
 

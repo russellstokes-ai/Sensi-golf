@@ -6,6 +6,13 @@
 using namespace sensigolf::recovered;
 
 int main() {
+    // Authentic x86 0x40A686 branch predicate and signed WORD threshold:
+    assert(original_terminal_stop_contact(35,200)==OriginalStopContact::Code35);
+    assert(original_terminal_stop_contact(35,201)==OriginalStopContact::Other);
+    assert(original_terminal_stop_contact(35,-32768)==OriginalStopContact::Code35);
+    assert(original_terminal_stop_contact(50,-1)==OriginalStopContact::Code50);
+    assert(original_terminal_stop_contact(50,201)==OriginalStopContact::Code50);
+    assert(original_terminal_stop_contact(8,200)==OriginalStopContact::Other);
     // Source-mapped branch boundaries, including special codes 9 and 10:
     assert(original_code9_contact(9,12,0,0) == Code9Contact::SpecialStop);
     assert(original_code9_contact(9,0,-1,0x2ffff) == Code9Contact::SpecialStop);

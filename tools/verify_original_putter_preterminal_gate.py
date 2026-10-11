@@ -190,7 +190,7 @@ def main():
         got=tuple(map(int,line.split()))
         route_count[dest]=route_count.get(dest,0)+1
         lookups+=expected[2]
-        resets+=(row[14]&1)!=0 and (expected[1]&1)==0
+        resets+=(row[17]&1)!=0 and (expected[1]&1)==0
         if expected!=got:
             mismatch.append({"inputs":row[:3]+row[15:],
                              "original":expected,"recovered":got,

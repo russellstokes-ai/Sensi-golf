@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "sensigolf/recovered_ground.hpp"
+#include "sensigolf/recovered_interactions.hpp"
 #include "sensigolf/recovered_putter_terminal.hpp"
 
 namespace sensigolf {
@@ -40,6 +41,19 @@ void ClassicShotModel::reset() {
     active_club_ = 0;
     outcome_ = ClassicShotOutcome::None;
     active_ = false;
+    interaction_prng_ = nullptr;
+    interaction_green_mode_ = false;
+    flag_x_ = 0;
+    flag_y_ = 0;
+}
+
+void ClassicShotModel::set_original_interaction_context(
+    recovered::OriginalPrng16* prng, bool green_mode,
+    std::int16_t flag_x, std::int16_t flag_y) noexcept {
+    interaction_prng_ = prng;
+    interaction_green_mode_ = green_mode;
+    flag_x_ = flag_x;
+    flag_y_ = flag_y;
 }
 
 void ClassicShotModel::set_surface_context(
@@ -109,6 +123,34 @@ void ClassicShotModel::step() {
     }
 
     ++public_.tick;
+
+    // Source-disassembled v1.014 0x40A374..0x40A575: code 9 and flag
+    // interactions precede this tick's normal gravity/putter response.
+    if(active_club_ != 12) {
+        const auto code9 = recovered::original_code9_contact(
+            surface_.landing_code, active_club_,
+            flight_.vertical_force, flight_.height);
+        if(code9 == recovered::Code9Contact::SpecialStop) {
+            active_ = false;
+            outcome_ = ClassicShotOutcome::SpecialGreenStop;
+            public_.phase = ShotPhase::Complete;
+            sync_public_state();
+            return;
+        }
+        if(code9 == recovered::Code9Contact::Deflect) {
+            if(!interaction_prng_)
+                throw std::logic_error("code9 impact needs original captured PRNG");
+            recovered::apply_code9_low_height_deflection(
+                flight_, *interaction_prng_);
+        }
+    }
+    if(recovered::original_flag_coordinate_hit(
+        flight_, flag_x_, flag_y_, interaction_green_mode_)) {
+        if(!interaction_prng_)
+            throw std::logic_error("flag impact needs original captured PRNG");
+        recovered::apply_flag_coordinate_deflection(
+            flight_, *interaction_prng_);
+    }
 
     recovered::GroundStepResult result{};
     if (active_club_ == 12) {

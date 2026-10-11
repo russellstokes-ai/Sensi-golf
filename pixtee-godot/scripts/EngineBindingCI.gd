@@ -91,6 +91,28 @@ func _initialize() -> void:
         push_error("Original computer shot stochastic branch failed native ABI test")
         quit(1)
         return
+    var score_adjust = round_host.original_turn_score_adjust(
+        3,
+        PackedInt32Array([4,4,7]),
+        PackedInt32Array([10,11,14]),
+        PackedInt32Array([0,0,0]),
+        PackedInt32Array([1,0,1])
+    )
+    if not score_adjust.get("verified",false) or int(score_adjust.get("corrected_index",-1)) != 1 or score_adjust.get("strokes",PackedInt32Array())[1] != 3 or score_adjust.get("totals",PackedInt32Array())[1] != 10:
+        push_error("Source-verifed original turn-scoring correction failed Godot ABI")
+        quit(1)
+        return
+    var tied = round_host.original_turn_score_adjust(
+        3,
+        PackedInt32Array([4,4,7]),
+        PackedInt32Array([10,11,14]),
+        PackedInt32Array([1,0,0]),
+        PackedInt32Array([1,0,1])
+    )
+    if int(tied.get("corrected_index",-2)) != -1:
+        push_error("Source verified tie/marked player score correction must be skipped")
+        quit(1)
+        return
     var req = round_host.requested_course()
     if int(req.get("resource_id",0)) != 1:
         push_error("Original round controller did not request hole one")

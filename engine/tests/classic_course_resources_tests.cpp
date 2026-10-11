@@ -61,9 +61,10 @@ int main() {
 
     const auto resolved = course.resolve_surface(0, 0, 0, 0);
     assert(resolved.descriptor_index == 0x34);
-    assert(resolved.landing_code == 4);
-    assert(resolved.profile_slot == 3);
-    assert(resolved.name == "SEMI ROUGH D2");
+    // Descriptor 0x34 (52) is V ROUGH D2 in the verified 77-entry table.
+    assert(resolved.landing_code == 6);
+    assert(resolved.profile_slot == 1);
+    assert(resolved.name == "V ROUGH D2");
     assert(resolved.slope_direction == 0x0200);
     assert(resolved.slope_magnitude == 1);
     assert(resolved.product_supported);

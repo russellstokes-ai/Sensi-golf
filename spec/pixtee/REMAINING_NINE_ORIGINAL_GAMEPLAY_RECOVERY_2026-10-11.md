@@ -45,6 +45,21 @@ User instruction: complete the *actual original Sensible Golf Windows v1.014 gam
 - This pass adds original per-meter invalid-profile no-launch handling without falsely incrementing a stroke.
 - **Missing:** edge cases around cup lip bounce, code 9/10 resume, per-player scoring, all original penalties/modes and original shot-attempt/accounting semantics.
 
+
+## Additional original-machine recovery in the current pass
+
+These are **new working C++ native subroutines** verified by executing the genuine SHA-256-identified original Windows v1.014 x86:
+
+| Source-original logic | Exact original/native match | C++ / Godot integration | Still needed |
+|---|---:|---|---|
+| Player selection, eligible/ineligible participants, ties, forced slot `0x40C1B7..0x40C22F` | **1,564 / 1,564** | `original_next_player.cpp`, `PixteeRoundBridge.original_next_player_choice` | Per-player lifecycle, turns, scoreboard, whole game mode |
+| CPU difficulty search budget, source `0x40C665..0x40C6B2` | **24 / 24** | `original_cpu_difficulty.cpp`, `PixteeRoundBridge.original_cpu_search_parameters` | Original full CPU shot strategy |
+| Computer candidate ranking, source `0x40C78B..0x40C7C4` | **378 / 378** | `original_cpu_candidate.cpp`, `PixteeRoundBridge.original_cpu_candidate_choice` | Candidate generation, score evaluation, original club/aim/power decisions |
+
+**GitHub Actions evidence:** [Original next player](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38162829000), [Original CPU difficulty](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38163091444), [Original CPU candidate scan](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38163324373).
+
+These are actual native C++ algorithms, **not only original addresses**. Neither multiplayer nor computer AI is closed as a complete system.  The full original competitor-turn transition and AI decision paths are still blocked until original-runtime evidence and end-to-end parity testing exist. Existing original art/courses/audio remain excluded.
+
 ## Preservation, gates and release
 - `main` original Sensible Golf restoration and prior Pixtee branch untouched.
 - The native and Godot code lives solely on `feat/pixtee-godot-recovered-core`; draft PR #12 remains unmerged.

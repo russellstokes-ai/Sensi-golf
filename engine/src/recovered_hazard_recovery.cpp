@@ -81,4 +81,32 @@ HazardRecoveryState recover_hazard_position(
     return out;
 }
 
+HazardRecoveryState recover_hazard_from_safe_anchor(
+    const HazardRecoveryInput& input) noexcept {
+    HazardRecoveryState out{};
+    out.used_safe_anchor=true;
+    auto px=input.safe_anchor_x;
+    auto py=input.safe_anchor_y;
+    if(input.green_mode) {
+        px=static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(px)-0x000F0000u);
+        py=static_cast<std::int32_t>(
+            static_cast<std::uint32_t>(py)-0x000F0000u);
+        px=logical_shift_right_one(px);
+        py=logical_shift_right_one(py);
+    }
+    out.ball_x=static_cast<std::int32_t>(
+        static_cast<std::uint32_t>(input.safe_anchor_x)+0x000F0000u);
+    out.ball_y=static_cast<std::int32_t>(
+        static_cast<std::uint32_t>(input.safe_anchor_y)+0x000F0000u);
+    out.player_x=px;
+    out.player_y=py;
+    out.player_last_x=px;
+    out.player_last_y=py;
+    out.height=0;
+    out.pause=0x003Cu;
+    out.player_flags=0;
+    return out;
+}
+
 } // namespace sensigolf::recovered

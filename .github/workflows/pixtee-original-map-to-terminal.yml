@@ -10,6 +10,9 @@ on:
       - 'tools/verify_original_shot_admission.py'
       - 'tools/trace_original_oob_bounds.py'
       - 'tools/verify_original_world_boundary_penalty.py'
+      - 'tools/verify_original_world_oob_restore.py'
+      - 'pixtee-godot/native/tests/original_world_oob_restore_probe.cpp'
+      - 'engine/src/recovered_hazard_recovery.cpp'
       - 'engine/src/recovered_world_boundary.cpp'
       - 'engine/include/sensigolf/recovered_world_boundary.hpp'
       - 'pixtee-godot/native/tests/original_world_boundary_probe.cpp'
@@ -122,6 +125,17 @@ jobs:
             --selector-bank "$ROOT/MAPI02.RAW" \
             --probe /tmp/pixtee-original-world-oob \
             -o analysis/private/original-world-out-of-bounds-penalty-x86.json
+      - name: Original world-boundary post-event player-state and safe-anchor recovery
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_hazard_recovery.cpp \
+            engine/src/recovered_world_boundary.cpp \
+            pixtee-godot/native/tests/original_world_oob_restore_probe.cpp \
+            -o /tmp/pixtee-original-world-oob-restore
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_world_oob_restore.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-world-oob-restore \
+            -o analysis/private/original-world-oob-safe-anchor-restore-x86.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-map-to-terminal-x86
@@ -133,4 +147,5 @@ jobs:
             analysis/private/original-shot-admission-x86.json
             analysis/private/original-oob-course-boundary.json
             analysis/private/original-world-out-of-bounds-penalty-x86.json
+            analysis/private/original-world-oob-safe-anchor-restore-x86.json
           retention-days: 30

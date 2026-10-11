@@ -19,6 +19,10 @@ public:
     // Pure original v1.014 next-player decision; caller supplies the
     // original per-player priority/eligibility state, not invented metrics.
     Dictionary original_cpu_search_parameters(int original_mode, bool special_flag);
+    int original_cpu_candidate_choice(
+        const PackedInt32Array& primary_status,
+        const PackedInt32Array& secondary_status,
+        const PackedInt32Array& candidate_metrics);
     int original_next_player_choice(
         int player_count, int forced_holder,
         const PackedInt32Array& priority,

@@ -42,7 +42,8 @@ public:
     void set_surface_context(const ClassicSurfaceContext& context);
     void set_original_interaction_context(
         recovered::OriginalPrng16* prng, bool green_mode,
-        std::int16_t flag_x, std::int16_t flag_y) noexcept;
+        std::int16_t flag_x, std::int16_t flag_y,
+        bool flag_object_verified = false) noexcept;
     void update_surface_context_for_tick(
         const ClassicSurfaceContext& context);
     const ClassicSurfaceContext& surface_context() const noexcept;
@@ -84,6 +85,7 @@ private:
     bool interaction_green_mode_ = false;
     std::int16_t flag_x_ = 0;
     std::int16_t flag_y_ = 0;
+    bool flag_object_verified_ = false;
 };
 
 } // namespace sensigolf

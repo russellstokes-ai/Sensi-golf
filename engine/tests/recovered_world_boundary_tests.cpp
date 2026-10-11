@@ -27,14 +27,14 @@ int main() {
     in.ball_x=0;
     in.ball_y=114*8<<16;
     assert(original_world_boundary_check(in).outside_world);
-    in.ball_y=-1<<16;
+    in.ball_y=-(1<<16);
     assert(original_world_boundary_check(in).outside_world);
     in.ball_x=5<<16;
     in.ball_y=100<<16;
     in.strokes_total=65535;
     a=original_world_boundary_check(in);
     assert(!a.outside_world && a.strokes_total==65535);
-    in.ball_x=-1<<16;
+    in.ball_x=-(1<<16);
     a=original_world_boundary_check(in);
     assert(a.outside_world && a.strokes_total==0);
 }

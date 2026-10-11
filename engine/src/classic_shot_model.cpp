@@ -45,15 +45,18 @@ void ClassicShotModel::reset() {
     interaction_green_mode_ = false;
     flag_x_ = 0;
     flag_y_ = 0;
+    flag_object_verified_ = false;
 }
 
 void ClassicShotModel::set_original_interaction_context(
     recovered::OriginalPrng16* prng, bool green_mode,
-    std::int16_t flag_x, std::int16_t flag_y) noexcept {
+    std::int16_t flag_x, std::int16_t flag_y,
+    bool flag_object_verified) noexcept {
     interaction_prng_ = prng;
     interaction_green_mode_ = green_mode;
     flag_x_ = flag_x;
     flag_y_ = flag_y;
+    flag_object_verified_ = flag_object_verified;
 }
 
 void ClassicShotModel::set_surface_context(
@@ -147,7 +150,7 @@ void ClassicShotModel::step() {
     // Standalone physics fixtures may have no original PRNG. Their
     // non-interaction behaviour remains testable; the real game session
     // always supplies the captured original PRNG for event activation.
-    if(interaction_prng_ &&
+    if(flag_object_verified_ && interaction_prng_ &&
        recovered::original_flag_coordinate_hit(
            flight_, flag_x_, flag_y_, interaction_green_mode_)) {
         recovered::apply_flag_coordinate_deflection(

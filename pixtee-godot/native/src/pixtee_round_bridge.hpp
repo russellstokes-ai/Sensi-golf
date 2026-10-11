@@ -30,6 +30,8 @@ public:
     bool set_club_index(int index);
     bool cycle_club(int delta);
     bool meter_click_raw(int sample);
+    bool start_original_welly();
+    bool tick_original_welly(bool pressed);
     void cancel_meter();
     bool acknowledge_hazard();
     bool acknowledge_special_green();

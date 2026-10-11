@@ -5,6 +5,7 @@
 
 #include "sensigolf/recovered_distance.hpp"
 #include "sensigolf/recovered_hazard_recovery.hpp"
+#include "sensigolf/recovered_putter_terminal.hpp"
 
 namespace sensigolf {
 
@@ -58,6 +59,7 @@ void ClassicHoleSession::reset(
     safe_anchor_valid_ = false;
     hazard_pause_remaining_ = 0;
     special_green_pause_remaining_ = 0;
+    special_green_continuation_ready_ = false;
     recovered_counters_ = {};
     next_hole_index_.reset();
     round_complete_ = false;
@@ -174,11 +176,12 @@ void ClassicHoleSession::acknowledge_special_green_stop() {
         throw std::logic_error(
             "special-green stop can only be acknowledged from terminal state");
     }
-    if (special_green_pause_remaining_ != 0) {
+    if (!special_green_continuation_ready_) {
         throw std::logic_error(
             "special-green terminal pause has not completed");
     }
 
+    special_green_continuation_ready_ = false;
     phase_ = HoleSessionPhase::ReadyForShot;
 }
 
@@ -197,8 +200,21 @@ void ClassicHoleSession::acknowledge_hazard_recovery() {
 
 void ClassicHoleSession::step() {
     if (phase_ == HoleSessionPhase::SpecialGreenStopped) {
-        if (special_green_pause_remaining_ > 0) {
-            --special_green_pause_remaining_;
+        if (!special_green_continuation_ready_) {
+            // Original v1.014 0x40A7E0: 16-bit signed DEC/JNS.
+            // 100 -> ... -> 1 -> 0 still waits; the NEXT original tick
+            // underflows 0 -> 65535 and clears the UI latch.
+            // We retain an explicit host acknowledgement ONLY because
+            // the downstream original terrain/player relocation state
+            // after 0x40A7F1 has not yet passed end-to-end parity.
+            const auto out=recovered::original_special_pause_tick(
+                {special_green_pause_remaining_,1,false});
+            if (out.expired) {
+                special_green_pause_remaining_ = 0; // host-facing value
+                special_green_continuation_ready_ = true;
+            } else {
+                special_green_pause_remaining_ = out.remaining;
+            }
         }
         return;
     }
@@ -340,6 +356,7 @@ void ClassicHoleSession::step() {
     case ClassicShotOutcome::SpecialGreenStop:
         phase_ = HoleSessionPhase::SpecialGreenStopped;
         special_green_pause_remaining_ = 100;
+        special_green_continuation_ready_ = false;
         break;
     case ClassicShotOutcome::Rest:
     case ClassicShotOutcome::None:

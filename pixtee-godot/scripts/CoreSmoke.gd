@@ -15,7 +15,7 @@ func _ready() -> void:
         trace.text = "C++ engine setup failed: " + core.last_error()
         launch.disabled = true
         return
-    core.set_aim_raw(0)
+    core.set_aim_raw(2048) # Aim towards authored green, not south off-map
     core.set_club_index(0)
     _show_trace()
 

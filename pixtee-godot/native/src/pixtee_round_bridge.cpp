@@ -1,4 +1,5 @@
 #include "pixtee_round_bridge.hpp"
+#include "original_next_player.hpp"
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -17,6 +18,10 @@ std::vector<std::uint8_t> native_bytes(const PackedByteArray& a) {
 }
 }
 void PixteeRoundBridge::_bind_methods() {
+    ClassDB::bind_method(
+        D_METHOD("original_next_player_choice","player_count",
+                 "forced_holder","priority","eliminated","identities"),
+        &PixteeRoundBridge::original_next_player_choice);
     ClassDB::bind_method(D_METHOD("begin_round","order","pars","seed0","seed1"),
                          &PixteeRoundBridge::begin_round);
     ClassDB::bind_method(D_METHOD("register_course_resource","resource_id","mapm","spt","descriptors","selectors","maps"),
@@ -40,6 +45,35 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("snapshot"),&PixteeRoundBridge::snapshot);
     ClassDB::bind_method(D_METHOD("requested_course"),&PixteeRoundBridge::requested_course);
     ClassDB::bind_method(D_METHOD("last_error"),&PixteeRoundBridge::last_error);
+}
+int PixteeRoundBridge::original_next_player_choice(
+    int count, int forced, const PackedInt32Array& priority,
+    const PackedInt32Array& eliminated, const PackedInt32Array& identities) {
+    if(count<1 || count>4 || forced<0 || forced>count ||
+       priority.size()<count || eliminated.size()<count ||
+       identities.size()<count) {
+        last_error_="original next-player selection needs 1..4 valid players";
+        return -1;
+    }
+    try {
+        pixtee::OriginalPlayerChoiceInput input{};
+        input.count=static_cast<std::uint8_t>(count);
+        input.forced_holder=static_cast<std::uint8_t>(forced);
+        for(int i=0;i<count;++i) {
+            if(priority[i]<0 || eliminated[i]<0 || eliminated[i]>65535 ||
+               identities[i]<0 || identities[i]>255)
+                throw std::invalid_argument("original player inputs outside register range");
+            input.priority_metric[i]=static_cast<std::uint32_t>(priority[i]);
+            input.eliminated[i]=static_cast<std::uint16_t>(eliminated[i]);
+            input.identity[i]=static_cast<std::uint8_t>(identities[i]);
+        }
+        const auto selected=pixtee::original_next_player_index(input);
+        last_error_="";
+        return static_cast<int>(selected);
+    } catch(const std::exception& e) {
+        last_error_=String(e.what());
+        return -1;
+    }
 }
 bool PixteeRoundBridge::begin_round(
     const PackedInt32Array& order,const PackedInt32Array& pars,

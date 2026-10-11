@@ -10,6 +10,8 @@ on:
       - 'pixtee-godot/native/tests/original_terminal_rebound_probe.cpp'
       - 'tools/verify_original_terminal_rebound_latch.py'
       - 'pixtee-godot/native/tests/original_terminal_rebound_latch_probe.cpp'
+      - 'tools/verify_original_special_terminal_terrain.py'
+      - 'pixtee-godot/native/tests/original_special_terminal_terrain_probe.cpp'
       - '.github/workflows/pixtee-original-terminal-rebound.yml'
 permissions:
   contents: read
@@ -49,10 +51,21 @@ jobs:
           python tools/verify_original_terminal_rebound_latch.py \
             --exe "$EXE" --probe /tmp/pixtee-original-latch \
             -o analysis/private/original-terminal-rebound-latch-x86.json
+      - name: Verify source numeric terrain 35/50 full terminal event path
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_prng.cpp engine/src/recovered_interactions.cpp \
+            pixtee-godot/native/tests/original_special_terminal_terrain_probe.cpp \
+            -o /tmp/pixtee-original-special-terrain
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_special_terminal_terrain.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-special-terrain \
+            -o analysis/private/original-special-terrain-terminal-35-50.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-terminal-rebound-oracle
           path: |
             analysis/private/original-terminal-rebound-x86.json
             analysis/private/original-terminal-rebound-latch-x86.json
+            analysis/private/original-special-terrain-terminal-35-50.json
           retention-days: 30

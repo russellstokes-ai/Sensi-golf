@@ -38,6 +38,11 @@ int main() {
     assert(code10.kind==PutterTerminalKind::SpecialGreenStop);
     assert(code10.event_id==11);
 
+    PutterTerminalState signed_mode{};
+    signed_mode.player_mode_5a=0xFFFFu;
+    assert(apply_putter_terminal(8,signed_mode));
+    assert(signed_mode.ui_gate==1); // signed x86 mode -1 < 4
+
     PutterTerminalState normal{};
     assert(!apply_putter_terminal(1,normal));
     assert(normal.kind==PutterTerminalKind::None);

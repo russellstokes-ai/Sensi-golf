@@ -58,6 +58,7 @@ void ClassicHoleSession::reset(
     safe_anchor_y_raw_ = 0;
     safe_anchor_valid_ = false;
     hazard_pause_remaining_ = 0;
+    last_hazard_kind_ = ClassicNamedHazard::None;
     special_green_pause_remaining_ = 0;
     special_green_continuation_ready_ = false;
     recovered_counters_ = {};
@@ -111,6 +112,7 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
             "current terrain requires a classic rule not yet product-integrated");
     }
 
+    last_hazard_kind_ = ClassicNamedHazard::None;
     shot_.reset();
     shot_.set_ball_origin(ball_x_raw_, ball_y_raw_);
     shot_.set_surface_context(to_context(surface));
@@ -384,6 +386,7 @@ void ClassicHoleSession::step() {
         phase_ = HoleSessionPhase::HoleScored;
         break;
     case ClassicShotOutcome::Hazard:
+        last_hazard_kind_ = classic_named_hazard(surface.descriptor_index);
         phase_ = HoleSessionPhase::HazardStopped;
         hazard_pause_remaining_ = 100;
         break;
@@ -440,6 +443,10 @@ ClassicCoursePoint ClassicHoleSession::hole_position() const {
 std::optional<std::uint16_t>
 ClassicHoleSession::unsupported_descriptor() const noexcept {
     return unsupported_descriptor_;
+}
+
+ClassicNamedHazard ClassicHoleSession::last_hazard_kind() const noexcept {
+    return last_hazard_kind_;
 }
 
 std::uint16_t ClassicHoleSession::hazard_pause_remaining() const noexcept {

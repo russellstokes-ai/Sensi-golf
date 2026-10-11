@@ -3,6 +3,31 @@ Date: 2026-10-11 | Owner direction: **Do not lose ANY useful recovered
 Sensible Golf work.** Independently authored visuals/courses, but gameplay
 should behave as closely as verified evidence permits.
 
+## LOCKED PRIORITY: POPULATE THE ENGINE FROM ORIGINAL SENSIBLE GOLF DATA FIRST
+
+**Owner directive (11 October 2026):** The immediate milestone is to
+populate **all gameplay systems** in the Godot-hosted native engine with
+verified recovered *Sensible Golf* data and behaviours. **Graphics, sprite
+import, course visual polish and animations are explicitly deferred.**
+
+- No new guessed values or arcade substitutes when original numerical
+  research exists. Native C++ remains the simulation authority.
+- [Exact source-derived physics evidence bank](../../pixtee-godot/reference/ORIGINAL_PHYSICS_RESEARCH.json)
+  and [original 18-hole numerical replay](../../pixtee-godot/reference/ORIGINAL_ROUND_REFERENCE.txt)
+  are now copied into the engineering project unchanged, and protected by
+  [an automated parity/provenance check](../../pixtee-godot/tools/verify_reference_data.py).
+- Populate/verify the native engine sequentially: **timing/meter, club launch,
+  13x10 lie and 11 swing-profile tables, trajectory/spin, bounce/roll,
+  77 terrain descriptors, fine collision/MAPI, slope/MAPS, hazard, cup/putter,
+  interactions/PRNG, strokes/penalties, full rounds, save/replay**.
+- Every recovered value has a provenance link and engine assertion. Every
+  missing or unverified behaviour stays **RED**, not 'complete'.
+- Original copyrighted sprites/courses/audio are *not* gameplay values to
+  redistribute; original resource bytes remain outside commercial builds.
+- **No UI or art milestone is considered the next milestone.** First finish
+  mechanically accurate, deterministic, headless end-to-end engine testing,
+  then return to game presentation.
+
 ## Project state
 
 - [Recovered reference C++ engine](../../engine) remains the source of truth.

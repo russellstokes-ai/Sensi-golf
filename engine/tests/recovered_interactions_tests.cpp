@@ -49,6 +49,22 @@ int main() {
         assert(other.player_flags==0x8003u && other.event_zero_requested);
         assert(!other.rebound.continues_flight);
     }
+    // Independent airborne high-code original entry (0x40A5D3).
+    {
+        auto high=original_airborne_high_code_contact(
+            35,0,0,-8448,65000,201<<16);
+        assert(high.handled && high.event_code==1 && high.continues_flight);
+        auto low=original_airborne_high_code_contact(
+            35,0,0,-8448,65000,200<<16);
+        assert(low.handled && low.event_code==11 && !low.continues_flight);
+        assert(low.player_state_flags==0x8000u);
+        auto other=original_airborne_high_code_contact(
+            60,0,4,-8448,65000,0);
+        assert(other.handled && other.event_code==1);
+        assert(other.player_state_flags==4);
+        assert(!original_airborne_high_code_contact(10,0,0,-8448,65000,0).handled);
+        assert(!original_airborne_high_code_contact(7,0,0,-8448,65000,0).handled);
+    }
     // Source-mapped branch boundaries, including special codes 9 and 10:
     // Original numeric terrain 35 / 50 termination or rebound.
     {

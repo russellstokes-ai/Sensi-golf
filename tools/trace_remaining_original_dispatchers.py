@@ -24,6 +24,7 @@ WINDOWS={
   "putt_slope_vector":(0x40B965,0x40BA60),
   "multiplayer_next_player":(0x40C180,0x40C260),
   "multiplayer_turn_scoring_adjust":(0x40C005,0x40C100),
+  "competition_turn_mode_branch":(0x40C098,0x40C1B7),
   "computer_shot_planner":(0x40C600,0x40C8CB),
   "computer_quick_swing":(0x40C8CB,0x40CAE1),
   "water_hazard_player_event":(0x40CD00,0x40CD80),
@@ -98,7 +99,7 @@ def main():
            f"{b['call_count']} calls, {b['unknown_indirect_flows']} indirect flows")
      print("  event/terrain compares:",[
            (x["va"],x["immediate"]) for x in b["small_terrain_event_comparisons"][:30]])
- for key in ("ball_interaction_dispatch","putter_terminal_and_green_events","multiplayer_next_player","multiplayer_turn_scoring_adjust","water_hazard_player_event","computer_shot_planner","computer_quick_swing"):
+ for key in ("ball_interaction_dispatch","putter_terminal_and_green_events","multiplayer_next_player","multiplayer_turn_scoring_adjust","competition_turn_mode_branch","water_hazard_player_event","computer_shot_planner","computer_quick_swing"):
      print("\n=== ORIGINAL BINARY VERIFIED INSTRUCTIONS:",key,"===")
      for row in atlas[key]["full_instructions"]:
          print(row["va"],row["mnemonic"],row["args"])

@@ -7,6 +7,27 @@
 
 namespace sensigolf::recovered {
 
+// Source-authenticated original event gates at 0x40A374..0x40A3E0,
+// 0x40A456..0x40A4A8 and 0x40A50B..0x40A575.
+// These boolean/enum predicates contain *no generated physics* and can
+// therefore be tested separately against original machine-code branches.
+enum class Code9Contact : std::uint8_t { None, Deflect, SpecialStop };
+Code9Contact original_code9_contact(
+    std::uint16_t landing_code, std::uint16_t club_index,
+    std::int32_t vertical_force, std::int32_t ball_height_raw) noexcept;
+
+// Original comparison uses the high 16-bit WORDS of raw ball X/Y and
+// subtracts half the ball's INTEGER height from its integer Y.
+bool original_flag_coordinate_hit(
+    const FlightState& state, std::int16_t flag_x,
+    std::int16_t flag_y, bool on_green_map) noexcept;
+
+// The original lip branch additionally depends on its original player state
+// and precomputed zero-distance register; do not guess these inputs.
+bool original_near_cup_lip_contact(
+    bool cup_distance_zero, std::uint16_t player_state,
+    const FlightState& state) noexcept;
+
 // Exact state mutations used by three PRNG-driven branches in the original
 // Windows v1.014 whole-shot tick routine (0x40A250). Branch activation is
 // deliberately kept outside these helpers until the surrounding course/object

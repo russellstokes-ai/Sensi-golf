@@ -56,6 +56,7 @@ public:
     bool replay_supported() const noexcept;
 
 private:
+    void record_charged_no_flight(const sensigolf::ClassicShotRequest& request);
     void maybe_record_stable_shot();
     sensigolf::ClassicHolePlan plan_;
     sensigolf::recovered::OriginalPrng16 initial_seed_;

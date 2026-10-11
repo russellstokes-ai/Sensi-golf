@@ -1,0 +1,48 @@
+#pragma once
+#include <memory>
+#include "godot_cpp/classes/ref_counted.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/packed_int32_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "pixtee_round_runtime.hpp"
+
+namespace godot {
+// ENGINE-ONLY Godot boundary. The native PixteeRoundRuntime contains the
+// original-rule ClassicGameSession + ClassicReplayJournal; never rewrite
+// scores, course collisions, spin or hazard transitions in GDScript.
+class PixteeRoundBridge : public RefCounted {
+    GDCLASS(PixteeRoundBridge, RefCounted)
+protected:
+    static void _bind_methods();
+public:
+    bool begin_round(const PackedInt32Array& order,
+                     const PackedInt32Array& par_by_resource,
+                     int seed0,int seed1);
+    bool register_course_resource(int resource_id,
+        const PackedByteArray& mapm,const PackedByteArray& spt,
+        const PackedByteArray& mapi_descriptors,
+        const PackedByteArray& mapi_selectors,
+        const PackedByteArray& maps);
+    bool load_next_hole();
+    bool set_aim_raw(int heading);
+    bool nudge_aim_raw(int delta);
+    bool set_club_index(int index);
+    bool cycle_club(int delta);
+    bool meter_click_raw(int sample);
+    void cancel_meter();
+    bool acknowledge_hazard();
+    bool acknowledge_special_green();
+    bool commit_scored_hole();
+    bool step_ticks(int count);
+    void step_tick();
+    String save_stable_replay();
+    bool restore_replay(const String& payload);
+    Dictionary snapshot() const;
+    Dictionary requested_course() const;
+    String last_error() const {return last_error_;}
+private:
+    std::unique_ptr<pixtee::PixteeRoundRuntime> round_;
+    String last_error_;
+};
+} // namespace godot

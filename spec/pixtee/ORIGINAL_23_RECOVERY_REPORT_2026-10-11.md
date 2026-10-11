@@ -50,3 +50,13 @@
 
 ### Acceptance rule
 A feature is COMPLETE only after source provenance is captured, its original runtime behaviour is observed, independent native tests match actual original machine execution, and the Godot/Android host demonstrates the same behaviour. **The 23 entries remain in the release gate; recovered fragments are not silently counted as closed.**
+
+## Source-machine subroutines recovered after the original 23-item inventory
+
+The nine-area progress document and the structured 73-requirement completeness gate now distinguish complete original machine-code **subroutines** from incomplete gameplay **systems**.
+
+- **Original CPU shot power/direction error branch:** [1,620 of 1,620 exact source comparisons](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164319868), native `original_cpu_shot_variation.cpp`. Caller must supply original RNG values; full opponent strategy is OPEN.
+- **Original mode-1 multiplayer score-counter adjustment:** [3,192 of 3,192 exact source comparisons](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164530583), native `original_turn_score_adjust.cpp`. Multiplayer total gameflow is OPEN.
+- **Original mode-4/mode-6 two-side competition slot/turn routing:** [1,728 of 1,728 exact source comparisons](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164902939), native `original_competition_turn.cpp`. Full modes, result calculation and persistence are OPEN. Source original code loops for simultaneous zero original-ball distances; native model rejects this unplayable isolated case rather than faking selection.
+
+Each recovered subroutine was built as portable C++ and exposed to the Godot `PixteeRoundBridge` with its own original-input parameters. All nine gameplay-area rows and eight deferred presentation rows remain open for full-system signoff; they are **not** newly invented implementations of full opponent AI, game modes or collision.

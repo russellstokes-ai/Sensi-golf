@@ -66,4 +66,10 @@ int main() {
     restored=original_world_oob_restore(restore);
     assert(restored.player_mode_62==32);
 
+    const auto event=original_world_oob_event();
+    assert(event.byte_420fef==1);
+    assert(event.dword_420544==0x46);
+    assert(event.dword_420548==0x1000d);
+    assert(event.source_esi==0x420670u);
+
 }

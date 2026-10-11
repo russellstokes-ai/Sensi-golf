@@ -70,12 +70,24 @@ def main():
     p.add_argument("-o","--output",type=Path,required=True)
     a=p.parse_args()
     assert hashlib.sha256(a.exe.read_bytes()).hexdigest()==REFERENCE_SHA256
-    inputs=list(product((7,8,9), (0,1,3,4,12,65535),
+    uc,_=build_uc(a.exe)
+    descriptor_for_code={}
+    for tile in range(77):
+        try:
+            pointer=struct.unpack("<I",bytes(uc.mem_read(0x41dff7+tile*4,4)))[0]
+            descriptor=struct.unpack("<H",bytes(uc.mem_read(pointer,2)))[0]
+        except Exception:continue
+        if descriptor in (8,9,10) and descriptor not in descriptor_for_code:
+            descriptor_for_code[descriptor]=tile
+    print("Original descriptor indexes for green terminal codes:",descriptor_for_code)
+    if set(descriptor_for_code)!={8,9,10}:
+        raise RuntimeError("Cannot prove all code8,9,10 original descriptor indexes")
+    inputs=list(product((8,9,10), (0,1,3,4,12,65535),
                         (0,1,4,7,65535),(0,1,7,65535),
                         (0,11,65535),(0,1)))
-    # Oracle uses bx=7/8/9 for terrain codes 8/9/10, as observed in
-    # original_v1014_putter_terminal_oracle.py; native is landing +1.
-    actual_inputs=[(c+1,m,f,s,t,g) for c,m,f,s,t,g in inputs]
+    # The actual x86 entry takes a descriptor TABLE INDEX in BX, then
+    # dereferences it to the original terrain code. Native takes the code.
+    actual_inputs=[(c,m,f,s,t,g) for c,m,f,s,t,g in inputs]
     native=subprocess.run([str(a.probe)],input="".join("%d %d %d %d %d %d\n"%v for v in actual_inputs),
                          text=True,capture_output=True,check=True)
     lines=native.stdout.strip().splitlines()
@@ -83,7 +95,8 @@ def main():
     uc,_=build_uc(a.exe)
     bad=[];equal=0
     for row,line in zip(inputs,lines):
-        source=original(uc,row)
+        src_code,src_mode,src_flags,src_52,src_56,src_gate=row
+        source=original(uc,(descriptor_for_code[src_code],src_mode,src_flags,src_52,src_56,src_gate))
         actual=list(map(int,line.split()))
         if source==actual:equal+=1
         else:bad.append({"original_input":row,"original":source,"native":actual})

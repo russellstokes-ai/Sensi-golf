@@ -18,6 +18,17 @@ void add_half_turn_and_biased_random(
 
 } // namespace
 
+OriginalStopContact original_terminal_stop_contact(
+    std::uint16_t landing_code, std::int16_t height_high_word) noexcept {
+    // Original v1.014 compares signed WORD[ball + 0x16] with 0xC8,
+    // then selects the code-35 branch BEFORE the code-50 branch.
+    if (height_high_word <= 0xC8 && landing_code == 0x23)
+        return OriginalStopContact::Code35;
+    if (landing_code == 0x32)
+        return OriginalStopContact::Code50;
+    return OriginalStopContact::Other;
+}
+
 Code9Contact original_code9_contact(
     std::uint16_t landing, std::uint16_t club,
     std::int32_t vertical, std::int32_t height) noexcept {

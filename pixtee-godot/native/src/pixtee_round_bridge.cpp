@@ -3,6 +3,7 @@
 #include "original_cpu_difficulty.hpp"
 #include "original_cpu_shot_variation.hpp"
 #include "original_turn_score_adjust.hpp"
+#include "original_competition_turn.hpp"
 #include "original_cpu_candidate.hpp"
 #include <array>
 #include <cstdint>
@@ -26,6 +27,11 @@ void PixteeRoundBridge::_bind_methods() {
         D_METHOD("original_cpu_candidate_choice","primary_status",
                  "secondary_status","candidate_metrics"),
         &PixteeRoundBridge::original_cpu_candidate_choice);
+    ClassDB::bind_method(
+        D_METHOD("original_competition_turn_choice",
+                 "mode","active_side","ball0_distance","ball1_distance",
+                 "side0_flag","side1_flag","slot_bytes","previous_slots"),
+        &PixteeRoundBridge::original_competition_turn_choice);
     ClassDB::bind_method(
         D_METHOD("original_turn_score_adjust","player_count",
                  "strokes","totals","completed","ball_distances"),
@@ -94,6 +100,62 @@ int PixteeRoundBridge::original_cpu_candidate_choice(
     }catch(const std::exception& e) {
         last_error_=String(e.what());
         return -1;
+    }
+}
+Dictionary PixteeRoundBridge::original_competition_turn_choice(
+    int mode, int active, int dist0, int dist1,
+    int f0, int f1,
+    const PackedInt32Array& slots,
+    const PackedInt32Array& previous) {
+    Dictionary d;
+    if(mode<0 || mode>255 || active<0 || active>65535 ||
+       dist0<0 || dist1<0 ||
+       f0<0 || f0>1 || f1<0 || f1>65535 ||
+       slots.size()<4 || previous.size()<2) {
+        last_error_="invalid original mode4/6 source state";
+        d["verified"]=false;
+        return d;
+    }
+    pixtee::OriginalCompetitionTurnInput in{};
+    in.mode=static_cast<std::uint8_t>(mode);
+    in.active_side=static_cast<std::uint16_t>(active);
+    in.ball_distance={static_cast<std::uint32_t>(dist0),
+                      static_cast<std::uint32_t>(dist1)};
+    in.side0_flag=static_cast<std::uint16_t>(f0);
+    in.side1_flag=static_cast<std::uint16_t>(f1);
+    for(int i=0;i<4;++i) {
+        if(slots[i]<0 || slots[i]>3) {
+            last_error_="source original game requires player slot 0..3";
+            d["verified"]=false;
+            return d;
+        }
+        in.slot_bytes[i]=static_cast<std::uint8_t>(slots[i]);
+    }
+    for(int i=0;i<2;++i) {
+        if(previous[i]<0 || previous[i]>65535) {
+            last_error_="original previous slot must be unsigned WORD";
+            d["verified"]=false;
+            return d;
+        }
+        in.previous_slot[i]=static_cast<std::uint16_t>(previous[i]);
+    }
+    try {
+        const auto out=pixtee::original_competition_turn_select(in);
+        d["verified"]=true;
+        d["selected_slot"]=out.selected_slot;
+        d["source_slot"]=out.source_slot;
+        d["ball_array"]=out.ball_array;
+        d["active_side"]=static_cast<int>(out.active_side);
+        PackedInt32Array slots_after;
+        for(int i=0;i<2;++i)slots_after.append(static_cast<int>(out.previous_slot[i]));
+        d["previous_slots"]=slots_after;
+        d["all_competition_rules_recovered"]=false;
+        last_error_="";
+        return d;
+    }catch(const std::exception& e) {
+        last_error_=String(e.what());
+        d["verified"]=false;
+        return d;
     }
 }
 Dictionary PixteeRoundBridge::original_turn_score_adjust(

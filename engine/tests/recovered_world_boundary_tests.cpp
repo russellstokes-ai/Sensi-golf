@@ -37,4 +37,33 @@ int main() {
     in.ball_x=-(1<<16);
     a=original_world_boundary_check(in);
     assert(a.outside_world && a.strokes_total==0);
+    // Original bit2/0x40AACF post-event recovery must retain safe-anchor
+    // coordinates and clear the intermediate source status word.
+    OriginalWorldOobRestoreInput restore{};
+    restore.coordinates.ball_x=544<<16;
+    restore.coordinates.ball_y=100<<16;
+    restore.coordinates.safe_anchor_x=48<<16;
+    restore.coordinates.safe_anchor_y=85<<16;
+    restore.coordinates.x_extent=34*16-256;
+    restore.coordinates.y_extent=114*8-208;
+    restore.player_mode_5a=5;
+    restore.player_mode_5c=0xffff;
+    restore.player_mode_62=32;
+    auto restored=original_world_oob_restore(restore);
+    assert(restored.relocated.used_safe_anchor);
+    assert(restored.relocated.ball_x==(63<<16));
+    assert(restored.relocated.ball_y==(100<<16));
+    assert(restored.relocated.player_x==(48<<16));
+    assert(restored.relocated.player_y==(85<<16));
+    assert(restored.relocated.player_flags==0);
+    assert(restored.relocated.pause==60);
+    assert(restored.player_mode_5c==0);
+    assert(restored.player_mode_62==1);
+    restore.player_mode_5a=4;
+    restored=original_world_oob_restore(restore);
+    assert(restored.player_mode_62==32);
+    restore.player_mode_5a=0xffff; // signed -1 <= 4
+    restored=original_world_oob_restore(restore);
+    assert(restored.player_mode_62==32);
+
 }

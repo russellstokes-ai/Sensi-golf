@@ -386,12 +386,12 @@ int main() {
         assert(oob_tile.last_hazard_kind()==ClassicNamedHazard::None);
     }
 
-    // Real gameplay world-boundary case: do not crash inside MAPI lookup.
+    // Real gameplay world-boundary case: drive aim 0 advances Y. Start\n    // one integer unit below the course's north edge (height 128*8),\n    // rather than trying to escape the EAST X edge on a northward shot.\n    // Do not crash inside MAPI lookup.
     // The original world negative-AX branch charges TWO counters +1
     // over the already counted launch stroke, then uses a saved safe
     // position. It is distinct from an in-map descriptor-22 hazard.
     {
-        ClassicHoleSession world_oob(fairway,63<<16,100<<16);
+        ClassicHoleSession world_oob(fairway,32<<16,1023<<16);
         world_oob.begin_shot(drive);
         run_active(world_oob);
         assert(world_oob.phase()==HoleSessionPhase::HazardStopped);

@@ -90,6 +90,13 @@ def main():
   print("Original extreme accuracy source launch:",len(results),"cases")
   for k,v in summary.items():print(" original execution",k,v)
   out=[x for x in results if x["outside_profile"] and x["result"]=="executed_original_machine_code"]
+  def launched(row):
+    return row["state"]["vertical_force"]!=0 or row["state"]["horizontal_force"]!=0
+  inbounds=[x for x in results if not x["outside_profile"] and x["result"]=="executed_original_machine_code"]
+  print("  OUTSIDE profile: launch_nonzero",sum(launched(x) for x in out),
+        "no_launch",sum(not launched(x) for x in out))
+  print("  INSIDE profile: launch_nonzero",sum(launched(x) for x in inbounds),
+        "no_launch",sum(not launched(x) for x in inbounds))
   for x in out[:24]:
     state=x["state"]
     print(" outside",x["club"],x["lie"],x["accuracy"],"profile",x["profile"],

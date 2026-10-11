@@ -18,7 +18,7 @@ int main() {
     sensigolf::ClassicMobileControls controls;
     controls.sync_hole(hole);
     assert(controls.enabled());
-    controls.set_aim_raw(0);
+    controls.set_aim_raw(2048); // Aim north toward Lakewood green (0 aims south in recovered heading)
     controls.set_club(0);
     controls.meter_click(0);
     controls.meter_click(105);

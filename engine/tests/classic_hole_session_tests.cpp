@@ -372,6 +372,7 @@ int main() {
         run_active(oob_tile);
         assert(oob_tile.phase()==HoleSessionPhase::HazardStopped);
         assert(oob_tile.last_hazard_kind()==ClassicNamedHazard::OutOfBoundsTile);
+        assert(!oob_tile.pending_world_oob_event().has_value());
         assert(oob_tile.hazard_pause_remaining()==100);
         assert(oob_tile.strokes()==1);
         assert(oob_tile.recovered_counters().player_52==1);
@@ -400,6 +401,10 @@ int main() {
         assert(world_oob.recovered_counters().player_52==2);
         assert(world_oob.recovered_counters().player_56==2);
         assert(world_oob.hazard_pause_remaining()==100);
+        assert(world_oob.pending_world_oob_event().has_value());
+        assert(world_oob.pending_world_oob_event()->byte_420fef==1);
+        assert(world_oob.pending_world_oob_event()->dword_420548==0x1000d);
+
         for(int tick=0;tick<101;++tick)world_oob.step();
         assert(world_oob.phase()==HoleSessionPhase::HazardRecovered);
         // Actual original 0x40AACF -> 0x40A871 uses safe anchor +15
@@ -411,6 +416,7 @@ int main() {
         assert(world_oob.last_hazard_kind()==ClassicNamedHazard::OutsideWorld);
         world_oob.acknowledge_hazard_recovery();
         assert(world_oob.phase()==HoleSessionPhase::ReadyForShot);
+        assert(!world_oob.pending_world_oob_event().has_value());
     }
 
     return 0;

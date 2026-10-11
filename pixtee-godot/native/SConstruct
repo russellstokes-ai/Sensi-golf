@@ -5,6 +5,11 @@ from SCons.Script import SConscript, Glob, Default
 
 env = SConscript("godot-cpp/SConstruct")
 env.Append(CPPPATH=["src", "../../engine/include"])
+# The recovered portable core uses tested C++ exceptions for invalid inputs.
+# Godot-cpp disables exceptions by default. Re-enable only for our module,
+# and catch at every GDExtension boundary so none escapes into Godot.
+if env["platform"] in ("linux", "android", "macos"):
+    env.Append(CXXFLAGS=["-fexceptions"])
 engine_sources = Glob("../../engine/src/*.cpp")
 extension_sources = Glob("src/*.cpp")
 suffix = env.get("suffix", "")

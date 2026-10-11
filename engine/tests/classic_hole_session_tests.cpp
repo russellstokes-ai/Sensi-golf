@@ -120,23 +120,19 @@ int main() {
     assert(hole_session.phase() == HoleSessionPhase::CupTerminal);
     assert(hole_session.ball_state().holed);
 
-    // The original zero-distance scored-hole branch is not putter-specific.
-    // A non-putter cup terminal at zero distance scores on the next session
-    // tick without applying the transient club-12 counter correction.
+    // Code-8 CupTerminal alone must NOT count as a scored hole. This
+    // independently authored fixture leaves its cup at (0,0), away from
+    // the actual shot end point. Exact zero-distance non-putter scoring is
+    // exercised in the earlier rest_scored test above.
     ClassicHoleSession scored_approach(
         hole, 0, 0, ClassicHoleMetadata{0, 4});
     scored_approach.begin_shot(approach);
     run_active(scored_approach);
     assert(scored_approach.phase() == HoleSessionPhase::CupTerminal);
-    assert(scored_approach.distance_to_hole() == 0);
+    assert(scored_approach.distance_to_hole() > 0);
     scored_approach.step();
-    assert(scored_approach.phase() == HoleSessionPhase::HoleScored);
+    assert(scored_approach.phase() == HoleSessionPhase::CupTerminal);
     assert(scored_approach.strokes() == 1);
-    assert(scored_approach.recovered_counters().player_52 == 1);
-    assert(scored_approach.recovered_counters().player_56 == 1);
-    assert(scored_approach.recovered_counters().player_58 == 4);
-    assert(scored_approach.recovered_counters().player_48 == 3);
-    assert(scored_approach.recovered_counters().player_70 == 1);
 
     auto water = uniform_course(6);
     ClassicHoleSession water_session(water, 0, 0);

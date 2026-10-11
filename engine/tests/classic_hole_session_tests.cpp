@@ -309,8 +309,12 @@ int main() {
         run_active(special_putt);
         assert(special_putt.phase() == HoleSessionPhase::SpecialGreenStopped);
         assert(!special_putt.ball_state().holed);
-        assert(special_putt.recovered_counters().player_52 == 1);
-        assert(special_putt.recovered_counters().player_56 == 1);
+        // Source v1.014 0x40A403 increments on code9 early stop,
+        // but late club-12 code10 enters directly at 0x40A40B.
+        const auto source_strokes=descriptor==23 ? 2u : 1u;
+        assert(special_putt.strokes()==source_strokes);
+        assert(special_putt.recovered_counters().player_52==source_strokes);
+        assert(special_putt.recovered_counters().player_56==source_strokes);
         assert(special_putt.special_green_pause_remaining() == 100);
 
         bool early_ack_blocked = false;
@@ -344,7 +348,9 @@ int main() {
         special_putt.acknowledge_special_green_stop();
         assert(special_putt.phase() == HoleSessionPhase::ReadyForShot);
         special_putt.begin_shot(putter_request());
-        assert(special_putt.strokes() == 2);
+        assert(special_putt.strokes()==source_strokes+1u);
+        assert(special_putt.recovered_counters().player_52==source_strokes+1u);
+        assert(special_putt.recovered_counters().player_56==source_strokes+1u);
     }
 
     // GREEN D2/code 50 remains unsupported for club 12 until its specific

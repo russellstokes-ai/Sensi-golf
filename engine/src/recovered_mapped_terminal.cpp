@@ -55,4 +55,47 @@ OriginalMappedTerminalResult original_mapped_terminal_contact(
     return out;
 }
 
+
+OriginalPutterAdmissionResult original_putter_terrain_admission(
+    const OriginalMappedTerminalInput& input,
+    std::uint8_t original_bounce_marker) {
+    OriginalPutterAdmissionResult out{};
+    // 0x40A575 CMP signed WORD[ball + 0x16], 20; 0x40A57C clears
+    // ONLY contact flag bit zero when the signed high WORD is >= 20.
+    const auto high=static_cast<std::uint16_t>(
+        static_cast<std::uint32_t>(input.ball_height)>>16);
+    const auto signed_high=high<=0x7fffu
+        ? static_cast<std::int32_t>(high)
+        : static_cast<std::int32_t>(high)-0x10000;
+    out.contact_flags=static_cast<std::uint16_t>(
+        input.contact_flags & (signed_high>=20 ? 0xfffeu : 0xffffu));
+
+    // Original 0x40A581/0x40A588: non-putters OR byte marker == 1
+    // skip the early second MAPI lookup and enter 0x40A603.
+    if(input.club_index!=12u || original_bounce_marker==1u)
+        return out;
+
+    const auto cell=lookup_course_subcell(
+        input.descriptor_bank,input.descriptor_size,
+        input.selector_bank,input.selector_size,
+        input.tile_index,input.x_subcell,input.y_subcell);
+    out.map_lookup_performed=true;
+    out.descriptor_index=cell.descriptor_index;
+    out.landing_code=classic_terrain_descriptor(
+        cell.descriptor_index).landing_code;
+
+    const auto code=out.landing_code;
+    if(static_cast<std::int16_t>(code)<8)
+        out.route=OriginalPutterAdmissionRoute::RollingSurface;
+    else if(code==8u)
+        out.route=OriginalPutterAdmissionRoute::CupCode8;
+    else if(code==9u || code==10u)
+        out.route=OriginalPutterAdmissionRoute::SpecialGreenCode9Or10;
+    else if(code==35u && signed_high<=200)
+        out.route=OriginalPutterAdmissionRoute::Code35LowHeight;
+    else
+        out.route=OriginalPutterAdmissionRoute::HighCodeEvent1;
+    return out;
+}
+
 } // namespace sensigolf::recovered

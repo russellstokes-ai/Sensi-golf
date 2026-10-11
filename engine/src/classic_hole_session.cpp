@@ -298,6 +298,10 @@ void ClassicHoleSession::step() {
     }
 
     shot_.update_surface_context_for_tick(to_context(surface));
+    const auto flag=course_.hole_position();
+    shot_.set_original_interaction_context(
+        prng_, green_mode_, static_cast<std::int16_t>(flag.x),
+        static_cast<std::int16_t>(flag.y));
     shot_.step();
 
     // The original transition dispatcher can switch coordinate spaces as the

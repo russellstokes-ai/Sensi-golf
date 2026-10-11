@@ -105,6 +105,19 @@ const ClassicTerrainDescriptor& classic_terrain_descriptor(
     return kTerrain[descriptor_index];
 }
 
+ClassicNamedHazard classic_named_hazard(
+    std::uint16_t descriptor_index) {
+    const auto& d=classic_terrain_descriptor(descriptor_index);
+    if(d.landing_code!=35u)return ClassicNamedHazard::None;
+    switch(descriptor_index) {
+        case 6: case 46: case 54: case 62: case 70:
+            return ClassicNamedHazard::Water;
+        case 14:return ClassicNamedHazard::NoGo;
+        case 22:return ClassicNamedHazard::OutOfBoundsTile;
+        default:return ClassicNamedHazard::OtherCode35;
+    }
+}
+
 bool classic_landing_code_product_supported(
     std::uint16_t landing_code) noexcept {
     return supported(landing_code);

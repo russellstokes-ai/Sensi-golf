@@ -21,5 +21,12 @@ jobs:
             pixtee-godot/native/tests/course_adapter_smoke.cpp \
             build/engine/libsensigolf_core.a -o build/pixtee-adapter-smoke
           build/pixtee-adapter-smoke
+      - name: Verify original-format fine terrain collision and all slope arrows
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/pixtee_course_adapter.cpp \
+            pixtee-godot/native/tests/fine_course_parity_tests.cpp \
+            build/engine/libsensigolf_core.a -o build/pixtee-fine-parity
+          build/pixtee-fine-parity
       - name: Audit full native suite (known baseline failures are NOT ignored)
         run: ctest --test-dir build --output-on-failure

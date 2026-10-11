@@ -32,6 +32,7 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include -Ipixtee-godot/native/src \
             pixtee-godot/native/src/pixtee_round_runtime.cpp \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
             pixtee-godot/native/tests/round_runtime_tests.cpp \
             build/engine/libsensigolf_core.a -o build/pixtee-round-parity
           build/pixtee-round-parity

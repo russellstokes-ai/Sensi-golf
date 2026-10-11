@@ -8,6 +8,7 @@ on:
       - 'tools/verify_original_real_course_mapped_terminal.py'
       - 'tools/verify_original_putter_preterminal_gate.py'
       - 'tools/verify_original_shot_admission.py'
+      - 'tools/trace_original_oob_bounds.py'
       - 'pixtee-godot/native/tests/original_shot_admission_probe.cpp'
       - 'engine/src/recovered_shot_admission.cpp'
       - 'engine/include/sensigolf/recovered_shot_admission.hpp'
@@ -92,6 +93,16 @@ jobs:
           python tools/verify_original_shot_admission.py \
             --exe "$EXE" --probe /tmp/pixtee-original-shot-admission \
             -o analysis/private/original-shot-admission-x86.json
+      - name: Diagnose original x86 out-of-bounds lookup coordinates
+        run: |
+          python -m pip install --disable-pip-version-check capstone==5.0.6
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          ROOT=analysis/private/step2/extracted/epf
+          python tools/trace_original_oob_bounds.py \
+            --exe "$EXE" --mapm "$ROOT/MAPM01.MAP" \
+            --descriptor-bank "$ROOT/MAPI01.RAW" \
+            --selector-bank "$ROOT/MAPI02.RAW" \
+            -o analysis/private/original-oob-course-boundary.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-map-to-terminal-x86
@@ -101,4 +112,5 @@ jobs:
             analysis/private/original-putter-preterminal-synthetic-x86.json
             analysis/private/original-putter-preterminal-real-x86.json
             analysis/private/original-shot-admission-x86.json
+            analysis/private/original-oob-course-boundary.json
           retention-days: 30

@@ -75,6 +75,15 @@ func _initialize() -> void:
         push_error("Original CPU search parameter ABI parity failure")
         quit(1)
         return
+    var ai_pick = round_host.original_cpu_candidate_choice(
+        PackedInt32Array([0, 1, -1]),
+        PackedInt32Array([0, 0, 0]),
+        PackedInt32Array([30, 11, 1])
+    )
+    if ai_pick != 1:
+        push_error("Original x86 computer candidate selection failed")
+        quit(1)
+        return
     var req = round_host.requested_course()
     if int(req.get("resource_id",0)) != 1:
         push_error("Original round controller did not request hole one")

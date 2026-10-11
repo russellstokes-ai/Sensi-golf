@@ -18,6 +18,11 @@ protected:
 public:
     // Pure original v1.014 next-player decision; caller supplies the
     // original per-player priority/eligibility state, not invented metrics.
+    Dictionary original_turn_score_adjust(
+        int player_count, const PackedInt32Array& strokes,
+        const PackedInt32Array& totals,
+        const PackedInt32Array& completed,
+        const PackedInt32Array& ball_distances);
     Dictionary original_cpu_shot_variation(
         bool bypass, int power, int variation,
         int random100, int random_power, int random_direction);

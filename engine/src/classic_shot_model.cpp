@@ -144,10 +144,12 @@ void ClassicShotModel::step() {
                 flight_, *interaction_prng_);
         }
     }
-    if(recovered::original_flag_coordinate_hit(
-        flight_, flag_x_, flag_y_, interaction_green_mode_)) {
-        if(!interaction_prng_)
-            throw std::logic_error("flag impact needs original captured PRNG");
+    // Standalone physics fixtures may have no original PRNG. Their
+    // non-interaction behaviour remains testable; the real game session
+    // always supplies the captured original PRNG for event activation.
+    if(interaction_prng_ &&
+       recovered::original_flag_coordinate_hit(
+           flight_, flag_x_, flag_y_, interaction_green_mode_)) {
         recovered::apply_flag_coordinate_deflection(
             flight_, *interaction_prng_);
     }

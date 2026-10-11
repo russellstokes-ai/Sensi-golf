@@ -12,6 +12,16 @@ namespace sensigolf::recovered {
 // These boolean/enum predicates contain *no generated physics* and can
 // therefore be tested separately against original machine-code branches.
 enum class Code9Contact : std::uint8_t { None, Deflect, SpecialStop };
+
+// Original x86 0x40A686..0x40A6AB: classify the already-entered
+// terminal terrain branch. Code 35 and 50 names are ORIGINAL NUMERIC
+// values, not proof that any particular object class or 3D collision
+// geometry has been identified. Do not wire to live collision yet.
+enum class OriginalStopContact : std::uint8_t {
+    Other = 0, Code35 = 1, Code50 = 2
+};
+OriginalStopContact original_terminal_stop_contact(
+    std::uint16_t landing_code, std::int16_t height_high_word) noexcept;
 Code9Contact original_code9_contact(
     std::uint16_t landing_code, std::uint16_t club_index,
     std::int32_t vertical_force, std::int32_t ball_height_raw) noexcept;

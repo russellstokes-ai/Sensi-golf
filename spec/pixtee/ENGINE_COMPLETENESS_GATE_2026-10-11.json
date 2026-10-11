@@ -625,7 +625,8 @@
         "source_verified_subfunctions": [
           "Verified source-machine original code9 gate 4390/4390, lip gate 3172/3172, flag gate 2712/2712",
           "Original x86 0x40A686 terminal code35/code50 signed-height 200 branching 2730/2730 exact, isolated from live collision",
-          "Original source x86 rebound signed NEG/SAR/SAR/ADD/JG 4524/4524 exact, plus 0x40A79D event-0 latch and rebound 3912/3912 exact"
+          "Original source x86 rebound signed NEG/SAR/SAR/ADD/JG 4524/4524 exact, plus 0x40A79D event-0 latch and rebound 3912/3912 exact",
+          "Original x86 0x40A686..0x40A7E0 code-35/code-50 terminal ball state, event-call arguments, player flags and continuation: 8336/8336 exact"
         ],
         "implemented": [
           "tools/trace_remaining_original_dispatchers.py",
@@ -634,14 +635,17 @@
           "pixtee-godot/native/tests/original_terminal_event_route_probe.cpp",
           "engine/src/recovered_interactions.cpp",
           "tools/verify_original_terminal_rebound.py",
-          "tools/verify_original_terminal_rebound_latch.py"
+          "tools/verify_original_terminal_rebound_latch.py",
+          "tools/verify_original_special_terminal_terrain.py",
+          "pixtee-godot/native/tests/original_special_terminal_terrain_probe.cpp"
         ],
         "evidence": [
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165847870",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174782111",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38178442764",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38178607009",
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38178609751"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38178609751",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38179160345"
         ],
         "not_yet_verified": [
           "All other event gate branches and complete original dynamic event sequencing",
@@ -925,5 +929,5 @@
     }
   ],
   "checked_original_executable_at": "2026-10-11",
-  "current_update": "Validated original 24-row AI search table (1274/1274 x86), 4605 heading candidates (120/120), 1230/1230 signed special pause counters with original post-stop relocation in native, and corrected stroke accounting: ALL 668 original extreme accuracy no-flight attempts charge hole and total strokes +1/+1, as do 322 valid launches. Native 18 tests pass. 15 full engine signoff items remain partially recovered. Native source-verified paid no-flight stroke replay round-trip now passes manual and original Welly regression, except zero-cup-distance edge remains blocked (CI 38174394126). Authenticated terminal code35/code50 event routing 2730/2730 exact; original tree identity and all full game interaction paths still unverified (run 38174782111). Additional isolated authentic 0x40A7BD rebound 4524/4524 and original 0x40A79D event-bit-zero latch plus rebound 3912/3912 exact; combined 8436 machine cases. Actual original tree collision and end-to-end event activation are still open."
+  "current_update": "Validated original 24-row AI search table (1274/1274 x86), 4605 heading candidates (120/120), 1230/1230 signed special pause counters with original post-stop relocation in native, and corrected stroke accounting: ALL 668 original extreme accuracy no-flight attempts charge hole and total strokes +1/+1, as do 322 valid launches. Native 18 tests pass. 15 full engine signoff items remain partially recovered. Native source-verified paid no-flight stroke replay round-trip now passes manual and original Welly regression, except zero-cup-distance edge remains blocked (CI 38174394126). Authenticated terminal code35/code50 event routing 2730/2730 exact; original tree identity and all full game interaction paths still unverified (run 38174782111). Additional isolated authentic 0x40A7BD rebound 4524/4524 and original 0x40A79D event-bit-zero latch plus rebound 3912/3912 exact; combined 8436 machine cases. Actual original tree collision and end-to-end event activation are still open. Original source numeric special terrain code35/code50 terminal sequence now independently native proven 8336/8336 x86 cases (ball force/height, terminal flags, event CALL argument, continuation); original course/object presence and full callback side effects still unproven (run 38179160345)."
 }

@@ -109,6 +109,30 @@ OriginalSpecialTerminalTerrainResult original_special_terminal_terrain(
 }
 
 
+OriginalSpecialTerminalTerrainResult original_airborne_high_code_contact(
+    std::uint16_t landing_code, std::uint16_t club_index,
+    std::uint16_t player_state_flags, std::int32_t vertical_force,
+    std::int32_t horizontal_force, std::int32_t ball_height) noexcept {
+    // Caller has already followed original 0x40A5B3..0x40A5D3,
+    // excluding codes 0..10 before this source branch.
+    if(landing_code<=10u)
+        return {false,false,player_state_flags,
+            vertical_force,horizontal_force,ball_height,0};
+    const auto hi=static_cast<std::uint32_t>(ball_height)>>16;
+    const auto signed_hi=hi>=0x8000u
+        ? static_cast<std::int32_t>(hi)-0x10000
+        : static_cast<std::int32_t>(hi);
+    if(landing_code==35u && signed_hi<=200)
+        return original_special_terminal_terrain(
+            35u,club_index,player_state_flags,
+            vertical_force,horizontal_force,ball_height);
+    // Non-code-35, or code-35 above the signed height threshold,
+    // original always enters the same event-1 then rebound branch as 50.
+    return original_special_terminal_terrain(
+        50u,club_index,player_state_flags,
+        vertical_force,horizontal_force,ball_height);
+}
+
 Code9Contact original_code9_contact(
     std::uint16_t landing, std::uint16_t club,
     std::int32_t vertical, std::int32_t height) noexcept {

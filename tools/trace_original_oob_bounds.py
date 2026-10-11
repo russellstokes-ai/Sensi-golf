@@ -100,6 +100,16 @@ def main():
     print("Original course dimensions",width,height)
     print("Original source 0x409535 disassembly:")
     print("\n".join(instructions))
+    # Surrounding source regions: the world OOB path explicitly jumps to
+    # 0x40CD00, while the next game-tick status bit2 branches to 0x40AACF.
+    # These may contain presentation/turn scheduling beyond the scoped
+    # negative-lookup source proof and require separate recovery.
+    for begin,end,label in ((0x40CD00,0x40CD90,"out-of-world-event"),
+                            (0x40AACF,0x40AB3C,"next-tick-bit2"),
+                            (0x40A220,0x40A250,"pre-shot-counter")):
+        print("Original supporting x86 region:",label)
+        for ins in engine.disasm(bytes(uc.mem_read(begin,end-begin)),begin):
+            print(f"{ins.address:#x} {ins.mnemonic} {ins.op_str}")
     print("Original boundary probe summary:")
     for row in records:
       print("OOB_XY",row["x"],row["y"],"exit",row["ended_at"],

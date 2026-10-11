@@ -18,10 +18,11 @@ int main() {
     position.x=20<<16;
     position.y=31<<16;
     position.height=2<<16;
-    assert(original_flag_coordinate_hit(position,20,30,false));
-    assert(!original_flag_coordinate_hit(position,20,30,true));
+    assert(original_flag_coordinate_hit(position,20,19,false));
+    assert(!original_flag_coordinate_hit(position,20,30,false)); // original uses X, not Y
+    assert(!original_flag_coordinate_hit(position,20,19,true));
     position.height=0xA0001;
-    assert(!original_flag_coordinate_hit(position,20,30,false));
+    assert(!original_flag_coordinate_hit(position,20,19,false));
     position.height=0;
     position.horizontal_force=0xD000;
     assert(original_near_cup_lip_contact(true,0,position));

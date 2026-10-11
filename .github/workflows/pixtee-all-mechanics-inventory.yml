@@ -1,0 +1,14 @@
+name: Pixtee Original Sensible Golf Full Mechanics Inventory
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'spec/pixtee/ENGINE_COMPLETENESS_GATE_2026-10-11.json'
+      - 'tools/validate_pixtee_all_mechanics_inventory.py'
+jobs:
+  preserve_all_original_mechanics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/validate_pixtee_all_mechanics_inventory.py

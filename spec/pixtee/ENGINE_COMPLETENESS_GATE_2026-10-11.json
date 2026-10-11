@@ -1,0 +1,670 @@
+{
+  "schema": "pixtee.original-gameplay-coverage.v1",
+  "date": "2026-10-11",
+  "directive": "Recover and faithfully reproduce EVERY proven Sensible Golf mechanic before graphics. No substitute physics. No shipping claims from a partially recovered engine.",
+  "reference_binary": "Windows Sensible Golf v1.014",
+  "reference_sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+  "reference_data_path": "spec/pixtee/ORIGINAL_PHYSICS_RESEARCH.json",
+  "rights": "Research only; original protected binaries, assets, course raster and unreviewed code/tables not cleared for Pixtee distribution.",
+  "parity_claim": "UNPROVEN",
+  "engine_completion": "INCOMPLETE",
+  "features": [
+    {
+      "id": "logical_936_65536_tick",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "fixed_point_coordinates",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "signed_shift_overflow_order",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "flight_tick_order",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "render_rate_independence",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "12bit_heading",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "13_original_club_indices",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "welly_three_click",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "welly_raw_power_capture",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "welly_accurate_meter_timing",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "welly_colour_boundaries",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "swing_accuracy_extremes",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "aim_lock_during_shot",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "one_shot_atomic_dispatch",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "13_club_launch_parameters",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "13_by_10_lie_profiles",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "11_curvature_profiles",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "launch_vertical_force",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "launch_horizontal_force",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "gravity",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "ball_lift_and_shadow_height",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "moving_curve_spin",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "horizontal_drag",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "bounce_energy_exchange",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "repeated_bounce",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "first_touchdown_order",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "horizontal_force_zero_crossing",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "ground_roll",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "green_putter_drag",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "non_green_putter_drag",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "green_slope_vector",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "course_to_green_coordinate_transforms",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "77_surface_descriptors",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "mapi_8x4_subcell_lookup",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "mapm_course_collision",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "maps_green_collision",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "16_direction_green_arrows",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "16_strength_green_slopes",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "sand_lie",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "fairway_rough_heavy_rough",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "water_nogo_oob",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "hazard_100_tick_pause",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "safe_anchor_recovery",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "tree_collision_activation",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "tree_height_deflection",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "flag_collision",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "code8_cup_capture",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "zero_distance_scored_hole",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "code9_special_green",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "code10_special_green",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "near_cup_lip",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "low_height_prng_deflection",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "original_prng_seeding_and_turns",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "misc_course_event_dispatch",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "score_counters",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "rounds_18_holes",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "multi_player_turn_order",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "scored_hole_advance",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "save_replay_journal",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "replay_corruption_rejection",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "course_resource_requests",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "original_game_modes",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "computer_opponents",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "match_tournament_rules",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "putts_strokes_penalties",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "camera_projection_scale",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "ball_lie_overlay_geometry",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "welly_visual_assets",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "slope_arrow_sprite_mapping",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "hit_reaction_animation_events",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "original_audio_event_timing",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "sfx_catalogue",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "course_asset_dimensions",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    }
+  ]
+}

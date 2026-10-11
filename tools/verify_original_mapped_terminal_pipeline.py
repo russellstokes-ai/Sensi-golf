@@ -88,15 +88,15 @@ def vectors():
             selected_position=(2 if masks[y]&(0x80>>x) else 0)+(
                 4 if masks[y+4]&(0x80>>x) else 0)
             words[selected_position//2]=(words[selected_position//2]&0xff00)|6
-        vertical=rng.choice(velocities+[rng.randint(-2147483648,2147483647)])
+        vertical=rng.choice(velocities+(rng.randint(-2147483648,2147483647),))
         if vertical==0:vertical=-1
         rows.append((tile,x,y,*words,*masks,
                      rng.choice((0,1,5,11,12)),
                      rng.choice((0,1,4,0x8000,0xffff)),
                      rng.choice((0,1,2,3,0x8000,0xffff)),
                      vertical,
-                     rng.choice(velocities+[rng.randint(-2147483648,2147483647)]),
-                     rng.choice(heights+[rng.randint(-2147483648,2147483647)])))
+                     rng.choice(velocities+(rng.randint(-2147483648,2147483647),)),
+                     rng.choice(heights+(rng.randint(-2147483648,2147483647),))))
     return rows
 
 def setup_original(uc):

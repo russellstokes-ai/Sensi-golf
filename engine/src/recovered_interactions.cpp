@@ -54,6 +54,16 @@ OriginalTerminalRebound original_terminal_rebound(
             static_cast<std::int32_t>(signed_result),true};
 }
 
+OriginalTerminalLatchRebound original_terminal_rebound_with_latch(
+    std::uint16_t player_flags,
+    std::int32_t vertical_force, std::int32_t horizontal_force) noexcept {
+    const bool first_event=(player_flags & 1u)==0;
+    // Authentic 0x40A7A5 sets the bit only when it was previously clear.
+    const auto flags=static_cast<std::uint16_t>(player_flags | 1u);
+    return {original_terminal_rebound(vertical_force,horizontal_force),
+            flags,first_event};
+}
+
 
 Code9Contact original_code9_contact(
     std::uint16_t landing, std::uint16_t club,

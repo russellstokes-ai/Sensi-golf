@@ -4,7 +4,7 @@ No graphics approximation: observe word variables after every original
 CPU execution under controlled button input and club selection.
 This is an isolated routine test, not full UI input-to-audio/game timing.
 """
-import argparse,hashlib,json,struct,sys
+import argparse,hashlib,json,struct,subprocess,sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from original_v1014_oracle import build_uc,REFERENCE_SHA256,PLAYER,STACK,SENTINEL
@@ -60,6 +60,7 @@ def session(exe,club,pressed_on_rise,pressed_on_fall):
 def main():
     p=argparse.ArgumentParser()
     p.add_argument("--exe",type=Path,required=True)
+    p.add_argument("--native-probe",type=Path)
     p.add_argument("-o","--output",type=Path,required=True)
     a=p.parse_args()
     if hashlib.sha256(a.exe.read_bytes()).hexdigest()!=REFERENCE_SHA256:raise RuntimeError("wrong original binary")
@@ -67,11 +68,36 @@ def main():
     for club in (0,12):
       for rise,fall in ((12,10),(0,0),(80,69),(-1,-1),(-1,10),(12,-1)):
         scenarios.append(session(a.exe,club,rise,fall))
+    compared=0
+    mismatches=[]
+    if a.native_probe:
+        commands="".join(f"{x['club']} {x['press_rise_tick']} {x['press_falling_tick_offset']}\\n" for x in scenarios)
+        native=subprocess.run([str(a.native_probe)],input=commands,
+                              capture_output=True,text=True,check=True)
+        rows=native.stdout.strip().splitlines()
+        expected=[item for x in scenarios for item in x["samples"]]
+        if len(rows)!=len(expected):
+            raise AssertionError(f"Original meter calls {len(expected)}, native calls {len(rows)}")
+        compare_keys=("stage","meter_raw","captured_power","accuracy_counter",
+                      "capture_flag","angle","aim_step_setting","captured_angle")
+        for row,ref in zip(rows,expected):
+            vals=list(map(int,row.split()))
+            actual=vals[4:]
+            target=[ref[k] for k in compare_keys]
+            if actual!=target:
+                mismatches.append({"tick":ref["tick"],"club":ref["club"],
+                                   "original":target,"native":actual})
+            else: compared+=1
+        print(f"ACTUAL ORIGINAL WELLY x86 vs recovered native tick: {compared}/{len(expected)} exact")
+        for issue in mismatches[:10]:print("METER MISMATCH",issue)
     report={"schema":"sensible-v1014-original-welly-machine-code-trace.v1",
       "original_exe_sha256":REFERENCE_SHA256,
       "method":"Unicorn executes raw original x86 subroutines 0x40768b and 0x407787",
       "scope":"isolated meter routine; not full timing/rendering/click-debounce ownership",
-      "scenarios":scenarios}
+      "scenarios":scenarios,
+      "native_core_matches":compared,
+      "native_core_mismatches":mismatches[:100],
+      "native_comparison_performed":bool(a.native_probe)}
     a.output.parent.mkdir(parents=True,exist_ok=True)
     a.output.write_text(json.dumps(report,indent=2)+"\n")
     for x in scenarios:
@@ -80,5 +106,7 @@ def main():
               f"calls {len(vals)} firstFall {x['fall_started']} "
               f"first={vals[0] if vals else None} last={vals[-1] if vals else None}")
         print("  capture/phase snapshots:",[q for q in vals if q["pressed"] or q["meter_raw"] in (70,105) or q["stage"]==0][:8])
-    print("PASS direct original machine-code Welly meter routine exercised")
+    if mismatches:
+        raise SystemExit("Original Welly machine-code vs recovered native C++ NOT identical")
+    print("PASS direct original machine-code Welly meter routine exercised"+(" and native per-tick parity verified" if a.native_probe else ""))
 if __name__=="__main__":main()

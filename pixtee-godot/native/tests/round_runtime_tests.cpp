@@ -79,19 +79,17 @@ int main() {
     for(unsigned id=1;id<=18;++id)
         restored.register_course(static_cast<std::uint8_t>(id),empty);
     restored.restore_replay(checkpoint);
-    assert(restored.has_hole());
-    assert(restored.hole().phase()==sensigolf::HoleSessionPhase::HoleScored);
-    assert(restored.hole().strokes()==1);
+    // Original replay automatically commits a scored hole and requests next.
+    assert(!restored.has_hole());
+    assert(restored.round_state().holes_completed==1);
+    assert(restored.round_state().total_strokes==1);
     std::string corrupted=checkpoint;
     corrupted.at(corrupted.find("SENSIGOLF_REPLAY")+2)='X';
     bool rejected=false;
     try {restored.restore_replay(corrupted);}
     catch(const std::exception&) {rejected=true;}
     assert(rejected);
-    assert(restored.hole().strokes()==1); // fail-atomic restore.
-    restored.commit_scored_hole();
-    assert(restored.round_state().holes_completed==1);
-    assert(restored.round_state().total_strokes==1);
+    assert(restored.round_state().holes_completed==1); // fail-atomic restore.
     for(unsigned index=1;index<18;++index) {
         auto req=restored.resource_request();
         assert(req && req->resource_id==index+1);

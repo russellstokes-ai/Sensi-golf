@@ -13,7 +13,7 @@ bool apply_putter_terminal(
         state.pause = 0x0064;
         state.event_id = 1;
         state.terminal_flag = 1;
-        if (state.player_mode_5a < 4) {
+        if (static_cast<std::int16_t>(state.player_mode_5a) < 4) {
             state.ui_gate = 1;
         }
         state.kind = PutterTerminalKind::Holed;

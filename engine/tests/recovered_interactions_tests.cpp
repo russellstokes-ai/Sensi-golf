@@ -50,6 +50,28 @@ int main() {
         assert(!other.rebound.continues_flight);
     }
     // Source-mapped branch boundaries, including special codes 9 and 10:
+    // Original numeric terrain 35 / 50 termination or rebound.
+    {
+        auto result=original_special_terminal_terrain(35,0,2,-32000,22000,200<<16);
+        assert(result.handled && !result.continues_flight);
+        assert(result.event_code==11 && result.player_state_flags==0x8002);
+        assert(result.vertical_force==0 && result.horizontal_force==0
+            && result.ball_height==0);
+        assert(!original_special_terminal_terrain(
+            35,0,0,-32000,22000,201<<16).handled);
+        auto putting=original_special_terminal_terrain(50,12,2,-8448,50000,0);
+        assert(putting.handled && !putting.continues_flight);
+        assert(putting.event_code==1 && putting.player_state_flags==0x8002);
+        assert(putting.vertical_force==-8448 && putting.horizontal_force==50000);
+        auto wedge=original_special_terminal_terrain(50,3,2,-8448,50000,0);
+        auto rebound=original_terminal_rebound(-8448,50000);
+        assert(wedge.handled && wedge.continues_flight==rebound.continues_flight);
+        assert(wedge.event_code==1 && wedge.player_state_flags==2);
+        assert(wedge.vertical_force==rebound.vertical_force);
+        assert(wedge.horizontal_force==rebound.horizontal_force);
+        assert(!original_special_terminal_terrain(9,0,2,-8448,50000,0).handled);
+    }
+
     assert(original_code9_contact(9,12,0,0) == Code9Contact::SpecialStop);
     assert(original_code9_contact(9,0,-1,0x2ffff) == Code9Contact::SpecialStop);
     assert(original_code9_contact(9,0,-1,0x30000) == Code9Contact::Deflect);

@@ -5,6 +5,7 @@
 
 #include "sensigolf/recovered_distance.hpp"
 #include "sensigolf/recovered_hazard_recovery.hpp"
+#include "sensigolf/recovered_interactions.hpp"
 #include "sensigolf/recovered_world_boundary.hpp"
 #include "sensigolf/recovered_putter_terminal.hpp"
 

@@ -2,6 +2,13 @@
 
 namespace sensigolf::recovered {
 
+OriginalPauseTickState original_special_pause_tick(
+    OriginalPauseTickState state) noexcept {
+    state.remaining=static_cast<std::uint16_t>(state.remaining-1u);
+    state.expired=static_cast<std::int16_t>(state.remaining)<0;
+    if(state.expired)state.ui_state=0;
+    return state;
+}
 bool apply_putter_terminal(
     std::uint16_t landing_code,
     PutterTerminalState& state) noexcept {

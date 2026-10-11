@@ -29,6 +29,8 @@ def test_one(exe,club,lie,accuracy):
   wi32(uc,src.PLAYER+0x2e,baseh)
   wi32(uc,src.PLAYER+0x32,scale)
   w16(uc,src.PLAYER+0x5a,0)
+  w16(uc,src.PLAYER+0x52,9) # original per-hole stroke counter
+  w16(uc,src.PLAYER+0x56,17) # original total stroke counter
   w16(uc,src.BALL+0x20,lie)
   w32(uc,src.CURRENT_PLAYER_VA,src.PLAYER)
   w32(uc,src.CURRENT_BALL_VA,src.BALL)
@@ -53,7 +55,10 @@ def test_one(exe,club,lie,accuracy):
   try:
     uc.emu_start(src.LIVE_LAUNCH_VA,src.SENTINEL,count=5000)
     outcome=src.sample(uc,0)
-    base.update({"result":"executed_original_machine_code","state":outcome})
+    base.update({"result":"executed_original_machine_code","state":outcome,
+                 "original_counter_52_after":struct.unpack("<H",bytes(uc.mem_read(src.PLAYER+0x52,2)))[0],
+                 "original_counter_56_after":struct.unpack("<H",bytes(uc.mem_read(src.PLAYER+0x56,2)))[0],
+                 "original_counter_52_before":9,"original_counter_56_before":17})
   except Exception as e:
     base.update({"result":"emulation_exception","exception":type(e).__name__,
                  "reason":str(e)[:140]})
@@ -97,6 +102,11 @@ def main():
         "no_launch",sum(not launched(x) for x in out))
   print("  INSIDE profile: launch_nonzero",sum(launched(x) for x in inbounds),
         "no_launch",sum(not launched(x) for x in inbounds))
+  for label,group in (("OUTSIDE",out),("INBOUNDS",inbounds)):
+    from collections import Counter
+    scores=Counter((x["original_counter_52_after"]-9,x["original_counter_56_after"]-17) for x in group)
+    print(f"  {label} original counter deltas: {dict(scores)}")
+  print("  exact counter account before=(9,17), original launch-subroutine after listed above")
   for x in out[:24]:
     state=x["state"]
     print(" outside",x["club"],x["lie"],x["accuracy"],"profile",x["profile"],

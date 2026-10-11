@@ -114,22 +114,28 @@ def setup_original(uc):
             raise RuntimeError(f"unexpected original call at {va:#x}: {raw.hex()}")
         uc.mem_write(va,b"\x90"*5)
 
-def original(uc,row):
+def original(uc,row,*,world_xy=None):
     (tile,x,y,*tail)=row
     words=tail[:4]
     masks=tail[4:12]
     club,pf,cf,v,h,z=tail[12:]
     assert v!=0
-    uc.mem_write(MAPBUF+0x60,struct.pack(">H",tile))
-    uc.mem_write(DESC+tile*8,struct.pack(">4H",*words))
-    uc.mem_write(MASK+tile*8,bytes(masks))
+    if world_xy is None:
+        # Synthetic one-tile course resource; do not overwrite the real
+        # original MAPM or MAPI banks in the real-resource oracle mode.
+        uc.mem_write(MAPBUF+0x60,struct.pack(">H",tile))
+        uc.mem_write(DESC+tile*8,struct.pack(">4H",*words))
+        uc.mem_write(MASK+tile*8,bytes(masks))
+        integer_x,integer_y=x*2,y*2
+    else:
+        integer_x,integer_y=world_xy
     uc.mem_write(PLAYER,b"\x00"*0x100)
     uc.mem_write(BALL,b"\x00"*0x100)
     w16(uc,PLAYER,pf)
     w16(uc,PLAYER+0x60,cf)
     w16(uc,PLAYER+0x28,club)
-    wi32(uc,BALL,(x*2)<<16)
-    wi32(uc,BALL+4,(y*2)<<16)
+    wi32(uc,BALL,integer_x<<16)
+    wi32(uc,BALL+4,integer_y<<16)
     wi32(uc,BALL+8,v)
     wi32(uc,BALL+12,h)
     wi32(uc,BALL+20,z)

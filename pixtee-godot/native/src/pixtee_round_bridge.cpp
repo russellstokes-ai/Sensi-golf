@@ -1,5 +1,6 @@
 #include "pixtee_round_bridge.hpp"
 #include "original_next_player.hpp"
+#include "original_cpu_difficulty.hpp"
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -18,6 +19,9 @@ std::vector<std::uint8_t> native_bytes(const PackedByteArray& a) {
 }
 }
 void PixteeRoundBridge::_bind_methods() {
+    ClassDB::bind_method(
+        D_METHOD("original_cpu_search_parameters","original_mode","special_flag"),
+        &PixteeRoundBridge::original_cpu_search_parameters);
     ClassDB::bind_method(
         D_METHOD("original_next_player_choice","player_count",
                  "forced_holder","priority","eliminated","identities"),
@@ -45,6 +49,30 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("snapshot"),&PixteeRoundBridge::snapshot);
     ClassDB::bind_method(D_METHOD("requested_course"),&PixteeRoundBridge::requested_course);
     ClassDB::bind_method(D_METHOD("last_error"),&PixteeRoundBridge::last_error);
+}
+Dictionary PixteeRoundBridge::original_cpu_search_parameters(
+    int mode, bool special_flag) {
+    Dictionary result;
+    if(mode<4 || mode>15) {
+        last_error_="original CPU player mode must be in source-tested range 4..15";
+        result["verified"]=false;
+        return result;
+    }
+    try {
+        const auto raw=pixtee::original_cpu_search_parameters(
+            static_cast<std::uint16_t>(mode),special_flag);
+        result["verified"]=true;
+        result["candidate_stride"]=static_cast<int>(raw.candidate_stride);
+        result["variation_budget"]=static_cast<int>(raw.variation_budget);
+        result["search_budget"]=static_cast<int>(raw.search_budget);
+        result["whole_ai_recovered"]=false; // NEVER overclaim
+        last_error_="";
+        return result;
+    }catch(const std::exception& e) {
+        last_error_=String(e.what());
+        result["verified"]=false;
+        return result;
+    }
 }
 int PixteeRoundBridge::original_next_player_choice(
     int count, int forced, const PackedInt32Array& priority,

@@ -1,0 +1,29 @@
+name: Pixtee Godot GDExtension Linux build
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'pixtee-godot/native/src/**'
+      - 'pixtee-godot/native/SConstruct'
+      - 'pixtee-godot/bin/pixtee.gdextension'
+      - 'engine/src/**'
+      - 'engine/include/**'
+      - '.github/workflows/pixtee-godot-gdextension-build.yml'
+jobs:
+  gdextension-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build prerequisites
+        run: python3 -m pip install --user scons
+      - name: Get Godot 4.5 C++ bindings
+        run: git clone --depth 1 --branch 4.5 https://github.com/godotengine/godot-cpp.git pixtee-godot/native/godot-cpp
+      - name: Build actual native Godot gameplay library
+        working-directory: pixtee-godot/native
+        run: ~/.local/bin/scons platform=linux target=template_debug -j 2
+      - name: Verify a Linux Godot module was produced
+        run: |
+          find pixtee-godot/bin -maxdepth 1 -type f -print
+          test -f pixtee-godot/bin/libpixtee_gameplay.linux.template_debug.x86_64.so

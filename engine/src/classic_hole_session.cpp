@@ -58,6 +58,29 @@ void ClassicHoleSession::reset(
     safe_anchor_x_raw_ = 0;
     safe_anchor_y_raw_ = 0;
     safe_anchor_valid_ = false;
+    // A launch from a valid low-code lie can exit the map before its first
+    // sampled terrain tick. Seed a safe landing anchor from the starting
+    // lie to avoid an unrecoverable missing-anchor state. The -15 geometry
+    // is source-original 0x40A441; tee/init timing is a host integration
+    // safeguard pending original player-setup event parity.
+    {
+        recovered::OriginalWorldBoundaryInput start_bounds{};
+        start_bounds.ball_x=start_x_raw;
+        start_bounds.ball_y=start_y_raw;
+        start_bounds.x_extent=course_.recovery_x_extent();
+        start_bounds.y_extent=course_.recovery_y_extent();
+        if(!recovered::original_world_boundary_check(start_bounds).outside_world) {
+            const auto start=course_.resolve_raw_position(
+                start_x_raw,start_y_raw,false);
+            if(start.landing_code<=6u) {
+                safe_anchor_x_raw_=static_cast<std::int32_t>(
+                    static_cast<std::uint32_t>(start_x_raw)-0x000F0000u);
+                safe_anchor_y_raw_=static_cast<std::int32_t>(
+                    static_cast<std::uint32_t>(start_y_raw)-0x000F0000u);
+                safe_anchor_valid_=true;
+            }
+        }
+    }
     hazard_pause_remaining_ = 0;
     last_hazard_kind_ = ClassicNamedHazard::None;
     special_green_pause_remaining_ = 0;

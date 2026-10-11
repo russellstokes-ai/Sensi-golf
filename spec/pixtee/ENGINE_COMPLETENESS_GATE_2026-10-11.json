@@ -131,7 +131,26 @@
       "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
       "status": "unresolved_or_not_integrated",
       "godot_engine_proof": "not_proven_end_to_end",
-      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original Windows v1.014 990-case x86 launch and stroke-accounting test: 668 out-of-profile no-flight attempts and 322 ordinary launches ALL increment hole & total stroke counters +1/+1"
+        ],
+        "implemented": [
+          "engine/src/classic_hole_session.cpp",
+          "engine/src/recovered_flight.cpp",
+          "pixtee-godot/native/src/pixtee_round_runtime.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170616706",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170862905"
+        ],
+        "not_yet_verified": [
+          "Complete original click/retry/UI shot lifecycle across all game modes",
+          "No-flight attempted-stroke replay journal not yet supported; native correctly blocks false replay",
+          "Complete original score penalties and special terminal sequence in multiplayer/competitions"
+        ]
+      }
     },
     {
       "id": "aim_lock_during_shot",
@@ -793,23 +812,28 @@
           "256/256 slope putts",
           "original single-player 18-hole scoring and replay",
           "original mode-1 multiplayer exact stroke/total counter correction 3,192/3,192 tested conditions",
-          "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact"
+          "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact",
+          "Original Windows v1.014 990-case x86 launch and stroke-accounting test: 668 out-of-profile no-flight attempts and 322 ordinary launches ALL increment hole & total stroke counters +1/+1"
         ],
         "implemented": [
           "engine/src/classic_round_session.cpp",
           "engine/src/classic_hole_session.cpp",
           "pixtee-godot/native/src/original_turn_score_adjust.cpp",
-          "engine/src/recovered_putter_terminal.cpp"
+          "engine/src/recovered_putter_terminal.cpp",
+          "engine/src/recovered_flight.cpp",
+          "pixtee-godot/native/src/pixtee_round_runtime.cpp"
         ],
         "evidence": [
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38160257753",
           "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164530583",
-          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327"
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170616706",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170862905"
         ],
         "not_yet_verified": [
-          "mode-specific penalties, multiplayer scoring and special terminal edge cases",
-          "Original post-event 11 / code9/10 continuation through round transitions not yet full-machine-verified",
-          "Complete dynamic scoring and per-player penalty edge cases"
+          "Complete original click/retry/UI shot lifecycle across all game modes",
+          "No-flight attempted-stroke replay journal not yet supported; native correctly blocks false replay",
+          "Complete original score penalties and special terminal sequence in multiplayer/competitions"
         ]
       }
     },
@@ -887,5 +911,5 @@
     }
   ],
   "checked_original_executable_at": "2026-10-11",
-  "current_update": "Original CPU full aiming grid and 4605 headings verified by real x86; original event11 16bit 101st-tick continuation gate recovered, integrated into ClassicHoleSession, verified 1230/1230. Fifteen full gameplay gates remain open for whole-game parity."
+  "current_update": "Validated original 24-row AI search table (1274/1274 x86), 4605 heading candidates (120/120), 1230/1230 signed special pause counters with original post-stop relocation in native, and corrected stroke accounting: ALL 668 original extreme accuracy no-flight attempts charge hole and total strokes +1/+1, as do 322 valid launches. Native 18 tests pass. 15 full engine signoff items remain partially recovered."
 }

@@ -60,11 +60,10 @@ void PixteeRoundRuntime::meter_click_raw(std::uint16_t sample) {
     if(!controls_.dispatch_to(game_->active_hole()))
         throw std::runtime_error("original core rejected queued shot");
     if(game_->active_hole().phase()==HoleSessionPhase::ReadyForShot) {
-        // Source original still charged this out-of-profile stroke but no
-        // flight took place. Do not fabricate a successful replay record.
-        replay_supported_=false;
-        pending_.reset();
-        controls_.sync_hole(game_->active_hole());
+        // Original v1.014 charged a stroke even with no flight. The replay
+        // journal can preserve this completed atomic input and verify it by
+        // executing the recovered core again at restoration.
+        record_charged_no_flight(shot);
         return;
     }
     pending_=shot;
@@ -106,13 +105,11 @@ bool PixteeRoundRuntime::tick_original_welly(bool pressed) {
         if(!controls_.dispatch_to(game_->active_hole()))
             throw std::logic_error("classic original shot rejected");
         if(game_->active_hole().phase()==HoleSessionPhase::ReadyForShot) {
-            // Genuine original profile rejection: no flight, but the source
-            // launcher incremented both player stroke counters. Do not
-            // synthesize a free retry or falsely record a stable replay.
+            // Genuine original profile rejection: no flight but one paid
+            // stroke. Save the input as a complete, replayable stroke rather
+            // than inventing a free retry.
             original_welly_rejected_=true;
-            replay_supported_=false;
-            pending_.reset();
-            controls_.sync_hole(game_->active_hole());
+            record_charged_no_flight(request);
             return false;
         }
         pending_=request;
@@ -143,6 +140,30 @@ PixteeRoundRuntime::original_welly_state() const noexcept {
 void PixteeRoundRuntime::cancel_meter() noexcept {
     original_welly_active_=false;
     controls_.cancel_meter();
+}
+
+void PixteeRoundRuntime::record_charged_no_flight(
+    const ClassicShotRequest& request) {
+    const auto& h=game_->active_hole();
+    if(h.phase()!=HoleSessionPhase::ReadyForShot || h.strokes()==0)
+        throw std::logic_error("original paid no-flight attempt has no stable boundary");
+
+    // An input taken at exactly zero hole distance needs the original next
+    // logical scoring tick. Until that edge case has a stable boundary, keep
+    // the stricter replay gate instead of saving a premature result.
+    if(h.distance_to_hole()==0) {
+        replay_supported_=false;
+    } else if(replay_supported_) {
+        try {
+            journal_.append_after_shot(h,request);
+        } catch(...) {
+            // The live paid stroke cannot be rolled back after journal failure.
+            replay_supported_=false;
+            throw;
+        }
+    }
+    pending_.reset();
+    controls_.sync_hole(h);
 }
 
 void PixteeRoundRuntime::maybe_record_stable_shot() {

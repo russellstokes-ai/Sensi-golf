@@ -52,4 +52,15 @@ struct OriginalWorldOobRestoreResult {
 OriginalWorldOobRestoreResult original_world_oob_restore(
     const OriginalWorldOobRestoreInput& input) noexcept;
 
+// Original source Windows v1.014 OOB event handoff at 0x40CD00..0x40CD20.
+// Numeric memory destinations are documented because their full UI labels
+// and eventual dismissal timing are still not independently recovered.
+struct OriginalWorldOobEvent {
+    std::uint8_t byte_420fef = 0;       // event popup marker
+    std::uint32_t dword_420544 = 0;    // source display argument
+    std::uint32_t dword_420548 = 0;    // source message identifier
+    std::uint32_t source_esi = 0;      // source event resource pointer
+};
+OriginalWorldOobEvent original_world_oob_event() noexcept;
+
 } // namespace sensigolf::recovered

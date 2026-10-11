@@ -1,0 +1,10 @@
+.godot/
+native/godot-cpp/
+native/.sconsign.dblite
+native/.scons*/
+bin/*.so
+bin/*.dll
+bin/*.dylib
+bin/*.a
+*.apk
+*.aab

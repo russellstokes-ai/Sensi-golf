@@ -1,0 +1,25 @@
+name: Pixtee Godot native gameplay bridge smoke
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'engine/**'
+      - 'pixtee-godot/native/**'
+      - '.github/workflows/pixtee-godot-native-core-smoke.yml'
+jobs:
+  recovered-core-adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build recovered C++ core
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build -j 2
+      - name: Run established engine tests
+        run: ctest --test-dir build --output-on-failure
+      - name: Compile independently authored course adapter against real core
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/pixtee_course_adapter.cpp \
+            pixtee-godot/native/tests/course_adapter_smoke.cpp \
+            build/engine/libsensigolf_core.a -o build/pixtee-adapter-smoke
+          build/pixtee-adapter-smoke

@@ -1,0 +1,15 @@
+# Build the recovered C++ engine, unchanged, into the Godot extension.
+# Prerequisite: git clone -b 4.5 --depth 1 https://github.com/godotengine/godot-cpp.git godot-cpp
+import os
+from SCons.Script import SConscript, Glob, Default
+
+env = SConscript("godot-cpp/SConstruct")
+env.Append(CPPPATH=["src", "../../engine/include"])
+engine_sources = Glob("../../engine/src/*.cpp")
+extension_sources = Glob("src/*.cpp")
+suffix = env.get("suffix", "")
+if not suffix:
+    suffix = "." + env["platform"] + "." + env["target"] + "." + env["arch"] + env.subst("$SHLIBSUFFIX")
+output = os.path.join("..", "bin", "libpixtee_gameplay" + suffix)
+library = env.SharedLibrary(target=output, source=engine_sources + extension_sources)
+Default(library)

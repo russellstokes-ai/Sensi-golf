@@ -44,6 +44,25 @@ struct OriginalTerminalLatchRebound {
 OriginalTerminalLatchRebound original_terminal_rebound_with_latch(
     std::uint16_t player_flags,
     std::int32_t vertical_force, std::int32_t horizontal_force) noexcept;
+
+// Source x86 0x40A686..0x40A7E0, restricted to verified numeric terrain
+// code 35 with signed height_hi <= 200 or code 50. Not a tree detector.
+// event_code records the authentic event CALL argument (1 or 11), NOT an
+// implementation of the game's sound, effect sprite or host dispatcher.
+struct OriginalSpecialTerminalTerrainResult {
+    bool handled = false;
+    bool continues_flight = false;
+    std::uint16_t player_state_flags = 0;
+    std::int32_t vertical_force = 0;
+    std::int32_t horizontal_force = 0;
+    std::int32_t ball_height = 0;
+    std::uint8_t event_code = 0;
+};
+OriginalSpecialTerminalTerrainResult original_special_terminal_terrain(
+    std::uint16_t landing_code, std::uint16_t club_index,
+    std::uint16_t player_state_flags, std::int32_t vertical_force,
+    std::int32_t horizontal_force, std::int32_t ball_height) noexcept;
+
 Code9Contact original_code9_contact(
     std::uint16_t landing_code, std::uint16_t club_index,
     std::int32_t vertical_force, std::int32_t ball_height_raw) noexcept;

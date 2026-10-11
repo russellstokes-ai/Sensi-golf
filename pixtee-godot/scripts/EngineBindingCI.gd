@@ -86,6 +86,14 @@ func _initialize() -> void:
         push_error("Original CPU scan table highest proven source band failed")
         quit(1)
         return
+    # Real source 0x40C71B..0x40C77F: all 32 candidate directions
+    # for mode4/band0; 0,32,64,...,992, final angle1024.
+    var ai_sweep = round_host.original_cpu_heading_sweep(4,0,512)
+    var ai_angles = ai_sweep.get("headings",PackedInt32Array())
+    if not ai_sweep.get("verified",false) or ai_angles.size()!=32 or ai_angles[0]!=0 or ai_angles[31]!=992 or int(ai_sweep.get("final_ball_heading",-1))!=1024 or int(ai_sweep.get("final_scan_counter",-1))!=0:
+        push_error("Original CPU 32-angle heading sweep mismatch in native Godot")
+        quit(1)
+        return
     var ai_pick = round_host.original_cpu_candidate_choice(
         PackedInt32Array([0, 1, -1]),
         PackedInt32Array([0, 0, 0]),

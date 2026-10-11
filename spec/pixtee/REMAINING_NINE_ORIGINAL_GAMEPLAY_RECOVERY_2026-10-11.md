@@ -70,3 +70,22 @@ These are actual native C++ algorithms, **not only original addresses**. Neither
 ## Collision activation safety correction
 
 The original flag branch compares ball/flag coordinates, but source course collision-object existence is not yet classified. Enabling coordinate collisions for *every* course with a cup would consume extra PRNG values even on synthetic fixture courses and invalidate known tests. The shot API therefore defaults flag-object-verified to **false**; the exact native routine is ready but unverified real-course activation stays gated. The original code-9 conditional branch can execute using a source-confirmed terrain code and original seed. This distinction deliberately avoids claiming full object-collision parity.
+
+
+## Additional recovered original gameplay from continued source analysis (11 October 2026)
+
+All tests below were performed against the **actual SHA-256-verified Windows v1.014 machine code** and compared against newly implemented C++, not inferred from screenshots or recreated physics.
+
+| Original source routine | Zero-tolerance original-versus-C++ results | Committed code | Scope/remaining blockers |
+|---|---:|---|---|
+| Computer shot stochastic power/accuracy/curvature deviation: `0x40C7DD..0x40C84F` | **1,620/1,620 exact** | `original_cpu_shot_variation.cpp`, `PixteeRoundBridge.original_cpu_shot_variation` | RNG return values provided explicitly; complete candidate generation, live RNG distribution and shot planner remain OPEN |
+| Original multiplayer mode-1 turn/stroke counter correction: `0x40C005..0x40C098` | **3,192/3,192 exact** | `original_turn_score_adjust.cpp`, `PixteeRoundBridge.original_turn_score_adjust` | The actual original branch decrements hole + total stroke counters in qualifying states; this is not full multiplayer or penalties |
+| Original mode-4/6 two-side competition turn-slot selection: `0x40C098..0x40C16D` | **1,728/1,728 exact** | `original_competition_turn.cpp`, `PixteeRoundBridge.original_competition_turn_choice` | Correct side, player-slot and previous-slot selection; complete match/season results and copied player state are not yet integrated |
+| Original **two-ball-distance-zero state** in the mode-4/6 controller | Observed source branch loops between `0x40C0B8` and `0x40C110` | Native model rejects this invalid/no-progress state explicitly | The original game's outer scheduler/origin of the state is not yet proven; we do not imitate a hang |
+
+Actual machine execution evidence:
+- [Computer shot error 1,620/1,620](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164319868)
+- [Multiplayer turn and score adjustment 3,192/3,192](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164530583)
+- [Competition mode4/6 turn-owner branch 1,728/1,728](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164902939)
+
+**No original gameplay requirement is silently marked COMPLETE solely from a verified subfunction.** The 15 gameplay and 8 deferred presentation full-system gates remain open until original round/game-mode/Android full-session parity passes. The original binary/media are not part of the shipped Pixtee project, and original-source-derived data needs rights review before commercial distribution.

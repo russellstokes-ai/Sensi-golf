@@ -22,6 +22,16 @@ enum class OriginalStopContact : std::uint8_t {
 };
 OriginalStopContact original_terminal_stop_contact(
     std::uint16_t landing_code, std::int16_t height_high_word) noexcept;
+
+// Original v1.014 0x40A7BD..0x40A7E0: terminal-terrain rebound.
+// Isolated signed 32-bit NEG/SAR/SAR/ADD/JG effects, no guessed tree mask.
+struct OriginalTerminalRebound {
+    std::int32_t vertical_force = 0;
+    std::int32_t horizontal_force = 0;
+    bool continues_flight = false;
+};
+OriginalTerminalRebound original_terminal_rebound(
+    std::int32_t vertical_force, std::int32_t horizontal_force) noexcept;
 Code9Contact original_code9_contact(
     std::uint16_t landing_code, std::uint16_t club_index,
     std::int32_t vertical_force, std::int32_t ball_height_raw) noexcept;

@@ -113,6 +113,15 @@ func _initialize() -> void:
         push_error("Source verified tie/marked player score correction must be skipped")
         quit(1)
         return
+    var comp = round_host.original_competition_turn_choice(
+        4, 0, 0, 1, 0, 0,
+        PackedInt32Array([0,1,2,3]),
+        PackedInt32Array([0,0])
+    )
+    if not comp.get("verified",false) or int(comp.get("selected_slot",-1)) != 1 or int(comp.get("source_slot",-1)) != 0 or int(comp.get("ball_array",-1)) != 1 or int(comp.get("active_side",-1)) != 1:
+        push_error("Original competition mode4/6 turn-owner source state mismatch")
+        quit(1)
+        return
     var req = round_host.requested_course()
     if int(req.get("resource_id",0)) != 1:
         push_error("Original round controller did not request hole one")

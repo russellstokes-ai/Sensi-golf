@@ -2,7 +2,14 @@ extends SceneTree
 # CI ENGINE INTEGRATION CHECK: Godot invokes native C++ restored Sensible Golf.
 # No sprites, no fake math, no copyrighted course files.
 func _initialize() -> void:
-    var core = PixteeGameplay.new()
+    # Headless --script may parse before the Godot project importer scans .gdextension.
+    # Load the actual extension explicitly, then instantiate by registered class name.
+    var native_extension = load("res://bin/pixtee.gdextension")
+    if native_extension == null or not ClassDB.class_exists("PixteeGameplay"):
+        push_error("Godot could not load recovered native gameplay library")
+        quit(1)
+        return
+    var core = ClassDB.instantiate("PixteeGameplay")
     if not core.load_lakewood_hole1():
         push_error("Cannot instantiate native recovered C++ core: " + core.last_error())
         quit(1)
@@ -25,7 +32,11 @@ func _initialize() -> void:
         push_error("Native gameplay did not record exactly one original shot")
         quit(1)
         return
-    var round_host = PixteeRoundBridge.new()
+    if not ClassDB.class_exists("PixteeRoundBridge"):
+        push_error("Godot native round class not registered")
+        quit(1)
+        return
+    var round_host = ClassDB.instantiate("PixteeRoundBridge")
     var order = PackedInt32Array()
     var pars = PackedInt32Array()
     pars.resize(100)

@@ -25,10 +25,18 @@ jobs:
             -o /tmp/Sensible_Golf_PC.zip
           python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
             --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Build native original Welly tick model
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/tests/welly_tick_original_probe.cpp \
+            -o /tmp/welly-native-reference
       - name: Emulate actual original Welly subroutines for regular and putter clubs
         run: |
           EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
           python tools/trace_original_welly_machine_code.py --exe "$EXE" \
+            --native-probe /tmp/welly-native-reference \
             -o analysis/private/pixtee-original-welly-runtime-trace.json
       - uses: actions/upload-artifact@v4
         if: always()

@@ -31,6 +31,7 @@ public:
     Dictionary original_cpu_shot_variation(
         bool bypass, int power, int variation,
         int random100, int random_power, int random_direction);
+    Dictionary original_cpu_heading_sweep(int original_mode, int course_band, int initial_heading);
     Dictionary original_cpu_scan_grid(int original_mode, int course_band);
     Dictionary original_cpu_search_parameters(int original_mode, bool special_flag);
     int original_cpu_candidate_choice(

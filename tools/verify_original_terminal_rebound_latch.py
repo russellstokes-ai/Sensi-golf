@@ -20,9 +20,9 @@ from itertools import product
 from pathlib import Path
 
 sys.path.insert(0,str(Path(__file__).resolve().parent))
-from original_v1014_oracle import build_uc, REFERENCE_SHA256, PLAYER, BALL
+from original_v1014_oracle import build_uc, REFERENCE_SHA256, PLAYER, BALL, STACK
 from unicorn import UC_HOOK_CODE
-from unicorn.x86_const import UC_X86_REG_ESI,UC_X86_REG_EDI
+from unicorn.x86_const import UC_X86_REG_ESI,UC_X86_REG_EDI,UC_X86_REG_ESP
 
 START=0x40A79D
 EVENT_CALL=0x40A7B7
@@ -35,6 +35,8 @@ def original(uc, row):
     uc.mem_write(BALL+0x0C,struct.pack("<i",horizontal))
     uc.reg_write(UC_X86_REG_ESI,PLAYER)
     uc.reg_write(UC_X86_REG_EDI,BALL)
+    # Original route contains PUSHAD/POPAD around the source sound call.
+    uc.reg_write(UC_X86_REG_ESP,STACK+0xF000)
     visited=[];event_calls=[]
     def on_code(machine,address,size,user):
         if address==EVENT_CALL: event_calls.append(address)

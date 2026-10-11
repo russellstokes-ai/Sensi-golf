@@ -1,0 +1,49 @@
+name: Pixtee Complete Original Dimensions And Collision Audit
+
+on:
+  push:
+    paths:
+      - "tools/extract_sensible_complete_dimensions_and_collision_reference.py"
+      - "tools/extract_sensible_original_sprite_dimensions.py"
+      - "tools/extract_pixtee_original_binary_hard_data.py"
+      - ".github/workflows/pixtee-complete-original-dimensions.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  direct-game-file-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Fetch actual original verified Sensible Golf game
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 4 --retry-delay 3 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/original-game-ingest.json
+      - name: Extract entire measured sprite, course and collision reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXE="$(find analysis/private/step2/input -type f -iname 'GOLFWIN.EXE' -print -quit)"
+          EPF="$(find analysis/private/step2/input -type f -iname 'GOLF.EPF' -print -quit)"
+          python tools/extract_sensible_complete_dimensions_and_collision_reference.py \
+            --exe "$EXE" --epf "$EPF" \
+            --epf-root analysis/private/step2/extracted/epf \
+            --output analysis/private/pixtee-original-complete-geometry.json
+          python -m json.tool analysis/private/pixtee-original-complete-geometry.json >/dev/null
+      - name: Upload only derived numerical dimensions and per-course collision totals
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-complete-original-geometry
+          path: analysis/private/pixtee-original-complete-geometry.json
+          if-no-files-found: error
+          retention-days: 30

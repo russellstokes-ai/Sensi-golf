@@ -1,0 +1,134 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+android {
+    namespace 'com.pixtee.golf'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.pixtee.golf'
+        minSdk 26
+        targetSdk 35
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        versionCode 2
+        versionName '0.1.1-sponsor-boards'
+    }
+    buildTypes { release { minifyEnabled false } }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+    testOptions { unitTests.returnDefaultValues = true }
+}
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
+}
+
+
+/*
+ * Production-art hard stop:
+ * A real release cannot ship empty, rejected, temporary, borrowed, procedural
+ * or unapproved character/scenery sprites. Debug builds may run the engine
+ * without sprites for automated physics/control testing; no dummy art is used.
+ * The approval marker must only be committed AFTER explicit owner sign-off.
+ */
+def requiredArtFrames = [
+    'golfer_idle', 'golfer_takeaway', 'golfer_backswing', 'golfer_top',
+    'golfer_downswing', 'golfer_impact', 'golfer_follow', 'golfer_finish',
+    'golfer_putt_ready', 'golfer_putt_back', 'golfer_putt_impact',
+    'golfer_putt_finish', 'tree_round', 'tree_pine', 'spectator_idle',
+    'spectator_wave', 'spectator_photographer', 'camera_flash',
+    'bird_wings_up', 'bird_wings_down', 'flower_yellow', 'flower_pink',
+    'terrain_rough', 'terrain_fairway', 'terrain_green',
+    'terrain_sand', 'terrain_water', 'ui_pixtee_logo',
+    'ui_wood_button', 'ui_hud_panel', 'ui_sponsor_board'
+]
+tasks.register('verifyApprovedProductionArt') {
+    group = 'verification'
+    description = 'Block Pixtee release while visual assets are missing or unapproved'
+    doLast {
+        def root = file('src/main/assets/art/production')
+        def ledger = file('../../spec/pixtee/ART_REVIEW_REGISTER.json')
+        if (!ledger.isFile()) {
+            throw new GradleException('RELEASE BLOCKED: no artwork approval register.')
+        }
+        def approvedRecord = new groovy.json.JsonSlurper().parse(ledger)
+        def expectedCategories = [
+            'golfer_and_ball', 'terrain_and_scenery', 'course_compositions',
+            'menus_and_hud', 'animations_and_effects', 'branding_and_sponsorship'
+        ] as Set
+        def allCategories = (approvedRecord.categories ?: []).collect { it.id } as Set
+        if (approvedRecord.ownerApprovalRequired != true ||
+            approvedRecord.schema != 'pixtee.art-review.v1' ||
+            allCategories != expectedCategories ||
+            (approvedRecord.categories ?: []).size() != expectedCategories.size() ||
+            approvedRecord.categories.any { it.status != 'approved' }) {
+            throw new GradleException('RELEASE BLOCKED: visual categories still await owner approval.')
+        }
+        def approved = approvedRecord.approvedAssets ?: []
+        def approvalNames = approved.collect { it.file }
+        if (approvalNames.toSet().size() != approvalNames.size()) {
+            throw new GradleException('RELEASE BLOCKED: duplicate art approval entries.')
+        }
+        approved.each { asset ->
+            if (!(asset.category in expectedCategories) ||
+                !(asset.file ==~ /[a-z0-9][a-z0-9_-]*\.(png|webp|jpg|jpeg|svg)/) ||
+                !(asset.sha256 ==~ /[a-f0-9]{64}/) ||
+                !asset.ownerApprovalReference ||
+                asset.ownerApprovalReference.toString().trim().toLowerCase() in
+                    ['pending','todo','tbd','test','placeholder','unapproved'] ||
+                !asset.revision) {
+                throw new GradleException('RELEASE BLOCKED: invalid individual art approval entry.')
+            }
+            def artFile = new File(root,asset.file.toString())
+            if (!artFile.isFile()) {
+                throw new GradleException("RELEASE BLOCKED: approved file missing: ${asset.file}")
+            }
+            def actualHash = java.security.MessageDigest.getInstance('SHA-256')
+                .digest(artFile.bytes).encodeHex().toString()
+            if (actualHash != asset.sha256) {
+                throw new GradleException("RELEASE BLOCKED: art changed without fresh owner approval: ${asset.file}")
+            }
+        }
+        if (root.exists()) {
+            root.eachFileRecurse { fileItem ->
+                if (fileItem.isFile() && fileItem.name != 'APPROVED_v1.txt' &&
+                    !approvalNames.contains(fileItem.name)) {
+                    throw new GradleException("RELEASE BLOCKED: unapproved production art: ${fileItem.name}")
+                }
+            }
+        }
+        def approval = new File(root, 'APPROVED_v1.txt')
+        if (!approval.isFile() ||
+            approval.getText('UTF-8').trim() != 'PIXTEE_PRODUCTION_ART_APPROVED_V1') {
+            throw new GradleException('RELEASE BLOCKED: Pixtee production artwork has not been explicitly approved.')
+        }
+        requiredArtFrames.each { id ->
+            if (!approvalNames.contains("${id}.png")) {
+                throw new GradleException("RELEASE BLOCKED: missing individual owner approval for ${id}.png")
+            }
+            def frame = new File(root, "${id}.png")
+            if (!frame.isFile() || frame.length() < 128L) {
+                throw new GradleException("RELEASE BLOCKED: missing approved pixel artwork: ${frame.path}")
+            }
+            // Validate the PNG signature so accidental text or zero-byte
+            // files never satisfy the art gate.
+            def magic = frame.withInputStream { input ->
+                byte[] bytes = new byte[8]
+                return input.read(bytes) == 8 ? bytes : new byte[0]
+            }
+            if (magic.length != 8 || (magic[0] & 0xff) != 137 ||
+                (magic[1] & 0xff) != 80 || (magic[2] & 0xff) != 78 ||
+                (magic[3] & 0xff) != 71) {
+                throw new GradleException("RELEASE BLOCKED: not a PNG: ${frame.path}")
+            }
+        }
+    }
+}
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach {
+    dependsOn tasks.named('verifyApprovedProductionArt')
+}

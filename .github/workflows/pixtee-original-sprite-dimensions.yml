@@ -1,0 +1,48 @@
+name: Pixtee Original Sprite Pixel Dimensions
+
+on:
+  push:
+    paths:
+      - "tools/extract_sensible_original_sprite_dimensions.py"
+      - ".github/workflows/pixtee-original-sprite-dimensions.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Download and validate genuine original game files in private workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 4 --retry-delay 3 \
+            'https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip' \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/pixtee-ingest.json
+      - name: Measure every MCH animation frame and IFF bitmap original size
+        shell: bash
+        run: |
+          set -euo pipefail
+          EPF="$(find analysis/private/step2/input -type f -iname 'GOLF.EPF' -print -quit)"
+          test -n "$EPF"
+          python tools/extract_sensible_original_sprite_dimensions.py \
+            --epf "$EPF" \
+            --epf-root analysis/private/step2/extracted/epf \
+            --output analysis/private/pixtee-original-sprite-dimensions.json
+          python -m json.tool analysis/private/pixtee-original-sprite-dimensions.json >/dev/null
+      - name: Upload derived dimensional metadata (no copyrighted sprite bitmaps)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-sprite-dimensions
+          path: analysis/private/pixtee-original-sprite-dimensions.json
+          if-no-files-found: warn
+          retention-days: 30

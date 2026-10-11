@@ -28,7 +28,7 @@ Default controls:
 - Welly: one stable thumb target for all three taps, stages visibly identified.
 - Camera: two-finger pan/pinch or a secondary camera control, separate from aiming touches.
 - Pause, scorecard, settings, help and replay.
-- Landscape phone/fold primary, portrait adaptive. Keep minimum 48dp touch targets.
+- **Standard portrait Android phone is primary**; Fold closed and open adapt via layout, not altered world size. Keep minimum 48dp touch targets. Horizontal Whack-o-meter with source-game-backed swing and accuracy phases; direct touch to left/right of target X for slow steering and club tap to change club. Onboarding, not gameplay captions, teaches the controls.
 
 ## New physics contract
 

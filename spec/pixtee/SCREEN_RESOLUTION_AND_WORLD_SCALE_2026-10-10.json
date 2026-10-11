@@ -1,0 +1,249 @@
+{
+  "schema": "pixtee.render.reference_scaling_v1",
+  "status": "measured source + computed viewport, not approved new art or camera",
+  "provenance": {
+    "game": "Sensible Golf Windows v1.014",
+    "original_exe_sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+    "original_epf_sha256": "58955f2ef89ad1757998b3ceee661a8ab7edcbd88e00bc1c6683009aa123ab1e",
+    "geometry_audit": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38090500528/artifacts/11684037276",
+    "sprite_audit": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38090116988/artifacts/11683403911"
+  },
+  "original_game": {
+    "source_lbm_formats": [
+      [
+        320,
+        200
+      ],
+      [
+        320,
+        257
+      ]
+    ],
+    "main_world_units": [
+      544,
+      912
+    ],
+    "main_map_tiles": [
+      34,
+      114
+    ],
+    "tile_world_units": [
+      16,
+      8
+    ],
+    "collision_grid_cells": [
+      272,
+      456
+    ],
+    "collision_cell_world_units": [
+      2,
+      2
+    ],
+    "detailed_green_world_width_range": [
+      304,
+      416
+    ],
+    "detailed_green_world_height_range": [
+      240,
+      272
+    ],
+    "sprite_mch_source_frames": 874,
+    "mch_files": 15,
+    "lbm_files": 19,
+    "golfs1_frame_source_pixels": [
+      16,
+      21
+    ],
+    "golfb1_frame_source_pixels": [
+      32,
+      32
+    ],
+    "sprite_role_caveat": "Names do not establish draw role or onscreen size; verify original draw calls"
+  },
+  "current_pixtee_proto": {
+    "reference_logical_width": 360,
+    "world_width": 300,
+    "world_height": 510,
+    "zoom_candidate": 1.9,
+    "world_scale_logical_px_per_world": 2.28,
+    "visible_world_width": 157.8947368421053,
+    "golfer_candidate_world_height": 11.5,
+    "golfer_screen_height_logical": 26.22,
+    "source_screen_width_ratio": 1.125,
+    "world_height_ratio_original_to_proto": 1.7882352941176471,
+    "world_width_ratio_original_to_proto": 1.8133333333333332,
+    "required_uniform_world_rebase": 1.7882352941176471,
+    "world_rebase_horizontal_margin_each_side": 3.764705882352928
+  },
+  "requirements": {
+    "scaling_formula": "screen_px = (world-camera_origin)*uniform_gameplay_scale*(native_screen_width_px/360); same in x and y; no screen-size multiplier in dynamics",
+    "density_rule": "source detail density 2x/3x/4x is independent from visual footprint in world units",
+    "physics": "fixed logical time 936/65536s, original raw 16.16 positions, no device pixels or dp in collision/launch/ground",
+    "camera": "strict overhead orthographic, ball follow, keep partial-hole crop, separate world and UI canvases",
+    "touch": "map event pixels to 360-wide logical coordinates; touch minimum 48dp; hit-testing in logical UI and inverse camera for world X; pointer left/right of X gently steer",
+    "adaptation": "normal phone portrait primary; unfolded short-aspect needs repositioned HUD not camera tilt or screen-fit whole course",
+    "status": "current renderer static 450-UI-y meter and 360x760 assumption fail on short/aspect unfolded screens; meter still semicircular (not accepted)",
+    "proof_needed": [
+      "validate original MCH resource draw roles",
+      "original in-world render blit size via executable tracing",
+      "actual pixel bounding ball and golfer in original screenshots",
+      "verified original meter colours and timing",
+      "all object collision hitboxes for trees not yet extracted"
+    ]
+  },
+  "screens": [
+    {
+      "profile": "compact_phone",
+      "screen_pixels": [
+        720,
+        1600
+      ],
+      "layout_units": [
+        360,
+        800
+      ],
+      "native_pixels_per_layout_unit": 2,
+      "viewport_world_units": [
+        157.8947,
+        350.8772
+      ],
+      "current_golfer_visible_screen_height_layout_units": 26.22,
+      "current_golfer_visible_screen_height_device_pixels": 52.44,
+      "below_existing_hud_meter_y450": false
+    },
+    {
+      "profile": "standard_phone",
+      "screen_pixels": [
+        1080,
+        2340
+      ],
+      "layout_units": [
+        360,
+        780
+      ],
+      "native_pixels_per_layout_unit": 3,
+      "viewport_world_units": [
+        157.8947,
+        342.1053
+      ],
+      "current_golfer_visible_screen_height_layout_units": 26.22,
+      "current_golfer_visible_screen_height_device_pixels": 78.66,
+      "below_existing_hud_meter_y450": false
+    },
+    {
+      "profile": "tall_phone",
+      "screen_pixels": [
+        1080,
+        2400
+      ],
+      "layout_units": [
+        360,
+        800
+      ],
+      "native_pixels_per_layout_unit": 3,
+      "viewport_world_units": [
+        157.8947,
+        350.8772
+      ],
+      "current_golfer_visible_screen_height_layout_units": 26.22,
+      "current_golfer_visible_screen_height_device_pixels": 78.66,
+      "below_existing_hud_meter_y450": false
+    },
+    {
+      "profile": "shorter_phone",
+      "screen_pixels": [
+        1080,
+        2160
+      ],
+      "layout_units": [
+        360,
+        720
+      ],
+      "native_pixels_per_layout_unit": 3,
+      "viewport_world_units": [
+        157.8947,
+        315.7895
+      ],
+      "current_golfer_visible_screen_height_layout_units": 26.22,
+      "current_golfer_visible_screen_height_device_pixels": 78.66,
+      "below_existing_hud_meter_y450": false
+    },
+    {
+      "profile": "hi_res_phone",
+      "screen_pixels": [
+        1440,
+        3120
+      ],
+      "layout_units": [
+        360,
+        780
+      ],
+      "native_pixels_per_layout_unit": 4,
+      "viewport_world_units": [
+        157.8947,
+        342.1053
+      ],
+      "current_golfer_visible_screen_height_layout_units": 26.22,
+      "current_golfer_visible_screen_height_device_pixels": 104.88,
+      "below_existing_hud_meter_y450": false
+    },
+    {
+      "profile": "wide_unfolded_example",
+      "screen_pixels": [
+        2208,
+        1840
+      ],
+      "layout_units": [
+        360,
+        300
+      ],
+      "native_pixels_per_layout_unit": 6.133,
+      "viewport_world_units": [
+        157.8947,
+        131.5789
+      ],
+      "current_golfer_visible_screen_height_layout_units": 26.22,
+      "current_golfer_visible_screen_height_device_pixels": 160.816,
+      "below_existing_hud_meter_y450": true
+    }
+  ],
+  "art_density_examples": [
+    {
+      "detail_multiplier": 2,
+      "original_golfs1_frame_px": [
+        16,
+        21
+      ],
+      "pixtee_authoring_canvas_px": [
+        32,
+        42
+      ],
+      "visible_gameplay_height_unchanged": true
+    },
+    {
+      "detail_multiplier": 3,
+      "original_golfs1_frame_px": [
+        16,
+        21
+      ],
+      "pixtee_authoring_canvas_px": [
+        48,
+        63
+      ],
+      "visible_gameplay_height_unchanged": true
+    },
+    {
+      "detail_multiplier": 4,
+      "original_golfs1_frame_px": [
+        16,
+        21
+      ],
+      "pixtee_authoring_canvas_px": [
+        64,
+        84
+      ],
+      "visible_gameplay_height_unchanged": true
+    }
+  ],
+  "interpretation": "Illustrative physical pixel dimensions only; UI safe insets/window metrics and display density vary. Do not infer actual Fold or handset models from examples."
+}

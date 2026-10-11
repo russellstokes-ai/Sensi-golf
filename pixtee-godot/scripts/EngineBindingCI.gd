@@ -69,6 +69,12 @@ func _initialize() -> void:
         push_error("Original x86 forced multiplayer chooser failed")
         quit(1)
         return
+    # Source x86 0x40C665..0x40C6B2 original CPU difficulty fields.
+    var cpu = round_host.original_cpu_search_parameters(6, false)
+    if not cpu.get("verified",false) or int(cpu.get("candidate_stride",-1)) != 3 or int(cpu.get("variation_budget",-1)) != 0 or int(cpu.get("search_budget",-1)) != 106:
+        push_error("Original CPU search parameter ABI parity failure")
+        quit(1)
+        return
     var req = round_host.requested_course()
     if int(req.get("resource_id",0)) != 1:
         push_error("Original round controller did not request hole one")

@@ -84,6 +84,26 @@ int main() {
     assert(session.phase() == HoleSessionPhase::ReadyForShot);
     assert(session.ball_y_raw() > 0);
 
+    // Tested actual original 990 x86 extremes: source charges strokes
+    // even when accuracy misses the club/lie profile and ball never moves.
+    ClassicHoleSession missed(fairway, 0);
+    auto severe_miss=drive;
+    severe_miss.accuracy_tick=105; // club0 + fairway profile 61..65
+    missed.begin_shot(severe_miss);
+    assert(missed.strokes()==1);
+    assert(missed.phase()==HoleSessionPhase::ReadyForShot);
+    assert(!missed.ball_state().holed);
+    assert(missed.ball_x_raw()==0 && missed.ball_y_raw()==0);
+    assert(missed.ball_state().x_raw==missed.ball_x_raw());
+    assert(missed.ball_state().y_raw==missed.ball_y_raw());
+    assert(missed.recovered_counters().player_52==1);
+    assert(missed.recovered_counters().player_56==1);
+    missed.begin_shot(drive);
+    assert(missed.strokes()==2);
+    assert(missed.recovered_counters().player_52==2);
+    assert(missed.recovered_counters().player_56==2);
+    run_active(missed);
+
     // Original zero-distance scoring is not dependent on code-8 tiles.
     // On ordinary fairway, a shot can come to rest at the recovered cup
     // distance (integer-scoped), and scoring occurs on the following tick.

@@ -59,6 +59,14 @@ void PixteeRoundRuntime::meter_click_raw(std::uint16_t sample) {
     const auto shot=*controls_.queued_shot();
     if(!controls_.dispatch_to(game_->active_hole()))
         throw std::runtime_error("original core rejected queued shot");
+    if(game_->active_hole().phase()==HoleSessionPhase::ReadyForShot) {
+        // Source original still charged this out-of-profile stroke but no
+        // flight took place. Do not fabricate a successful replay record.
+        replay_supported_=false;
+        pending_.reset();
+        controls_.sync_hole(game_->active_hole());
+        return;
+    }
     pending_=shot;
 }
 
@@ -97,14 +105,24 @@ bool PixteeRoundRuntime::tick_original_welly(bool pressed) {
         const auto request=*controls_.queued_shot();
         if(!controls_.dispatch_to(game_->active_hole()))
             throw std::logic_error("classic original shot rejected");
+        if(game_->active_hole().phase()==HoleSessionPhase::ReadyForShot) {
+            // Genuine original profile rejection: no flight, but the source
+            // launcher incremented both player stroke counters. Do not
+            // synthesize a free retry or falsely record a stable replay.
+            original_welly_rejected_=true;
+            replay_supported_=false;
+            pending_.reset();
+            controls_.sync_hole(game_->active_hole());
+            return false;
+        }
         pending_=request;
         return true;
     } catch(const std::out_of_range&) {
-        // Original source launcher produces no flight outside accuracy profile.
-        // Return to playable controls without falsely deducting a stroke.
+        // Programming error or an unrepresentable raw meter input, not
+        // the source-verified profile rejection. Do not silently swallow.
         controls_.cancel_meter();
         original_welly_rejected_=true;
-        return false;
+        throw;
     } catch(...) {
         controls_.cancel_meter();
         original_welly_rejected_=true;

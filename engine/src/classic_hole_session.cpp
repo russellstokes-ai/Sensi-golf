@@ -122,6 +122,28 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
     input.club_index = request.club_index;
     input.lie_index = surface.profile_slot;
 
+    // Source Windows v1.014 0x40AD1D original-machine 990-case audit:
+    // BOTH 16-bit player counters increment on every entered shot attempt,
+    // including an accuracy outside the selected swing-profile bounds.
+    // Those outside-profile attempts cause zero flight (668/668 probes).
+    // Never treat a completed, invalid-accuracy swing as a free retry.
+    if (input.aim_raw < 0 || input.aim_raw > 4095 ||
+        input.power_tick < 0 || input.power_tick > 105 ||
+        input.club_index > 12)
+        throw std::out_of_range("original input outside raw gameplay register range");
+    if (!recovered::accuracy_within_original_profile_bounds(
+            input.club_index, input.lie_index, input.accuracy_tick)) {
+        shot_.relocate_inactive_ball(
+            ball_x_raw_, ball_y_raw_, surface.landing_code);
+        recovered_counters_.player_52 = static_cast<std::uint16_t>(
+            recovered_counters_.player_52 + 1u);
+        recovered_counters_.player_56 = static_cast<std::uint16_t>(
+            recovered_counters_.player_56 + 1u);
+        ++strokes_;
+        phase_ = HoleSessionPhase::ReadyForShot;
+        unsupported_descriptor_.reset();
+        return;
+    }
     shot_.begin_shot(input);
 
     // Original live launch increments both recovered player counters.

@@ -116,6 +116,17 @@ std::int16_t trig_q14(std::uint16_t index) {
     return generated::kSinQ14[index & kDirectionMask];
 }
 
+bool accuracy_within_original_profile_bounds(
+    std::uint16_t club_index, std::uint16_t lie_index,
+    std::int32_t accuracy_tick) {
+    if (club_index >= kClubTable.size() || lie_index >= 10)
+        throw std::out_of_range("invalid original club/lie profile selector");
+    if (accuracy_tick < 0 || accuracy_tick > 105)
+        throw std::out_of_range("original Welly accuracy register outside 0..105");
+    const auto id=kProfileSelector[club_index][lie_index];
+    const auto bounds=kProfileBounds[id-1];
+    return accuracy_tick >= bounds.lower && accuracy_tick <= bounds.upper;
+}
 FlightState launch_normal_shot(const LaunchInput& input) {
     if (input.club_index >= kClubTable.size()) {
         throw std::out_of_range("club index outside original 0..12 range");

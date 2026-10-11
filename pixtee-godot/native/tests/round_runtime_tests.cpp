@@ -75,7 +75,7 @@ int main() {
         // A phase-zero meter must not be ticked again; loop above must
         // therefore use exactly the original 176 sampled callback count.
     }
-    // Out-of-profile original swing must not launch or charge a stroke.
+    // Original x86 out-of-profile swing creates NO flight but CHARGES one stroke.
     {
         auto rejected=make_runtime();
         auto fixture=original_rule_fixture();
@@ -86,14 +86,16 @@ int main() {
         for(int tick=0;tick<=114;++tick)
             assert(!rejected.tick_original_welly(tick==12 || tick==114));
         assert(rejected.original_welly_rejected());
-        assert(rejected.hole().strokes()==0);
+        assert(rejected.hole().strokes()==1);
+        assert(rejected.hole().recovered_counters().player_52==1);
+        assert(rejected.hole().recovered_counters().player_56==1);
         assert(rejected.controls_enabled());
         rejected.start_original_welly();
         bool accepted=false;
         for(int tick=0;tick<=111;++tick)
             accepted=rejected.tick_original_welly(tick==12 || tick==111) || accepted;
         assert(accepted);
-        assert(rejected.hole().strokes()==1);
+        assert(rejected.hole().strokes()==2);
     }
     auto game=make_runtime();
     auto empty=original_rule_fixture();

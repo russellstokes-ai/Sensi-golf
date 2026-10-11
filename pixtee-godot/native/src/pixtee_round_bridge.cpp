@@ -1,6 +1,7 @@
 #include "pixtee_round_bridge.hpp"
 #include "original_next_player.hpp"
 #include "original_cpu_difficulty.hpp"
+#include "original_cpu_candidate.hpp"
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -19,6 +20,10 @@ std::vector<std::uint8_t> native_bytes(const PackedByteArray& a) {
 }
 }
 void PixteeRoundBridge::_bind_methods() {
+    ClassDB::bind_method(
+        D_METHOD("original_cpu_candidate_choice","primary_status",
+                 "secondary_status","candidate_metrics"),
+        &PixteeRoundBridge::original_cpu_candidate_choice);
     ClassDB::bind_method(
         D_METHOD("original_cpu_search_parameters","original_mode","special_flag"),
         &PixteeRoundBridge::original_cpu_search_parameters);
@@ -49,6 +54,36 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("snapshot"),&PixteeRoundBridge::snapshot);
     ClassDB::bind_method(D_METHOD("requested_course"),&PixteeRoundBridge::requested_course);
     ClassDB::bind_method(D_METHOD("last_error"),&PixteeRoundBridge::last_error);
+}
+int PixteeRoundBridge::original_cpu_candidate_choice(
+    const PackedInt32Array& primary,
+    const PackedInt32Array& secondary,
+    const PackedInt32Array& metric) {
+    if(primary.size()<1 || primary.size()>110 ||
+       primary.size()!=secondary.size() || primary.size()!=metric.size()) {
+        last_error_="original CPU candidate arrays must share length 1..110";
+        return -1;
+    }
+    try {
+        std::vector<pixtee::OriginalComputerCandidate> candidates;
+        candidates.reserve(static_cast<std::size_t>(primary.size()));
+        for(int i=0;i<primary.size();++i) {
+            for(auto value: {primary[i],secondary[i],metric[i]}) {
+                if(value < -32768 || value > 32767)
+                    throw std::invalid_argument("original candidate word outside signed 16-bit range");
+            }
+            candidates.push_back({
+                static_cast<std::int16_t>(primary[i]),
+                static_cast<std::int16_t>(secondary[i]),
+                static_cast<std::int16_t>(metric[i])});
+        }
+        const int choice=pixtee::original_cpu_candidate_index(candidates);
+        last_error_="";
+        return choice;
+    }catch(const std::exception& e) {
+        last_error_=String(e.what());
+        return -1;
+    }
 }
 Dictionary PixteeRoundBridge::original_cpu_search_parameters(
     int mode, bool special_flag) {

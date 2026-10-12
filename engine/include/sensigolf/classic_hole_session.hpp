@@ -66,6 +66,13 @@ public:
     void step();
     void acknowledge_hazard_recovery();
     void acknowledge_special_green_stop();
+    // Flagpole presence must be supplied by the actual authored course
+    // object manifest (or original source SPT loader), not guessed from
+    // arbitrary coordinates. Once verified, exact source original x86
+    // flag deflection is enabled in the existing native shot loop.
+    void set_verified_flag_object(bool present);
+    bool flag_object_verified() const noexcept;
+
 
     HoleSessionPhase phase() const noexcept;
     std::uint32_t strokes() const noexcept;
@@ -122,6 +129,7 @@ private:
     std::optional<std::uint16_t> next_hole_index_{};
     bool round_complete_ = false;
     bool green_mode_ = false;
+    bool flag_object_verified_ = false;
     std::optional<std::uint16_t> unsupported_descriptor_{};
     recovered::OriginalPrng16* prng_ = nullptr;
 };

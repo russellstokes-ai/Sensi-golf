@@ -5,6 +5,43 @@ import unittest
 MODULE = Path(__file__).parents[1] / 'pixtee_course_compile.py'
 
 class CourseCompileTests(unittest.TestCase):
+    def test_green_detail_uses_native_window_without_resizing_green(self):
+        spec = importlib.util.spec_from_file_location('compiler', MODULE)
+        compiler = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(compiler)
+        layout = {'world':[544,912], 'surfaces':{'green':[[310,112],[408,112],[408,222],[310,222]],'water':[],'river':[],'bunkers':[],'tee':[],'fairway':[]},'placements':[{'type':'flag','x':364,'y':168}]}
+        self.assertTrue(hasattr(compiler,'green_detail_mapping'), 'Native detail-coordinate compiler is missing')
+        mapping = compiler.green_detail_mapping(layout,(304,120))
+        self.assertEqual(mapping['native_tiles'],[16,26])
+        self.assertEqual(mapping['native_size'],[256,208])
+        self.assertEqual(mapping['world_origin'],[304,120])
+        self.assertEqual(mapping['cup_local_native'],[120,96])
+        self.assertEqual(mapping['cup_source_flag'],[60,48])
+        self.assertEqual(mapping['course_scale'],1)
+        self.assertEqual(mapping['green_world_bounds'],[310,112,408,222])
+        # Full green containment is not a prerequisite for a detail window.
+        self.assertFalse(mapping['entire_green_in_window'])
+        self.assertEqual(mapping['sample_world'][0],[304.5,120.5])
+        self.assertEqual(mapping['sample_world'][-1],[431.5,223.5])
+        with self.assertRaises(ValueError): compiler.green_detail_mapping(layout,(305,120))
+        self.assertTrue(hasattr(compiler,'compile_maps_window'))
+        field = {(int(x),int(y)):(3,2) for x,y in mapping['sample_world'] if compiler.inside(layout['surfaces']['green'],x,y)}
+        detail = compiler.compile_maps_window(layout,(304,120),field)
+        self.assertEqual(len(detail['MAPS.bin']),0x60+16*26*2)
+        # Inspect every original MAPS 2x2-native/1x1-world subcell.
+        import struct
+        for index,(wx,wy) in enumerate(mapping['sample_world']):
+            x,y = index%128,index//128
+            tile = struct.unpack_from('>H',detail['MAPS.bin'],0x60+2*((y//4)*16+x//8))[0]
+            mask = 0x80 >> (x%8)
+            off = tile*8
+            selector = bool(detail['MAPI-selectors.bin'][off+y%4]&mask)+2*bool(detail['MAPI-selectors.bin'][off+y%4+4]&mask)
+            word = struct.unpack_from('>H',detail['MAPI-descriptors.bin'],off+selector*2)[0]
+            if (int(wx),int(wy)) == (364,168): self.assertEqual(word,7)
+            elif compiler.inside(layout['surfaces']['green'],wx,wy): self.assertEqual(word,31 | (3<<8) | (2<<12))
+            else: self.assertEqual(word,3)
+        with self.assertRaises(ValueError): compiler.compile_maps_window(layout,(304,120),{})
+
     def test_original_mapi_preserves_all_32_subcells(self):
         self.assertTrue(MODULE.exists(), 'Approved polygon compiler is missing')
         spec = importlib.util.spec_from_file_location('compiler', MODULE)

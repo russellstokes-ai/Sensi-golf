@@ -2,7 +2,7 @@
   "schema": "pixtee.canonical-checkpoint.v1",
   "checkpoint_date": "2026-10-12",
   "checkpoint_policy": "FROZEN REFERENCE. Do not edit saved baselines, frozen Hole 1 visuals, or approved source artwork. Future implementation must be on new working branch or copy, preserving provenance.",
-  "status": "GITHUB_ENGINE_AND_PRIOR_PORTRAIT_SNAPSHOTS_CREATED;LOCAL_FROZEN_COURSE_AND_APPROVED_ASSET_ZIP_NOT_INDEPENDENTLY_VERIFIED_OR_COPIED",
+  "status": "GITHUB_ENGINE_PORTRAIT_AND_DOCUMENTATION_ARCHIVES_CREATED; APPROVED_ART_ZIP_VERIFIED_AND_DUPLICATED_IN_LIBRARY; FROZEN_WORK_HOLE_1_LOCAL_FILES_NOT_INDEPENDENTLY_VERIFIED",
   "github": {
     "repository": "russellstokes-ai/Sensi-golf",
     "original_restoration_main": "untouched",
@@ -61,10 +61,15 @@
     "aliases_from_prior_work": [
       "Pixtee golf assets.zip"
     ],
-    "status": "OWNER_CONFIRMED_APPROVED_ZIP_IN_OTHER_WORK_SESSION;CURRENT_EXACT_BINARY_AND_SHA256_NOT_VERIFIED_IN_GITHUB_REPOSITORY",
-    "checksum_sha256": null,
+    "status": "OWNER_APPROVED_ZIP_SHA256_VERIFIED; SECOND_COPY_CREATED_IN_LIBRARY_AND_BYTE_IDENTICAL",
+    "checksum_sha256": "2043e9c678b9904311778d17a1f341d577344e6d49a3a9d48ce6c3aef3b5239e",
     "backup_tool": "tools/backup_pixtee_frozen_work_assets.ps1 -AssetPaths 'C:\\PATH\\TO\\Pixtee golf assets(1).zip'",
-    "policy": "The user-approved ZIP is canonical. Do not replace with preview/rejected art, regenerate existing assets, modify pixels, crop frames, or rename files without explicit authorization. Additive effects must be independent."
+    "policy": "The user-approved ZIP is canonical. Do not replace with preview/rejected art, regenerate existing assets, modify pixels, crop frames, or rename files without explicit authorization. Additive effects must be independent.",
+    "original_library_path": "/Pixtee golf assets(1).zip",
+    "backup_library_path": "/Pixtee Canonical Backups/2026-10-12/Pixtee golf assets(1) - CANONICAL FROZEN.zip",
+    "backup_verification": "20,820,759 bytes, SHA256 identical, direct byte-for-byte comparison and ZIP CRC passed for all 16 members",
+    "member_count": 16,
+    "approved_art_manifest": "spec/pixtee/PIXTEE_APPROVED_ASSETS_CANONICAL_SHA256_2026-10-12.json"
   },
   "hierarchy_of_canonical_authority": [
     "Frozen Work Hole 1 HTML + its local COURSE_PRODUCTION_STANDARD.md: visual and authored course presentation, immutable baseline",
@@ -74,7 +79,7 @@
     "Pixtee M1 commercial engine handover + World FX standard: integration and QA contracts, subject to higher frozen references"
   ],
   "verification_policy": {
-    "local_backup_expected": "An independent copied archive containing Work hole folder, approved asset ZIP or approved asset directory, and SHA-256 per copied source; never modify the source files.",
+    "local_backup_expected": "Frozen Work-session Hole 1 folder and existing hash/dependencies still require a separate copy on Work PC. Approved art ZIP already has a second SHA-verified Library copy; local offline copy is still recommended.",
     "github_branch_hard_protection_configured": false,
     "backup_branches_are": "Named archived Git refs pinned to specific commit IDs; do not merge or add commits. GitHub branch-protection rules were not configured by this tool.",
     "external_second_backup": "Recommended: separate drive/cloud or separate Git remote; GitHub archives protect only Git-tracked files",

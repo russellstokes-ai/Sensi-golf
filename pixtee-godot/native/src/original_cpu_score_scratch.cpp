@@ -65,4 +65,43 @@ OriginalCpuScoreFirstEligible original_cpu_first_eligible_score(
             return {false,index,cx,bx,dx};
     }
 }
+OriginalCpuBestScoredRecord original_cpu_select_best_scored_record(
+    std::uint16_t span,std::uint16_t step,
+    const std::vector<std::uint8_t>& bytes) {
+    const auto first=original_cpu_first_eligible_score(span,step,bytes);
+    if(!first.found)
+        return {};
+    std::size_t index=first.original_index;
+    std::uint16_t cx=first.scanned_cx;
+    std::uint16_t dx=first.scanned_dx;
+    std::uint16_t selected_index=first.scanned_bx;
+    const auto initial_offset=index*kOriginalCpuScoreRecordBytes;
+    if(initial_offset>bytes.size() ||
+       bytes.size()-initial_offset<kOriginalCpuScoreRecordBytes)
+        throw std::out_of_range("source CPU score WORD not in candidate record");
+    auto best_score=word(bytes,initial_offset+12u);
+    for(;;) {
+        if(index>=kOriginalCpuScoreSafeRecords)
+            throw std::out_of_range("source candidate scoring exhausted verified scratch");
+        const auto off=index*kOriginalCpuScoreRecordBytes;
+        if(off>bytes.size() || bytes.size()-off<kOriginalCpuScoreRecordBytes)
+            throw std::out_of_range("original CPU candidate score record truncated");
+        if(signed16(word(bytes,off))>=0 &&
+           signed16(word(bytes,off+2u))>=0 &&
+           signed16(best_score)>signed16(word(bytes,off+12u))) {
+            best_score=word(bytes,off+12u);
+            selected_index=dx;
+        }
+        ++index;
+        dx=static_cast<std::uint16_t>(dx+1u);
+        cx=static_cast<std::uint16_t>(
+            static_cast<std::uint32_t>(cx)+static_cast<std::uint32_t>(step));
+        // Source signed JL after CMP CX,[0x41FA0F].
+        if(signed16(cx)>=signed16(span))
+            break;
+    }
+    return {true,selected_index,
+            static_cast<std::size_t>(selected_index)*
+                kOriginalCpuScoreRecordBytes,best_score};
+}
 } // namespace pixtee

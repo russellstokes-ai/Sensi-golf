@@ -130,6 +130,46 @@ int main(){
     catch(const std::logic_error&){missing=true;}
     assert(missing);
     assert(scripted[0].ticks==0 && scripted[1].ticks==5);
+    // Original 0x8004 frame-command uses table entry 0x40C573 to
+    // release the event slot. It does not fake a callback/graphic.
+    OriginalAnimatedEvent closing{};
+    closing.status=0;
+    closing.ticks=0;
+    closing.x=20;closing.y=21;
+    closing.width=15;closing.height=30;
+    closing.asset_pointer=0x440001;
+    closing.frame_offset=0;
+    const std::vector<std::uint8_t> close_script{
+        4,0,0,0,0,0,4,0x80
+    };
+    auto closed=original_animation_decode_supported_step(closing,close_script);
+    assert(closed.kind==OriginalAnimationSupportedCommand::CloseSlot);
+    assert(closing.status==0xffffu && closing.asset_pointer==0);
+    assert(closing.ticks==0 && closing.frame_offset==0);
+    assert(closing.x==20 && closing.y==21);
+    assert(closing.width==15 && closing.height==30);
+    OriginalAnimatedEvent waiting{};
+    waiting.status=0;waiting.ticks=0;waiting.frame_offset=0;
+    waiting.height=88;
+    const std::vector<std::uint8_t> wait_script{
+        4,0,0,0,0,0,8,0x80,17,0
+    };
+    auto waited=original_animation_decode_supported_step(waiting,wait_script);
+    assert(waited.kind==OriginalAnimationSupportedCommand::WaitTicks);
+    assert(waited.delay==17 && waiting.ticks==17);
+    assert(waiting.frame_offset==4 && waiting.height==88);
+    // The true original 0x8000 callback is NOT inferred, and may
+    // execute arbitrary animation/sound code: reject without edits.
+    OriginalAnimatedEvent callback{};
+    callback.status=0;callback.asset_pointer=123;
+    callback.frame_offset=0;callback.ticks=0;
+    bool callback_refused=false;
+    try{original_animation_decode_supported_step(
+        callback,{4,0,0,0,0,0,0,0x80});}
+    catch(const std::logic_error&){callback_refused=true;}
+    assert(callback_refused && callback.status==0);
+    assert(callback.frame_offset==0 && callback.asset_pointer==123);
+
 
 
 

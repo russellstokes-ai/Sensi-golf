@@ -88,6 +88,23 @@ int main() {
         // A phase-zero meter must not be ticked again; loop above must
         // therefore use exactly the original 176 sampled callback count.
     }
+    // Original x86 flag collision can be opted into by an actual flag
+    // placement in the authored course, not by inferred cup coordinates.
+    // Disable stable replay until that source object is in the journal.
+    {
+        auto placed=make_runtime();
+        auto fixture=away_from_cup_fixture();
+        placed.register_course(1,fixture);
+        placed.load_next_hole();
+        assert(!placed.hole().flag_object_verified());
+        placed.set_verified_flag_object(true);
+        assert(placed.hole().flag_object_verified());
+        assert(!placed.replay_supported());
+        bool blocked=false;
+        try{placed.serialize_stable_replay();}
+        catch(const std::logic_error&){blocked=true;}
+        assert(blocked);
+    }
     // Original x86 out-of-profile swing creates NO flight but CHARGES one stroke.
     // Persist the charged stroke as an atomic original-input replay frame.
     {

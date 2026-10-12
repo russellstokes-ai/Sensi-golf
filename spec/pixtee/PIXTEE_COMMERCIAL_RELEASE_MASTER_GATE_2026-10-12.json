@@ -1,0 +1,302 @@
+{
+  "schema": "pixtee.commercial-release-gates.v1",
+  "owner_instruction": "COMMERCIAL RELEASE COMPLETE - NO MISSING EFFECTS ANIMATIONS GREEN ARROWS MUSIC AUDIO OR GAMEPLAY",
+  "date": "2026-10-12",
+  "authority": {
+    "original_engine": "archive/pixtee-engine-pre-integration-2026-10-12",
+    "art": "Pixtee golf assets(1).zip SHA256 2043e9c678b9904311778d17a1f341d577344e6d49a3a9d48ce6c3aef3b5239e",
+    "hole1": "pixtee-lakewood-open.zip SHA256 82c0df6831241e31ad0c83a4302df145349afb9b63503487a914b964d05c7ff3",
+    "standard": "pixtee-production-standards-v1-1.zip SHA256 1544ac4782b64d2a2b968a581f31b9cf7b37b6e0cf4583dd665e21d1d81ffe17",
+    "no_stretch": "spec/pixtee/PIXTEE_ZERO_STRETCH_ART_AND_CAMERA_LOCK_2026-10-12.md"
+  },
+  "hard_release_policy": "FAIL CLOSED. All gate.status must be PASS with evidence links (real play/test/asset/rights) and independent reviewer; no in-progress/demo substitutes.",
+  "gameplay_authority": "Recovered Sensible Golf C++ only; fixed 936/65536 tick; Godot cosmetic FX cannot affect ball state or gameplay RNG.",
+  "requirements": [
+    {
+      "id": "GAME-01",
+      "title": "Native physics fidelity",
+      "requirements": "C++ fixed 936/65536s tick, launch, flight, bounce, spin, fairway/rough/fringe/green friction, 13 clubs, 13×10 lie, accuracy and no-flight strokes",
+      "proof_required": "Cpp source-proven trajectories across 3 independently-authored real playable holes and every supported lie; FPS independence",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "GAME-02",
+      "title": "Swing control",
+      "requirements": "Three original-state meter presses including actual timing, rejection, shot timing and visual power/accuracy zones",
+      "proof_required": "Native/Android touch input capture, tap-debounce and real frame-cadence tests; no invented zone boundaries",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "GAME-03",
+      "title": "Physical trees and props",
+      "requirements": "Actual trees from approved course manifest with verified collision footprint, altitude, deflection and low/high shot handling",
+      "proof_required": "Source-or independently authored collision-spec provenance; test actual ball strikes against trunk and canopy, plus deliberate misses; collision changes full native trajectory only",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "GAME-04",
+      "title": "Terrain and Green maps",
+      "requirements": "Pixel-aligned, exact-geometry 34x114 MAPM/MAPI 2x2 colliders, MAPS detail, seam boundaries, path lie classification; no 0.947 scaling",
+      "proof_required": "Reversible import; exact unchanged 544x912 HTML source; no mismatch/skipped hitboxes/extra green clip; all playable descriptors",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "GAME-05",
+      "title": "Water, bunkers and OOB",
+      "requirements": "All water shapes, bunker edges, in-map no-go/OOB and native world-edge OOB; original accurate penalties and recovery",
+      "proof_required": "Reproducible full-shot sequences, stop/event→100tick wait→correct safe anchor→next shot across 4 edges, every authored water/bunker and restart",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "GAME-06",
+      "title": "Cup, flag and green",
+      "requirements": "Flag objects, SPT cup, lip-outs, distance/height, code8/9/10 and actual putt/hole capture",
+      "proof_required": "Round scored only for real valid capture or correctly recognised zero-distance rest, not proximity/GUI; 16x16 green direction and magnitude parity",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "GAME-07",
+      "title": "Three-hole round",
+      "requirements": "Real tee-to-cup completion for three distinct holes, scorecard, par, penalties, stroke counts, retry and advance",
+      "proof_required": "Interactive human 3-hole round without dummy code8 all-over map, missing holes or hidden fourth-hole state",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "GAME-08",
+      "title": "Save/continue/replay",
+      "requirements": "PRNG and native role/flag/tree/event state, pause/restart/kill/crash recovery including amid hazard and transitions",
+      "proof_required": "Android process termination/restore mid-stroke/hazard/round with identical authoritative native results and no duplicate scores/events",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "GAME-09",
+      "title": "Physics event dispatcher",
+      "requirements": "Source native ball contact, tree/flag/cup, code9/10, water and OOB queued lifecycle and acknowledgment",
+      "proof_required": "No skipped, duplicated, re-emitted or unhandled events, 30/60/90/120 FPS scheduling and input state lock/release",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "VIS-01",
+      "title": "Approved immutable assets and fidelity",
+      "requirements": "Exact SHA-approved Pixtee art/HTML/standard, straight-down scene, source pixel size; no stretching ANY graphics",
+      "proof_required": "Pixel-overlaid desktop and normal phone/Fold open/closed screenshots; original approved image hashes unchanged",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "VIS-02",
+      "title": "Terrain scenery and camera",
+      "requirements": "Exact lake, creek, fairway, tees, greens, bunkers, paths, 17 trees and 4 sponsor boards with player-camera-facing positioning",
+      "proof_required": "Separate visual/noncollidable decorative props; real ball-following camera keeps world proportion and approved crop",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "VIS-03",
+      "title": "Vegetation and water life",
+      "requirements": "Subtle grass and flower sway, foliage/reeds/flag coherent left/right breeze, gentle moving water and highlights",
+      "proof_required": "Recorded idle and active course footage at native pixel resolution, multiple breeze directions; shader clipping and quality-tier profiles",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "VIS-04",
+      "title": "Impact particle suite",
+      "requirements": "Shot turf flecks, rough/dust, bunker sand scatter, water splash/ripple, leaves from genuine tree hit, native-derived ball elevation shadow",
+      "proof_required": "Every effect emitted ONCE from authoritative event; event UUID dedupe; no effect based on proximity or causes changed C++ RNG/trajectory",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "VIS-05",
+      "title": "Course characters and atmosphere",
+      "requirements": "Golfer breathe/swing/putt frames, birds side-on regional flights, crowd breathing/reactions, photographer flash, trees, moving clouds where approved",
+      "proof_required": "Approved sprite frames and paths, self-controlled cosmetic RNG, pause/reduced-motion variants, no overlay collision",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "VIS-06",
+      "title": "Green slope arrow render",
+      "requirements": "All 16 original slope directions and 16 magnitude levels as readable green arrow markers oriented to real recovered putting force",
+      "proof_required": "Arrow vectors from engine's slope_direction raw 0..4095 (multiples of256) and slope_magnitude0..15; test all 256 combinations and sample actual MAPS cells, green only",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "VIS-07",
+      "title": "Effects accessibility",
+      "requirements": "Reduced motion and flash suppression, adjustable quality settings, clarity of ball, cup, target X, arrow, meter and ad boards",
+      "proof_required": "On-device low/std/high & reduced motion footage, identical native physics/replay hash, acceptable contrast and touch visibility",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "SOUND-01",
+      "title": "Original audio soundtrack",
+      "requirements": "Original/licensed intro logo sting, menu looping theme, gameplay music, scored hole/milestone musical cues, transitions",
+      "proof_required": "Approved audio files, proof of rights, seamless loops/crossfades and no copyrighted Sensible Golf media",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "SOUND-02",
+      "title": "Golf audio interactions",
+      "requirements": "Club whoosh/hit and surface variation, fairway/rough/bunker contact, water impact/splash, tree contact, flag/cup, wind/special/hazard cues",
+      "proof_required": "SFX dispatched by verified native events only, zero duplicates, music ducking, synced visual/audio timing",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "SOUND-03",
+      "title": "Environmental audio",
+      "requirements": "Birds by biome, grass/leaf breeze, flowing water, spectators/crowd/photographer, restrained atmosphere",
+      "proof_required": "Loop seam QA, spatial/distance audio when appropriate, independent ambience bus, bird recurrence limits, volume accessibility",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "SOUND-04",
+      "title": "Audio controls/platform",
+      "requirements": "Independent Music/SFX/Ambience/UI master controls, mute and background audio behaviour, Bluetooth and interruption recovery",
+      "proof_required": "System phone audio focus/headphone/disconnect, app pause/resume, volume memory and no click/pop/overlapping effects",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "UI-01",
+      "title": "Commercial intro and menus",
+      "requirements": "Skippable authentic Pixtee opening cinematic, approved logo, music, title, main/new game/continue/course/options navigation",
+      "proof_required": "No placeholders, no fake actions, owner-approved exact menu source, mobile/Fold input testing",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "UI-02",
+      "title": "Golf control HUD",
+      "requirements": "Pixel-perfect aim X, left/right aim, 13-club selector, true horizontal whack-o-meter, wind/slope information, mini-scoreboard, pause and resume",
+      "proof_required": "Screenshots normal and Fold, visible controls, correct three-press C++ meter mapping and orientation",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "UI-03",
+      "title": "Gameplay scorecards and UX",
+      "requirements": "Tee/green labels, hazard dialogs, penalty information, putt prompts, cup animations, 3-hole summary, hole transitions",
+      "proof_required": "End-to-end gameplay videos, consistent stroke counts, never block input following finished native event",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "UI-04",
+      "title": "User settings and onboarding",
+      "requirements": "Music/SFX/ambient sliders, motion/quality, notifications, accessibility settings, state retention and clean first-launch flow",
+      "proof_required": "On-device settings matrix and restore after OS kill; no invisible/fake controls",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "CONTENT-01",
+      "title": "Production courses",
+      "requirements": "Hole 1 faithfully converted from approved Lakewood Open source; two other independently authored full approved holes",
+      "proof_required": "Source hash, authored geometry, course-object manifest, physical terrain runtime and complete actual 3-hole human play",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "CONTENT-02",
+      "title": "World FX content review",
+      "requirements": "All effects for each approved biome/region and monetizable world-space tee/green sponsor boards",
+      "proof_required": "Screenshots/footage FX-01..FX-10 and PIXEL-01..PIXEL-08, owner acceptance; no signs on pathways",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "ANDROID-01",
+      "title": "Android signed release",
+      "requirements": "Release-signed export arm64-v8a and installable Android app, package manifest, splash/icon and permissions",
+      "proof_required": "Real APK/AAB CI artifact, reproducible clean build, Play Store compliance, no crashes",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "ANDROID-02",
+      "title": "Device/performance testing",
+      "requirements": "Mainstream Android portrait + Fold closed/open, camera view crop and touch/meter, 60FPS aim and 30FPS low-end fallback",
+      "proof_required": "GPU/CPU memory profiling, 15+ minute thermal soak, lifecycle/interruption, no stretched art or divergence in ball physics",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "ANDROID-03",
+      "title": "Reliability and privacy",
+      "requirements": "Offline gameplay, storage, recovery, latency/frame pacing, audio leaks, race conditions, faults",
+      "proof_required": "Automated crash tests, device regression log, no known critical/high defects, failure and restart tests",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "LEGAL-01",
+      "title": "Commercial originality and licences",
+      "requirements": "Independent Pixtee imagery, actual provenance and copyright/permission for engine research/reused logic, approved art, soundtrack and effects",
+      "proof_required": "Documented legal review and asset licences, no unlicensed Sensible Golf binaries, sprites, music, source or distribution rights assumption",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    },
+    {
+      "id": "RELEASE-01",
+      "title": "Independent QA and signoff",
+      "requirements": "All 14 core M1 gates, 15 original end-to-end gameplay gates where material, 10 FX, 8 zero-stretch and this entire commercial matrix",
+      "proof_required": "All pass with real tests/screens/videos/owner signoff; branch protections and release tag; signed APK with recorded hashes",
+      "status": "OPEN",
+      "evidence_links": [],
+      "reviewer": null
+    }
+  ],
+  "core_m1_gate_reference": "spec/pixtee/MILESTONE_ONE_ENGINE_DATA_INVENTORY_2026-10-12.json",
+  "video_and_media_source_status": "NO VERIFIED ORIGINAL OR LICENSED INTRO / MUSIC / COMPLETE SFX LIBRARY YET",
+  "green_arrow_status": "SOURCE 16 DIRECTIONS X 16 MAGNITUDES VERIFIED; full Godot visual field placement not yet integrated",
+  "tree_collision_status": "UNRESOLVED AUTHENTIC COLLIDER HEIGHT/REBOUND; mandatory blocker",
+  "godot_playable_three_holes": false,
+  "copyright_clearance": false,
+  "commercial_release_ready": false
+}

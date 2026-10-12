@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 #include "sensigolf/classic_course_resources.hpp"
 #include "sensigolf/classic_game_session.hpp"
 #include "sensigolf/classic_mobile_controls.hpp"
@@ -13,6 +14,14 @@
 #include "recovered_welly_tick.hpp"
 
 namespace pixtee {
+// Presentation-only sampled SOURCE MAPS slope, never fabricated by art code.
+struct NativeGreenArrowCell {
+    std::int16_t world_x = 0;
+    std::int16_t world_y = 0;
+    std::uint16_t slope_direction_raw = 0; // 0..4095, 16 sector steps of 256
+    std::uint16_t slope_magnitude = 0;     // original 0..15
+    std::uint16_t landing_code = 0;        // GREEN H4 is 1
+};
 // Headless native host ONLY: never calculates flight, collision, scoring, RNG,
 // hazard, round progression or physics. Delegates all of it to recovered C++.
 // Caller supplies independently authored original-FORMAT course data;
@@ -50,6 +59,9 @@ public:
     std::optional<sensigolf::ClassicHolePlanEntry> resource_request() const;
     bool has_hole() const noexcept;
     const sensigolf::ClassicHoleSession& hole() const;
+    std::optional<sensigolf::ClassicGreenRegion> active_green_region() const;
+    std::vector<NativeGreenArrowCell> verified_native_green_arrows(
+        std::uint16_t green_detail_stride = 8) const;
     sensigolf::ClassicMeterStage meter_stage() const noexcept;
     bool controls_enabled() const noexcept;
     std::uint16_t aim_raw() const noexcept;

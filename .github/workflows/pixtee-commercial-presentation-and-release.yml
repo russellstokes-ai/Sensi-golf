@@ -1,0 +1,63 @@
+name: Pixtee Commercial Presentation and Release Gates
+on:
+  workflow_dispatch:
+    inputs:
+      certify_release:
+        description: Fail closed unless all 31 commercial and original 14 M1 release gates are complete
+        type: boolean
+        default: false
+        required: false
+  push:
+    branches: [feat/pixtee-commercial-hardening-2026-10-12]
+    paths:
+      - 'pixtee-godot/scripts/PixteeVerifiedGreenArrows.gd'
+      - 'pixtee-godot/scripts/PixteeCommercialAudio.gd'
+      - 'pixtee-godot/scripts/PixteeNativeWorldFX.gd'
+      - 'pixtee-godot/scripts/PixteeFoliageBreeze.gd'
+      - 'pixtee-godot/scripts/CommercialPresentationSmokeCI.gd'
+      - 'pixtee-godot/shaders/pixtee_subtle_water.gdshader'
+      - 'spec/pixtee/PIXTEE_COMMERCIAL_RELEASE_MASTER_GATE_2026-10-12.json'
+      - 'tools/verify_pixtee_commercial_release.py'
+      - '.github/workflows/pixtee-commercial-presentation-and-release.yml'
+  pull_request:
+    branches: [feat/pixtee-m1-course-intake-safe]
+permissions:
+  contents: read
+jobs:
+  release-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail on omitted soundtrack, green arrows, FX, tree, hazards, Android or legal gates
+        run: python3 tools/verify_pixtee_commercial_release.py
+      - name: Guard original 14 recovered C++ engine milestone gates
+        run: python3 tools/verify_pixtee_milestone_one_inventory.py
+  real-godot-presentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install official Godot 4.5 Linux editor
+        shell: bash
+        run: |
+          curl -fL --retry 3 --retry-delay 3 \
+            -o /tmp/pixtee-godot.zip \
+            https://github.com/godotengine/godot-builds/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_64.zip
+          mkdir -p /tmp/pixtee-godot
+          unzip -q /tmp/pixtee-godot.zip -d /tmp/pixtee-godot
+          chmod +x /tmp/pixtee-godot/Godot_v4.5-stable_linux.x86_64
+          /tmp/pixtee-godot/Godot_v4.5-stable_linux.x86_64 --version
+      - name: Parse/run actual Godot 4.5 green arrows, audio and native-event FX
+        shell: bash
+        run: |
+          /tmp/pixtee-godot/Godot_v4.5-stable_linux.x86_64 \
+            --headless --path pixtee-godot \
+            --script res://scripts/CommercialPresentationSmokeCI.gd
+  signed-commercial-release-certificate:
+    if: github.event_name == 'workflow_dispatch' && inputs.certify_release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Commercial release IS BLOCKED until every audio, FX, tree, physics, 3-hole, Android and legal gate is proved
+        run: |
+          python3 tools/verify_pixtee_commercial_release.py --require-release
+          python3 tools/verify_pixtee_milestone_one_inventory.py --require-commercial

@@ -100,6 +100,7 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("save_stable_replay"),&PixteeRoundBridge::save_stable_replay);
     ClassDB::bind_method(D_METHOD("restore_replay","payload"),&PixteeRoundBridge::restore_replay);
     ClassDB::bind_method(D_METHOD("snapshot"),&PixteeRoundBridge::snapshot);
+    ClassDB::bind_method(D_METHOD("verified_native_green_arrow_cells","green_detail_stride"),&PixteeRoundBridge::verified_native_green_arrow_cells);
     ClassDB::bind_method(D_METHOD("requested_course"),&PixteeRoundBridge::requested_course);
     ClassDB::bind_method(D_METHOD("last_error"),&PixteeRoundBridge::last_error);
 }
@@ -604,6 +605,27 @@ Dictionary PixteeRoundBridge::requested_course() const {
     } catch(const std::exception&) {}
     return d;
 }
+Array PixteeRoundBridge::verified_native_green_arrow_cells(int stride) const {
+    Array out;
+    if(!round_ || stride<1 || stride>64) return out;
+    try {
+        for(const auto& sample:round_->verified_native_green_arrows(
+                static_cast<std::uint16_t>(stride))) {
+            Dictionary cell;
+            cell["world_x"]=static_cast<int>(sample.world_x);
+            cell["world_y"]=static_cast<int>(sample.world_y);
+            cell["direction_raw"]=static_cast<int>(sample.slope_direction_raw);
+            cell["magnitude"]=static_cast<int>(sample.slope_magnitude);
+            cell["terrain_code"]=static_cast<int>(sample.landing_code);
+            cell["verified_native"]=true;
+            out.append(cell);
+        }
+    } catch(const std::exception&) {
+        // Don't render invented arrow vectors after an invalid authored map.
+        out.clear();
+    }
+    return out;
+}
 Dictionary PixteeRoundBridge::snapshot() const {
     Dictionary d;
     d["initialized"]=round_!=nullptr;
@@ -636,6 +658,12 @@ Dictionary PixteeRoundBridge::snapshot() const {
         d["has_hole"]=round_->has_hole();
         d["physics_authority"]="Recovered Sensible Golf ClassicGameSession";
         if(round_->has_hole()) {
+            // Expose original MAPM green marker for 2x local-to-world visual
+            // mapping. No changes to source native ball coordinates.
+            if(const auto origin=round_->active_green_region()) {
+                d["green_origin_x"]=static_cast<int>(origin->origin_x);
+                d["green_origin_y"]=static_cast<int>(origin->origin_y);
+            }
             const auto& h=round_->hole();
             const auto& ball=h.ball_state();
             const bool active=h.phase()==sensigolf::HoleSessionPhase::ShotActive;

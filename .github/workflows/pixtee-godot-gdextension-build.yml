@@ -5,6 +5,7 @@ on:
     branches: [feat/pixtee-godot-recovered-core]
     paths:
       - 'pixtee-godot/native/src/**'
+      - 'pixtee-godot/scripts/EngineBindingCI.gd'
       - 'pixtee-godot/native/SConstruct'
       - 'pixtee-godot/bin/pixtee.gdextension'
       - 'engine/src/**'

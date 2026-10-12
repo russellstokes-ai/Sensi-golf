@@ -1,6 +1,12 @@
 name: Pixtee Godot original-data research bank
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'spec/pixtee/MILESTONE_ONE_*'
+      - 'tools/verify_pixtee_milestone_one_inventory.py'
+      - 'pixtee-godot/reference/**'
+      - '.github/workflows/pixtee-godot-reference-data-gate.yml'
   push:
     branches: [feat/pixtee-godot-recovered-core]
     paths:

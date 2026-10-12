@@ -9,6 +9,7 @@
 #include "original_cpu_candidate.hpp"
 #include "original_cpu_trial_force.hpp"
 #include "original_cpu_scan_pipeline.hpp"
+#include "original_cpu_quality_score.hpp"
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -27,6 +28,10 @@ std::vector<std::uint8_t> native_bytes(const PackedByteArray& a) {
 }
 }
 void PixteeRoundBridge::_bind_methods() {
+    ClassDB::bind_method(
+        D_METHOD("original_cpu_quality_score","distance",
+                 "original_contact_code","green_mode","source_penalties"),
+        &PixteeRoundBridge::original_cpu_quality_score);
     ClassDB::bind_method(
         D_METHOD("original_cpu_scored_record_choice",
                  "mode","course_band","initial_heading","span","step",
@@ -248,6 +253,40 @@ Dictionary PixteeRoundBridge::original_cpu_trial_force(
     d["complete_cpu_shot_planner"]=false;
     last_error_="";
     return d;
+}
+Dictionary PixteeRoundBridge::original_cpu_quality_score(
+    int distance,int code,int green,const PackedInt32Array& penalties) {
+    Dictionary result;
+    result["verified"]=false;
+    result["complete_cpu_shot_planner"]=false;
+    if(distance<0 || distance>65535 || code<0 || code>=32 ||
+       green<0 || green>65535 ||
+       penalties.size()!=static_cast<int>(pixtee::kOriginalCpuSafePenaltySlots)) {
+        last_error_="original CPU score needs 16-bit distance/green and bounded source contact/table";
+        return result;
+    }
+    try {
+        pixtee::OriginalCpuPenaltyTable source_table{};
+        for(int i=0;i<penalties.size();++i) {
+            if(penalties[i]<0 || penalties[i]>65535)
+                throw std::invalid_argument(
+                    "original CPU source penalty table WORD outside 0..65535");
+            source_table[static_cast<std::size_t>(i)]=
+                static_cast<std::uint16_t>(penalties[i]);
+        }
+        const auto raw=pixtee::original_cpu_quality_score(
+            static_cast<std::uint16_t>(distance),
+            static_cast<std::uint16_t>(code),
+            static_cast<std::uint16_t>(green),source_table);
+        result["verified"]=true;
+        result["score_word"]=static_cast<int>(raw);
+        result["requires_original_trajectory_evaluator"]=true;
+        result["requires_original_penalty_table"]=true;
+        last_error_="";
+    }catch(const std::exception& e) {
+        last_error_=String(e.what());
+    }
+    return result;
 }
 Dictionary PixteeRoundBridge::original_cpu_scored_record_choice(
     int mode,int band,int initial_heading,int span,int step,

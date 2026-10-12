@@ -37,6 +37,10 @@
 
 **Reference executable SHA-256** `3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8` (Sensible Golf v1.014) records research provenance only. Recovered numeric/code data still require legal review for commercial distribution. Do **not** commit the original protected executable, original course data or game media.
 
+### Canonical documentation snapshot (third archive)
+
+The source-lock rules, exact fallback commit IDs, 27-area recovered-engine inventory, 14-point commercial checklist, course-effects standard, and Windows copy-only SHA-256 helper are preserved together in the separate **[Pixtee canonical source-lock archive](https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-canonical-source-lock-2026-10-12)**. Use this archival copy as the *read-only source of record* when development documentation subsequently changes. It does **not** include any uncommitted Windows Work files or the final approved ZIP unless those files were separately added and checked — they were not verified in this checkpoint.
+
 ## 2. Frozen Work course — LOCAL ORIGINAL, do not touch
 
 Reported frozen visual/course reference (from ongoing Work session):

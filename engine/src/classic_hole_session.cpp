@@ -59,6 +59,7 @@ void ClassicHoleSession::reset(
     safe_anchor_x_raw_ = 0;
     safe_anchor_y_raw_ = 0;
     safe_anchor_valid_ = false;
+    flag_object_verified_ = false;
     // A launch from a valid low-code lie can exit the map before its first
     // sampled terrain tick. Seed a safe landing anchor from the starting
     // lie to avoid an unrecoverable missing-anchor state. The -15 geometry
@@ -121,6 +122,19 @@ bool ClassicHoleSession::surface_supported_for_active_shot(
 
     // GREEN H4 uses putter-specific green drag/slope semantics.
     return surface.landing_code != 1;
+}
+
+void ClassicHoleSession::set_verified_flag_object(bool present) {
+    if(phase_!=HoleSessionPhase::ReadyForShot || strokes_!=0)
+        throw std::logic_error(
+            "flag object presence must be set before first swing");
+    if(present && prng_==nullptr)
+        throw std::logic_error(
+            "authentic flag deflection requires original PRNG state");
+    flag_object_verified_=present;
+}
+bool ClassicHoleSession::flag_object_verified() const noexcept {
+    return flag_object_verified_;
 }
 
 void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
@@ -420,7 +434,7 @@ void ClassicHoleSession::step() {
     const auto flag=course_.hole_position();
     shot_.set_original_interaction_context(
         prng_, green_mode_, static_cast<std::int16_t>(flag.x),
-        static_cast<std::int16_t>(flag.y));
+        static_cast<std::int16_t>(flag.y),flag_object_verified_);
     shot_.step();
 
     // The original transition dispatcher can switch coordinate spaces as the

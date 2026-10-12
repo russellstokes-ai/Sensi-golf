@@ -52,4 +52,20 @@ OriginalCpuTrial original_cpu_candidate_trial(
             original_cpu_trial_force(values)};
 }
 
+OriginalCpuTrialPrecontact original_cpu_trial_precontact(
+    const OriginalCpuScanPlan& plan,std::size_t index,
+    OriginalCpuTrialForceInput source,
+    std::int32_t height,std::int32_t distance,
+    bool original_airborne_branch_verified) {
+    if(!original_airborne_branch_verified)
+        throw std::logic_error(
+            "original CPU 0x40CB6C must be observed after course/club checks");
+    OriginalCpuTrialPrecontact out{};
+    out.trial=original_cpu_candidate_trial(plan,index,source);
+    out.update=original_cpu_simulation_contact({
+        out.trial.force.vertical_force,
+        out.trial.force.horizontal_force,height,distance});
+    return out;
+}
+
 } // namespace pixtee

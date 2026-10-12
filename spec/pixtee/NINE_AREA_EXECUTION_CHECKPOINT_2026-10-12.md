@@ -124,3 +124,33 @@ side-effects have **not** been recovered.
 effects, whole event scheduler, scene/object activation, original AI,
 multiplayer and the 15 end-to-end gameplay signoffs remain BLOCKED. Preserve
 draft PR and approved art/HTML.
+
+### Original CPU evaluator's first two authenticated source stages
+
+The original Windows 1.014 CPU evaluation machine function
+`0x40C93E..` has now been isolated beyond the existing shot-heading,
+trial force, contact and candidate-rank components:
+
+1. `0x40C93E..0x40C968`: source initializes consecutive **14-byte**
+   candidate score records at `0x41FE89`, increments the record pointer,
+   and repeats according to wrapping signed 16-bit DX/JNS logic using
+   original globals `0x41FA0F` and `0x41FAD3`; it then resets the
+   original swing-adjuster DWORD. C++ module
+   `original_cpu_score_scratch.{hpp,cpp}` matches **1,750/1,750**
+   authentic x86 source-machine cases.
+2. `0x40CA5A..0x40CA8E/0x40CAC4`: original CPU evaluator scans
+   consecutive 14-byte score records and finds the first with BOTH signed
+   status WORDs `[record+0]` and `[record+2]` nonnegative. Rejected
+   entries advance 16-bit BX, DX, CX and signed `JL` compares CX to
+   the source span. Portable C++ matches **2,700/2,700** authentic x86
+   cases including first-valid and no-valid exits.
+
+[Original source and native CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38237284636).
+The original executable and game resources stay transient and absent
+from the repository. Both native helpers fail explicitly for unsupported
+unbounded scratch loops or truncated buffers. No fabricated candidate
+quality input, winner choice, original shot execution or strategy is
+introduced. The original evaluator's intervening calls
+`0x40CCA4`, `0x40CAE1`, `0x40CB00`, `0x4094F0`, `0x40B998`
+and the downstream actual score-selection rules remain independently
+gated. **No full CPU-opponent or game-mode signoff yet.**

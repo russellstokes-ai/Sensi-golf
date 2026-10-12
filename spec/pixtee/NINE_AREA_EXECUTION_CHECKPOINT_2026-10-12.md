@@ -94,3 +94,33 @@ the original Windows UI used precisely this predicate. Preserve the
 source-original next-player chooser, and leave the full original shared
 event/turn scheduler parity release gate OPEN. Native/Godot CI on this
 new commit must pass before this guard is called verified.
+
+### Source x86 original script callback 0x8000 — recovered host handoff
+
+The Windows v1.014 script command `0x8000` dispatches through the original
+jump table `0x41F89C` to `0x40C56A`, where it preserves CPU registers,
+calls the DWORD function pointer *embedded in the animation script*, restores
+registers, and advances the script cursor by four more bytes after the
+original shared two-byte command increment. The slot countdown is the
+source script-header delay. The actual callback functions and their game
+side-effects have **not** been recovered.
+
+- Added `original_animation_prepare_callback` and
+  `original_animation_finalize_callback` to the portable recovered event
+  module. C++ reads an **opaque token**, never executes a serialized machine
+  address, and applies the source post-callback state only after an
+  independently authored host action acknowledges it.
+- Native tests ensure stale acknowledgements cannot advance a slot twice.
+  The live script tick intentionally still refuses opcode `0x8000` until
+  an actual host callback route is implemented and the real effects are
+  independently verified.
+- A transient Unicorn x86 source test invokes a harmless synthetic RET
+  function pointer rather than original sound/UI/game callbacks, then
+  compares exact event slot fields to the native handoff for **3,576/3,576**
+  cases. [Original machine CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38235564193).
+  All original executable bytes remain CI-private and are never committed.
+
+**Status:** isolated command-dispatch/slot parity verified; callback side
+effects, whole event scheduler, scene/object activation, original AI,
+multiplayer and the 15 end-to-end gameplay signoffs remain BLOCKED. Preserve
+draft PR and approved art/HTML.

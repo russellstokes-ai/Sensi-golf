@@ -62,5 +62,9 @@ struct OriginalWorldOobEvent {
     std::uint32_t source_esi = 0;      // source event resource pointer
 };
 OriginalWorldOobEvent original_world_oob_event() noexcept;
+// Original x86 0x40CD25..0x40CD45 code8 cup event display handoff.
+// Shares numeric layout with the world OOB event but has a distinct
+// source message ID and resource pointer. Presentation is still host work.
+OriginalWorldOobEvent original_cup_capture_event() noexcept;
 
 } // namespace sensigolf::recovered

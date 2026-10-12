@@ -41,6 +41,9 @@ public:
     // Exact original 0x40CA8E scored record winner mapped to source
     // 24-row angular scan table; caller must have real evaluated records.
     // This API does not implement complete trajectory evaluation.
+    Dictionary original_cpu_quality_score(
+        int distance,int original_contact_code,int green_mode,
+        const PackedInt32Array& source_penalties);
     Dictionary original_cpu_scored_record_choice(
         int mode,int course_band,int initial_heading,int span,int step,
         const PackedByteArray& source_records,bool genuine_evaluations);

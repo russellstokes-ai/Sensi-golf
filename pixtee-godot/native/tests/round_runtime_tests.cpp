@@ -88,6 +88,25 @@ int main() {
         // A phase-zero meter must not be ticked again; loop above must
         // therefore use exactly the original 176 sampled callback count.
     }
+    // Explicit original player role supplies the near-cup lip predicate.
+    // No role is guessed from a mobile UI input; journal unsupported if set.
+    {
+        auto role=make_runtime();
+        role.register_course(1,away_from_cup_fixture());
+        role.load_next_hole();
+        assert(!role.hole().original_player_mode_5a().has_value());
+        role.set_original_player_mode_5a(0);
+        assert(role.hole().original_player_mode_5a().value()==0);
+        assert(!role.replay_supported());
+        role.set_club(12);
+        role.meter_click_raw(0);
+        role.meter_click_raw(30);
+        role.meter_click_raw(105); // source charges missed stroke
+        bool locked=false;
+        try{role.set_original_player_mode_5a(6);}
+        catch(const std::logic_error&){locked=true;}
+        assert(locked);
+    }
     // Original x86 flag collision can be opted into by an actual flag
     // placement in the authored course, not by inferred cup coordinates.
     // Disable stable replay until that source object is in the journal.

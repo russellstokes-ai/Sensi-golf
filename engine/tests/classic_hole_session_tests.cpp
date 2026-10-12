@@ -515,6 +515,20 @@ int main() {
         try{early.step_original_animation_timers();}
         catch(const std::logic_error&){needs_script=true;}
         assert(needs_script); // cannot fabricate source frames
+        // With an explicit original-format script catalog, the new
+        // source 0x40C539 ordinary-frame handler can advance the actual
+        // code9 event queue; negative command opcodes still reject.
+        const auto active=early.step_original_animation_plain_scripts({
+            {sprites[2],{5,0,0,0,0,0,17,0,19,0}}
+        });
+        assert(active.active_slots==1);
+        assert(early.original_animation_events()[0].ticks==5);
+        assert(early.original_animation_events()[0].height==17);
+        assert(early.original_animation_events()[0].frame_offset==2);
+        const auto progressing=early.step_original_animation_plain_scripts({});
+        assert(progressing.active_slots==1);
+        assert(early.original_animation_events()[0].ticks==4);
+
         ClassicHoleSession direct(code9,32<<16,40<<16,
                                   std::nullopt,&rng);
         direct.set_original_animation_assets(sprites);

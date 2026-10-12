@@ -531,6 +531,13 @@ Dictionary PixteeRoundBridge::snapshot() const {
                 d["world_oob_display_code"]=static_cast<int64_t>(world_oob->dword_420544);
                 d["world_oob_source_resource"]=static_cast<int64_t>(world_oob->source_esi);
             }
+            const auto special_event=h.pending_special_green_event();
+            d["special_green_event_pending"]=special_event.has_value();
+            if(special_event) {
+                d["special_green_message_id"]=static_cast<int64_t>(special_event->dword_420548);
+                d["special_green_display_code"]=static_cast<int64_t>(special_event->dword_420544);
+                d["special_green_source_resource"]=static_cast<int64_t>(special_event->source_esi);
+            }
             const auto cup_event=h.pending_cup_capture_event();
             d["cup_event_pending"]=cup_event.has_value();
             if(cup_event) {

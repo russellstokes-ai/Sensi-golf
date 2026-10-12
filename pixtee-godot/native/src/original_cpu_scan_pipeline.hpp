@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <vector>
 #include "original_cpu_candidate.hpp"
+#include "original_cpu_score_scratch.hpp"
 #include "original_cpu_trial_force.hpp"
 #include "original_cpu_simulated_contact.hpp"
 #include "original_cpu_trial_preflight.hpp"
@@ -88,4 +89,20 @@ OriginalCpuTrialRoute original_cpu_trial_route_after_lookup(
     std::uint16_t mapped_terrain,std::uint16_t source_club,
     std::int32_t original_height,std::int32_t original_hole_distance,
     bool source_terrain_lookup_complete);
+// Join the source-authenticated 14-byte CPU score records (0x40CA8E)
+// to the independently source-authenticated angular scan table. This is
+// only valid when every record was genuinely evaluated in scan order.
+// No estimated/placeholder score may select a computer shot.
+struct OriginalCpuScoredChoice {
+    bool found=false;
+    std::size_t index=0;
+    std::uint16_t heading=0;
+    std::uint16_t score_word=0;
+};
+OriginalCpuScoredChoice original_cpu_choose_scored_scan(
+    const OriginalCpuScanPlan& plan,std::uint16_t original_span,
+    std::uint16_t original_step,
+    const std::vector<std::uint8_t>& original_scored_records,
+    bool genuine_source_evaluations);
+
 } // namespace pixtee

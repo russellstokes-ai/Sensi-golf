@@ -5,6 +5,7 @@ on:
     branches: [feat/pixtee-native-portrait-framework]
     paths:
       - 'tools/trace_original_cpu_evaluator_entry.py'
+      - 'tools/trace_original_cpu_and_object_continuation.py'
       - 'tools/verify_original_cpu_score_scratch.py'
       - 'tools/verify_original_cpu_first_eligible.py'
       - 'pixtee-godot/native/tests/original_cpu_first_eligible_probe.cpp'
@@ -16,6 +17,7 @@ on:
     branches: [feat/pixtee-godot-recovered-core]
     paths:
       - 'tools/trace_original_cpu_evaluator_entry.py'
+      - 'tools/trace_original_cpu_and_object_continuation.py'
       - 'tools/verify_original_cpu_score_scratch.py'
       - 'tools/verify_original_cpu_first_eligible.py'
       - 'pixtee-godot/native/tests/original_cpu_first_eligible_probe.cpp'
@@ -46,6 +48,12 @@ jobs:
           python tools/trace_original_cpu_evaluator_entry.py \
             --exe "$EXE" \
             -o analysis/private/original-cpu-evaluator-entry.json
+      - name: Trace original CPU scoring continuation and object source gates
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/trace_original_cpu_and_object_continuation.py \
+            --exe "$EXE" \
+            -o analysis/private/original-cpu-object-continuation.json
       - name: Compile bounded native source CPU scratch and preflight guards
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror \
@@ -81,6 +89,7 @@ jobs:
           name: pixtee-original-cpu-evaluator-entry
           path: |
             analysis/private/original-cpu-evaluator-entry.json
+            analysis/private/original-cpu-object-continuation.json
             analysis/private/original-cpu-score-scratch-proof.json
             analysis/private/original-cpu-first-eligible-proof.json
           retention-days: 30

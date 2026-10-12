@@ -72,6 +72,11 @@ public:
     // flag deflection is enabled in the existing native shot loop.
     void set_verified_flag_object(bool present);
     bool flag_object_verified() const noexcept;
+    // Caller supplies real original player mode (source [ESI+0x5A]).
+    // Omitted/unset means no speculative lip activation in native engine.
+    void set_original_player_mode_5a(std::uint16_t mode);
+    std::optional<std::uint16_t> original_player_mode_5a() const noexcept;
+    bool original_lip_deflection_last_tick() const noexcept;
 
 
     HoleSessionPhase phase() const noexcept;
@@ -132,6 +137,7 @@ private:
     bool round_complete_ = false;
     bool green_mode_ = false;
     bool flag_object_verified_ = false;
+    std::optional<std::uint16_t> original_player_mode_5a_{};
     std::optional<std::uint16_t> unsupported_descriptor_{};
     recovered::OriginalPrng16* prng_ = nullptr;
 };

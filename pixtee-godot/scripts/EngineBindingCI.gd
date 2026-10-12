@@ -75,6 +75,17 @@ func _initialize() -> void:
         push_error("Original CPU search parameter ABI parity failure")
         quit(1)
         return
+    # Original Windows 0x40CCA4 CPU simulation shot force (not actual AI).
+    var trial_force = round_host.original_cpu_trial_force(12,200,300,20)
+    if not trial_force.get("verified",false) or int(trial_force.get("vertical_force",-1)) != 440 or int(trial_force.get("horizontal_force",-1)) != 540 or bool(trial_force.get("complete_cpu_shot_planner",true)):
+        push_error("Original CPU trial velocity initialization ABI failed")
+        quit(1)
+        return
+    var wrapped_trial = round_host.original_cpu_trial_force(-1,0,0,65535)
+    if int(wrapped_trial.get("vertical_force",0)) != -65535 or int(wrapped_trial.get("horizontal_force",0)) != -65535:
+        push_error("Original CPU shot trial 32-bit wrapping mismatch")
+        quit(1)
+        return
     # Genuine v1.014 24-row CPU search table, backed by actual x86 parity.
     var source_grid = round_host.original_cpu_scan_grid(4, 0)
     if not source_grid.get("verified",false) or int(source_grid.get("candidate_count",-1)) != 32 or int(source_grid.get("first_angular_extent",-1)) != 512 or int(source_grid.get("spacing",-1)) != 4 or int(source_grid.get("initial_remainder",-1)) != 128:

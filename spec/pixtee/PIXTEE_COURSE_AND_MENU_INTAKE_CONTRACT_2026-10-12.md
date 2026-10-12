@@ -1,9 +1,35 @@
 # Pixtee — Frozen Work Hole 1, Menu and Approved Art Intake Contract
 **12 October 2026 · Safe pre-integration handoff · New working branch: `feat/pixtee-m1-course-intake-safe`**
 
-## What we can finish before the actual Work course and menus arrive
+## Work course and production standard RECEIVED — verified canonical intake, 12 October 2026
 
-The recovered native engine and owner-approved visual files must remain separate until the **exact** Work-version `index.html`, `COURSE_PRODUCTION_STANDARD.md`, `COURSE_CATALOGUE_50.csv`, checksum list and menu source are accessible. No engineer should reconstruct the course or menus from screenshots and call them canonical.
+**The user supplied two real ZIPs in this conversation, and we examined their actual bytes.** Do not confuse these with earlier local `pixtee-hole-01-reference` or older Library `Pixtee-Golf-Lakewood-Hole-1.html`:
+
+| Incoming frozen ZIP | SHA-256 (whole original uploaded ZIP) | Contents | Status |
+|---|---|---|---|
+| `pixtee-lakewood-open.zip` | `82c0df6831241e31ad0c83a4302df145349afb9b63503487a914b964d05c7ff3` | 43 regular files: self-contained HTML with embedded imagery, `course-layout.json`, `course.js`, `asset-manifest.json`, eight previews, 16 wind frames, foliage/cart/source image files, internal older standard and catalogue | **Exact second copy saved in Library and byte-identical; design only, not Godot gameplay** |
+| `pixtee-production-standards-v1-1.zip` | `1544ac4782b64d2a2b968a581f31b9cf7b37b6e0cf4583dd665e21d1d81ffe17` | 3 files: **v1.1** `COURSE_PRODUCTION_STANDARD.md`, updated `COURSE_CATALOGUE_50.csv`, `MOUNTAINS_LAYOUT_AND_EFFECTS_ADDENDUM.md` | **Exact second copy saved in Library and byte-identical; current future course-production authority** |
+
+Saved Library originals (do not overwrite):
+- `/Pixtee Canonical Backups/2026-10-12/Work Course and Standards/pixtee-lakewood-open-ORIGINAL.zip`
+- `/Pixtee Canonical Backups/2026-10-12/Work Course and Standards/pixtee-production-standards-v1-1-ORIGINAL.zip`
+- `/Pixtee Canonical Backups/2026-10-12/Work Course and Standards/pixtee_canonical_course_standards_integrity_2026-10-12.json` — all **46** inner-file SHA-256 hashes, zip sizes and CRC proofs, with source/backed-up ZIP exact comparisons.
+
+The [source intake JSON with full statuses](PIXTEE_LAKEWOOD_OPEN_AND_COURSE_STANDARD_V1_1_INTAKE_2026-10-12.json) is mandatory for all future engine integration. The actual HTML's `HOLE_01_REFERENCE_STATUS.json` says `VISUAL_REFERENCE_APPROVED_FOR_HANDOFF`, `GODOT_INTEGRATION_AND_ACCEPTANCE_REQUIRED`, `NOT_COMMERCIALLY_READY`. Its `course-layout.json` is a **544 × 912 visual-unit**, par-4 candidate named **Willow Creek**, with 445 cosmetic placements including 17 trees, four advertising boards and a shoreline-connected creek/pond. Their positions are *not* automatically native gameplay physical colliders.
+
+**Conflict resolved without modifying originals:** the course ZIP contains an **older** 22,654-byte production standard and a 9,054-byte catalogue; the separate v1.1 ZIP provides the **newer** 35,168-byte standard, 10,014-byte 50-course catalogue and mountain effects addendum. Keep the old files byte-for-byte inside the HTML archive for freeze integrity, but use v1.1 as the **authoritative rules for all NEW courses**. The changed C31–C35 mountain family includes Cloudline Ridge, Alpine Loch and Frostgate Pass; no mountains, snow, cliff or fog effect may silently add original golf physics that the C++ core doesn't support.
+
+**Freeze caveat:** `REFERENCE_README.md` points to a `REFERENCE_SHA256.csv` that is **not actually present** in this uploaded ZIP. Our separately generated intake SHA-256 manifest proves exactly what was uploaded and backed up, not a historical hash match to an unavailable earlier Work freeze. The HTML package's existing internal `HOLE_01_REFERENCE_STATUS.json` documents the actual handover status.
+
+**Architecture decision:** The approved `index.html` is the visible/cosmetic design authority, but `course-layout.json` is **not a compiled MAPM/MAPI/MAPS resource**. The current native `make_lakewood_hole_1()` fixture is 19×64 original tiles (304 × 512 world units), and its geometry has not been verified equivalent to the **544 × 912** HTML. The Gold/Green native collision and trees/flag/cup must be separately authored; do not alias the two courses or change native physics to fit the HTML image. Build a reversible reference-world→native-world transform, rasterise the *approved original polygons* at native 2×2 MAPI collision precision, and validate 4 tee slots, source-compatible cup/green/slope and hazard topology before claiming playability. Sponsor boards, water motion, birds, flowers, grass, and idle actors are separate render-only placement records.
+
+**Menus:** no final menu archive was contained in these two ZIPs; menus remain a later independent frozen intake.
+
+---
+
+## What was prepared before the real Work course arrived
+
+**Update:** We now have the exact uploaded Work `pixtee-lakewood-open.zip` and independent v1.1 standards ZIP, separately verified and preserved in Library. The menus remain outstanding; earlier intake code is still a safe extraction-directory tool, not an automatic conversion or a substitute for the received ZIP manifest. No engineer should reconstruct the course or menus from screenshots and call them canonical.
 
 This branch adds an independently testable **read-only intake audit**, not a new course, replacement artwork, alternate physics or fake menu. The validator intentionally marks `html_course_converted_to_godot=false` and `three_playable_holes_completed=false` after a successful pass.
 

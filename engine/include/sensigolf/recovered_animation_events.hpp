@@ -34,4 +34,15 @@ OriginalAnimationEnqueueResult original_animation_enqueue(
     OriginalAnimationSlots& slots,
     OriginalAnimationEventInput event,
     const OriginalAnimationAssetTable& source_asset_table);
+// Original 0x40C50B..0x40C539 round-robin timer-only stage.
+// Precise source precondition: every active slot must have ticks>0,
+// otherwise the source must decode its animation SCRIPT at 0x40C539.
+// Do not silently invent event animation frames.
+struct OriginalAnimationTimerTick {
+    std::size_t active_slots=0;
+    std::size_t newly_ready_for_script=0; // countdown 1->0 this tick
+};
+OriginalAnimationTimerTick original_animation_tick_countdowns(
+    OriginalAnimationSlots& slots);
+
 } // namespace sensigolf::recovered

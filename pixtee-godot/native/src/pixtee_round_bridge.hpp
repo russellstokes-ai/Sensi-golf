@@ -55,6 +55,7 @@ public:
     bool set_aim_raw(int heading);
     bool nudge_aim_raw(int delta);
     bool set_club_index(int index);
+    bool set_verified_flag_object(bool present);
     bool cycle_club(int delta);
     bool meter_click_raw(int sample);
     bool start_original_welly();

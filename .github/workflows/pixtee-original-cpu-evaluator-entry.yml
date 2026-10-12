@@ -8,6 +8,8 @@ on:
       - 'tools/trace_original_cpu_and_object_continuation.py'
       - 'tools/verify_original_cpu_score_scratch.py'
       - 'tools/verify_original_cpu_first_eligible.py'
+      - 'tools/verify_original_cpu_best_score.py'
+      - 'pixtee-godot/native/tests/original_cpu_best_score_probe.cpp'
       - 'pixtee-godot/native/tests/original_cpu_first_eligible_probe.cpp'
       - 'pixtee-godot/native/src/original_cpu_score_scratch.*'
       - 'pixtee-godot/native/tests/original_cpu_score_scratch_tests.cpp'
@@ -20,6 +22,8 @@ on:
       - 'tools/trace_original_cpu_and_object_continuation.py'
       - 'tools/verify_original_cpu_score_scratch.py'
       - 'tools/verify_original_cpu_first_eligible.py'
+      - 'tools/verify_original_cpu_best_score.py'
+      - 'pixtee-godot/native/tests/original_cpu_best_score_probe.cpp'
       - 'pixtee-godot/native/tests/original_cpu_first_eligible_probe.cpp'
       - 'pixtee-godot/native/src/original_cpu_score_scratch.*'
       - 'pixtee-godot/native/tests/original_cpu_score_scratch_tests.cpp'
@@ -84,6 +88,17 @@ jobs:
           python tools/verify_original_cpu_first_eligible.py \
             --exe "$EXE" --probe /tmp/pixtee-original-cpu-eligible-probe \
             -o analysis/private/original-cpu-first-eligible-proof.json
+      - name: Compare original x86 full signed score candidate winner and stable tie
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_score_scratch.cpp \
+            pixtee-godot/native/tests/original_cpu_best_score_probe.cpp \
+            -o /tmp/pixtee-original-cpu-best-score-probe
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_cpu_best_score.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-cpu-best-score-probe \
+            -o analysis/private/original-cpu-best-score-proof.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-cpu-evaluator-entry
@@ -92,4 +107,5 @@ jobs:
             analysis/private/original-cpu-object-continuation.json
             analysis/private/original-cpu-score-scratch-proof.json
             analysis/private/original-cpu-first-eligible-proof.json
+            analysis/private/original-cpu-best-score-proof.json
           retention-days: 30

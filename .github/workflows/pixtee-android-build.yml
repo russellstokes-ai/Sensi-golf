@@ -11,6 +11,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    # Owner prohibits APK creation until commercial acceptance is complete.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

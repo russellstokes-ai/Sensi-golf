@@ -1,0 +1,26 @@
+name: Remove unrequested automatic preview artifact
+on:
+  push:
+    branches: ['feat/pixtee-lakewood-playable-work-2026-10-12']
+    paths: ['.github/workflows/pixtee-remove-unrequested-preview.yml']
+permissions:
+  contents: read
+  actions: write
+jobs:
+  remove-only-generated-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify and delete only the APK created by this increment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api repos/russellstokes-ai/Sensi-golf/actions/artifacts/11776318099 > /tmp/preview-artifact.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/preview-artifact.json'))
+          assert d['id']==11776318099
+          assert d['workflow_run']['head_sha']=='e8568095b699aac6e17f8221e22dcdb29fd4faf5'
+          assert d['name']=='SensiGolf-0.1.0-test-02-OriginalEngine-Android-APK'
+          PY
+          gh api --method DELETE repos/russellstokes-ai/Sensi-golf/actions/artifacts/11776318099

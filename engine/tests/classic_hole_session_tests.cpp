@@ -457,5 +457,29 @@ int main() {
         assert(locked);
     }
 
+    // Original mode must be explicitly supplied; near-cup lip is not
+    // inferred in unauthenticated sessions or without source PRNG.
+    {
+        auto lip_course=uniform_course(1,0,0);
+        recovered::OriginalPrng16 rng{0x2345,0x6789};
+        ClassicHoleSession marked(lip_course,0,0,std::nullopt,&rng);
+        assert(!marked.original_player_mode_5a().has_value());
+        marked.set_original_player_mode_5a(0);
+        assert(marked.original_player_mode_5a().value()==0);
+        marked.begin_shot(drive);
+        marked.step();
+        assert(marked.original_lip_deflection_last_tick());
+        bool refused=false;
+        try{marked.set_original_player_mode_5a(6);}
+        catch(const std::logic_error&){refused=true;}
+        assert(refused);
+        ClassicHoleSession unseeded(lip_course,0,0);
+        refused=false;
+        try{unseeded.set_original_player_mode_5a(0);}
+        catch(const std::logic_error&){refused=true;}
+        assert(refused);
+        unseeded.set_original_player_mode_5a(4);
+        assert(unseeded.original_player_mode_5a().value()==4);
+    }
     return 0;
 }

@@ -16,6 +16,7 @@ add_library(sensigolf_core
     src/recovered_shot_admission.cpp
     src/recovered_world_boundary.cpp
     src/recovered_alt_terrain.cpp
+    src/recovered_flag_setup.cpp
     src/classic_round_session.cpp
     src/classic_hole_plan.cpp
     src/classic_game_session.cpp

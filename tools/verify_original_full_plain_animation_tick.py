@@ -9,10 +9,13 @@ Negative opcode dispatch and renderer/SFX remain open, not faked.
 """
 import argparse,hashlib,json,random,struct,subprocess,sys
 from pathlib import Path
-from unicorn import UC_HOOK_CODE,UC_PROT_ALL
+from unicorn import UC_HOOK_CODE
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from original_v1014_oracle import build_uc,REFERENCE_SHA256,w16,wu32,ru16,ru32
-BASE=0x41F8F0; SCRIPT=0x700000; ENTRY=0x40C50B; STOP=0x40C52C
+# The hash-authenticated Unicorn harness already maps PLAYER=0x500000
+# for 64 KiB of scratch. Use a nonoverlapping offset within that region
+# rather than remapping a PE-address range and triggering UC_ERR_MAP.
+BASE=0x41F8F0; SCRIPT=0x502000; ENTRY=0x40C50B; STOP=0x40C52C
 def gen():
     rng=random.Random(0x40c50b)
     cases=[]
@@ -74,7 +77,6 @@ def main():
     native=[tuple(map(int,line.split())) for line in out.stdout.splitlines()]
     if len(native)!=len(rows):raise RuntimeError("native mixed event count mismatch")
     uc,_=build_uc(p.exe)
-    uc.mem_map(SCRIPT,0x10000,UC_PROT_ALL)
     mismatches=[]
     for k,(row,got) in enumerate(zip(rows,native)):
         expected=original(uc,row)

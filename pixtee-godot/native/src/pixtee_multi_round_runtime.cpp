@@ -37,9 +37,9 @@ void PixteeMultiRoundRuntime::propose_original_turn(
             throw std::logic_error("all participants need an active hole");
     if(current_owner_) {
         const auto& h=players_.at(*current_owner_)->hole();
-        if(h.phase()==sensigolf::HoleSessionPhase::ShotActive)
+        if(!host_turn_handoff_phase_allowed(h.phase()))
             throw std::logic_error(
-                "cannot transfer original turn during unfinished ball flight");
+                "cannot transfer player ownership before active shot/event settlement");
     }
     turn_.select_next(req);
 }

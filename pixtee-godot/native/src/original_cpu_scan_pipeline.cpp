@@ -147,4 +147,27 @@ void original_cpu_write_quality_record(
     records[off+13u]=static_cast<std::uint8_t>(score>>8);
 }
 
+OriginalCpuMotionContinuation original_cpu_continue_trial_after_contact(
+    const OriginalCpuContactResult& previous,
+    std::int32_t x,std::int32_t y,std::uint16_t direction,
+    std::uint16_t green,bool verified) {
+    if(!verified)
+        throw std::logic_error(
+            "CPU source path 0x40CBC7 not proven after original candidate/map update");
+    if(previous.route==OriginalCpuContactRoute::ReturnZeroStop)
+        return {OriginalCpuContinuationKind::TerminalStop,std::nullopt};
+    if(previous.route==OriginalCpuContactRoute::RequestOriginalLipRandom)
+        return {OriginalCpuContinuationKind::RequiresOriginalLipPrng,
+                std::nullopt};
+    if(previous.state.ball_height==0)
+        return {OriginalCpuContinuationKind::RequiresOriginalMappedContact,
+                std::nullopt};
+    const auto moved=original_cpu_simulated_motion({
+        x,y,previous.state.horizontal_force,
+        previous.state.ball_height,direction,green});
+    return {moved.route==OriginalCpuMotionRoute::RequiresMappedContact ?
+            OriginalCpuContinuationKind::RequiresOriginalMappedContact :
+            OriginalCpuContinuationKind::AppliedOriginalMotion,moved};
+}
+
 } // namespace pixtee

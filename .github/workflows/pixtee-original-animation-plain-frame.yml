@@ -1,0 +1,51 @@
+name: Pixtee Original Animation Script Frame Recovery
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'engine/src/recovered_animation_events.cpp'
+      - 'engine/include/sensigolf/recovered_animation_events.hpp'
+      - 'engine/tests/recovered_animation_events_tests.cpp'
+      - 'pixtee-godot/native/tests/original_animation_plain_frame_probe.cpp'
+      - 'tools/verify_original_animation_plain_frame.py'
+      - '.github/workflows/pixtee-original-animation-plain-frame.yml'
+permissions: {contents: read}
+jobs:
+  original-script-frame:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Acquire only ephemeral authentic game source
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Native script player source regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_animation_events.cpp \
+            engine/tests/recovered_animation_events_tests.cpp \
+            -o /tmp/pixtee-animation-frame-tests
+          /tmp/pixtee-animation-frame-tests
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_animation_events.cpp \
+            pixtee-godot/native/tests/original_animation_plain_frame_probe.cpp \
+            -o /tmp/pixtee-animation-frame-probe
+      - name: Machine-verify original non-command source animation script stage
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_animation_plain_frame.py \
+            --exe "$EXE" --probe /tmp/pixtee-animation-frame-probe \
+            -o analysis/private/original-animation-plain-frame-x86.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-animation-plain-frame-source
+          path: analysis/private/original-animation-plain-frame-x86.json
+          retention-days: 30

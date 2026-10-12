@@ -154,3 +154,23 @@ introduced. The original evaluator's intervening calls
 `0x40CCA4`, `0x40CAE1`, `0x40CB00`, `0x4094F0`, `0x40B998`
 and the downstream actual score-selection rules remain independently
 gated. **No full CPU-opponent or game-mode signoff yet.**
+
+### Verified source animation-command table and full ten-slot reset
+
+SHA-authenticated original source pointer table `0x41F89C` has three
+valid event script entries: `0x8000` callback at `0x40C56A`,
+`0x8004` release at `0x40C573`, and `0x8008` wait at
+`0x40C58D`. The following DWORD entry is `0x00000004`, not a
+valid executable command target. Unknown signed words remain blocked;
+do **not** infer further animation commands. [Original table research](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38235821419).
+
+The source-original global ten-event queue reset `0x40C5C0..0x40C5E8`
+fills **10×20-byte slots** with `status=0xFFFF` and zeros every
+remaining field. New native `original_animation_reset_all` is used by
+`ClassicHoleSession::reset`. Exact original x86 versus native parity
+is **1,300/1,300 cases**, **104,000 individual slot field
+comparisons**. [Original reset CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38236194547).
+
+These are authentic source subroutines, **not** proof of host callback
+effects, presentation timing, complete shared shot/event dispatcher or
+tree collision. Keep every full-gameplay release gate OPEN.

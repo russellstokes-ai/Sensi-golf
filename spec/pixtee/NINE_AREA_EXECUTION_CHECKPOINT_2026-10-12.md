@@ -40,3 +40,33 @@ Original-machine workflows and native nine-area test suite live in `.github/work
 - **Original ten-slot animation dispatcher:** Source `0x40C539..0x40C559` ordinary nonnegative script frame decoder **5,852/5,852** exact original x86 comparisons: frame word, delay, source frame-offset `+2` and preservation of other slot bytes. [Machine CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38228126497). Combined **10-slot dispatcher `0x40C50B..0x40C52C`** correctly performs countdown or script decode on each active slot: **1,500/1,500** mixed original-machine source cases, **75,000 checked original slot fields**. [Mixed machine CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38228843162). `ClassicHoleSession::step_original_animation_plain_scripts` now advances real queued code9 reactions with explicitly authored asset script bytes. [Engine CI](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38229076312), [Godot smoke](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38229074417) green.
 - **Original animation negative script opcodes `0x40C55A` remain unsupported.** They dynamically jump through `0x41F89C`; a distinct numeric command-target research workflow `.github/workflows/pixtee-original-animation-opcodes.yml` has been started. Native deliberately throws on negative opcode rather than hallucinating callbacks, SFX or asset rendering.
 - Original source executable/course resources remain ephemeral CI-only. No accepted Pixtee art or Astra HTML previews changed. All **15 high-level gameplay signoff gates remain blocked/red** until authentic end-to-end source and Godot gameplay evidence proves them.
+
+## Follow-on original animation opcode investigation — 12 October 2026
+
+The original animation event dispatcher is now an explicit source-recovery
+workstream. Earlier code includes the x86-authenticated 10-slot enqueue,
+timer countdown and ordinary nonnegative script-frame reader.
+These do **not** prove signed/negative script commands, actual sound playback,
+sprite rendering, host callback dismissal or whole gameplay event completion.
+
+Added research-only source tooling:
+- `tools/trace_original_animation_negative_commands.py`: original
+  SHA-verified signed-command branch disassembly/control-flow summary in
+  the range `0x40C55A..0x40C5F0`; no original binary/graphics committed.
+- `tools/probe_original_animation_negative_routes.py`: original Unicorn
+  x86 source execution for 15 representative negative script WORDs, stops
+  before invoking unmodeled host effects, captures first exit, event-slot
+  mutations and executed source addresses as **observations**, not claims
+  about native C++ parity.
+- `.github/workflows/pixtee-original-animation-negative-research.yml`:
+  transient source-executable ingestion and private downloadable
+  source-analysis JSON artifacts. The job must be reviewed before its
+  results count as verified. Research alone does not close any of the
+  15 engine gameplay gates.
+
+**Next functional acceptance:** classify exact signed opcode operands,
+side effects and source callback ordering; implement only independently
+verified native command routes with event/replay state tests. Continue
+actual tree-geometry discovery, original CPU shot evaluation, host
+acknowledgement and multiplayer turn settlement separately. Keep the PR
+DRAFT and canonical Pixtee sprites/Astra HTML untouched.

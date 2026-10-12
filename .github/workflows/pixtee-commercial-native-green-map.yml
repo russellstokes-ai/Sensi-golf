@@ -1,0 +1,52 @@
+name: Pixtee Actual Native Green Arrows & Godot Bridge
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-commercial-hardening-2026-10-12]
+    paths:
+      - 'pixtee-godot/native/src/pixtee_round_runtime.cpp'
+      - 'pixtee-godot/native/src/pixtee_round_runtime.hpp'
+      - 'pixtee-godot/native/src/pixtee_round_bridge.cpp'
+      - 'pixtee-godot/native/src/pixtee_round_bridge.hpp'
+      - 'pixtee-godot/native/tests/native_green_arrow_mapi_bridge_tests.cpp'
+      - '.github/workflows/pixtee-commercial-native-green-map.yml'
+  pull_request:
+    branches: [feat/pixtee-m1-course-intake-safe]
+permissions:
+  contents: read
+jobs:
+  recovered-green-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build original-native C++ recovered golf engine
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j 2
+      - name: Exact 16x16 green slope and native MAPI world-map parity
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Iengine/include -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/pixtee_course_adapter.cpp \
+            pixtee-godot/native/src/pixtee_round_runtime.cpp \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/tests/native_green_arrow_mapi_bridge_tests.cpp \
+            build/engine/libsensigolf_core.a -o build/native-green-arrows
+          build/native-green-arrows
+      - name: No regressions in the recovered original game engine
+        run: ctest --test-dir build --output-on-failure
+  godot-native-bridge-compiles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot C++ binding build system
+        run: python3 -m pip install --user scons
+      - name: Check out official Godot 4.5 C++ extension bindings
+        run: |
+          git clone --depth 1 -b 4.5 \
+            https://github.com/godotengine/godot-cpp.git pixtee-godot/native/godot-cpp
+      - name: Compile actual Godot C++ bridge, including native MAPS arrow API
+        run: |
+          cd pixtee-godot/native
+          ~/.local/bin/scons platform=linux target=template_debug arch=x86_64 -j 2
+          test -s ../bin/libpixtee_gameplay.linux.template_debug.x86_64.so

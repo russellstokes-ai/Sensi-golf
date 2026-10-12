@@ -5,11 +5,19 @@ on:
     branches: [feat/pixtee-native-portrait-framework]
     paths:
       - 'tools/trace_original_cpu_evaluator_entry.py'
+      - 'tools/verify_original_cpu_score_scratch.py'
+      - 'pixtee-godot/native/src/original_cpu_score_scratch.*'
+      - 'pixtee-godot/native/tests/original_cpu_score_scratch_tests.cpp'
+      - 'pixtee-godot/native/tests/original_cpu_score_scratch_probe.cpp'
       - '.github/workflows/pixtee-original-cpu-evaluator-entry.yml'
   push:
     branches: [feat/pixtee-godot-recovered-core]
     paths:
       - 'tools/trace_original_cpu_evaluator_entry.py'
+      - 'tools/verify_original_cpu_score_scratch.py'
+      - 'pixtee-godot/native/src/original_cpu_score_scratch.*'
+      - 'pixtee-godot/native/tests/original_cpu_score_scratch_tests.cpp'
+      - 'pixtee-godot/native/tests/original_cpu_score_scratch_probe.cpp'
       - '.github/workflows/pixtee-original-cpu-evaluator-entry.yml'
 permissions: {contents: read}
 jobs:
@@ -20,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
-      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6 unicorn==2.1.4
       - name: Ingest SHA-authenticated executable transiently
         run: |
           curl -fL --retry 4 --retry-delay 3 \
@@ -34,8 +42,29 @@ jobs:
           python tools/trace_original_cpu_evaluator_entry.py \
             --exe "$EXE" \
             -o analysis/private/original-cpu-evaluator-entry.json
+      - name: Compile bounded native source CPU scratch and preflight guards
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_score_scratch.cpp \
+            pixtee-godot/native/tests/original_cpu_score_scratch_tests.cpp \
+            -o /tmp/pixtee-original-cpu-score-tests
+          /tmp/pixtee-original-cpu-score-tests
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_score_scratch.cpp \
+            pixtee-godot/native/tests/original_cpu_score_scratch_probe.cpp \
+            -o /tmp/pixtee-original-cpu-score-probe
+      - name: Compare 14-byte original CPU candidate score reset to Windows x86
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_cpu_score_scratch.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-cpu-score-probe \
+            -o analysis/private/original-cpu-score-scratch-proof.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-cpu-evaluator-entry
-          path: analysis/private/original-cpu-evaluator-entry.json
+          path: |
+            analysis/private/original-cpu-evaluator-entry.json
+            analysis/private/original-cpu-score-scratch-proof.json
           retention-days: 30

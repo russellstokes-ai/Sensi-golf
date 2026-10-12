@@ -54,3 +54,4 @@ jobs:
           verify_godot --headless --path pixtee-godot --script res://scripts/CommercialPresentationSmokeCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/LakewoodSceneCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/PlayerJourneyCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/MenuJourneyCI.gd

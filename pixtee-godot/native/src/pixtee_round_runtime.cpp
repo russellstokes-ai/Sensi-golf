@@ -43,6 +43,16 @@ void PixteeRoundRuntime::nudge_aim_raw(std::int32_t delta) {
     if(original_welly_active_) throw std::logic_error("aim locked during original Welly");
     controls_.nudge_aim(delta);
 }
+void PixteeRoundRuntime::set_original_player_mode_5a(std::uint16_t source_mode) {
+    if(!game_->has_active_hole())
+        throw std::logic_error("original player mode requires a loaded hole");
+    game_->active_hole().set_original_player_mode_5a(source_mode);
+    // The replay journal does not yet store original player role. Human
+    // role enables PRNG-dependent original near-cup lip collision; never
+    // claim replay determinism until role and PRNG state are journalled.
+    replay_supported_=false;
+}
+
 void PixteeRoundRuntime::set_verified_flag_object(bool present) {
     if(!game_->has_active_hole())
         throw std::logic_error("no loaded hole for verified flag object");

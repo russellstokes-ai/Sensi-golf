@@ -170,4 +170,18 @@ OriginalCpuMotionContinuation original_cpu_continue_trial_after_contact(
             OriginalCpuContinuationKind::AppliedOriginalMotion,moved};
 }
 
+OriginalCpuSecondaryTerrain original_cpu_secondary_mapped_contact(
+    const OriginalCpuMotionContinuation& previous,
+    std::uint16_t landing,std::int32_t vertical,
+    std::int32_t horizontal,bool lookup_verified) {
+    if(!lookup_verified)
+        throw std::logic_error(
+            "original CPU secondary map/contact source MAPI lookup not verified");
+    if(previous.kind!=OriginalCpuContinuationKind::RequiresOriginalMappedContact)
+        throw std::logic_error(
+            "original CPU second terrain lookup not reached on this source branch");
+    return {sensigolf::recovered::original_alternate_terrain_contact(
+        landing,vertical,horizontal)};
+}
+
 } // namespace pixtee

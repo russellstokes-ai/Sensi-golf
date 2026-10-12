@@ -79,7 +79,9 @@ def verify_expected_sha(files: list[dict], expected_manifest: Path) -> None:
         raise IntakeError("Work freeze hash list must have non-empty files [{path,sha256}]")
     expected = {}
     for rec in records:
-        path, value = rec.get("path"), rec.get("sha256")
+        if rec.get("group") not in (None, "frozen-hole-01"):
+            continue  # Windows archive manifest also includes approved asset-pack entries
+        path, value = rec.get("path") or rec.get("relative_path"), rec.get("sha256")
         if not isinstance(path, str) or not isinstance(value, str) or len(value) != 64:
             raise IntakeError("Invalid frozen hash record")
         if path in expected:
@@ -140,6 +142,8 @@ def within(path: Path, parent: Path) -> bool:
 
 def run(course: Path, assets: Path, menus: Path | None, hashes: Path | None,
         output: Path | None) -> dict:
+    if course.is_symlink() or assets.is_symlink():
+        raise IntakeError("Frozen root and approved asset ZIP must not be symlinks")
     course = course.resolve()
     assets = assets.resolve()
     if not CANONICAL_ART.is_file():

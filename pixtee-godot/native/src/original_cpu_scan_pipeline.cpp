@@ -68,4 +68,26 @@ OriginalCpuTrialPrecontact original_cpu_trial_precontact(
     return out;
 }
 
+OriginalCpuTrialRoute original_cpu_trial_route_after_lookup(
+    const OriginalCpuScanPlan& plan,std::size_t index,
+    OriginalCpuTrialForceInput source,
+    std::uint16_t landing,std::uint16_t club,
+    std::int32_t height,std::int32_t hole_distance,
+    bool source_map_verified) {
+    if(!source_map_verified)
+        throw std::logic_error(
+          "CPU candidate cannot select original 0x40CB40 route before 0x409535 MAPI descriptor lookup");
+    OriginalCpuTrialRoute out{};
+    out.trial=original_cpu_candidate_trial(plan,index,source);
+    out.route=original_cpu_trial_preflight({
+        landing,club,out.trial.force.vertical_force,
+        out.trial.force.horizontal_force,height});
+    if(out.route==OriginalCpuPreflightRoute::Gravity) {
+        out.gravity_contact=original_cpu_simulation_contact({
+            out.trial.force.vertical_force,
+            out.trial.force.horizontal_force,
+            height,hole_distance});
+    }
+    return out;
+}
 } // namespace pixtee

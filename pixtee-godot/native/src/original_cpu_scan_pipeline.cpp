@@ -124,4 +124,27 @@ OriginalCpuScoredChoice original_cpu_choose_scored_scan(
             selected.original_score_word};
 }
 
+void original_cpu_write_quality_record(
+    std::vector<std::uint8_t>& records,std::size_t index,
+    std::uint16_t distance,std::uint16_t contact,
+    std::uint16_t green,const OriginalCpuPenaltyTable& penalties,
+    bool genuine_evaluation) {
+    if(!genuine_evaluation)
+        throw std::logic_error(
+            "CPU score record may not be created without completed source trajectory evaluation");
+    if(index>=kOriginalCpuScoreSafeRecords ||
+       records.size()>kOriginalCpuScoreSafeRecords*kOriginalCpuScoreRecordBytes)
+        throw std::out_of_range(
+            "original CPU bounded scratch record index invalid");
+    const auto off=index*kOriginalCpuScoreRecordBytes;
+    if(off>records.size() || records.size()-off<kOriginalCpuScoreRecordBytes)
+        throw std::out_of_range(
+            "original CPU scoring record has fewer than 14 bytes");
+    // Validate/map the source contact code BEFORE any record mutation.
+    const auto score=original_cpu_quality_score(
+        distance,contact,green,penalties);
+    records[off+12u]=static_cast<std::uint8_t>(score);
+    records[off+13u]=static_cast<std::uint8_t>(score>>8);
+}
+
 } // namespace pixtee

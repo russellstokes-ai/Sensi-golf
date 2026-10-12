@@ -43,4 +43,13 @@ OriginalCpuSampledSwing original_cpu_resolve_sampled_swing(
         bypass,power,variation,r100,rpower,rdir);
     return out;
 }
+OriginalCpuTrial original_cpu_candidate_trial(
+    const OriginalCpuScanPlan& plan,std::size_t index,
+    OriginalCpuTrialForceInput values) {
+    if(index>=plan.sweep.candidate_headings.size())
+        throw std::out_of_range("original CPU trial candidate index not present");
+    return {plan.sweep.candidate_headings[index],
+            original_cpu_trial_force(values)};
+}
+
 } // namespace pixtee

@@ -7,6 +7,7 @@
 #include "sensigolf/classic_course_resources.hpp"
 #include "sensigolf/classic_shot_model.hpp"
 #include "sensigolf/recovered_prng.hpp"
+#include "sensigolf/recovered_animation_events.hpp"
 #include "sensigolf/recovered_world_boundary.hpp"
 
 namespace sensigolf {
@@ -72,6 +73,15 @@ public:
     // flag deflection is enabled in the existing native shot loop.
     void set_verified_flag_object(bool present);
     bool flag_object_verified() const noexcept;
+    // Host's independently licensed animation manifest supplies 16 stable
+    // logical asset keys. The source original event allocator stores a
+    // reference into that table: do NOT embed original commercial sprites.
+    void set_original_animation_assets(
+        const recovered::OriginalAnimationAssetTable& asset_table);
+    const recovered::OriginalAnimationSlots&
+    original_animation_events() const noexcept;
+    recovered::OriginalAnimationTimerTick step_original_animation_timers();
+
     // Caller supplies real original player mode (source [ESI+0x5A]).
     // Omitted/unset means no speculative lip activation in native engine.
     void set_original_player_mode_5a(std::uint16_t mode);
@@ -137,6 +147,9 @@ private:
     bool round_complete_ = false;
     bool green_mode_ = false;
     bool flag_object_verified_ = false;
+    bool animation_assets_verified_ = false;
+    recovered::OriginalAnimationAssetTable animation_assets_{};
+    recovered::OriginalAnimationSlots animation_slots_{};
     std::optional<std::uint16_t> original_player_mode_5a_{};
     std::optional<std::uint16_t> unsupported_descriptor_{};
     recovered::OriginalPrng16* prng_ = nullptr;

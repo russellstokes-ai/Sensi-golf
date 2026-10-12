@@ -96,6 +96,41 @@ int main(){
     catch(const std::logic_error&){not_guessed=true;}
     assert(not_guessed);
     assert(script_slot.frame_offset==0 && script_slot.ticks==0);
+    // Multi-slot source dispatcher: a zero-tick slot reads its next
+    // plain frame while a 1-tick slot decrements to zero without decoding
+    // until NEXT invocation; disabled slots remain byte-exact untouched.
+    OriginalAnimationSlots scripted{};
+    scripted[0].status=0;
+    scripted[0].ticks=0;
+    scripted[0].asset_pointer=0x420000u;
+    scripted[0].height=45;
+    scripted[1].status=0;
+    scripted[1].ticks=1;
+    scripted[1].asset_pointer=0x420020u;
+    const std::vector<OriginalAnimationScriptAsset> scripts{
+        {0x420000u,{4,0,0,0,0,0,7,0,8,0}},
+        {0x420020u,{5,0,0,0,0,0,9,0,10,0}}
+    };
+    auto started=original_animation_tick_with_plain_scripts(
+        scripted,scripts);
+    assert(started.active_slots==2);
+    assert(started.newly_ready_for_script==1);
+    assert(scripted[0].ticks==4 && scripted[0].height==7);
+    assert(scripted[0].frame_offset==2);
+    assert(scripted[1].ticks==0 && scripted[1].frame_offset==0);
+    started=original_animation_tick_with_plain_scripts(scripted,scripts);
+    assert(started.active_slots==2);
+    assert(started.newly_ready_for_script==0);
+    assert(scripted[0].ticks==3 && scripted[0].height==7);
+    assert(scripted[1].ticks==5 && scripted[1].height==9);
+    assert(scripted[1].frame_offset==2);
+    bool missing=false;
+    scripted[0].ticks=0;
+    try{original_animation_tick_with_plain_scripts(scripted,{});}
+    catch(const std::logic_error&){missing=true;}
+    assert(missing);
+    assert(scripted[0].ticks==0 && scripted[1].ticks==5);
+
 
 
 }

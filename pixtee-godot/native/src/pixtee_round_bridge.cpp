@@ -65,6 +65,8 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("nudge_aim_raw","delta"),&PixteeRoundBridge::nudge_aim_raw);
     ClassDB::bind_method(D_METHOD("set_club_index","club"),&PixteeRoundBridge::set_club_index);
     ClassDB::bind_method(D_METHOD("cycle_club","delta"),&PixteeRoundBridge::cycle_club);
+    ClassDB::bind_method(D_METHOD("set_verified_flag_object","present"),
+                         &PixteeRoundBridge::set_verified_flag_object);
     ClassDB::bind_method(D_METHOD("meter_click_raw","sample"),&PixteeRoundBridge::meter_click_raw);
     ClassDB::bind_method(D_METHOD("cancel_meter"),&PixteeRoundBridge::cancel_meter);
     ClassDB::bind_method(D_METHOD("start_original_welly"),&PixteeRoundBridge::start_original_welly);
@@ -408,6 +410,7 @@ PIXTEE_WRAP_BOOL(start_original_welly(),round_->start_original_welly())
 PIXTEE_WRAP_BOOL(set_aim_raw(int h),round_->set_aim_raw(static_cast<std::uint16_t>(h)))
 PIXTEE_WRAP_BOOL(nudge_aim_raw(int d),round_->nudge_aim_raw(d))
 PIXTEE_WRAP_BOOL(set_club_index(int i),round_->set_club(static_cast<std::uint16_t>(i)))
+PIXTEE_WRAP_BOOL(set_verified_flag_object(bool present),round_->set_verified_flag_object(present))
 PIXTEE_WRAP_BOOL(cycle_club(int d),round_->cycle_club(d))
 PIXTEE_WRAP_BOOL(meter_click_raw(int s),round_->meter_click_raw(static_cast<std::uint16_t>(s)))
 PIXTEE_WRAP_BOOL(acknowledge_hazard(),round_->acknowledge_hazard())
@@ -516,6 +519,7 @@ Dictionary PixteeRoundBridge::snapshot() const {
             d["ball_velocity_z"]=static_cast<int64_t>(ball.vz_raw);
             d["shot_tick"]=static_cast<int64_t>(ball.tick);
             d["green_mode"]=h.green_mode();
+            d["flag_object_verified"]=h.flag_object_verified();
             d["distance_to_hole"]=static_cast<int64_t>(h.distance_to_hole());
             d["hazard_pause_ticks"]=static_cast<int>(h.hazard_pause_remaining());
             d["special_green_pause_ticks"]=static_cast<int>(h.special_green_pause_remaining());

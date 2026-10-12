@@ -153,6 +153,12 @@ recovered::OriginalAnimationTimerTick
 ClassicHoleSession::step_original_animation_timers() {
     return recovered::original_animation_tick_countdowns(animation_slots_);
 }
+recovered::OriginalAnimationTimerTick
+ClassicHoleSession::step_original_animation_plain_scripts(
+    const std::vector<recovered::OriginalAnimationScriptAsset>& scripts) {
+    return recovered::original_animation_tick_with_plain_scripts(
+        animation_slots_,scripts);
+}
 
 void ClassicHoleSession::set_original_player_mode_5a(std::uint16_t mode) {
     if(mode>15)

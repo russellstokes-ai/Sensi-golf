@@ -59,4 +59,17 @@ OriginalAnimationPlainFrame original_animation_decode_plain_frame(
     OriginalAnimatedEvent& slot,
     const std::vector<std::uint8_t>& original_asset_script);
 
+// Original source ten-slot dispatcher 0x40C50B, but with a strictly
+// authenticated non-command script catalog. Original negative opcode
+// sequences are explicitly blocked. Scripts are caller-supplied asset
+// bytes, not invented visual frames. Catalog must contain the original
+// asset pointers for EVERY active slot with ticks == 0.
+struct OriginalAnimationScriptAsset {
+    std::uint32_t source_pointer=0;
+    std::vector<std::uint8_t> script{};
+};
+OriginalAnimationTimerTick original_animation_tick_with_plain_scripts(
+    OriginalAnimationSlots& slots,
+    const std::vector<OriginalAnimationScriptAsset>& scripts);
+
 } // namespace sensigolf::recovered

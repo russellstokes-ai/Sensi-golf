@@ -59,11 +59,11 @@ OriginalAnimationPlainFrame original_animation_decode_plain_frame(
     OriginalAnimatedEvent& slot,
     const std::vector<std::uint8_t>& original_asset_script);
 
-// Original source ten-slot dispatcher 0x40C50B, but with a strictly
-// authenticated non-command script catalog. Original negative opcode
-// sequences are explicitly blocked. Scripts are caller-supplied asset
-// bytes, not invented visual frames. Catalog must contain the original
-// asset pointers for EVERY active slot with ticks == 0.
+// Original source ten-slot dispatcher 0x40C50B using caller-supplied
+// asset scripts. Supports ordinary frames and verified negative commands
+// 0x8004 (close) and 0x8008 (wait). Other commands, especially external
+// callback 0x8000, are blocked. Assets must be supplied for EVERY
+// active zero-tick slot. This does not generate visual/audio output.
 struct OriginalAnimationScriptAsset {
     std::uint32_t source_pointer=0;
     std::vector<std::uint8_t> script{};

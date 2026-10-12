@@ -15,7 +15,7 @@
     {
       "id": "GAME-01",
       "title": "Native physics fidelity",
-      "requirements": "C++ fixed 936/65536s tick, launch, flight, bounce, spin, fairway/rough/fringe/green friction, 13 clubs, 13×10 lie, accuracy and no-flight strokes",
+      "requirements": "C++ fixed 936/65536s tick, launch, flight, bounce, spin, fairway/rough/fringe/green friction, 13 clubs, 13\u00c3\u201410 lie, accuracy and no-flight strokes",
       "proof_required": "Cpp source-proven trajectories across 3 independently-authored real playable holes and every supported lie; FPS independence",
       "status": "OPEN",
       "evidence_links": [],
@@ -45,14 +45,16 @@
       "requirements": "Pixel-aligned, exact-geometry 34x114 MAPM/MAPI 2x2 colliders, MAPS detail, seam boundaries, path lie classification; no 0.947 scaling",
       "proof_required": "Reversible import; exact unchanged 544x912 HTML source; no mismatch/skipped hitboxes/extra green clip; all playable descriptors",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
       "id": "GAME-05",
       "title": "Water, bunkers and OOB",
       "requirements": "All water shapes, bunker edges, in-map no-go/OOB and native world-edge OOB; original accurate penalties and recovery",
-      "proof_required": "Reproducible full-shot sequences, stop/event→100tick wait→correct safe anchor→next shot across 4 edges, every authored water/bunker and restart",
+      "proof_required": "Reproducible full-shot sequences, stop/event\u00e2\u2020\u2019100tick wait\u00e2\u2020\u2019correct safe anchor\u00e2\u2020\u2019next shot across 4 edges, every authored water/bunker and restart",
       "status": "OPEN",
       "evidence_links": [],
       "reviewer": null
@@ -90,7 +92,9 @@
       "requirements": "Source native ball contact, tree/flag/cup, code9/10, water and OOB queued lifecycle and acknowledgment",
       "proof_required": "No skipped, duplicated, re-emitted or unhandled events, 30/60/90/120 FPS scheduling and input state lock/release",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -99,7 +103,9 @@
       "requirements": "Exact SHA-approved Pixtee art/HTML/standard, straight-down scene, source pixel size; no stretching ANY graphics",
       "proof_required": "Pixel-overlaid desktop and normal phone/Fold open/closed screenshots; original approved image hashes unchanged",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -108,7 +114,9 @@
       "requirements": "Exact lake, creek, fairway, tees, greens, bunkers, paths, 17 trees and 4 sponsor boards with player-camera-facing positioning",
       "proof_required": "Separate visual/noncollidable decorative props; real ball-following camera keeps world proportion and approved crop",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -298,5 +306,12 @@
   "tree_collision_status": "UNRESOLVED AUTHENTIC COLLIDER HEIGHT/REBOUND; mandatory blocker",
   "godot_playable_three_holes": false,
   "copyright_clearance": false,
-  "commercial_release_ready": false
+  "commercial_release_ready": false,
+  "active_owner_scope": {
+    "playable_holes": 1,
+    "instruction_date": "2026-10-12",
+    "historical_three_hole_register_retained": true,
+    "commercial_release_ready": false
+  },
+  "latest_incremental_evidence": "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
 }

@@ -96,6 +96,7 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("acknowledge_special_green"),&PixteeRoundBridge::acknowledge_special_green);
     ClassDB::bind_method(D_METHOD("commit_scored_hole"),&PixteeRoundBridge::commit_scored_hole);
     ClassDB::bind_method(D_METHOD("step_tick"),&PixteeRoundBridge::step_tick);
+    ClassDB::bind_method(D_METHOD("drain_presentation_events"),&PixteeRoundBridge::drain_presentation_events);
     ClassDB::bind_method(D_METHOD("step_ticks","count"),&PixteeRoundBridge::step_ticks);
     ClassDB::bind_method(D_METHOD("save_stable_replay"),&PixteeRoundBridge::save_stable_replay);
     ClassDB::bind_method(D_METHOD("restore_replay","payload"),&PixteeRoundBridge::restore_replay);
@@ -560,15 +561,79 @@ bool PixteeRoundBridge::tick_original_welly(bool pressed) {
     }
 }
 void PixteeRoundBridge::cancel_meter() {if(round_)round_->cancel_meter();}
+void PixteeRoundBridge::queue_presentation_event(const char* type,double x,double y,
+                                                std::uint64_t tick) {
+    Dictionary event;
+    event["confirmed_native"]=true;
+    event["event_id"]=String(std::to_string(++presentation_serial_).c_str());
+    event["event_type"]=type;
+    event["world_x"]=x; event["world_y"]=y;
+    event["native_tick"]=static_cast<int64_t>(tick);
+    presentation_events_.append(event);
+}
+Array PixteeRoundBridge::drain_presentation_events() {
+    Array events=presentation_events_;
+    presentation_events_=Array();
+    return events;
+}
 void PixteeRoundBridge::step_tick() {
     if(!round_) return;
-    try {round_->step_tick();last_error_="";}
+    try {
+        if(!round_->has_hole()) {round_->step_tick();return;}
+        const auto before_phase=round_->hole().phase();
+        const auto before_tick=round_->hole().ball_state().tick;
+        const bool before_cup=round_->hole().pending_cup_capture_event().has_value();
+        const bool before_world_oob=round_->hole().pending_world_oob_event().has_value();
+        round_->step_tick();
+        const auto& hole=round_->hole();
+        const auto& ball=hole.ball_state();
+        auto world_position=[&](std::int64_t x,std::int64_t y,bool green) {
+            double wx=static_cast<double>(x)/65536.,wy=static_cast<double>(y)/65536.;
+            if(green) {
+                const auto origin=round_->active_green_region();
+                if(!origin) throw std::logic_error("native contact lacks green origin");
+                wx=wx*.5+origin->origin_x;wy=wy*.5+origin->origin_y;
+            }
+            return std::pair<double,double>{wx,wy};
+        };
+        if(before_phase==sensigolf::HoleSessionPhase::ShotActive && ball.tick>before_tick) {
+            const auto& contact=hole.presentation_contact();
+            const auto p=world_position(contact.x_raw,contact.y_raw,contact.green_mode);
+            if(before_tick==0) queue_presentation_event("club_contact",p.first,p.second,ball.tick);
+            if(contact.impact || contact.hazard) {
+                const char* type=nullptr;
+                switch(contact.landing_code) {
+                case 2:case 3:case 4:type="fairway_contact";break;
+                case 5:case 6:type="rough_contact";break;
+                case 7:type="bunker_contact";break;
+                case 35:
+                    // Native descriptor distinguishes water from mapped OOB;
+                    // this authored map has descriptor 6 for water only.
+                    if(hole.last_hazard_kind()==sensigolf::ClassicNamedHazard::Water)
+                        type="water_contact";
+                    break;
+                }
+                if(type) queue_presentation_event(type,p.first,p.second,ball.tick);
+            }
+            if(contact.flag) queue_presentation_event("verified_flag_contact",p.first,p.second,ball.tick);
+            if(contact.lip) queue_presentation_event("cup_lip",p.first,p.second,ball.tick);
+        }
+        const auto p=world_position(ball.x_raw,ball.y_raw,hole.green_mode());
+        if(!before_world_oob && hole.pending_world_oob_event())
+            queue_presentation_event("world_oob",p.first,p.second,ball.tick);
+        if(!before_cup && hole.pending_cup_capture_event())
+            queue_presentation_event("cup_capture",p.first,p.second,ball.tick);
+        last_error_="";
+    }
     catch(const std::exception& e) {last_error_=String(e.what());}
 }
 bool PixteeRoundBridge::step_ticks(int count) {
     if(!round_ || count<0 || count>4096) return false;
     try {
-        for(int i=0;i<count;++i) round_->step_tick();
+        for(int i=0;i<count;++i) {
+            step_tick();
+            if(!last_error_.is_empty()) return false;
+        }
         last_error_="";
         return true;
     } catch(const std::exception& e) {

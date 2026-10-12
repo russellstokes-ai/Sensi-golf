@@ -82,6 +82,7 @@ public:
     bool commit_scored_hole();
     bool step_ticks(int count);
     void step_tick();
+    Array drain_presentation_events();
     String save_stable_replay();
     bool restore_replay(const String& payload);
     Dictionary snapshot() const;
@@ -91,5 +92,9 @@ public:
 private:
     std::unique_ptr<pixtee::PixteeRoundRuntime> round_;
     String last_error_;
+    Array presentation_events_;
+    std::uint64_t presentation_serial_=0;
+    void queue_presentation_event(const char* type, double x, double y,
+                                  std::uint64_t tick);
 };
 } // namespace godot

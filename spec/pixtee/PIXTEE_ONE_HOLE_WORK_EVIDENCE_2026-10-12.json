@@ -1,0 +1,65 @@
+{
+  "schema": "pixtee.incremental-work-evidence.v1",
+  "base_pr": "https://github.com/russellstokes-ai/Sensi-golf/pull/14",
+  "base_head_verified": "3f109ceb6d045a0f428de05dd6ff2094eab28e0d",
+  "branch": "feat/pixtee-lakewood-playable-work-2026-10-12",
+  "owner_current_scope": "One fully playable commercial-quality hole; add all 13 supplied AI golfer names and personalities.",
+  "source_zip_hashes_verified": {
+    "lakewood": "82c0df6831241e31ad0c83a4302df145349afb9b63503487a914b964d05c7ff3",
+    "production_standards": "1544ac4782b64d2a2b968a581f31b9cf7b37b6e0cf4583dd665e21d1d81ffe17",
+    "complete_handoff": "84819ac44966b6b44f7aa14a274bd19081b87bc07b9a575a9bf5513291e7f6ef"
+  },
+  "verified_local_results": [
+    "Windows MSVC Debug: all 25 CTest regressions PASS",
+    "Approved Lakewood: 496128 native pixel-position lookups match 124032 original 2x2 cells",
+    "Godot 4.5: all 445 approved objects loaded; actual SPT tee at 256,850 and cup at 364,168",
+    "Godot scene: native tee-to-score in four strokes, native score commit, 14 unique native events",
+    "OOB event regression: observed duplicate event before fix; exactly one after fix through native recovery wait",
+    "Godot existing EngineBindingCI and CommercialPresentationSmokeCI PASS",
+    "Python tools suite: 9 tests, 1 skipped; root suite: 61 tests PASS",
+    "Offscreen NVIDIA OpenGL rendering: portrait title and tee screenshots inspected",
+    "ADB device inventory: no Android devices or emulators connected",
+    "Android ARM64 GDExtension Debug build completed with installed NDK 27.1.12297006",
+    "Reviewed pause->restart FX and scored-hole Escape lifecycle; red/green regression fixes verified"
+  ],
+  "native_test_shots": [
+    {
+      "club": 0,
+      "power": 105,
+      "accuracy": 63,
+      "aim": 1946
+    },
+    {
+      "club": 4,
+      "power": 95,
+      "accuracy": 63,
+      "aim": 1913
+    },
+    {
+      "club": 12,
+      "power": 75,
+      "accuracy": 63,
+      "aim": 2087
+    },
+    {
+      "club": 12,
+      "power": 20,
+      "accuracy": 63,
+      "aim": 248
+    }
+  ],
+  "release_gates_passed": 0,
+  "commercial_release_ready": false,
+  "remaining_required_work": [
+    "Source-compatible trunk/canopy/height collisions for all authored trees",
+    "Verified native MAPS detail-window mapping and original-format authored slope field",
+    "Faithful original meter presentation zones and input timing acceptance",
+    "Complete original/licensed music, SFX and ambience; supplied handoff contains zero audio files",
+    "Approved full swing/putt/celebration and introductory cinematic integration",
+    "Mid-shot process-death persistence, native role/flag/tree/event replay state",
+    "Android APK/AAB packaging, release signing and physical normal/Fold folded/unfolded QA",
+    "Performance presets, audio controls, full sensory QA and independent release signoff"
+  ],
+  "frozen_originals_modified": false,
+  "canonical_or_archive_branches_modified": false
+}

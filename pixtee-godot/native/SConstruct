@@ -10,6 +10,8 @@ env.Append(CPPPATH=["src", "../../engine/include"])
 # and catch at every GDExtension boundary so none escapes into Godot.
 if env["platform"] in ("linux", "android", "macos"):
     env.Append(CXXFLAGS=["-fexceptions"])
+elif env["platform"] == "windows":
+    env.Append(CXXFLAGS=["/EHsc"])
 engine_sources = Glob("../../engine/src/*.cpp")
 extension_sources = Glob("src/*.cpp")
 # Use a real platform extension; godot-cpp returns an environment where

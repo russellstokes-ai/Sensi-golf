@@ -43,6 +43,18 @@ void PixteeRoundRuntime::nudge_aim_raw(std::int32_t delta) {
     if(original_welly_active_) throw std::logic_error("aim locked during original Welly");
     controls_.nudge_aim(delta);
 }
+void PixteeRoundRuntime::set_verified_flag_object(bool present) {
+    if(!game_->has_active_hole())
+        throw std::logic_error("no loaded hole for verified flag object");
+    game_->active_hole().set_verified_flag_object(present);
+    if(present) {
+        // The stable replay format does NOT serialize authored flag
+        // object presence; don't claim deterministic restoration until
+        // the flag manifest is recorded and independently replayed.
+        replay_supported_=false;
+    }
+}
+
 void PixteeRoundRuntime::set_club(std::uint16_t index) {
     if(original_welly_active_) throw std::logic_error("club locked during original Welly");
     controls_.set_club(index);

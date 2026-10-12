@@ -142,8 +142,9 @@ int main() {
     hole_session.begin_shot(approach);
     run_active(hole_session);
     assert(hole_session.phase() == HoleSessionPhase::CupTerminal);
-    assert(session.pending_cup_capture_event().has_value());
-    assert(session.pending_cup_capture_event()->dword_420548==0x1000fu);
+    // The source code8 cup *display* event is only enabled for the
+    // independently verified original putter path; non-putter timing is open.
+    assert(!hole_session.pending_cup_capture_event().has_value());
     assert(hole_session.ball_state().holed);
 
     // Code-8 CupTerminal alone must NOT count as a scored hole. This
@@ -255,6 +256,9 @@ int main() {
     cup_putt.begin_shot(putter_request());
     run_active(cup_putt);
     assert(cup_putt.phase() == HoleSessionPhase::CupTerminal);
+    assert(cup_putt.pending_cup_capture_event().has_value());
+    assert(cup_putt.pending_cup_capture_event()->dword_420548==0x1000fu);
+    assert(cup_putt.pending_cup_capture_event()->source_esi==0x42067eu);
     assert(cup_putt.ball_state().holed);
     assert(cup_putt.recovered_counters().player_52 == 2);
     assert(cup_putt.recovered_counters().player_56 == 2);

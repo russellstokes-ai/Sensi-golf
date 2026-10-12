@@ -482,5 +482,47 @@ int main() {
         unseeded.set_original_player_mode_5a(4);
         assert(unseeded.original_player_mode_5a().value()==4);
     }
+    // Source 0x40A3E0 non-putter code9 emits original animation id2
+    // (rect x-6,y-13,6x12), charges one extra stroke and enters
+    // the 100-tick special stop. Only user-authored art references
+    // may populate the native animation event queue.
+    {
+        auto code9=uniform_course(23,48,250);
+        recovered::OriginalPrng16 rng{0x2345,0x6789};
+        recovered::OriginalAnimationAssetTable sprites{};
+        for(std::size_t i=0;i<sprites.size();++i)
+            sprites[i]=static_cast<std::uint32_t>(1000u+i);
+        ClassicHoleSession early(code9,32<<16,40<<16,
+                                 std::nullopt,&rng);
+        early.set_original_animation_assets(sprites);
+        auto low=drive;
+        low.club_index=0;
+        low.power_tick=20;
+        low.accuracy_tick=63;
+        early.begin_shot(low);
+        run_active(early);
+        assert(early.phase()==HoleSessionPhase::SpecialGreenStopped);
+        assert(early.strokes()==2);
+        const auto& slots=early.original_animation_events();
+        assert(slots[0].status==0);
+        assert(slots[0].asset_pointer==sprites[2]);
+        assert(slots[0].width==6 && slots[0].height==12);
+        assert(slots[0].ticks==4);
+        for(int i=0;i<4;++i)
+            early.step_original_animation_timers();
+        assert(early.original_animation_events()[0].ticks==0);
+        bool needs_script=false;
+        try{early.step_original_animation_timers();}
+        catch(const std::logic_error&){needs_script=true;}
+        assert(needs_script); // cannot fabricate source frames
+        ClassicHoleSession direct(code9,32<<16,40<<16,
+                                  std::nullopt,&rng);
+        direct.set_original_animation_assets(sprites);
+        direct.begin_shot(putter_request());
+        run_active(direct);
+        assert(direct.phase()==HoleSessionPhase::SpecialGreenStopped);
+        assert(direct.strokes()==1);
+        assert(direct.original_animation_events()[0].status==0xffff);
+    }
     return 0;
 }

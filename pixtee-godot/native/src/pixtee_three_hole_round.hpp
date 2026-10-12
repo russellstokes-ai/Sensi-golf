@@ -40,7 +40,6 @@ public:
     bool complete() const noexcept;
     std::uint16_t holes_completed() const noexcept;
     std::string serialize_stable_replay() const;
-    void restore_replay(const std::string& replay);
 
 private:
     std::array<std::uint8_t, kPreviewHoles> ids_{};

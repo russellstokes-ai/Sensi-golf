@@ -30,7 +30,7 @@ func _valid(data: Dictionary) -> bool:
 		elif key == "graphics_quality":
 			if not _integer(settings[key],0,2): return false
 		elif key == "frame_limit":
-			if not settings[key] in [30,60,90,120]: return false
+			if not _integer(settings[key],30,120) or not int(settings[key]) in [30,60,90,120]: return false
 		else:
 			if not (settings[key] is float or settings[key] is int): return false
 			var level := float(settings[key])
@@ -59,7 +59,7 @@ func _read_slot(index: int) -> Dictionary:
 	if payload.sha256_text() != envelope.get("sha256",""): return {}
 	if parser.parse(payload) != OK: return {}
 	var record = parser.data
-	if not record is Dictionary or not record.get("schema") in [1,2] or not record.get("state") is Dictionary: return {}
+	if not record is Dictionary or not _integer(record.get("schema"),1,2) or not record.get("state") is Dictionary: return {}
 	if record.schema == 1:
 		# Upgrade the prior cosmetic-only journal without discarding saved names.
 		if not record.state.get("settings") is Dictionary: return {}

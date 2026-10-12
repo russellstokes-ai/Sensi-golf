@@ -442,8 +442,13 @@ func show_score(_s: Dictionary) -> void:
 	fx.set_process(false)
 	hud.hide()
 	last_result = core.snapshot().duplicate(true)
-	result_saved = profile.record_committed_result(attempt_id,last_result)
+	result_saved = save_result()
 	show_results()
+
+func save_result() -> bool:
+	# A temporary storage failure at tee-off must remain recoverable at results.
+	if attempt_id == 0: attempt_id = profile.begin_attempt()
+	return profile.record_committed_result(attempt_id,last_result)
 
 func show_results() -> void:
 	menu_screen = "results"
@@ -454,7 +459,7 @@ func show_results() -> void:
 	if not result_saved:
 		panel.add_child(text_line("Score complete. Statistics could not be saved."))
 		panel.add_child(button("Retry save",func():
-			result_saved = profile.record_committed_result(attempt_id,last_result)
+			result_saved = save_result()
 			show_results()))
 	panel.add_child(button("Scorecard",show_scorecard))
 	panel.add_child(button("Statistics",show_statistics))

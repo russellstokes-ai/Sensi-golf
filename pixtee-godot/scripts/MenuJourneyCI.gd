@@ -43,6 +43,8 @@ func _run() -> void:
 		scene.core.meter_click_raw(63)
 		assert(scene.core.step_ticks(4096))
 	var scored: Dictionary = scene.core.snapshot()
+	# Tee-off allocation can fail temporarily; completed scores remain savable.
+	scene.attempt_id = 0
 	scene.show_score(scored)
 	assert(scene.menu_screen == "results" and not scene.hud.visible)
 	assert(scene.profile.snapshot().statistics.played == 1)

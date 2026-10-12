@@ -27,7 +27,7 @@
       "archival_branch": "archive/pixtee-canonical-verified-assets-2026-10-12",
       "link": "https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-canonical-verified-assets-2026-10-12",
       "frozen_content": "Most recent source-lock master, current verified approved 16-asset ZIP SHA256/Library backup, earlier engine and portrait snapshot refs, Work frozen hole pending status, all original-physics references and recovery instructions, local hash-copy script, commercial engine handover, World FX quality contract and tests",
-      "status": "TO_BE_CREATED_FROM_COMPLETE_CANONICAL_MANIFEST_COMMIT",
+      "status": "ARCHIVE_REF_CREATED_AFTER_THE_FINAL_DOCUMENTATION_COMMIT",
       "note": "This branch is a new immutable-by-policy snapshot rather than modifying previously created frozen documentation branch."
     },
     "prior_documentation_snapshot": {

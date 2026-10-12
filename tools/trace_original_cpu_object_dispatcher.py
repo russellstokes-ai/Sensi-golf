@@ -14,6 +14,8 @@ WINDOWS=[
     ("original_cpu_shot_evaluator",0x40c880,0x40cb20),
     ("alternate_original_ball_tick",0x40cb00,0x40cd00),
     ("original_flag_object_update",0x40b930,0x40ba80),
+    ("original_code9_object_rectangle_checker",0x40c4c0,0x40c5c0),
+    ("original_trees_sprite_object_resource",0x40c2d0,0x40c4c0),
     ("original_ball_pre_collision",0x40a2f0,0x40a560),
     ("original_player_tick_input",0x40adf0,0x40b060),
 ]

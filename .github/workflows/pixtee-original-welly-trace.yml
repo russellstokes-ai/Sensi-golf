@@ -6,6 +6,10 @@ on:
     paths:
       - '.github/workflows/pixtee-original-welly-trace.yml'
       - 'tools/trace_original_welly_machine_code.py'
+      - 'tools/verify_original_welly_outer_ui.py'
+      - 'pixtee-godot/native/tests/original_welly_outer_ui_probe.cpp'
+      - 'pixtee-godot/native/src/recovered_welly_tick.cpp'
+      - 'pixtee-godot/native/src/recovered_welly_tick.hpp'
 permissions:
   contents: read
 jobs:
@@ -38,10 +42,23 @@ jobs:
           python tools/trace_original_welly_machine_code.py --exe "$EXE" \
             --native-probe /tmp/welly-native-reference \
             -o analysis/private/pixtee-original-welly-runtime-trace.json
+      - name: Execute original outer stage-jump UI startup and entire original Welly sweep
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/tests/original_welly_outer_ui_probe.cpp \
+            -o /tmp/welly-original-outer
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_welly_outer_ui.py \
+            --exe "$EXE" --probe /tmp/welly-original-outer \
+            -o analysis/private/pixtee-original-welly-outer-ui-trace.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pixtee-original-welly-machine-code-runtime-traces
-          path: analysis/private/pixtee-original-welly-runtime-trace.json
+          path: |
+            analysis/private/pixtee-original-welly-runtime-trace.json
+            analysis/private/pixtee-original-welly-outer-ui-trace.json
           if-no-files-found: warn
           retention-days: 30

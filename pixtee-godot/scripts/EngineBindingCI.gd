@@ -105,6 +105,28 @@ func _initialize() -> void:
         push_error("Original CPU 32-angle heading sweep mismatch in native Godot")
         quit(1)
         return
+    # Source x86 0x40C9FD: authentic CPU quality uses distance plus
+    # source penalty WORD unless original green-mode == 1. Regression
+    # passes a synthetic penalty table ONLY to verify the ABI/formula.
+    var cpu_penalties = PackedInt32Array()
+    cpu_penalties.resize(32)
+    cpu_penalties[8] = 0x9000
+    var cpu_score = round_host.original_cpu_quality_score(
+        100,8,0,cpu_penalties)
+    if not cpu_score.get("verified",false) or int(cpu_score.get("score_word",-1)) != 0x9064 or bool(cpu_score.get("complete_cpu_shot_planner",true)):
+        push_error("Original CPU distance plus penalty scoring ABI failed")
+        quit(1)
+        return
+    var green_score = round_host.original_cpu_quality_score(
+        100,8,1,cpu_penalties)
+    if int(green_score.get("score_word",-1)) != 100:
+        push_error("Original CPU green-mode penalty bypass failed")
+        quit(1)
+        return
+    if round_host.original_cpu_quality_score(100,32,0,cpu_penalties).get("verified",true):
+        push_error("Original CPU score must reject unknown contact index")
+        quit(1)
+        return
     # Source x86 0x40CA8E: lowest signed score, earliest tie, only
     # with authentic ordered 14-byte records from the evaluator.
     # These synthetic regression records exercise the native contract;

@@ -72,4 +72,10 @@ int main() {
     assert(event.dword_420548==0x1000d);
     assert(event.source_esi==0x420670u);
 
+    const auto cup_event=original_cup_capture_event();
+    assert(cup_event.byte_420fef==1);
+    assert(cup_event.dword_420544==0x46u);
+    assert(cup_event.dword_420548==0x1000fu);
+    assert(cup_event.source_esi==0x42067eu);
+
 }

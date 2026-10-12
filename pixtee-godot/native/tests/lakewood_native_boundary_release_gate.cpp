@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 #include "sensigolf/classic_course_resources.hpp"
@@ -68,12 +69,12 @@ int main() {
     sensigolf::recovered::OriginalWorldBoundaryInput boundary{};
     boundary.x_extent=kWorldW-0x100;
     boundary.y_extent=kWorldH-0xD0;
-    for(const auto p: {std::pair<int,int>{0,0},{272,880},{kWorldW-1,kWorldH-1}}) {
+    for(const auto& p: {std::pair<int,int>{0,0},{272,880},{kWorldW-1,kWorldH-1}}) {
         boundary.ball_x=p.first<<16;
         boundary.ball_y=p.second<<16;
         assert(!sensigolf::recovered::original_world_boundary_check(boundary).outside_world);
     }
-    for(const auto p: {std::pair<int,int>{-1,88},{0,-1},{kWorldW,88},{88,kWorldH},
+    for(const auto& p: {std::pair<int,int>{-1,88},{0,-1},{kWorldW,88},{88,kWorldH},
                        {kWorldW,kWorldH},{-1,-1}}) {
         boundary.ball_x=p.first*65536;
         boundary.ball_y=p.second*65536;

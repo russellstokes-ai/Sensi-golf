@@ -1,5 +1,6 @@
 #include "sensigolf/recovered_animation_events.hpp"
 #include <stdexcept>
+#include <algorithm>
 namespace sensigolf::recovered {
 OriginalAnimationEnqueueResult original_animation_enqueue(
     OriginalAnimationSlots& slots,
@@ -68,6 +69,52 @@ OriginalAnimationPlainFrame original_animation_decode_plain_frame(
     slot.frame_offset=static_cast<std::uint32_t>(slot.frame_offset+2u);
     slot.height=frame;
     return {frame,delay};
+}
+
+OriginalAnimationTimerTick original_animation_tick_with_plain_scripts(
+    OriginalAnimationSlots& slots,
+    const std::vector<OriginalAnimationScriptAsset>& scripts) {
+    // Fail *before* mutating the other original slots if source asset
+    // bytes are missing or the next source WORD is a negative command
+    // opcode. Does not pretend to emulate the unseen opcode interpreter.
+    for(const auto& slot:slots) {
+        if(slot.status==0xffffu || slot.ticks!=0)continue;
+        const auto it=std::find_if(scripts.begin(),scripts.end(),
+            [&slot](const OriginalAnimationScriptAsset& asset) {
+                return asset.source_pointer==slot.asset_pointer;
+            });
+        if(it==scripts.end())
+            throw std::logic_error(
+                "original animation pending frame has no mapped source script");
+        const auto offset=static_cast<std::size_t>(slot.frame_offset);
+        const auto& bytes=it->script;
+        if(bytes.size()<2 || offset>bytes.size() ||
+           bytes.size()-offset<8u)
+            throw std::out_of_range(
+                "original animation script frame not mapped");
+        const auto frame=static_cast<std::uint16_t>(
+            static_cast<std::uint16_t>(bytes[6u+offset])|
+            (static_cast<std::uint16_t>(bytes[7u+offset])<<8));
+        if((frame&0x8000u)!=0)
+            throw std::logic_error(
+                "original animation script command opcode not decoded");
+    }
+    OriginalAnimationTimerTick result{};
+    for(auto& slot:slots) {
+        if(slot.status==0xffffu)continue;
+        ++result.active_slots;
+        if(slot.ticks!=0) {
+            --slot.ticks;
+            if(slot.ticks==0)++result.newly_ready_for_script;
+            continue;
+        }
+        const auto it=std::find_if(scripts.begin(),scripts.end(),
+            [&slot](const OriginalAnimationScriptAsset& asset) {
+                return asset.source_pointer==slot.asset_pointer;
+            });
+        (void)original_animation_decode_plain_frame(slot,it->script);
+    }
+    return result;
 }
 
 } // namespace sensigolf::recovered

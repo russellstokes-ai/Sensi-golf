@@ -315,6 +315,9 @@ int main() {
         special_putt.begin_shot(putter_request());
         run_active(special_putt);
         assert(special_putt.phase() == HoleSessionPhase::SpecialGreenStopped);
+    assert(special_putt.pending_special_green_event().has_value());
+    assert(special_putt.pending_special_green_event()->dword_420548==0x1000du);
+
         assert(!special_putt.ball_state().holed);
         // Source v1.014 0x40A403 increments on code9 early stop,
         // but late club-12 code10 enters directly at 0x40A40B.

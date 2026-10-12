@@ -4,6 +4,8 @@
 #include "original_cpu_candidate.hpp"
 #include "original_cpu_trial_force.hpp"
 #include "original_cpu_simulated_contact.hpp"
+#include "original_cpu_trial_preflight.hpp"
+#include <optional>
 #include "original_cpu_difficulty.hpp"
 #include "original_cpu_heading_sweep.hpp"
 #include "original_cpu_shot_variation.hpp"
@@ -71,4 +73,19 @@ OriginalCpuTrialPrecontact original_cpu_trial_precontact(
     std::int32_t source_height,std::int32_t source_hole_distance,
     bool original_airborne_branch_verified);
 
+// Composes original source CPU trial shot forces (0x40CCA4), source
+// code9/club12 preflight (0x40CB40), and only on the source gravity
+// branch original 0x40CB6C contact. Caller must supply authentic
+// mapped descriptor from 0x409535, not an invented score or surface.
+struct OriginalCpuTrialRoute {
+    OriginalCpuTrial trial{};
+    OriginalCpuPreflightRoute route=OriginalCpuPreflightRoute::Gravity;
+    std::optional<OriginalCpuContactResult> gravity_contact{};
+};
+OriginalCpuTrialRoute original_cpu_trial_route_after_lookup(
+    const OriginalCpuScanPlan& plan,std::size_t candidate_index,
+    OriginalCpuTrialForceInput source_player_force,
+    std::uint16_t mapped_terrain,std::uint16_t source_club,
+    std::int32_t original_height,std::int32_t original_hole_distance,
+    bool source_terrain_lookup_complete);
 } // namespace pixtee

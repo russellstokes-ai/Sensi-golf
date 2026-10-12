@@ -58,5 +58,44 @@ int main(){
     }
     assert(timed[0].ticks==0);
     assert(tick.newly_ready_for_script==1);
+    // Original source 0x40C539 plain frame decoder. Synthetic original
+    // asset bytes, never copied licensed data: delay at 0..1, actual
+    // frame WORD at 6+offset. Slot+6 is repurposed by original source.
+    OriginalAnimatedEvent script_slot{};
+    script_slot.status=0;
+    script_slot.ticks=0;
+    script_slot.x=10;
+    script_slot.y=20;
+    script_slot.height=55;
+    script_slot.width=66;
+    script_slot.frame_offset=2;
+    const std::vector<std::uint8_t> script{
+        9,0,0,0,0,0,1,0,7,0,22,0
+    };
+    auto decoded=original_animation_decode_plain_frame(script_slot,script);
+    assert(decoded.delay==9 && decoded.displayed_frame==7);
+    assert(script_slot.ticks==9 && script_slot.frame_offset==4);
+    assert(script_slot.height==7 && script_slot.width==66);
+    assert(script_slot.x==10 && script_slot.y==20);
+    script_slot.ticks=0;
+    const auto next=original_animation_decode_plain_frame(script_slot,script);
+    assert(next.displayed_frame==22);
+    assert(script_slot.frame_offset==6);
+    script_slot.ticks=0;
+    bool no_more_frames=false;
+    try{original_animation_decode_plain_frame(script_slot,script);}
+    catch(const std::out_of_range&){no_more_frames=true;}
+    assert(no_more_frames);
+    const std::vector<std::uint8_t> script_command{
+        1,0,0,0,0,0,0xff,0xff
+    };
+    script_slot.frame_offset=0;
+    script_slot.ticks=0;
+    bool not_guessed=false;
+    try{original_animation_decode_plain_frame(script_slot,script_command);}
+    catch(const std::logic_error&){not_guessed=true;}
+    assert(not_guessed);
+    assert(script_slot.frame_offset==0 && script_slot.ticks==0);
+
 
 }

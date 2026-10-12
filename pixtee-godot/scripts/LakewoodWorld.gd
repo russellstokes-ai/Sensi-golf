@@ -7,6 +7,8 @@ var textures: Dictionary = {}
 var boards: Array = []
 var time := 0.0
 var reduced_motion := false
+var reduced_flashes := false
+var visual_quality := 1
 var native_state: Dictionary = {}
 var ball_world := Vector2(256,850)
 var view_rect := Rect2(0,0,544,912)
@@ -81,20 +83,20 @@ func _draw() -> void:
 			continue
 		var a: Dictionary = assets[o.id]
 		var rect: Array = a.rect
-		if a.has("frames") and not reduced_motion:
+		if a.has("frames") and not reduced_motion and not (o.type == "photographer" and reduced_flashes):
 			var rate := 0.85 if o.type != "photographer" else 0.43
 			rect = a.frames[int(time/rate+o.phase) % a.frames.size()]
 		# Every frame keeps its own aspect ratio; there is no nonuniform sprite scale.
 		var size := Vector2(float(o.h)*float(rect[2])/float(rect[3]),o.h)
 		var angle := 0.0
-		if o.type in ["tree","grass","flowers","reeds"] and not reduced_motion:
+		if o.type in ["tree","grass","flowers","reeds"] and not reduced_motion and visual_quality > 0:
 			angle = sin(time*0.7+o.phase)*0.009
 		draw_set_transform(pos,angle,Vector2(-1 if o.get("flipX",false) else 1,1))
 		draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y),size),Rect2(rect[0],rect[1],rect[2],rect[3]))
 		draw_set_transform(Vector2.ZERO)
 	# Side-on birds use the supplied flight frames. Cosmetic time and path only;
 	# no bird or ambient animation reads or advances the gameplay PRNG.
-	if not reduced_motion:
+	if not reduced_motion and visual_quality > 0:
 		var flight := fposmod(time,79.0)
 		if flight > 11.0 and flight < 35.0:
 			var progress := (flight-11.0)/24.0

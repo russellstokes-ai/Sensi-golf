@@ -27,6 +27,12 @@ var audio: PixteeCommercialAudio
 var player_name: LineEdit
 var player_draft: Dictionary = {}
 var player_error: Label
+var menu_screen := "title"
+var return_screen := "title"
+var menu_scroll: ScrollContainer
+var attempt_id := 0
+var last_result: Dictionary = {}
+var result_saved := false
 
 func _ready() -> void:
 	profile.load_profile()
@@ -94,21 +100,33 @@ func button(text: String, action: Callable, dimensions := Vector2(288,51)) -> Bu
 		if result.disabled: state = "button_disabled"
 		elif result.button_pressed: state = "button_pressed"
 		elif result.is_hovered() or result.has_focus(): state = "button_selected"
-		art.texture = load(UI+state+".png"))
+		var texture: Texture2D = load(UI+state+".png")
+		if art.texture != texture: art.texture = texture)
 	result.pressed.connect(action)
 	return result
 
 func clear_menu() -> void:
-	for child in menu.get_children(): child.queue_free()
+	for child in menu.get_children():
+		menu.remove_child(child)
+		child.queue_free()
 	menu.show()
 	var shade := ColorRect.new()
 	shade.color = Color(0.025,0.085,0.065,0.92)
 	menu.add_child(shade)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var margin := MarginContainer.new()
+	menu.add_child(margin)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for edge in ["left","right","top","bottom"]: margin.add_theme_constant_override("margin_"+edge,16)
+	menu_scroll = ScrollContainer.new()
+	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	margin.add_child(menu_scroll)
 	var center := CenterContainer.new()
-	menu.add_child(center)
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	menu_scroll.add_child(center)
 	panel = VBoxContainer.new()
+	panel.custom_minimum_size.x = 300
 	panel.add_theme_constant_override("separation",12)
 	center.add_child(panel)
 
@@ -120,17 +138,21 @@ func text_line(text: String) -> Label:
 	return label
 
 func show_title() -> void:
+	menu_screen = "title"
 	hud.hide()
 	clear_menu()
 	panel.add_child(image_control("logo",Vector2(288,180)))
-	panel.add_child(text_line("LAKEWOOD · WILLOW CREEK\nHole 1 · Par 4"))
+	panel.add_child(text_line("LAKEWOOD Â· WILLOW CREEK\nHole 1 Â· Par 4"))
 	panel.add_child(button("Play",start_hole))
 	panel.add_child(button("Player",show_player))
 	panel.add_child(button("Golfers",show_golfers))
+	panel.add_child(button("Statistics",show_statistics))
 	panel.add_child(button("Settings",show_settings))
+	panel.add_child(button("How to play",show_help))
 	camera.position = Vector2(256,700)
 
 func show_golfers() -> void:
+	open_auxiliary("golfers")
 	clear_menu()
 	var list := ItemList.new()
 	list.custom_minimum_size = Vector2(300,330)
@@ -143,9 +165,10 @@ func show_golfers() -> void:
 	panel.add_child(text_line("PIXTEE GOLFERS"))
 	panel.add_child(list)
 	panel.add_child(description)
-	panel.add_child(button("Back",show_title))
+	panel.add_child(button("Back",back_menu))
 
 func show_settings() -> void:
+	open_auxiliary("settings")
 	clear_menu()
 	panel.add_child(text_line("SETTINGS"))
 	var motion := CheckButton.new()
@@ -154,6 +177,29 @@ func show_settings() -> void:
 	motion.toggled.connect(func(value: bool):
 		if profile.set_setting("reduced_motion",value): apply_saved_settings())
 	panel.add_child(motion)
+	var flashes := CheckButton.new()
+	flashes.text = "Reduce flashes"
+	flashes.button_pressed = bool(profile.snapshot().settings.reduced_flashes)
+	flashes.toggled.connect(func(value: bool):
+		if profile.set_setting("reduced_flashes",value): apply_saved_settings())
+	panel.add_child(flashes)
+	panel.add_child(text_line("Graphics"))
+	var quality := OptionButton.new()
+	for title in ["Low","Standard","High"]: quality.add_item(title)
+	quality.select(int(profile.snapshot().settings.graphics_quality))
+	quality.custom_minimum_size.y = 44
+	quality.item_selected.connect(func(index: int):
+		if profile.set_setting("graphics_quality",index): apply_saved_settings())
+	panel.add_child(quality)
+	panel.add_child(text_line("Frame limit"))
+	var frames := OptionButton.new()
+	var limits := [30,60,90,120]
+	for limit in limits: frames.add_item(str(limit)+" FPS",limit)
+	frames.select(limits.find(int(profile.snapshot().settings.frame_limit)))
+	frames.custom_minimum_size.y = 44
+	frames.item_selected.connect(func(index: int):
+		if profile.set_setting("frame_limit",frames.get_item_id(index)): apply_saved_settings())
+	panel.add_child(frames)
 	for channel in ["Music","SFX","Ambience","UI"]:
 		panel.add_child(text_line(channel))
 		var slider := HSlider.new()
@@ -168,20 +214,26 @@ func show_settings() -> void:
 		slider.focus_exited.connect(func():
 			if profile.set_setting(channel,slider.value): apply_saved_settings())
 		panel.add_child(slider)
-	panel.add_child(button("Back",show_pause if playing else show_title))
+	panel.add_child(button("Back",back_menu))
 
 func apply_saved_settings() -> void:
 	var settings: Dictionary = profile.snapshot().settings
 	reduced_motion = bool(settings.reduced_motion)
 	world.reduced_motion = reduced_motion
 	fx.reduced_motion = reduced_motion
+	world.reduced_flashes = bool(settings.reduced_flashes)
+	world.visual_quality = int(settings.graphics_quality)
+	fx.visual_quality = int(settings.graphics_quality)
+	Engine.max_fps = int(settings.frame_limit)
 	for child in world.get_children():
-		if child is Polygon2D: child.material.set_shader_parameter("quality_enabled",0.0 if reduced_motion else 1.0)
+		if child is Polygon2D: child.material.set_shader_parameter("quality_enabled",0.0 if reduced_motion or int(settings.graphics_quality) == 0 else 1.0)
+	world.queue_redraw()
 	for channel in ["Music","SFX","Ambience","UI"]:
 		audio.set_channel_level(channel,float(settings[channel]))
 
 func show_player() -> void:
 	if playing and not paused: pause_game()
+	open_auxiliary("player")
 	player_draft = profile.begin_edit()
 	clear_menu()
 	panel.add_child(text_line("PLAYER"))
@@ -214,12 +266,12 @@ func apply_player_edit() -> bool:
 		player_error.text = "Enter a name; check save storage."
 		return false
 	player_draft.clear()
-	show_pause() if playing else show_title()
+	back_menu()
 	return true
 
 func cancel_player_edit() -> void:
 	player_draft.clear()
-	show_pause() if playing else show_title()
+	back_menu()
 
 func make_hud() -> void:
 	var top := HBoxContainer.new()
@@ -231,10 +283,10 @@ func make_hud() -> void:
 	backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(top)
 	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	status = text_line("Willow Creek · Par 4")
+	status = text_line("Willow Creek Â· Par 4")
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(status)
-	top.add_child(button("Ⅱ",pause_game,Vector2(52,51)))
+	top.add_child(button("â…¡",pause_game,Vector2(52,51)))
 	var bottom := VBoxContainer.new()
 	hud.add_child(bottom)
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -244,9 +296,9 @@ func make_hud() -> void:
 	var controls := HBoxContainer.new()
 	controls.alignment = BoxContainer.ALIGNMENT_CENTER
 	bottom.add_child(controls)
-	controls.add_child(button("− Club",func(): change_club(-1),Vector2(82,40)))
-	controls.add_child(button("◀",func(): change_aim(-32),Vector2(70,40)))
-	controls.add_child(button("▶",func(): change_aim(32),Vector2(70,40)))
+	controls.add_child(button("âˆ’ Club",func(): change_club(-1),Vector2(82,40)))
+	controls.add_child(button("â—€",func(): change_aim(-32),Vector2(70,40)))
+	controls.add_child(button("â–¶",func(): change_aim(32),Vector2(70,40)))
 	controls.add_child(button("+ Club",func(): change_club(1),Vector2(82,40)))
 	meter = ProgressBar.new()
 	meter.max_value = 105
@@ -275,6 +327,10 @@ func start_hole() -> void:
 		return
 	core.set_aim_raw(2048)
 	core.set_verified_flag_object(true) # Exact approved manifest flag at native SPT cup.
+	attempt_id = profile.begin_attempt()
+	last_result.clear()
+	result_saved = false
+	player_draft.clear()
 	playing = true
 	paused = false
 	accumulator = 0
@@ -342,7 +398,7 @@ func update_view(s: Dictionary) -> void:
 	camera.position.y = 456 if half_view.y >= 456 else clampf(at.y-60,half_view.y,912-half_view.y)
 	var rendered_half := screen/camera.zoom/2.0
 	world.view_rect = Rect2(camera.position+camera.offset-rendered_half,rendered_half*2)
-	status.text = "H1 · Par 4 · Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
+	status.text = "H1 Â· Par 4 Â· Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
 	club.text = CLUBS[int(s.get("club_index",0))]
 	meter.value = clampf(float(s.get("welly_counter",0)),0,105)
 	shoot.disabled = not s.get("can_shoot",false) and not s.get("original_welly_active",false)
@@ -357,13 +413,16 @@ func pause_game() -> void:
 	show_pause()
 
 func show_pause() -> void:
+	menu_screen = "pause"
 	clear_menu()
 	panel.add_child(text_line("PAUSED"))
 	panel.add_child(button("Resume",resume_game))
 	panel.add_child(button("Player",show_player))
+	panel.add_child(button("Scorecard",show_scorecard))
+	panel.add_child(button("How to play",show_help))
 	panel.add_child(button("Settings",show_settings))
-	panel.add_child(button("Restart hole",start_hole))
-	panel.add_child(button("Main menu",func(): playing=false; hud.hide(); show_title()))
+	panel.add_child(button("Restart hole",func(): confirm_leave(true)))
+	panel.add_child(button("Main menu",func(): confirm_leave(false)))
 
 func resume_game() -> void:
 	if not playing or core == null: return
@@ -373,17 +432,105 @@ func resume_game() -> void:
 	menu.hide()
 	hud.show()
 
-func show_score(s: Dictionary) -> void:
+func show_score(_s: Dictionary) -> void:
 	paused = true
 	playing = false
 	if not core.commit_scored_hole():
 		push_error(core.last_error())
 		return
+	world.set_process(false)
+	fx.set_process(false)
+	hud.hide()
+	last_result = core.snapshot().duplicate(true)
+	result_saved = profile.record_committed_result(attempt_id,last_result)
+	show_results()
+
+func show_results() -> void:
+	menu_screen = "results"
 	clear_menu()
 	panel.add_child(image_control("trophy",Vector2(150,150)))
-	panel.add_child(text_line("WILLOW CREEK\n%d strokes · Par 4" % s.strokes))
+	panel.add_child(text_line("WILLOW CREEK\n%d strokes Â· Par %d" % [last_result.get("total_strokes",0),last_result.get("cumulative_par",4)]))
+	panel.add_child(text_line(relative_score(int(last_result.get("relative_to_par",0)))))
+	if not result_saved:
+		panel.add_child(text_line("Score complete. Statistics could not be saved."))
+		panel.add_child(button("Retry save",func():
+			result_saved = profile.record_committed_result(attempt_id,last_result)
+			show_results()))
+	panel.add_child(button("Scorecard",show_scorecard))
+	panel.add_child(button("Statistics",show_statistics))
 	panel.add_child(button("Play again",start_hole))
 	panel.add_child(button("Main menu",func(): playing=false; hud.hide(); show_title()))
+
+func open_auxiliary(screen: String) -> void:
+	if playing and not paused: pause_game()
+	if menu_screen in ["title","pause","results"]: return_screen = menu_screen
+	menu_screen = screen
+
+func back_menu() -> void:
+	match return_screen:
+		"pause": show_pause()
+		"results": show_results()
+		_: show_title()
+
+func paragraph(content: String) -> Label:
+	var label := text_line(content)
+	label.custom_minimum_size.x = 300
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return label
+
+func relative_score(relative: int) -> String:
+	return "Even par" if relative == 0 else ("+%d" % relative if relative > 0 else str(relative))
+
+func show_help() -> void:
+	open_auxiliary("help")
+	clear_menu()
+	panel.add_child(text_line("HOW TO PLAY"))
+	panel.add_child(paragraph("Choose a club with âˆ’ Club and + Club. Use the arrows to aim."))
+	panel.add_child(paragraph("Press Swing to start the meter, Power to set strength, then Accuracy to complete the shot. Space performs the same action."))
+	panel.add_child(paragraph("Watch the ball land before taking the next shot. Water and out-of-bounds penalties recover automatically."))
+	panel.add_child(paragraph("Pause freezes the shot. Player and settings edits keep your ball and score unchanged. Escape opens pause; settings include reduced motion and flashes."))
+	panel.add_child(button("Back",back_menu))
+
+func show_scorecard() -> void:
+	open_auxiliary("scorecard")
+	clear_menu()
+	panel.add_child(text_line("SCORECARD"))
+	panel.add_child(text_line("Willow Creek Â· Hole 1 Â· Par 4"))
+	var s: Dictionary = core.snapshot() if core != null else {}
+	if s.get("has_hole",false):
+		panel.add_child(text_line("Strokes: %d Â· In play" % s.get("strokes",0)))
+	elif not last_result.is_empty():
+		panel.add_child(text_line("Strokes: %d Â· %s" % [last_result.total_strokes,relative_score(int(last_result.relative_to_par))]))
+	else:
+		panel.add_child(text_line("No round started"))
+	panel.add_child(button("Back",back_menu))
+
+func show_statistics() -> void:
+	open_auxiliary("statistics")
+	clear_menu()
+	var stats: Dictionary = profile.snapshot().statistics
+	panel.add_child(text_line("PLAYER STATISTICS"))
+	panel.add_child(paragraph(str(profile.snapshot().display_name)))
+	panel.add_child(text_line("Completed rounds: %d" % stats.played))
+	if stats.played > 0:
+		panel.add_child(text_line("Best: %d strokes\nAverage: %.1f strokes" % [stats.best,float(stats.strokes)/float(stats.played)]))
+		panel.add_child(text_line("Last round: %d Â· %s" % [stats.last.strokes,relative_score(int(stats.last.relative))]))
+	else: panel.add_child(text_line("Complete a round to record your first score."))
+	panel.add_child(button("Back",back_menu))
+
+func confirm_leave(restart: bool) -> void:
+	open_auxiliary("confirmation")
+	clear_menu()
+	panel.add_child(text_line("Restart this hole?" if restart else "Leave this round?"))
+	panel.add_child(paragraph("This unfinished round will not count in your statistics."))
+	panel.add_child(button("Restart" if restart else "Leave",func():
+		if restart: start_hole()
+		else:
+			playing = false
+			pending_press = false
+			fx.on_confirmed_restart_or_replay_seek()
+			show_title()))
+	panel.add_child(button("Cancel",back_menu))
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and playing and not paused:

@@ -168,4 +168,46 @@ OriginalAnimationSupportedStep original_animation_decode_supported_step(
     return {OriginalAnimationSupportedCommand::WaitTicks,0,ticks};
 }
 
+
+OriginalAnimationCallbackRequest original_animation_prepare_callback(
+    const OriginalAnimatedEvent& slot,
+    const std::vector<std::uint8_t>& script) {
+    if(slot.status==0xffffu || slot.ticks!=0)
+        throw std::logic_error(
+            "original source callback only accepted for active zero-tick slot");
+    const auto offset=static_cast<std::size_t>(slot.frame_offset);
+    if(offset>script.size() || script.size()-offset<12u)
+        throw std::out_of_range("original callback command/pointer truncated");
+    const auto word16=[&](std::size_t i) {
+        return static_cast<std::uint16_t>(
+            static_cast<std::uint16_t>(script[i])|
+            (static_cast<std::uint16_t>(script[i+1])<<8));
+    };
+    if(word16(offset+6u)!=0x8000u)
+        throw std::logic_error("next original script opcode is not 0x8000");
+    const auto ptr=static_cast<std::uint32_t>(
+        static_cast<std::uint32_t>(script[offset+8u])|
+        (static_cast<std::uint32_t>(script[offset+9u])<<8)|
+        (static_cast<std::uint32_t>(script[offset+10u])<<16)|
+        (static_cast<std::uint32_t>(script[offset+11u])<<24));
+    return {slot.asset_pointer,ptr,slot.frame_offset,word16(0u)};
+}
+
+void original_animation_finalize_callback(
+    OriginalAnimatedEvent& slot,
+    const OriginalAnimationCallbackRequest& ack) {
+    if(slot.status==0xffffu || slot.ticks!=0 ||
+       slot.asset_pointer!=ack.original_asset_pointer ||
+       slot.frame_offset!=ack.original_frame_offset)
+        throw std::logic_error(
+            "stale or invalid original host callback acknowledgement");
+    // Source 0x40C539..0x40C56D first advances offset by WORD(2),
+    // calls original supplied function pointer, and then adds DWORD(4).
+    // NEVER call the pointer directly. This helper is invoked only
+    // after an independently authored host callback has completed.
+    slot.ticks=ack.script_delay;
+    slot.frame_offset=static_cast<std::uint32_t>(
+        slot.frame_offset+static_cast<std::uint32_t>(6u));
+}
+
 } // namespace sensigolf::recovered

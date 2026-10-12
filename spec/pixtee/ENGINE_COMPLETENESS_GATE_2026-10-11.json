@@ -1,0 +1,1292 @@
+{
+  "schema": "pixtee.original-gameplay-coverage.v1",
+  "date": "2026-10-11",
+  "directive": "Recover and faithfully reproduce EVERY proven Sensible Golf mechanic before graphics. No substitute physics. No shipping claims from a partially recovered engine.",
+  "reference_binary": "Windows Sensible Golf v1.014",
+  "reference_sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+  "reference_data_path": "spec/pixtee/ORIGINAL_PHYSICS_RESEARCH.json",
+  "rights": "Research only; original protected binaries, assets, course raster and unreviewed code/tables not cleared for Pixtee distribution.",
+  "parity_claim": "UNPROVEN",
+  "engine_completion": "INCOMPLETE",
+  "features": [
+    {
+      "id": "logical_936_65536_tick",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "fixed_point_coordinates",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "signed_shift_overflow_order",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "flight_tick_order",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "render_rate_independence",
+      "group": "timer_simulation",
+      "source": "engine/src/classic_shot_model.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "12bit_heading",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "13_original_club_indices",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "welly_three_click",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Authentic first-press Welly 0x4075FF outer original x86 stage dispatcher start and rising/falling 3324/3324 identical"
+        ],
+        "implemented": [
+          "pixtee-godot/native/src/recovered_welly_tick.cpp",
+          "tools/verify_original_welly_outer_ui.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38206789435"
+        ],
+        "not_yet_verified": [
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "welly_raw_power_capture",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Authentic first-press Welly 0x4075FF outer original x86 stage dispatcher start and rising/falling 3324/3324 identical"
+        ],
+        "implemented": [
+          "pixtee-godot/native/src/recovered_welly_tick.cpp",
+          "tools/verify_original_welly_outer_ui.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38206789435"
+        ],
+        "not_yet_verified": [
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "welly_accurate_meter_timing",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "x86 original Welly per-tick counter 1986/1986 exact",
+          "Authentic first-press Welly 0x4075FF outer original x86 stage dispatcher start and rising/falling 3324/3324 identical"
+        ],
+        "implemented": [
+          "pixtee-godot/native/src/recovered_welly_tick.cpp",
+          "pixtee-godot/native/src/pixtee_round_runtime.cpp",
+          "pixtee-godot/native/src/recovered_welly_tick.cpp",
+          "tools/verify_original_welly_outer_ui.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38159584005",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38206789435"
+        ],
+        "not_yet_verified": [
+          "full original callback scheduler and colour-zone visual mapping",
+          "UI input debounce and end-to-end game timing",
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "welly_colour_boundaries",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "swing_accuracy_extremes",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original Windows v1.014 990-case x86 launch and stroke-accounting test: 668 out-of-profile no-flight attempts and 322 ordinary launches ALL increment hole & total stroke counters +1/+1"
+        ],
+        "implemented": [
+          "engine/src/classic_hole_session.cpp",
+          "engine/src/recovered_flight.cpp",
+          "pixtee-godot/native/src/pixtee_round_runtime.cpp",
+          "pixtee-godot/native/tests/round_runtime_tests.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170616706",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170862905",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174394126"
+        ],
+        "not_yet_verified": [
+          "Complete original click/retry/UI shot lifecycle across all game modes",
+          "Zero-cup-distance no-flight attempt and unverified special-event replay continuations remain gated; nonzero-distance completed no-flight strokes now round-trip deterministically",
+          "Complete original score penalties and special terminal sequence in multiplayer/competitions"
+        ]
+      }
+    },
+    {
+      "id": "aim_lock_during_shot",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "one_shot_atomic_dispatch",
+      "group": "player_input",
+      "source": "engine/src/classic_mobile_controls.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original pre-putter signed height/contact latch reset and six original route targets, 6712 synthetic + 2664 real-course exact",
+          "Original player-state 0x40A2B0 upstream five route decision and CPU callback-request state, 7160/7160 source x86 exact"
+        ],
+        "implemented": [
+          "engine/src/recovered_mapped_terminal.cpp",
+          "engine/src/recovered_shot_admission.cpp",
+          "tools/verify_original_putter_preterminal_gate.py",
+          "tools/verify_original_shot_admission.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180790837",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180934289"
+        ],
+        "not_yet_verified": [
+          "Complete upstream shot tick helpers, real collision admission in active full-shot physics, source CPU callback side effects and full gameplay modes"
+        ]
+      }
+    },
+    {
+      "id": "13_club_launch_parameters",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "13_by_10_lie_profiles",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "11_curvature_profiles",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "launch_vertical_force",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "launch_horizontal_force",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "gravity",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "ball_lift_and_shadow_height",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "moving_curve_spin",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "horizontal_drag",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "bounce_energy_exchange",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "repeated_bounce",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "first_touchdown_order",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "horizontal_force_zero_crossing",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "ground_roll",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "green_putter_drag",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "non_green_putter_drag",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "green_slope_vector",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "course_to_green_coordinate_transforms",
+      "group": "ball_physics",
+      "source": "engine/src/recovered_flight.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Authentic source 0x40C35B multi-object green-region coordinates 4740/4740 exact x86; native course scene bounds now use original signed16 and wrap"
+        ],
+        "implemented": [
+          "engine/src/recovered_green_scene_bounds.cpp",
+          "engine/include/sensigolf/classic_course_resources.hpp",
+          "tools/verify_original_green_scene_bounds.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38226901152"
+        ],
+        "not_yet_verified": [
+          "Original full-system / renderer / CPU candidate evaluation and release parity still open"
+        ]
+      }
+    },
+    {
+      "id": "77_surface_descriptors",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "mapi_8x4_subcell_lookup",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "mapm_course_collision",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original source 0x409535 genuine MAPM/MAPI position to numeric terrain descriptor -> terminal x86 physics: 2414/2414 exact first-hole cases",
+          "Synthetic source MAPI descriptor selection to original terminal collision: 5312/5312 exact across 12 landing codes",
+          "Original out-of-map 0x409535 negative AX -> 0x40A318 two-stroke-counter increment +100 pause event 0x40CD00: 5010/5010 source x86 parity",
+          "Original descriptor 22 OOB tile uses shared 35 event path; no extra world-boundary penalty",
+          "Source 0x40AACF world bit2 unconditional safe-anchor post-event restore (native implementation; independent source x86 restore oracle pending)",
+          "Second source x86 0x40CC2D code35/code60 special handling vs 8..10 terminal vs signed rebound: 7941/7941 exact; scoped separate original course updater",
+          "Original CPU 0x40CBC7 -> MAPI recheck -> 0x40CC2D 3-way hazard/green/bounce source stage connected to Q14 alternate motion (source 7941/7941 alt-terrain and 10324/10324 motion independently exact)"
+        ],
+        "implemented": [
+          "engine/src/recovered_mapped_terminal.cpp",
+          "engine/include/sensigolf/recovered_mapped_terminal.hpp",
+          "engine/tests/recovered_mapped_terminal_tests.cpp",
+          "tools/verify_original_mapped_terminal_pipeline.py",
+          "tools/verify_original_real_course_mapped_terminal.py",
+          "engine/src/recovered_world_boundary.cpp",
+          "engine/src/recovered_hazard_recovery.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "tools/verify_original_world_boundary_penalty.py",
+          "tools/verify_original_world_oob_restore.py",
+          "engine/src/recovered_alt_terrain.cpp",
+          "engine/tests/recovered_alt_terrain_tests.cpp",
+          "tools/verify_original_alt_terrain_tick.py",
+          "pixtee-godot/native/src/original_cpu_scan_pipeline.cpp",
+          "engine/src/recovered_alt_terrain.cpp",
+          "pixtee-godot/native/src/original_cpu_simulated_motion.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180002367",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180193973",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180197297",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38181667415",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38183480972",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38243386575"
+        ],
+        "not_yet_verified": [
+          "Upstream collision entry from full real shot and actual world/object hit geometry",
+          "Original course object metadata/tree identity and source sprite/audio event callback effects",
+          "Code-8 original cup route not part of mapped adapter; release gate remains blocked",
+          "Original UI event acknowledgement and full multiplayer handoff after world OOB; complete end-to-end game physics and all 15 gameplay gates remain open",
+          "Full second terrain tick caller and source object/tree geometry not proven, no live activation",
+          "Original complete alternate CPU course loop and real tree/object impacts still not end-to-end proven"
+        ]
+      }
+    },
+    {
+      "id": "maps_green_collision",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Authentic source 0x40C35B multi-object green-region coordinates 4740/4740 exact x86; native course scene bounds now use original signed16 and wrap"
+        ],
+        "implemented": [
+          "engine/src/recovered_green_scene_bounds.cpp",
+          "engine/include/sensigolf/classic_course_resources.hpp",
+          "tools/verify_original_green_scene_bounds.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38226901152"
+        ],
+        "not_yet_verified": [
+          "Original full-system / renderer / CPU candidate evaluation and release parity still open"
+        ]
+      }
+    },
+    {
+      "id": "16_direction_green_arrows",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "16_strength_green_slopes",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "sand_lie",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "fairway_rough_heavy_rough",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "water_nogo_oob",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original out-of-map 0x409535 negative AX -> 0x40A318 two-stroke-counter increment +100 pause event 0x40CD00: 5010/5010 source x86 parity",
+          "Original descriptor 22 OOB tile uses shared 35 event path; no extra world-boundary penalty",
+          "Source 0x40AACF world bit2 unconditional safe-anchor post-event restore (native implementation; independent source x86 restore oracle pending)",
+          "Original source 0x40AACF -> 0x40A871 unconditional safe anchor and signed player mode recovery: 4416/4416 exact; combined OOB 9426/9426",
+          "Authentic source 0x40CD00 OOB numeric event handoff 1024/1024, exposed as pending_world_oob_event on native live hole session",
+          "Second source x86 0x40CC2D code35/code60 special handling vs 8..10 terminal vs signed rebound: 7941/7941 exact; scoped separate original course updater"
+        ],
+        "implemented": [
+          "engine/src/recovered_world_boundary.cpp",
+          "engine/src/recovered_hazard_recovery.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "tools/verify_original_world_boundary_penalty.py",
+          "tools/verify_original_world_oob_restore.py",
+          "engine/src/recovered_world_boundary.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "tools/verify_original_world_oob_event_handoff.py",
+          "engine/src/recovered_alt_terrain.cpp",
+          "engine/tests/recovered_alt_terrain_tests.cpp",
+          "tools/verify_original_alt_terrain_tick.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38181667415",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38182134331",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38182823777",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38183480972"
+        ],
+        "not_yet_verified": [
+          "Original UI event acknowledgement and full multiplayer handoff after world OOB; complete end-to-end game physics and all 15 gameplay gates remain open",
+          "Final native live hole-session edge safety CI and exact original popup acknowledgement timing are not yet verified",
+          "Complete end-to-end visual/event/mode parity still blocked",
+          "Full second terrain tick caller and source object/tree geometry not proven, no live activation"
+        ]
+      }
+    },
+    {
+      "id": "hazard_100_tick_pause",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "safe_anchor_recovery",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "tree_collision_activation",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "SHA-verified original collision object/terrain location research",
+          "Original MAPM high-six-bit nonzero only four of 3876 first-hole tiles, 39 x86 map refs and seven original terrain lookup callers; source tree object activation still unproven",
+          "Authentic map-object/flag xref investigation; no invented tree placement, height physics, or collider"
+        ],
+        "implemented": [
+          "engine/src/recovered_interactions.cpp",
+          "tools/research_original_mapm_object_bits.py",
+          "tools/trace_original_flag_and_tree_object_sources.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161351577",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38183207814",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38206541819"
+        ],
+        "not_yet_verified": [
+          "actual tree object classification and presence masks",
+          "original ball-height/tree impact activation against source cases",
+          "Original tree identity, height geometry and hit activation still unknown",
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "tree_height_deflection",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Authentic map-object/flag xref investigation; no invented tree placement, height physics, or collider"
+        ],
+        "implemented": [
+          "tools/trace_original_flag_and_tree_object_sources.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38206541819"
+        ],
+        "not_yet_verified": [
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "flag_collision",
+      "group": "terrain_collisions",
+      "source": "engine/src/classic_course_resources.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "verified isolated original x86 conditions, not complete live action",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original x86 flag activation on actual ball x-high word, arithmetic half-height correction, green-mode gate: 2712/2712 exact",
+          "Previously assumed ball-Y-derived collision and nonnegative height were incorrect; replaced with source machine code behaviour",
+          "Authentic flag coordinate setup 0x409F39 fifth SPT record 3112/3112 original source; explicitly verified object flag enables native x86-derived deflection"
+        ],
+        "implemented": [
+          "engine/src/recovered_interactions.cpp",
+          "engine/src/recovered_flag_setup.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "pixtee-godot/native/src/pixtee_round_bridge.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166139060",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38207010331"
+        ],
+        "not_yet_verified": [
+          "Original flag object presence/classification in course resources not verified; activation intentionally gated",
+          "Full PRNG/collision event sequencing on actual course and Android",
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "code8_cup_capture",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original code8 cup display packet source 0x40CD25 event 1280/1280 exact, separate OOB; host pending event path"
+        ],
+        "implemented": [
+          "engine/src/recovered_world_boundary.cpp",
+          "engine/src/classic_hole_session.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38206131628"
+        ],
+        "not_yet_verified": [
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "zero_distance_scored_hole",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "code9_special_green",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "verified isolated original x86 conditions, not complete live action",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "original low-height code9 branch threshold and seeded PRNG deflection",
+          "Original x86 code9 no-contact / low-height deflection / 100-tick special-stop activation: 4390/4390 exact",
+          "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact",
+          "Original source 0x40A7E0..0x40A7F1 signed WORD pause tick exactly 1230/1230 source-machine matches",
+          "Live ClassicHoleSession special-green timer now waits original extra zero tick (100 to 0 then underflow) before host continuation acknowledgement",
+          "Original source early 0x40A403 code9 extra stroke on both counters, 2438/2438 exact cases; live session corrected"
+        ],
+        "implemented": [
+          "engine/src/recovered_interactions.cpp",
+          "engine/src/classic_shot_model.cpp",
+          "engine/src/recovered_putter_terminal.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "engine/src/recovered_interactions.cpp",
+          "engine/src/classic_hole_session.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38161351577",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165847870",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169920597",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38183067005"
+        ],
+        "not_yet_verified": [
+          "Original downstream post-expiry course/ball/player-state relocation after 0x40A7F1 not yet reconstructed fully",
+          "Original event11 code9 dynamic game and scoring continuations",
+          "Complete end-to-end visual/event/mode parity still blocked"
+        ]
+      }
+    },
+    {
+      "id": "code10_special_green",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact",
+          "Original x86 pause WORD signed decrement and UI-latch 1230/1230 exact (shared code9/code10 delay)",
+          "ClassicHoleSession code10 timer now models original 101st call as continuation gate, not 100th call",
+          "Original source direct 0x40A40B code10 no extra stroke on both counters, 2422/2422 exact cases; live session corrected"
+        ],
+        "implemented": [
+          "engine/src/recovered_putter_terminal.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "engine/src/recovered_interactions.cpp",
+          "engine/src/classic_hole_session.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169920597",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38183067005"
+        ],
+        "not_yet_verified": [
+          "Original code10 subsequent 0x40A7F1 terrain/player/game event continuation not yet end-to-end parity-proven",
+          "Complete end-to-end visual/event/mode parity still blocked"
+        ]
+      }
+    },
+    {
+      "id": "near_cup_lip",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "verified isolated original x86 conditions, not complete live action",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original actual x86 cup-lip activation across distance, mode, signed-height and horizontal force: 3172/3172 exact",
+          "Corrected missing lower-height clamp and originally signed player-mode check; original bounce PRNG mutation already recovered"
+        ],
+        "implemented": [
+          "engine/src/recovered_interactions.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165941630"
+        ],
+        "not_yet_verified": [
+          "Original mode and distance derived from full gameplay state",
+          "Full live ball/score dispatch and long-run edge cases"
+        ]
+      }
+    },
+    {
+      "id": "low_height_prng_deflection",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "original_prng_seeding_and_turns",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "misc_course_event_dispatch",
+      "group": "special_interactions",
+      "source": "engine/src/recovered_interactions.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "verified isolated original x86 conditions, not complete live action",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Verified source-machine original code9 gate 4390/4390, lip gate 3172/3172, flag gate 2712/2712",
+          "Original x86 0x40A686 terminal code35/code50 signed-height 200 branching 2730/2730 exact, isolated from live collision",
+          "Original source x86 rebound signed NEG/SAR/SAR/ADD/JG 4524/4524 exact, plus 0x40A79D event-0 latch and rebound 3912/3912 exact",
+          "Original x86 0x40A686..0x40A7E0 code-35/code-50 terminal ball state, event-call arguments, player flags and continuation: 8336/8336 exact",
+          "Separate original airborne high-code x86 0x40A5D3..0x40A5F2 entry to event-11 stop or event-1 rebound: 11112/11112 native exact",
+          "Original 0x409535 MAPI lookup -> 0x41DFF7 source numeric terrain -> grounded x86 terminal 5312/5312 synthetic plus 2414/2414 real first-hole exact",
+          "Original pre-putter signed height/contact latch reset and six original route targets, 6712 synthetic + 2664 real-course exact",
+          "Original player-state 0x40A2B0 upstream five route decision and CPU callback-request state, 7160/7160 source x86 exact",
+          "Source x86 0x40CD00 original event display command numeric memory writes fully matched 1024/1024; broader event families remain unverified",
+          "Second source x86 0x40CC2D code35/code60 special handling vs 8..10 terminal vs signed rebound: 7941/7941 exact; scoped separate original course updater",
+          "Original code8 cup display packet source 0x40CD25 event 1280/1280 exact, separate OOB; host pending event path",
+          "Original ordinary animation script 5852/5852 and complete ten-slot mixed script/timer 1500/1500 x86; live source code9 event can progress when host provides source-formatted script",
+          "Original signed animation script opcodes 0x8004 close and 0x8008 wait 5650/5650 exact source x86; live code9 frame/wait/release native lifecycle regression"
+        ],
+        "implemented": [
+          "tools/trace_remaining_original_dispatchers.py",
+          "engine/src/recovered_interactions.cpp",
+          "tools/verify_original_terminal_event_route.py",
+          "pixtee-godot/native/tests/original_terminal_event_route_probe.cpp",
+          "engine/src/recovered_interactions.cpp",
+          "tools/verify_original_terminal_rebound.py",
+          "tools/verify_original_terminal_rebound_latch.py",
+          "tools/verify_original_special_terminal_terrain.py",
+          "pixtee-godot/native/tests/original_special_terminal_terrain_probe.cpp",
+          "engine/src/recovered_interactions.cpp",
+          "tools/verify_original_airborne_high_code_contact.py",
+          "pixtee-godot/native/tests/original_airborne_high_code_probe.cpp",
+          "engine/src/recovered_mapped_terminal.cpp",
+          "tools/verify_original_real_course_mapped_terminal.py",
+          "engine/src/recovered_mapped_terminal.cpp",
+          "engine/src/recovered_shot_admission.cpp",
+          "tools/verify_original_putter_preterminal_gate.py",
+          "tools/verify_original_shot_admission.py",
+          "engine/src/recovered_world_boundary.cpp",
+          "tools/verify_original_world_oob_event_handoff.py",
+          "engine/src/recovered_alt_terrain.cpp",
+          "engine/tests/recovered_alt_terrain_tests.cpp",
+          "tools/verify_original_alt_terrain_tick.py",
+          "engine/src/recovered_world_boundary.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "engine/src/recovered_animation_events.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "tools/verify_original_full_plain_animation_tick.py",
+          "engine/src/recovered_animation_events.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "tools/verify_original_animation_release_wait.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38165847870",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38174782111",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38178442764",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38178607009",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38178609751",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38179160345",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38179474254",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38179477201",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180193973",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180790837",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38180934289",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38182823777",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38183480972",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38206131628",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38228843162",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38229701187"
+        ],
+        "not_yet_verified": [
+          "All other event gate branches and complete original dynamic event sequencing",
+          "Full course object presence and original event-11 continuation",
+          "Complete upstream shot tick helpers, real collision admission in active full-shot physics, source CPU callback side effects and full gameplay modes",
+          "Complete end-to-end visual/event/mode parity still blocked",
+          "Full second terrain tick caller and source object/tree geometry not proven, no live activation",
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red",
+          "Original full-system / renderer / CPU candidate evaluation and release parity still open",
+          "Original callback opcode0x8000, sprite/script callback invocation, audio scheduling and final end-to-end animation presentation remain unsupported."
+        ]
+      }
+    },
+    {
+      "id": "score_counters",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "rounds_18_holes",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "multi_player_turn_order",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "x86 0x40C1B7..0x40C22F next-player chooser 1564/1564 exact",
+          "ineligible candidates, ties, forced-holder branch",
+          "x86 0x40C005..0x40C098 mode-1 per-player turn score correction, 3,192/3,192 exact",
+          "x86 0x40C098..0x40C16D mode4/6 side and slot turn routing, 1,728/1,728 exact",
+          "Original-source next player/competition selection integrated with explicit ownership acknowledgement; 1..4 separate native PRNG, stroke and score journals"
+        ],
+        "implemented": [
+          "pixtee-godot/native/src/original_next_player.cpp",
+          "pixtee-godot/native/src/pixtee_round_bridge.cpp",
+          "pixtee-godot/native/src/original_turn_score_adjust.cpp",
+          "pixtee-godot/native/src/original_competition_turn.cpp",
+          "pixtee-godot/native/src/original_turn_orchestrator.cpp",
+          "pixtee-godot/native/src/pixtee_multi_round_runtime.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38162829000",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164530583",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164902939",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38205921357"
+        ],
+        "not_yet_verified": [
+          "whole original multi-player turn and round state machine",
+          "per-player scoreboard and score progression",
+          "mode-specific turn transitions",
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "scored_hole_advance",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "save_replay_journal",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "replay_corruption_rejection",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "course_resource_requests",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "native_reference_available",
+      "godot_engine_proof": "native_core_or_adapter_tested",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "original_game_modes",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "x86 original mode1 special score correction branch 3,192/3,192",
+          "x86 original mode4/6 side-turn selection 1,728/1,728",
+          "Original-source next player/competition selection integrated with explicit ownership acknowledgement; 1..4 separate native PRNG, stroke and score journals"
+        ],
+        "implemented": [
+          "pixtee-godot/native/src/original_competition_turn.cpp",
+          "pixtee-godot/native/src/original_turn_score_adjust.cpp",
+          "pixtee-godot/native/src/original_turn_orchestrator.cpp",
+          "pixtee-godot/native/src/pixtee_multi_round_runtime.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164902939",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164530583",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38205921357"
+        ],
+        "not_yet_verified": [
+          "Mode4/6 side selection is not full tournament, match, skins or season outcome logic",
+          "original full competition bracket/cuts/ties and persistence",
+          "end-to-end mode progression and Android output",
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "computer_opponents",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "x86 0x40C665..0x40C6B2 original CPU search budgets 24/24 exact",
+          "x86 0x40C78B..0x40C7C4 candidate ranking 378/378 exact",
+          "x86 0x40C7DD..0x40C84F seeded RNG-return effect on CPU shot captured power, variation, swing adjust, 1,620/1,620 exact",
+          "Recovered all 24 original v1.014 CPU aiming-table mode4..9/band0..3 data rows, source x86 scan setup 1274/1274 exact",
+          "Recovered original 0x40C71B..0x40C77F CPU candidate aim-heading sweep: 120/120 full original cases, 4605 candidate headings identical, Godot native callable",
+          "Authentic original 24-row scan, difficulty, heading candidates and original-source candidate-ranking and sampled variation composed; original per-candidate scoring still missing",
+          "Original CPU 0x40CB40 route 9390/9390 authentic x86 and source-composed force/preflight/gravity native pipeline with map-lookup gate",
+          "Source 0x40C9FD->0x40CA1E CPU distance plus indexed static penalty scoring: 8324/8324 exact x86; original v1.014 non-injected table 0x41FADF: 5228/5228 exact; native 14-byte record + signed first-tie winner + heading pipeline guarded by real evaluation inputs",
+          "Source 0x40CBCD..0x40CC9F original CPU Q14 direction, green/normal drag and mapped contact recheck: 10324/10324 x86 matches. Total scoring and secondary motion this pass 23876/23876 exact.",
+          "Original CPU 0x40CBC7 -> MAPI recheck -> 0x40CC2D 3-way hazard/green/bounce source stage connected to Q14 alternate motion (source 7941/7941 alt-terrain and 10324/10324 motion independently exact)"
+        ],
+        "implemented": [
+          "pixtee-godot/native/src/original_cpu_difficulty.cpp",
+          "pixtee-godot/native/src/original_cpu_candidate.cpp",
+          "pixtee-godot/native/src/pixtee_round_bridge.cpp",
+          "pixtee-godot/native/src/original_cpu_shot_variation.cpp",
+          "pixtee-godot/native/src/original_cpu_search_grid.cpp",
+          "pixtee-godot/native/src/original_cpu_heading_sweep.cpp",
+          "pixtee-godot/reference/ORIGINAL_CPU_SCAN_TABLE_2026-10-11.json",
+          "pixtee-godot/native/src/original_cpu_scan_pipeline.cpp",
+          "pixtee-godot/native/src/original_cpu_trial_preflight.cpp",
+          "pixtee-godot/native/src/original_cpu_scan_pipeline.cpp",
+          "tools/verify_original_cpu_trial_preflight.py",
+          "pixtee-godot/native/src/original_cpu_quality_score.cpp",
+          "pixtee-godot/native/src/original_cpu_score_scratch.cpp",
+          "pixtee-godot/native/src/original_cpu_scan_pipeline.cpp",
+          "pixtee-godot/native/src/pixtee_round_bridge.cpp",
+          "tools/verify_original_cpu_quality_score.py",
+          "tools/verify_original_cpu_reference_penalties.py",
+          "pixtee-godot/native/src/original_cpu_simulated_motion.cpp",
+          "pixtee-godot/native/src/original_cpu_scan_pipeline.cpp",
+          "tools/verify_original_cpu_simulated_motion.py",
+          "pixtee-godot/native/src/original_cpu_scan_pipeline.cpp",
+          "engine/src/recovered_alt_terrain.cpp",
+          "pixtee-godot/native/src/original_cpu_simulated_motion.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38163091444",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38163324373",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164319868",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169533045",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170143652",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38205921357",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38227518922",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38240947386",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38241812948",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38242549412",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38242809771",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38243386575"
+        ],
+        "not_yet_verified": [
+          "Original per-heading shot evaluator 0x40C93E and terrain-dependent candidate generation",
+          "Complete CPU player club/power evaluation, difficulty-driven shot choice and original RNG state",
+          "End-to-end original computer round gameplay and machine parity",
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red",
+          "Original full-system / renderer / CPU candidate evaluation and release parity still open",
+          "Original complete shot trajectory candidate outcome simulator, tree object impacts, original complete AI club/power and RNG policy, cross-mode table mutation remain unknown; host input evidence is a precondition, not recovered evaluator",
+          "Full original 0x40CB00 CPU candidate loop with real MAPM/MAPI, tree objects, actual source computer strategy and tournament policy remains blocked",
+          "Original complete alternate CPU course loop and real tree/object impacts still not end-to-end proven"
+        ]
+      }
+    },
+    {
+      "id": "match_tournament_rules",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original-source next player/competition selection integrated with explicit ownership acknowledgement; 1..4 separate native PRNG, stroke and score journals"
+        ],
+        "implemented": [
+          "pixtee-godot/native/src/original_turn_orchestrator.cpp",
+          "pixtee-godot/native/src/pixtee_multi_round_runtime.cpp"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38205921357"
+        ],
+        "not_yet_verified": [
+          "Original end-to-end full game and host scheduling/state/render parity not yet met; feature release gate remains red"
+        ]
+      }
+    },
+    {
+      "id": "putts_strokes_penalties",
+      "group": "game_flow",
+      "source": "engine/src/classic_game_session.cpp",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "650/650 launch matches",
+          "256/256 slope putts",
+          "original single-player 18-hole scoring and replay",
+          "original mode-1 multiplayer exact stroke/total counter correction 3,192/3,192 tested conditions",
+          "Original SHA-verified Windows v1.014 club12 code8, code9, code10 terminal flags, event ids, counters, pause and UI gate 2160/2160 exact",
+          "Original Windows v1.014 990-case x86 launch and stroke-accounting test: 668 out-of-profile no-flight attempts and 322 ordinary launches ALL increment hole & total stroke counters +1/+1",
+          "Original out-of-map 0x409535 negative AX -> 0x40A318 two-stroke-counter increment +100 pause event 0x40CD00: 5010/5010 source x86 parity",
+          "Original descriptor 22 OOB tile uses shared 35 event path; no extra world-boundary penalty",
+          "Source 0x40AACF world bit2 unconditional safe-anchor post-event restore (native implementation; independent source x86 restore oracle pending)",
+          "Original source 0x40AACF -> 0x40A871 unconditional safe anchor and signed player mode recovery: 4416/4416 exact; combined OOB 9426/9426"
+        ],
+        "implemented": [
+          "engine/src/classic_round_session.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "pixtee-godot/native/src/original_turn_score_adjust.cpp",
+          "engine/src/recovered_putter_terminal.cpp",
+          "engine/src/recovered_flight.cpp",
+          "pixtee-godot/native/src/pixtee_round_runtime.cpp",
+          "engine/src/recovered_world_boundary.cpp",
+          "engine/src/recovered_hazard_recovery.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "tools/verify_original_world_boundary_penalty.py",
+          "tools/verify_original_world_oob_restore.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38160257753",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38164530583",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38166483327",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170616706",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38170862905",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38181667415",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38182134331"
+        ],
+        "not_yet_verified": [
+          "Complete original click/retry/UI shot lifecycle across all game modes",
+          "Zero-cup-distance no-flight attempt and unverified special-event replay continuations remain gated; nonzero-distance completed no-flight strokes now round-trip deterministically",
+          "Complete original score penalties and special terminal sequence in multiplayer/competitions",
+          "Original UI event acknowledgement and full multiplayer handoff after world OOB; complete end-to-end game physics and all 15 gameplay gates remain open",
+          "Final native live hole-session edge safety CI and exact original popup acknowledgement timing are not yet verified"
+        ]
+      }
+    },
+    {
+      "id": "camera_projection_scale",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "ball_lie_overlay_geometry",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "welly_visual_assets",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "slope_arrow_sprite_mapping",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "hit_reaction_animation_events",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED",
+      "partial_original_recovery": {
+        "source_verified_subfunctions": [
+          "Original ordinary animation script 5852/5852 and complete ten-slot mixed script/timer 1500/1500 x86; live source code9 event can progress when host provides source-formatted script",
+          "Original signed animation script opcodes 0x8004 close and 0x8008 wait 5650/5650 exact source x86; live code9 frame/wait/release native lifecycle regression"
+        ],
+        "implemented": [
+          "engine/src/recovered_animation_events.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "tools/verify_original_full_plain_animation_tick.py",
+          "engine/src/recovered_animation_events.cpp",
+          "engine/src/classic_hole_session.cpp",
+          "tools/verify_original_animation_release_wait.py"
+        ],
+        "evidence": [
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38228843162",
+          "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38229701187"
+        ],
+        "not_yet_verified": [
+          "Original full-system / renderer / CPU candidate evaluation and release parity still open",
+          "Original callback opcode0x8000, sprite/script callback invocation, audio scheduling and final end-to-end animation presentation remain unsupported."
+        ]
+      }
+    },
+    {
+      "id": "original_audio_event_timing",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "sfx_catalogue",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    },
+    {
+      "id": "course_asset_dimensions",
+      "group": "presentation_data_deferred",
+      "source": "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+      "evidence_reference": "spec/pixtee/ORIGINAL_BINARY_HARD_DATA_MASTER_2026-10-10.md",
+      "status": "unresolved_or_not_integrated",
+      "godot_engine_proof": "not_proven_end_to_end",
+      "release_gate": "BLOCKED_UNTIL_ORIGINAL_PARITY_VERIFIED"
+    }
+  ],
+  "checked_original_executable_at": "2026-10-11",
+  "current_update": "Validated original 24-row AI search table (1274/1274 x86), 4605 heading candidates (120/120), 1230/1230 signed special pause counters with original post-stop relocation in native, and corrected stroke accounting: ALL 668 original extreme accuracy no-flight attempts charge hole and total strokes +1/+1, as do 322 valid launches. Native 18 tests pass. 15 full engine signoff items remain partially recovered. Native source-verified paid no-flight stroke replay round-trip now passes manual and original Welly regression, except zero-cup-distance edge remains blocked (CI 38174394126). Authenticated terminal code35/code50 event routing 2730/2730 exact; original tree identity and all full game interaction paths still unverified (run 38174782111). Additional isolated authentic 0x40A7BD rebound 4524/4524 and original 0x40A79D event-bit-zero latch plus rebound 3912/3912 exact; combined 8436 machine cases. Actual original tree collision and end-to-end event activation are still open. Original source numeric special terrain code35/code50 terminal sequence now independently native proven 8336/8336 x86 cases (ball force/height, terminal flags, event CALL argument, continuation); original course/object presence and full callback side effects still unproven (run 38179160345). Separate airborne high-terrain entry x86 0x40A5D3..0x40A5F2 11112/11112 exact, including code35 high-vs-low threshold event11/event1 routes and different grounded-terminal fallback. Current work total 19448 exact original machine cases. Source real-course object classification/live activation still blocked. Composed actual original MAPM/MAPI terrain source lookup into grounded terminal physics, 5312/5312 synthetic and 2414/2414 genuine first-hole source-machine exact cases (7726 total). First-hole original MAPM sampled numeric code35 (5693 eligible subcells) and code50 (14); original tree/object geometry and upstream shot activation unproven (run 38180193973). Verified original source 0x40A575 pre-putter admission 6712/6712 synthetic and 2664/2664 real-MAPM01 (9376 total) including 13520 descriptor7 first-hole subcells, contact latch reset >=20 and six x86 routes. Verified earlier player tick 0x40A2B0 route 7160/7160 with CPU callback requested 573 times. Total new source exact 16536; original full shot and tree/object activation still blocked. Out-of-bounds now splits source-authentic descriptor22 code35 tile from negative-AX world coordinate failure. Original 0x409535->0x40A318 source 5010/5010 exact, world penalty both stroke counters +1 and 100 pause/0x40CD00; native hole session detects before invalid map tile lookup and restores via unconditional bit2 0x40AACF->0x40A871 anchor, independent x86 restore oracle pending. Original full UI acknowledgement and multiplayer still unresolved. Independent source recovery 0x40AACF->0x40A871 verified 4416/4416, combined world OOB source proofs 9426/9426 (run 38182134331). Initial native live-session OOB edge case failed in Release; source-proven forced-anchor and host-safe first-tick anchor setup fixes committed, latest tests pending. Do not mark 15 gameplay gates green yet. 12 October: out-of-world original popup/event numeric handoff 1024/1024 x86 matched and host event getter; original early code9 +1 stroke vs direct code10 no increment 4860/4860 x86 matched and live native/Godot CI green (38183162346). Original tree identity research found 4 MAPM upper-bit cells/3876 first-hole tiles, 39 map xrefs and 7 source map-lookup callers, not tree presence proof. All 15 end-to-end gates remain open. Source 0x40CC2D second course tick numeric terrain x86 7941/7941 exact original route verification, C++ recovered_alt_terrain and regression added; not connected to live shot pending full caller, no actual tree identity. 15 full gameplay release gates still open. 12 October nine-area consecutive recovery pass: native multiplayer turn coordinator and isolated 1..4 participant score/PRNG sessions, CPU source scan pipeline CI 38205921357 green; original Welly full outer startup 3324/3324 x86 CI 38206789435; original fifth SPT flag setup 3112/3112 x86 CI 38207010331, verified flag presence activates prior x86 math with replay gate; original code8 cup UI handoff 1280/1280 x86 CI 38206131628, host OOB/cup/code9 events; tree original geometry, AI candidate evaluation, competition rules still red. Full execution ledger spec/pixtee/NINE_AREA_EXECUTION_CHECKPOINT_2026-10-12.md. ALL original full end-to-end gameplay gates red. 12 October current consecutive recovery: source-original green scene multi-object 4740/4740 (38226901152) integrated single-object coordinate helper, original CPU code9/club12 9390/9390 (38227518922) composed after original lookup into native force/air branch, authentic animation ordinary frame 5852/5852 (38228126497) and combined ten-slot source 1500/1500 (38228843162) now progress real code9 reaction with authored scripts; native C++ and Godot smoke green 38229076312/38229074417. Script negative opcodes and actual tree/CPU full-shot/mode scheduling remain unresolved. All full-gameplay signoff gates red. Source animation opcode table verified 0x8000 callback remains blocked, 0x8004 slot release and 0x8008 wait recovered 5650/5650 exact original x86 CI 38229701187, live code9 authored-frame/wait/close sequence native regression added. All full-gameplay signoffs remain blocked. 12 October further CPU: source 0x40C9FD distance+penalty 8324/8324 exact original x86, original unmodified v1.014 static table 0x41FADF 5228/5228 exact original x86, combined 13552; source score records and original scan headings joined with explicit authenticity guard; native nine-integration green 38241158149, latest Godot bridge reference-table ABI pending. Complete trajectory and original mode/competition still open. All full-gameplay gates red. Source CPU secondary planar loop 0x40CBCD 10324/10324 x86 parity CI38242549412, connected after source 0x40CBC7 original map/PRNG branch with native CI38242809771 green. Source scoring+reference penalties+motion this pass 23876/23876; all complete AI/gameplay acceptance gates remain open. Source CPU secondary mapped lookup/0x40CC2D alternate terrain and 0x40CBCD Q14 motion now composed with strict authentic map/PRNG gates; native integration CI38243386575 passed. No full AI or tree collision signoff; all full release gates still open."
+}

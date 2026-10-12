@@ -1,0 +1,314 @@
+{
+  "schema": "pixtee-original-v1014-cpu-aiming-search-grid.v1",
+  "source_executable_sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+  "source_routine": "0x40C6B2..0x40C71B",
+  "table_base_va": "0x41FA11",
+  "lookup_expression": "table_base + (mode-4)*8 + course_band*48",
+  "original_player_modes_tested": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "course_bands_tested": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "row_count": 24,
+  "words_per_row": 4,
+  "table_rows": [
+    {
+      "band": 0,
+      "modes": [
+        {
+          "mode": 4,
+          "words": [
+            32,
+            512,
+            32,
+            2
+          ],
+          "derived_spacing": 4,
+          "derived_initial_remainder": 128
+        },
+        {
+          "mode": 5,
+          "words": [
+            25,
+            525,
+            42,
+            2
+          ],
+          "derived_spacing": 6,
+          "derived_initial_remainder": 150
+        },
+        {
+          "mode": 6,
+          "words": [
+            25,
+            525,
+            42,
+            2
+          ],
+          "derived_spacing": 6,
+          "derived_initial_remainder": 150
+        },
+        {
+          "mode": 7,
+          "words": [
+            22,
+            517,
+            46,
+            3
+          ],
+          "derived_spacing": 7,
+          "derived_initial_remainder": 154
+        },
+        {
+          "mode": 8,
+          "words": [
+            22,
+            517,
+            46,
+            3
+          ],
+          "derived_spacing": 7,
+          "derived_initial_remainder": 154
+        },
+        {
+          "mode": 9,
+          "words": [
+            20,
+            520,
+            52,
+            3
+          ],
+          "derived_spacing": 7,
+          "derived_initial_remainder": 140
+        }
+      ]
+    },
+    {
+      "band": 1,
+      "modes": [
+        {
+          "mode": 4,
+          "words": [
+            20,
+            520,
+            52,
+            4
+          ],
+          "derived_spacing": 7,
+          "derived_initial_remainder": 140
+        },
+        {
+          "mode": 5,
+          "words": [
+            17,
+            507,
+            58,
+            4
+          ],
+          "derived_spacing": 9,
+          "derived_initial_remainder": 153
+        },
+        {
+          "mode": 6,
+          "words": [
+            64,
+            1024,
+            32,
+            2
+          ],
+          "derived_spacing": 2,
+          "derived_initial_remainder": 128
+        },
+        {
+          "mode": 7,
+          "words": [
+            50,
+            1050,
+            42,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 150
+        },
+        {
+          "mode": 8,
+          "words": [
+            50,
+            1050,
+            42,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 150
+        },
+        {
+          "mode": 9,
+          "words": [
+            45,
+            1035,
+            46,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 135
+        }
+      ]
+    },
+    {
+      "band": 2,
+      "modes": [
+        {
+          "mode": 4,
+          "words": [
+            45,
+            1035,
+            46,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 135
+        },
+        {
+          "mode": 5,
+          "words": [
+            40,
+            1040,
+            52,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 120
+        },
+        {
+          "mode": 6,
+          "words": [
+            40,
+            1040,
+            52,
+            3
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 120
+        },
+        {
+          "mode": 7,
+          "words": [
+            35,
+            1015,
+            58,
+            3
+          ],
+          "derived_spacing": 4,
+          "derived_initial_remainder": 140
+        },
+        {
+          "mode": 8,
+          "words": [
+            64,
+            2048,
+            64,
+            2
+          ],
+          "derived_spacing": 2,
+          "derived_initial_remainder": 128
+        },
+        {
+          "mode": 9,
+          "words": [
+            50,
+            2100,
+            84,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 150
+        }
+      ]
+    },
+    {
+      "band": 3,
+      "modes": [
+        {
+          "mode": 4,
+          "words": [
+            50,
+            2100,
+            84,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 150
+        },
+        {
+          "mode": 5,
+          "words": [
+            45,
+            2070,
+            92,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 135
+        },
+        {
+          "mode": 6,
+          "words": [
+            45,
+            2070,
+            92,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 135
+        },
+        {
+          "mode": 7,
+          "words": [
+            40,
+            2080,
+            104,
+            2
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 120
+        },
+        {
+          "mode": 8,
+          "words": [
+            40,
+            2080,
+            104,
+            3
+          ],
+          "derived_spacing": 3,
+          "derived_initial_remainder": 120
+        },
+        {
+          "mode": 9,
+          "words": [
+            35,
+            2030,
+            116,
+            3
+          ],
+          "derived_spacing": 4,
+          "derived_initial_remainder": 140
+        }
+      ]
+    }
+  ],
+  "reference_oracle_run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38169533045",
+  "test_vectors": 1274,
+  "exact_matches": 1274,
+  "scope": "Original source-backed candidate scan parameter setup. Not AI candidate generation, course strategy, original RNG, club selection or complete game modes.",
+  "redistribution_rights": "UNREVIEWED - retain provenance and clear before commercial redistribution"
+}

@@ -1,0 +1,35 @@
+name: Pixtee Original Flag And Tree Object Source Research
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/trace_original_flag_and_tree_object_sources.py'
+      - '.github/workflows/pixtee-original-flag-tree-xrefs.yml'
+permissions: {contents: read}
+jobs:
+  source-flag-object-references:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Ingest authentic original Sensible Golf Windows v1.014
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Extract source flag-coordinate owners and object-string references
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/trace_original_flag_and_tree_object_sources.py \
+            --exe "$EXE" -o analysis/private/original-flag-tree-xrefs.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-flag-tree-xref-evidence
+          path: analysis/private/original-flag-tree-xrefs.json
+          retention-days: 30

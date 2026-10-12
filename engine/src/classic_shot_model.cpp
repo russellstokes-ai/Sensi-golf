@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "sensigolf/recovered_ground.hpp"
+#include "sensigolf/recovered_interactions.hpp"
 #include "sensigolf/recovered_putter_terminal.hpp"
 
 namespace sensigolf {
@@ -40,6 +41,28 @@ void ClassicShotModel::reset() {
     active_club_ = 0;
     outcome_ = ClassicShotOutcome::None;
     active_ = false;
+    interaction_prng_ = nullptr;
+    interaction_green_mode_ = false;
+    flag_x_ = 0;
+    flag_y_ = 0;
+    flag_object_verified_ = false;
+    near_cup_distance_zero_ = false;
+    player_mode_5a_ = 4;
+    lip_deflection_last_tick_ = false;
+}
+
+void ClassicShotModel::set_original_interaction_context(
+    recovered::OriginalPrng16* prng, bool green_mode,
+    std::int16_t flag_x, std::int16_t flag_y,
+    bool flag_object_verified,bool near_cup_distance_zero,
+    std::uint16_t player_mode_5a) noexcept {
+    interaction_prng_ = prng;
+    interaction_green_mode_ = green_mode;
+    flag_x_ = flag_x;
+    flag_y_ = flag_y;
+    flag_object_verified_ = flag_object_verified;
+    near_cup_distance_zero_=near_cup_distance_zero;
+    player_mode_5a_=player_mode_5a;
 }
 
 void ClassicShotModel::set_surface_context(
@@ -109,6 +132,48 @@ void ClassicShotModel::step() {
     }
 
     ++public_.tick;
+    lip_deflection_last_tick_=false;
+
+    // Source-disassembled v1.014 0x40A374..0x40A575: code 9 and flag
+    // interactions precede this tick's normal gravity/putter response.
+    if(active_club_ != 12) {
+        const auto code9 = recovered::original_code9_contact(
+            surface_.landing_code, active_club_,
+            flight_.vertical_force, flight_.height);
+        if(code9 == recovered::Code9Contact::SpecialStop) {
+            active_ = false;
+            outcome_ = ClassicShotOutcome::SpecialGreenStop;
+            public_.phase = ShotPhase::Complete;
+            sync_public_state();
+            return;
+        }
+        if(code9 == recovered::Code9Contact::Deflect) {
+            if(!interaction_prng_)
+                throw std::logic_error("code9 impact needs original captured PRNG");
+            recovered::apply_code9_low_height_deflection(
+                flight_, *interaction_prng_);
+        }
+    }
+    // Standalone physics fixtures may have no original PRNG. Their
+    // non-interaction behaviour remains testable; the real game session
+    // always supplies the captured original PRNG for event activation.
+    // Original v1.014 0x40A456..0x40A4A6 near-cup lip contact occurs
+    // after code9 but before the flagpole check and normal shot advance.
+    // It must not activate from an inferred source player mode or a
+    // stale saved ball position. It consumes precisely one original PRNG
+    // call only on the source-proven high-speed lip branch.
+    if(near_cup_distance_zero_ && interaction_prng_ &&
+       recovered::original_near_cup_lip_contact(
+           true,player_mode_5a_,flight_)) {
+        lip_deflection_last_tick_=recovered::apply_near_hole_lip_deflection(
+            flight_,*interaction_prng_);
+    }
+    if(flag_object_verified_ && interaction_prng_ &&
+       recovered::original_flag_coordinate_hit(
+           flight_, flag_x_, flag_y_, interaction_green_mode_)) {
+        recovered::apply_flag_coordinate_deflection(
+            flight_, *interaction_prng_);
+    }
 
     recovered::GroundStepResult result{};
     if (active_club_ == 12) {
@@ -182,6 +247,20 @@ void ClassicShotModel::sync_public_state() {
             static_cast<std::uint16_t>(flight_.direction + 1024)));
     public_.vz_raw = flight_.vertical_force;
     public_.surface_index = surface_.landing_code;
+}
+
+void ClassicShotModel::stop_for_world_boundary() {
+    if(!active_) {
+        throw std::logic_error("world boundary stop requires an active shot");
+    }
+    active_=false;
+    outcome_=ClassicShotOutcome::Hazard;
+    public_.hazard=true;
+    public_.phase=ShotPhase::Complete;
+    // Original negative-AX branch does not use the ordinary landing
+    // collision zeroing; flight forces are left untouched until original
+    // position-restoration handling. Do not manufacture a tile-35 impact.
+    sync_public_state();
 }
 
 void ClassicShotModel::relocate_inactive_ball(

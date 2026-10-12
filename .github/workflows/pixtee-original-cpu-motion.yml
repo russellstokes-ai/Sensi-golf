@@ -1,0 +1,51 @@
+name: Pixtee Original CPU Alternate Drag and Planar Source Parity
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/verify_original_cpu_simulated_motion.py'
+      - 'pixtee-godot/native/src/original_cpu_simulated_motion.*'
+      - 'pixtee-godot/native/tests/original_cpu_simulated_motion_*'
+      - '.github/workflows/pixtee-original-cpu-motion.yml'
+permissions: {contents: read}
+jobs:
+  authentic-cpu-planar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Source executable authenticated, ephemeral
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/pixtee-ingest.json
+      - name: Compile C++ alternate CPU motion and regression tests
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include -Ipixtee-godot/native/src \
+            engine/src/recovered_math.cpp \
+            pixtee-godot/native/src/original_cpu_simulated_motion.cpp \
+            pixtee-godot/native/tests/original_cpu_simulated_motion_tests.cpp \
+            -o /tmp/pixtee-original-cpu-motion-tests
+          /tmp/pixtee-original-cpu-motion-tests
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include -Ipixtee-godot/native/src \
+            engine/src/recovered_math.cpp \
+            pixtee-godot/native/src/original_cpu_simulated_motion.cpp \
+            pixtee-godot/native/tests/original_cpu_simulated_motion_probe.cpp \
+            -o /tmp/pixtee-original-cpu-motion-probe
+      - name: Execute original x86 alternate CPU drag and X/Y projection
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_cpu_simulated_motion.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-cpu-motion-probe \
+            -o analysis/private/original-cpu-simulated-motion-x86.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-cpu-alternate-Q14-drag
+          path: analysis/private/original-cpu-simulated-motion-x86.json
+          retention-days: 30

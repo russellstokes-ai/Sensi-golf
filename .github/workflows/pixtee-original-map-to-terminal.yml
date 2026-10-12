@@ -1,0 +1,210 @@
+name: Pixtee Original MAPI to Terminal Collision Machine Parity
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/verify_original_mapped_terminal_pipeline.py'
+      - 'tools/verify_original_real_course_mapped_terminal.py'
+      - 'tools/verify_original_putter_preterminal_gate.py'
+      - 'tools/verify_original_shot_admission.py'
+      - 'tools/trace_original_oob_bounds.py'
+      - 'tools/verify_original_world_boundary_penalty.py'
+      - 'tools/verify_original_world_oob_restore.py'
+      - 'tools/verify_original_world_oob_event_handoff.py'
+      - 'tools/verify_original_cup_event_handoff.py'
+      - 'pixtee-godot/native/tests/original_cup_event_probe.cpp'
+      - 'tools/verify_original_special_green_stop_accounting.py'
+      - 'tools/verify_original_alt_terrain_tick.py'
+      - 'engine/src/recovered_alt_terrain.cpp'
+      - 'engine/include/sensigolf/recovered_alt_terrain.hpp'
+      - 'pixtee-godot/native/tests/original_alt_terrain_probe.cpp'
+      - 'pixtee-godot/native/tests/original_special_green_stop_probe.cpp'
+      - 'pixtee-godot/native/tests/original_world_oob_event_probe.cpp'
+      - 'pixtee-godot/native/tests/original_world_oob_restore_probe.cpp'
+      - 'engine/src/recovered_hazard_recovery.cpp'
+      - 'engine/src/recovered_world_boundary.cpp'
+      - 'engine/include/sensigolf/recovered_world_boundary.hpp'
+      - 'pixtee-godot/native/tests/original_world_boundary_probe.cpp'
+      - 'pixtee-godot/native/tests/original_shot_admission_probe.cpp'
+      - 'engine/src/recovered_shot_admission.cpp'
+      - 'engine/include/sensigolf/recovered_shot_admission.hpp'
+      - 'pixtee-godot/native/tests/original_putter_preterminal_probe.cpp'
+      - 'pixtee-godot/native/tests/original_mapped_terminal_probe.cpp'
+      - 'engine/src/recovered_mapped_terminal.cpp'
+      - 'engine/include/sensigolf/recovered_mapped_terminal.hpp'
+      - 'engine/src/recovered_interactions.cpp'
+      - 'engine/src/recovered_course_lookup.cpp'
+      - 'engine/src/classic_terrain.cpp'
+      - '.github/workflows/pixtee-original-map-to-terminal.yml'
+permissions:
+  contents: read
+jobs:
+  source-map-to-terminal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Fetch original SHA-verified Windows v1.014 executable
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Match original source MAPI lookup to grounded terminal outcome
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_prng.cpp \
+            engine/src/recovered_course_lookup.cpp \
+            engine/src/classic_terrain.cpp \
+            engine/src/recovered_interactions.cpp \
+            engine/src/recovered_mapped_terminal.cpp \
+            pixtee-godot/native/tests/original_mapped_terminal_probe.cpp \
+            -o /tmp/pixtee-original-mapped-terminal
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_mapped_terminal_pipeline.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-mapped-terminal \
+            -o analysis/private/original-mapped-terminal-source-x86.json
+      - name: Real original hole MAPM and MAPI bytes to source-grounded terminal effects
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          ROOT=analysis/private/step2/extracted/epf
+          python tools/verify_original_real_course_mapped_terminal.py \
+            --exe "$EXE" --mapm "$ROOT/MAPM01.MAP" \
+            --descriptor-bank "$ROOT/MAPI01.RAW" \
+            --selector-bank "$ROOT/MAPI02.RAW" \
+            --probe /tmp/pixtee-original-mapped-terminal --count 3600 \
+            -o analysis/private/original-real-MAPM01-terminal-x86.json
+      - name: Original pre-putter terrain admission and contact-latch reset
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_prng.cpp \
+            engine/src/recovered_course_lookup.cpp \
+            engine/src/classic_terrain.cpp \
+            engine/src/recovered_interactions.cpp \
+            engine/src/recovered_mapped_terminal.cpp \
+            pixtee-godot/native/tests/original_putter_preterminal_probe.cpp \
+            -o /tmp/pixtee-original-putter-preterminal
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          ROOT=analysis/private/step2/extracted/epf
+          python tools/verify_original_putter_preterminal_gate.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-putter-preterminal \
+            -o analysis/private/original-putter-preterminal-synthetic-x86.json
+          python tools/verify_original_putter_preterminal_gate.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-putter-preterminal \
+            --mapm "$ROOT/MAPM01.MAP" \
+            --descriptor-bank "$ROOT/MAPI01.RAW" \
+            --selector-bank "$ROOT/MAPI02.RAW" \
+            -o analysis/private/original-putter-preterminal-real-x86.json
+      - name: Verify original upstream shot-entry player status and CPU delegation
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_shot_admission.cpp \
+            pixtee-godot/native/tests/original_shot_admission_probe.cpp \
+            -o /tmp/pixtee-original-shot-admission
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_shot_admission.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-shot-admission \
+            -o analysis/private/original-shot-admission-x86.json
+      - name: Diagnose original x86 out-of-bounds lookup coordinates
+        run: |
+          python -m pip install --disable-pip-version-check capstone==5.0.6
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          ROOT=analysis/private/step2/extracted/epf
+          python tools/trace_original_oob_bounds.py \
+            --exe "$EXE" --mapm "$ROOT/MAPM01.MAP" \
+            --descriptor-bank "$ROOT/MAPI01.RAW" \
+            --selector-bank "$ROOT/MAPI02.RAW" \
+            -o analysis/private/original-oob-course-boundary.json
+      - name: Original course-world OOB penalty code and stroke accounting
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_hazard_recovery.cpp \
+            engine/src/recovered_world_boundary.cpp \
+            pixtee-godot/native/tests/original_world_boundary_probe.cpp \
+            -o /tmp/pixtee-original-world-oob
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          ROOT=analysis/private/step2/extracted/epf
+          python tools/verify_original_world_boundary_penalty.py \
+            --exe "$EXE" --mapm "$ROOT/MAPM01.MAP" \
+            --descriptor-bank "$ROOT/MAPI01.RAW" \
+            --selector-bank "$ROOT/MAPI02.RAW" \
+            --probe /tmp/pixtee-original-world-oob \
+            -o analysis/private/original-world-out-of-bounds-penalty-x86.json
+      - name: Original world-boundary post-event player-state and safe-anchor recovery
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_hazard_recovery.cpp \
+            engine/src/recovered_world_boundary.cpp \
+            pixtee-godot/native/tests/original_world_oob_restore_probe.cpp \
+            -o /tmp/pixtee-original-world-oob-restore
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_world_oob_restore.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-world-oob-restore \
+            -o analysis/private/original-world-oob-safe-anchor-restore-x86.json
+      - name: Original world OOB event 0x40CD00 display payload and handoff
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_hazard_recovery.cpp \
+            engine/src/recovered_world_boundary.cpp \
+            pixtee-godot/native/tests/original_world_oob_event_probe.cpp \
+            -o /tmp/pixtee-original-oob-event
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_world_oob_event_handoff.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-oob-event \
+            -o analysis/private/original-world-oob-event-x86.json
+      - name: Source x86 early code9 versus late code10 stroke counters and event gate
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_prng.cpp \
+            engine/src/recovered_interactions.cpp \
+            pixtee-godot/native/tests/original_special_green_stop_probe.cpp \
+            -o /tmp/pixtee-original-special-green-stop
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_special_green_stop_accounting.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-special-green-stop \
+            -o analysis/private/original-special-green-code9-vs-code10-stop-x86.json
+      - name: Original second course terrain code60 and rebound physics source-machine parity
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_prng.cpp \
+            engine/src/recovered_interactions.cpp \
+            engine/src/recovered_alt_terrain.cpp \
+            pixtee-godot/native/tests/original_alt_terrain_probe.cpp \
+            -o /tmp/pixtee-original-alt-terrain
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_alt_terrain_tick.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-alt-terrain \
+            -o analysis/private/original-alt-terrain-source-x86.json
+      - name: Original code8 cup display event source machine parity
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_hazard_recovery.cpp \
+            engine/src/recovered_world_boundary.cpp \
+            pixtee-godot/native/tests/original_cup_event_probe.cpp \
+            -o /tmp/pixtee-original-code8-cup-event
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_cup_event_handoff.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-code8-cup-event \
+            -o analysis/private/original-code8-cup-event-x86.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-map-to-terminal-x86
+          path: |
+            analysis/private/original-mapped-terminal-source-x86.json
+            analysis/private/original-real-MAPM01-terminal-x86.json
+            analysis/private/original-putter-preterminal-synthetic-x86.json
+            analysis/private/original-putter-preterminal-real-x86.json
+            analysis/private/original-shot-admission-x86.json
+            analysis/private/original-oob-course-boundary.json
+            analysis/private/original-world-out-of-bounds-penalty-x86.json
+            analysis/private/original-world-oob-safe-anchor-restore-x86.json
+            analysis/private/original-world-oob-event-x86.json
+            analysis/private/original-code8-cup-event-x86.json
+            analysis/private/original-special-green-code9-vs-code10-stop-x86.json
+            analysis/private/original-alt-terrain-source-x86.json
+          retention-days: 30

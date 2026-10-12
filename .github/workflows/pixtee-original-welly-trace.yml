@@ -1,0 +1,64 @@
+name: Pixtee Recover Original Welly-o-Meter Runtime Trace
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - '.github/workflows/pixtee-original-welly-trace.yml'
+      - 'tools/trace_original_welly_machine_code.py'
+      - 'tools/verify_original_welly_outer_ui.py'
+      - 'pixtee-godot/native/tests/original_welly_outer_ui_probe.cpp'
+      - 'pixtee-godot/native/src/recovered_welly_tick.cpp'
+      - 'pixtee-godot/native/src/recovered_welly_tick.hpp'
+permissions:
+  contents: read
+jobs:
+  original-x86-meter-routine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Original x86 CPU emulator
+        run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Fetch hash-verified original Windows v1.014
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Build native original Welly tick model
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/tests/welly_tick_original_probe.cpp \
+            -o /tmp/welly-native-reference
+      - name: Emulate actual original Welly subroutines for regular and putter clubs
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/trace_original_welly_machine_code.py --exe "$EXE" \
+            --native-probe /tmp/welly-native-reference \
+            -o analysis/private/pixtee-original-welly-runtime-trace.json
+      - name: Execute original outer stage-jump UI startup and entire original Welly sweep
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/tests/original_welly_outer_ui_probe.cpp \
+            -o /tmp/welly-original-outer
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_welly_outer_ui.py \
+            --exe "$EXE" --probe /tmp/welly-original-outer \
+            -o analysis/private/pixtee-original-welly-outer-ui-trace.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pixtee-original-welly-machine-code-runtime-traces
+          path: |
+            analysis/private/pixtee-original-welly-runtime-trace.json
+            analysis/private/pixtee-original-welly-outer-ui-trace.json
+          if-no-files-found: warn
+          retention-days: 30

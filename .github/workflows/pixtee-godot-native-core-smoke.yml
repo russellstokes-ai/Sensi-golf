@@ -1,0 +1,47 @@
+name: Pixtee Godot native gameplay bridge smoke
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'engine/**'
+      - 'pixtee-godot/native/**'
+      - '.github/workflows/pixtee-godot-native-core-smoke.yml'
+jobs:
+  recovered-core-adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build recovered C++ core
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build -j 2
+      - name: Compile independently authored course adapter against real core
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/pixtee_course_adapter.cpp \
+            pixtee-godot/native/tests/course_adapter_smoke.cpp \
+            build/engine/libsensigolf_core.a -o build/pixtee-adapter-smoke
+          build/pixtee-adapter-smoke
+      - name: Verify original-format fine terrain collision and all slope arrows
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/pixtee_course_adapter.cpp \
+            pixtee-godot/native/tests/fine_course_parity_tests.cpp \
+            build/engine/libsensigolf_core.a -o build/pixtee-fine-parity
+          build/pixtee-fine-parity
+      - name: Verify recovered 18-hole round scorekeeping and replay journal
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/pixtee_round_runtime.cpp \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/tests/round_runtime_tests.cpp \
+            build/engine/libsensigolf_core.a -o build/pixtee-round-parity
+          build/pixtee-round-parity
+      - name: Verify native original Welly-o-Meter producer on witnessed x86 traces
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/tests/welly_recovered_native_smoke.cpp \
+            -o build/original-welly-smoke
+          build/original-welly-smoke
+      - name: Audit full native suite (known baseline failures are NOT ignored)
+        run: ctest --test-dir build --output-on-failure

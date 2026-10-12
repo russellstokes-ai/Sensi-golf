@@ -1,3 +1,6 @@
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 #include <cstdint>
 #include <stdexcept>
@@ -61,9 +64,10 @@ int main() {
 
     const auto resolved = course.resolve_surface(0, 0, 0, 0);
     assert(resolved.descriptor_index == 0x34);
-    assert(resolved.landing_code == 4);
-    assert(resolved.profile_slot == 3);
-    assert(resolved.name == "SEMI ROUGH D2");
+    // Descriptor 0x34 (52) is V ROUGH D2 in the verified 77-entry table.
+    assert(resolved.landing_code == 6);
+    assert(resolved.profile_slot == 1);
+    assert(resolved.name == "V ROUGH D2");
     assert(resolved.slope_direction == 0x0200);
     assert(resolved.slope_magnitude == 1);
     assert(resolved.product_supported);
@@ -146,5 +150,21 @@ int main() {
     }
     assert(threw);
 
+    // Reuse the original Windows 0x40C35B signed green-scene
+    // single-object gate in the live ClassicGreenRegion resource API.
+    const ClassicGreenRegion region{100,50};
+    assert(region.contains_course(108,58));
+    assert(region.contains_course(212,134));
+    assert(!region.contains_course(107,58));
+    assert(!region.contains_course(213,58));
+    assert(region.contains_green(16,16));
+    assert(region.contains_green(226,170));
+    assert(!region.contains_green(15,16));
+    assert(!region.contains_green(226,171));
+    // Original compares wrapped 16-bit source upper/lower boundaries,
+    // rather than widening UINT16 origin before bounds comparison.
+    const ClassicGreenRegion wrapped{65535,65535};
+    assert(wrapped.contains_course(8,8));
+    assert(!wrapped.contains_course(6,8));
     return 0;
 }

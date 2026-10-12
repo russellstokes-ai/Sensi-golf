@@ -12,6 +12,13 @@ add_library(sensigolf_core
     src/recovered_prng.cpp
     src/recovered_interactions.cpp
     src/recovered_course_lookup.cpp
+    src/recovered_mapped_terminal.cpp
+    src/recovered_shot_admission.cpp
+    src/recovered_world_boundary.cpp
+    src/recovered_alt_terrain.cpp
+    src/recovered_flag_setup.cpp
+    src/recovered_green_scene_bounds.cpp
+    src/recovered_animation_events.cpp
     src/classic_round_session.cpp
     src/classic_hole_plan.cpp
     src/classic_game_session.cpp
@@ -77,6 +84,48 @@ add_executable(sensigolf_recovered_interactions_probe
     tools/recovered_interactions_probe.cpp
 )
 target_link_libraries(sensigolf_recovered_interactions_probe PRIVATE sensigolf_core)
+
+add_executable(sensigolf_recovered_animation_events_tests
+    tests/recovered_animation_events_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_animation_events_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_animation_events_tests
+    COMMAND sensigolf_recovered_animation_events_tests)
+
+add_executable(sensigolf_recovered_green_scene_bounds_tests
+    tests/recovered_green_scene_bounds_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_green_scene_bounds_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_green_scene_bounds_tests
+    COMMAND sensigolf_recovered_green_scene_bounds_tests)
+
+add_executable(sensigolf_recovered_alt_terrain_tests
+    tests/recovered_alt_terrain_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_alt_terrain_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_alt_terrain_tests
+    COMMAND sensigolf_recovered_alt_terrain_tests)
+
+add_executable(sensigolf_recovered_world_boundary_tests
+    tests/recovered_world_boundary_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_world_boundary_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_world_boundary_tests
+    COMMAND sensigolf_recovered_world_boundary_tests)
+
+add_executable(sensigolf_recovered_shot_admission_tests
+    tests/recovered_shot_admission_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_shot_admission_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_shot_admission_tests
+    COMMAND sensigolf_recovered_shot_admission_tests)
+
+add_executable(sensigolf_recovered_mapped_terminal_tests
+    tests/recovered_mapped_terminal_tests.cpp
+)
+target_link_libraries(sensigolf_recovered_mapped_terminal_tests PRIVATE sensigolf_core)
+add_test(NAME sensigolf_recovered_mapped_terminal_tests
+    COMMAND sensigolf_recovered_mapped_terminal_tests)
 
 add_executable(sensigolf_recovered_course_lookup_tests
     tests/recovered_course_lookup_tests.cpp

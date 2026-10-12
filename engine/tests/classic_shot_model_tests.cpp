@@ -101,5 +101,52 @@ int main() {
     }
     assert(threw);
 
+    // Source-recovered flag impact triggers only at the exact integer
+    // flag coordinate and its original height threshold, with original PRNG.
+    ClassicShotModel flag_hit;
+    ClassicShotModel flag_miss;
+    recovered::OriginalPrng16 impact_rng{0x1234,0xABCD};
+    recovered::OriginalPrng16 miss_rng{0x1234,0xABCD};
+    flag_hit.reset();
+    flag_miss.reset();
+    flag_hit.set_surface_context({3,0,0});
+    flag_miss.set_surface_context({3,0,0});
+    flag_hit.set_ball_origin(0,0);
+    flag_miss.set_ball_origin(0,0);
+    flag_hit.set_original_interaction_context(&impact_rng,false,0,0,true);
+    flag_miss.set_original_interaction_context(&miss_rng,false,20,20,true);
+    flag_hit.begin_shot(straight);
+    flag_miss.begin_shot(straight);
+    flag_hit.step();
+    flag_miss.step();
+    assert(impact_rng.seed0!=miss_rng.seed0 ||
+           impact_rng.seed1!=miss_rng.seed1);
+    assert(flag_hit.state().x_raw!=flag_miss.state().x_raw ||
+           flag_hit.state().y_raw!=flag_miss.state().y_raw);
+    // Original 0x40A456 high-speed lip: a zero-distance source
+    // human-mode shot redirects velocity and consumes precisely one
+    // original PRNG state. A CPU/source mode>=4 must not fake a lip.
+    ClassicShotModel lip,later;
+    recovered::OriginalPrng16 lip_rng{0x2345,0x6789};
+    recovered::OriginalPrng16 idle_rng{0x2345,0x6789};
+    lip.set_surface_context({3,0,0});
+    later.set_surface_context({3,0,0});
+    lip.set_ball_origin(0,0);
+    later.set_ball_origin(0,0);
+    lip.set_original_interaction_context(&lip_rng,false,120,120,
+                                          false,true,0);
+    later.set_original_interaction_context(&idle_rng,false,120,120,
+                                            false,true,4);
+    lip.begin_shot(straight);
+    later.begin_shot(straight);
+    lip.step();
+    later.step();
+    assert(lip.original_lip_deflection_last_tick());
+    assert(!later.original_lip_deflection_last_tick());
+    assert(lip_rng.seed0!=idle_rng.seed0 ||
+           lip_rng.seed1!=idle_rng.seed1);
+    assert(lip.state().vx_raw!=later.state().vx_raw ||
+           lip.state().vy_raw!=later.state().vy_raw ||
+           lip.state().vz_raw!=later.state().vz_raw);
     return 0;
 }

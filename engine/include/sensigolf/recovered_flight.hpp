@@ -44,6 +44,13 @@ struct LaunchInput {
     std::int32_t start_y = 0;
 };
 
+// Original x86 profile selector and 16-bit accuracy boundaries.
+    // Passing a raw accuracy reading outside profile bounds still registers
+    // a stroke in the outer launch routine, but does not launch the ball.
+bool accuracy_within_original_profile_bounds(
+    std::uint16_t club_index, std::uint16_t lie_index,
+    std::int32_t accuracy_tick);
+
 // Live player launch path at 0x40AD1D in Windows v1.014.
 //
 // For accuracy values inside the selected profile bounds:
@@ -57,8 +64,9 @@ struct LaunchInput {
 // Club index 12 shares this launch initializer; its per-tick motion then uses
 // the separately recovered putter/green path.
 //
-// Out-of-profile-bound accuracy behavior remains intentionally unimplemented
-// until its surrounding state semantics are parity-tested.
+// This primitive intentionally throws on an out-of-profile reading: the
+// ClassicHoleSession outer original game-flow layer now records the authentic
+// +1/+1 stroke attempt without launching. Full UI retry/turn flow is pending.
 FlightState launch_normal_shot(const LaunchInput& input);
 
 enum class AirborneStepResult : std::uint8_t {

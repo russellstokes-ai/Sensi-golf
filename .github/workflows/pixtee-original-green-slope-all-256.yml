@@ -1,0 +1,47 @@
+name: Pixtee Original Executable All 256 Green Slopes
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - '.github/workflows/pixtee-original-green-slope-all-256.yml'
+      - 'tools/verify_original_green_putt_256.py'
+      - 'pixtee-godot/native/tests/original_green_putt_parity_probe.cpp'
+permissions:
+  contents: read
+jobs:
+  original-slope-real-ball:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Fetch actual original Sensible Golf executable
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Build recovered native original-putting oracle probe
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --target sensigolf_core -j 2
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            pixtee-godot/native/tests/original_green_putt_parity_probe.cpp \
+            build/engine/libsensigolf_core.a -o build/putt-original-probe
+      - name: Compare every green arrow and magnitude against original code
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_green_putt_256.py \
+            --exe "$EXE" --probe build/putt-original-probe \
+            -o analysis/private/original-all-green-slopes-matrix.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sensible-original-256-green-slope-putt-parity
+          path: analysis/private/original-all-green-slopes-matrix.json
+          if-no-files-found: warn
+          retention-days: 30

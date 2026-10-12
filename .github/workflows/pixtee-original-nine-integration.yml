@@ -1,0 +1,82 @@
+name: Pixtee Original Nine Area Integration Regression
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'pixtee-godot/native/src/original_turn_orchestrator.*'
+      - 'pixtee-godot/native/tests/original_turn_orchestrator_tests.cpp'
+      - 'pixtee-godot/native/src/original_cpu_scan_pipeline.*'
+      - 'pixtee-godot/native/src/original_cpu_score_scratch.*'
+      - 'pixtee-godot/native/src/original_cpu_quality_score.*'
+      - 'pixtee-godot/native/src/original_cpu_trial_force.*'
+      - 'pixtee-godot/native/src/original_cpu_trial_preflight.*'
+      - 'pixtee-godot/native/src/original_cpu_simulated_contact.*'
+      - 'pixtee-godot/native/src/original_cpu_simulated_motion.*'
+      - 'pixtee-godot/native/tests/original_cpu_trial_force_tests.cpp'
+      - 'pixtee-godot/native/tests/original_cpu_scan_pipeline_tests.cpp'
+      - 'pixtee-godot/native/src/pixtee_multi_round_runtime.*'
+      - 'pixtee-godot/native/tests/pixtee_multi_round_runtime_tests.cpp'
+      - '.github/workflows/pixtee-original-nine-integration.yml'
+permissions:
+  contents: read
+jobs:
+  source-turn-coordination:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile source-authenticated original turn selection integration
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_next_player.cpp \
+            pixtee-godot/native/src/original_competition_turn.cpp \
+            pixtee-godot/native/src/original_turn_orchestrator.cpp \
+            pixtee-godot/native/tests/original_turn_orchestrator_tests.cpp \
+            -o /tmp/pixtee-original-turn-integration
+          /tmp/pixtee-original-turn-integration
+      - name: Build recovered portable engine for CPU source terraforming and contact
+        run: |
+          cmake -S . -B /tmp/pixtee-engine-nine -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/pixtee-engine-nine --target sensigolf_core -j 2
+      - name: Verify composition of original CPU search grid heading sweep candidate ranking and sampled swing
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Iengine/include -Ipixtee-godot/native/src \
+            engine/src/recovered_math.cpp \
+            pixtee-godot/native/src/original_cpu_difficulty.cpp \
+            pixtee-godot/native/src/original_cpu_search_grid.cpp \
+            pixtee-godot/native/src/original_cpu_heading_sweep.cpp \
+            pixtee-godot/native/src/original_cpu_candidate.cpp \
+            pixtee-godot/native/src/original_cpu_shot_variation.cpp \
+            pixtee-godot/native/src/original_cpu_scan_pipeline.cpp \
+            pixtee-godot/native/src/original_cpu_score_scratch.cpp \
+            pixtee-godot/native/src/original_cpu_quality_score.cpp \
+            pixtee-godot/native/src/original_cpu_trial_force.cpp \
+            pixtee-godot/native/src/original_cpu_trial_preflight.cpp \
+            pixtee-godot/native/src/original_cpu_simulated_contact.cpp \
+            pixtee-godot/native/src/original_cpu_simulated_motion.cpp \
+            pixtee-godot/native/tests/original_cpu_scan_pipeline_tests.cpp \
+            /tmp/pixtee-engine-nine/engine/libsensigolf_core.a \
+            -o /tmp/pixtee-original-cpu-scan-pipeline
+          /tmp/pixtee-original-cpu-scan-pipeline
+      - name: Verify native engine regression with Release-mode asserts
+        run: |
+          cmake -S . -B /tmp/pixtee-engine-nine -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/pixtee-engine-nine -j 2
+          ctest --test-dir /tmp/pixtee-engine-nine --output-on-failure
+      - name: Verify two independently scored original-rule player rounds and turn ownership handoff
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Iengine/include -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_next_player.cpp \
+            pixtee-godot/native/src/original_competition_turn.cpp \
+            pixtee-godot/native/src/original_turn_orchestrator.cpp \
+            pixtee-godot/native/src/pixtee_round_runtime.cpp \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/src/pixtee_multi_round_runtime.cpp \
+            pixtee-godot/native/tests/pixtee_multi_round_runtime_tests.cpp \
+            /tmp/pixtee-engine-nine/engine/libsensigolf_core.a \
+            -o /tmp/pixtee-original-multi-round
+          /tmp/pixtee-original-multi-round

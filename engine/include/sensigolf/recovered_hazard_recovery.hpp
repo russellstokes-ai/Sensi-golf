@@ -33,4 +33,11 @@ struct HazardRecoveryState {
 HazardRecoveryState recover_hazard_position(
     const HazardRecoveryInput& input) noexcept;
 
+// Original 0x40A871: unconditional safe-anchor arm selected from
+// 0x40AACF after the world-boundary bit2 dispatcher. Unlike the
+// 0x40A823 position comparator, this arm never checks the current
+// ball coordinates. Required at EXACT course dimension boundary.
+HazardRecoveryState recover_hazard_from_safe_anchor(
+    const HazardRecoveryInput& input) noexcept;
+
 } // namespace sensigolf::recovered

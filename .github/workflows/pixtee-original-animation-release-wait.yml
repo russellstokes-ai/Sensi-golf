@@ -1,0 +1,51 @@
+name: Pixtee Original Animation Release Wait Commands
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'engine/src/recovered_animation_events.cpp'
+      - 'engine/include/sensigolf/recovered_animation_events.hpp'
+      - 'engine/tests/recovered_animation_events_tests.cpp'
+      - 'pixtee-godot/native/tests/original_animation_release_wait_probe.cpp'
+      - 'tools/verify_original_animation_release_wait.py'
+      - '.github/workflows/pixtee-original-animation-release-wait.yml'
+permissions: {contents: read}
+jobs:
+  original-script-commands:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Acquire transient SHA verified original Windows v1.014
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Compile original command slot tests
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_animation_events.cpp \
+            engine/tests/recovered_animation_events_tests.cpp \
+            -o /tmp/pixtee-script-cmd-tests
+          /tmp/pixtee-script-cmd-tests
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_animation_events.cpp \
+            pixtee-godot/native/tests/original_animation_release_wait_probe.cpp \
+            -o /tmp/pixtee-script-cmd-probe
+      - name: Compare source 0x8004 and 0x8008 dispatch against original x86
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_animation_release_wait.py \
+            --exe "$EXE" --probe /tmp/pixtee-script-cmd-probe \
+            -o analysis/private/original-animation-release-wait-x86.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-animation-source-release-wait
+          path: analysis/private/original-animation-release-wait-x86.json
+          retention-days: 30

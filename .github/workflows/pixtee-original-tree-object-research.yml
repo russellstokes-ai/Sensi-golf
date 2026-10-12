@@ -1,0 +1,37 @@
+name: Pixtee Original Course Object Identity Research
+on:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/research_original_mapm_object_bits.py'
+      - '.github/workflows/pixtee-original-tree-object-research.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-object-location:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Load original source with integrity check
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Locate authentic course object bytes and source map xrefs
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/research_original_mapm_object_bits.py \
+            --exe "$EXE" --mapm analysis/private/step2/extracted/epf/MAPM01.MAP \
+            -o analysis/private/original-MAPM-tree-object-hypotheses.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-mapm-object-research
+          path: analysis/private/original-MAPM-tree-object-hypotheses.json
+          retention-days: 30

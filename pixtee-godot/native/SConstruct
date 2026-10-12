@@ -1,0 +1,22 @@
+# Build the recovered C++ engine, unchanged, into the Godot extension.
+# Prerequisite: git clone -b 4.5 --depth 1 https://github.com/godotengine/godot-cpp.git godot-cpp
+import os
+from SCons.Script import SConscript, Glob, Default
+
+env = SConscript("godot-cpp/SConstruct")
+env.Append(CPPPATH=["src", "../../engine/include"])
+# The recovered portable core uses tested C++ exceptions for invalid inputs.
+# Godot-cpp disables exceptions by default. Re-enable only for our module,
+# and catch at every GDExtension boundary so none escapes into Godot.
+if env["platform"] in ("linux", "android", "macos"):
+    env.Append(CXXFLAGS=["-fexceptions"])
+engine_sources = Glob("../../engine/src/*.cpp")
+extension_sources = Glob("src/*.cpp")
+# Use a real platform extension; godot-cpp returns an environment where
+# SHLIBSUFFIX can be empty. The .gdextension manifest must match exactly.
+extension = {"linux": ".so", "android": ".so", "windows": ".dll",
+             "macos": ".dylib"}[env["platform"]]
+flavour = env["platform"] + "." + env["target"] + "." + env["arch"]
+output = os.path.join("..", "bin", "libpixtee_gameplay." + flavour + extension)
+library = env.SharedLibrary(target=output, source=engine_sources + extension_sources)
+Default(library)

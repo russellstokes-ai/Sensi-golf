@@ -1,0 +1,36 @@
+name: Pixtee Original Gameplay Dispatcher CFG Recovery
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/trace_remaining_original_dispatchers.py'
+      - '.github/workflows/pixtee-original-gameplay-cfg.yml'
+permissions:
+  contents: read
+jobs:
+  original-gameplay-dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install capstone==5.0.6
+      - name: Obtain SHA-verified original Windows v1.014
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Exhaustively enumerate branches in original interaction/player/AI windows
+        run: |
+          EXE="$(find analysis/private/step2/input -type f -iname GOLFWIN.EXE -print -quit)"
+          python tools/trace_remaining_original_dispatchers.py --exe "$EXE" \
+            -o analysis/private/original-gameplay-cfg-evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-ball-collision-ai-multiplayer-branch-atlas
+          path: analysis/private/original-gameplay-cfg-evidence.json
+          retention-days: 30

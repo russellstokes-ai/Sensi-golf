@@ -1,0 +1,97 @@
+{
+  "schema": "pixtee.canonical-checkpoint.v1",
+  "checkpoint_date": "2026-10-12",
+  "checkpoint_policy": "FROZEN REFERENCE. Do not edit saved baselines, frozen Hole 1 visuals, or approved source artwork. Future implementation must be on new working branch or copy, preserving provenance.",
+  "status": "GITHUB_ENGINE_PORTRAIT_AND_DOCUMENTATION_ARCHIVES_CREATED; APPROVED_ART_ZIP_VERIFIED_AND_DUPLICATED_IN_LIBRARY; FROZEN_WORK_HOLE_1_LOCAL_FILES_NOT_INDEPENDENTLY_VERIFIED",
+  "github": {
+    "repository": "russellstokes-ai/Sensi-golf",
+    "original_restoration_main": "untouched",
+    "original_engine_working_branch": "feat/pixtee-godot-recovered-core",
+    "original_engine_working_pr": "https://github.com/russellstokes-ai/Sensi-golf/pull/12",
+    "engine_snapshot": {
+      "archival_branch": "archive/pixtee-engine-pre-integration-2026-10-12",
+      "commit_sha": "1203f8c440cc96f56e18c3a50336a632ab10efaf",
+      "link": "https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-engine-pre-integration-2026-10-12",
+      "frozen_content": "All Git-tracked files at the above commit, including recovered C++ engine, 73-item original-source status register, 27-area Milestone One inventory, native Godot bridge, research source data bank, 18-hole golden fixture, FX production standard and production contract",
+      "verification": "GitHub branch created from exact commit SHA in this session"
+    },
+    "portrait_snapshot": {
+      "archival_branch": "archive/pixtee-portrait-framework-2026-10-12",
+      "commit_sha": "7b849d29db2a7e37ac039e51c39a80dce0106e0c",
+      "link": "https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-portrait-framework-2026-10-12",
+      "frozen_content": "All Git-tracked portrait Android framework, concept/preproduction art source/previews, artist's batch manifests, UI/scale, sponsor boards and documentation at the above commit",
+      "verification": "GitHub branch created from exact commit SHA in this session",
+      "note": "Historic Git art registers were written before owner later approved the separate final ZIP. Preview files and rejected placeholder art in an old branch are historical, not automatic production-approved assets."
+    },
+    "canonical_documentation_snapshot": {
+      "archival_branch": "archive/pixtee-canonical-verified-assets-2026-10-12",
+      "link": "https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-canonical-verified-assets-2026-10-12",
+      "frozen_content": "Most recent source-lock master, current verified approved 16-asset ZIP SHA256/Library backup, earlier engine and portrait snapshot refs, Work frozen hole pending status, all original-physics references and recovery instructions, local hash-copy script, commercial engine handover, World FX quality contract and tests",
+      "status": "ARCHIVE_REF_CREATED_AFTER_THE_FINAL_DOCUMENTATION_COMMIT",
+      "note": "This branch is a new immutable-by-policy snapshot rather than modifying previously created frozen documentation branch."
+    },
+    "prior_documentation_snapshot": {
+      "archival_branch": "archive/pixtee-canonical-source-lock-2026-10-12",
+      "link": "https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-canonical-source-lock-2026-10-12",
+      "frozen_content": "Canonical source-lock Markdown, Work Hole 1/asset archive procedure, copy-only SHA256 Windows tool, M1 engine handover, World FX integration standard, data and original provenance",
+      "note": "Created from working branch only after lock documents are committed; branch is a named fallback, not server-enforced branch protection."
+    }
+  },
+  "original_windows_reference": {
+    "product": "Sensible Golf Windows v1.014",
+    "reference_exe_sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+    "source_research": "spec/pixtee/ORIGINAL_PHYSICS_RESEARCH.json",
+    "godot_copy": "pixtee-godot/reference/ORIGINAL_PHYSICS_RESEARCH.json",
+    "numeric_18_hole_fixture": "pixtee-godot/reference/ORIGINAL_ROUND_REFERENCE.txt",
+    "canonical_data_integrity_check": "python3 pixtee-godot/tools/verify_reference_data.py",
+    "milestone_inventory_check": "python3 tools/verify_pixtee_milestone_one_inventory.py",
+    "protected_original_binaries_and_media": "No redistribution or commercial clearance claimed. Original executable and proprietary media are not saved to Pixtee builds."
+  },
+  "work_owned_frozen_hole_1": {
+    "source_directory": "C:\\Users\\86185\\Documents\\Codex\\2026-10-11\\can\\outputs\\pixtee-hole-01-reference-2026-10-12",
+    "must_preserve": [
+      "index.html",
+      "COURSE_PRODUCTION_STANDARD.md",
+      "COURSE_CATALOGUE_50.csv",
+      "existing frozen source integrity/hash files and all nested dependencies"
+    ],
+    "status": "USER_REPORTED_FROZEN_LOCALLY;CONTENT_AND_HASHES_NOT_ACCESSIBLE_FROM_GITHUB_CONNECTOR",
+    "locked_owner_decisions": "Hole 1 visual is approved and not to be modified; separate Work session owns canonical HTML source. Existing rules for shaders/particles/lighting and 50-course ideas should be preserved, not overwritten.",
+    "backup_tool": "tools/backup_pixtee_frozen_work_assets.ps1",
+    "backup_status": "PENDING_LOCAL_EXECUTION_AND_RETURNED_SHA256_MANIFEST",
+    "original_html_file_sha256": null,
+    "production_standard_sha256": null,
+    "course_catalogue_sha256": null
+  },
+  "approved_assets": {
+    "exact_owner_designated_package": "Pixtee golf assets(1).zip",
+    "aliases_from_prior_work": [
+      "Pixtee golf assets.zip"
+    ],
+    "status": "OWNER_APPROVED_ZIP_SHA256_VERIFIED; SECOND_COPY_CREATED_IN_LIBRARY_AND_BYTE_IDENTICAL",
+    "checksum_sha256": "2043e9c678b9904311778d17a1f341d577344e6d49a3a9d48ce6c3aef3b5239e",
+    "backup_tool": "tools/backup_pixtee_frozen_work_assets.ps1 -AssetPaths 'C:\\PATH\\TO\\Pixtee golf assets(1).zip'",
+    "policy": "The user-approved ZIP is canonical. Do not replace with preview/rejected art, regenerate existing assets, modify pixels, crop frames, or rename files without explicit authorization. Additive effects must be independent.",
+    "original_library_path": "/Pixtee golf assets(1).zip",
+    "backup_library_path": "/Pixtee Canonical Backups/2026-10-12/Pixtee golf assets(1) - CANONICAL FROZEN.zip",
+    "backup_verification": "20,820,759 bytes, SHA256 identical, direct byte-for-byte comparison and ZIP CRC passed for all 16 members",
+    "member_count": 16,
+    "approved_art_manifest": "spec/pixtee/PIXTEE_APPROVED_ASSETS_CANONICAL_SHA256_2026-10-12.json"
+  },
+  "hierarchy_of_canonical_authority": [
+    "Frozen Work Hole 1 HTML + its local COURSE_PRODUCTION_STANDARD.md: visual and authored course presentation, immutable baseline",
+    "Explicitly user-approved Pixtee assets ZIP: final visual assets, immutable original bytes",
+    "GitHub engine snapshot pinned SHA: original-recovered numerical and event/physics baseline; no inferred physics or corrupted tables",
+    "GitHub portrait snapshot pinned SHA: prior framework and prior artwork research/history, not an override of owner-approved ZIP",
+    "Pixtee M1 commercial engine handover + World FX standard: integration and QA contracts, subject to higher frozen references"
+  ],
+  "verification_policy": {
+    "local_backup_expected": "Frozen Work-session Hole 1 folder and existing hash/dependencies still require a separate copy on Work PC. Approved art ZIP already has a second SHA-verified Library copy; local offline copy is still recommended.",
+    "github_branch_hard_protection_configured": false,
+    "backup_branches_are": "Named archived Git refs pinned to specific commit IDs; do not merge or add commits. GitHub branch-protection rules were not configured by this tool.",
+    "external_second_backup": "Recommended: separate drive/cloud or separate Git remote; GitHub archives protect only Git-tracked files",
+    "milestone_one_commercial_ready": false,
+    "android_apk_verified": false,
+    "three_complete_playable_holes_verified": false
+  }
+}

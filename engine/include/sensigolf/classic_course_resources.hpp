@@ -9,6 +9,7 @@
 
 #include "sensigolf/classic_terrain.hpp"
 #include "sensigolf/recovered_course_lookup.hpp"
+#include "sensigolf/recovered_green_scene_bounds.hpp"
 
 namespace sensigolf {
 
@@ -36,14 +37,15 @@ struct ClassicGreenRegion {
     std::uint16_t origin_y = 0;
 
     bool contains_course(std::int16_t x, std::int16_t y) const noexcept {
-        return x >= static_cast<std::int32_t>(origin_x) + 8
-            && x <= static_cast<std::int32_t>(origin_x) + 112
-            && y >= static_cast<std::int32_t>(origin_y) + 8
-            && y <= static_cast<std::int32_t>(origin_y) + 84;
+        // Source x86 0x40C35B..0x40C40D verified 4740/4740:
+        // signed WORD comparison and 16-bit wrapping map origin.
+        return recovered::original_green_scene_contains(
+            origin_x, origin_y, {x,y}, false);
     }
 
     bool contains_green(std::int16_t x, std::int16_t y) const noexcept {
-        return x >= 16 && x <= 226 && y >= 16 && y <= 170;
+        return recovered::original_green_scene_contains(
+            origin_x, origin_y, {x,y}, true);
     }
 };
 

@@ -1,0 +1,37 @@
+#include <cassert>
+#include <cstdint>
+#include "recovered_welly_tick.hpp"
+int main(){
+    // Exact outcomes compared with Windows v1.014 machine code; see
+    // original Welly oracle CI 38159584005 (1986/1986 samples).
+    pixtee::OriginalWellyTick meter;
+    meter.step(false,0);
+    assert(meter.state().stage==1);
+    assert(meter.state().counter==1);
+    assert(meter.state().angle==4095);
+    for(int tick=1;tick<=104;++tick) meter.step(tick==12,0);
+    assert(meter.state().stage==2);
+    assert(meter.state().counter==70);
+    assert(meter.state().captured_power==12);
+    assert(meter.state().accuracy_counter==0);
+    assert(meter.state().angle==1950);
+    for(int tick=105;tick<=114;++tick) meter.step(tick==114,0);
+    assert(meter.state().stage==0);
+    assert(meter.state().counter==60);
+    assert(meter.state().captured_power==12);
+    assert(meter.state().accuracy_counter==9);
+    assert(meter.state().angle==0);
+    meter.reset();
+    for(int tick=0;tick<=175;++tick)meter.step(false,0);
+    assert(meter.state().stage==0);
+    assert(meter.state().counter==65535);
+    assert(meter.state().accuracy_counter==71);
+    meter.reset();
+    for(int tick=0;tick<=69;++tick)meter.step(false,12);
+    assert(meter.state().counter==70);
+    assert(meter.state().step_setting==3); // original putter caps quotient at 2
+    meter.reset();
+    for(int tick=0;tick<=69;++tick)meter.step(false,0);
+    assert(meter.state().step_setting==2);
+    return 0;
+}

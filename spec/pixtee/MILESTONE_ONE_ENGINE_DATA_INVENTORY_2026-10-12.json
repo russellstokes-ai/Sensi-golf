@@ -1,0 +1,467 @@
+{
+  "schema": "pixtee.milestone-one-engine-data-gates.v1",
+  "as_of": "2026-10-12",
+  "branch": "feat/pixtee-godot-recovered-core",
+  "pr_url": "https://github.com/russellstokes-ai/Sensi-golf/pull/12",
+  "scope": "Milestone One = independently authored three playable Pixtee holes driven exclusively by recovered C++ engine; no CPU opponents, multiplayer tournaments or 18-hole season release required.",
+  "reference_original": "Sensible Golf Windows v1.014",
+  "reference_sha256": "3ab09a789ae3d11ffe6636def32f5d1c00f2930ad4068bf6dc1420ceac7f1ec8",
+  "commercial_engine_ready": false,
+  "full_three_hole_release_gate": "RED",
+  "rights_clearance": "NOT_REVIEWED",
+  "original_gameplay_parity": "NOT_END_TO_END_PROVEN",
+  "original_gameplay_release_gates_passed": 0,
+  "original_gameplay_release_gates_total": 15,
+  "baseline_known_features": 73,
+  "source_data_bank": "pixtee-godot/reference/ORIGINAL_PHYSICS_RESEARCH.json",
+  "original_numeric_round_research": "pixtee-godot/reference/ORIGINAL_ROUND_REFERENCE.txt",
+  "source_coverage_register": "spec/pixtee/ENGINE_COMPLETENESS_GATE_2026-10-11.json",
+  "playable_course_status": {
+    "verified_production_courses": 0,
+    "native_independently_authored_adapters": 1,
+    "native_adapters": [
+      "pixtee-godot/native/src/pixtee_course_adapter.cpp"
+    ],
+    "required_distinct_complete_courses": 3,
+    "missing_authored_courses": [
+      2,
+      3
+    ]
+  },
+  "states": {
+    "RESEARCH_PROVEN": "Original scoped constants/subroutines verified, not necessarily integrated or legal for release",
+    "INTEGRATION_PARTIAL": "Working native components, full three-hole scenario still needs validation",
+    "BLOCKED": "Source or gameplay behaviour not established as end-to-end",
+    "PRODUCT_CONTENT_MISSING": "Pixtee commercial authoring not yet provided"
+  },
+  "required_sources": [
+    {
+      "id": "core_fixed_clock",
+      "state": "RESEARCH_PROVEN",
+      "evidence": "Fixed physics clock 936/65536 s, signed 16.16 state, heading 0..4095",
+      "paths": [
+        "engine/src/classic_shot_model.cpp",
+        "spec/pixtee/ORIGINAL_PHYSICS_RESEARCH.json"
+      ],
+      "release_gap": "3-hole render-rate-independent full trace and input replay"
+    },
+    {
+      "id": "original_club_lie_accuracy",
+      "state": "RESEARCH_PROVEN",
+      "evidence": "13 clubs (index 12 putter); 13x10 lie selectors; 11 accuracy/curvature profiles",
+      "paths": [
+        "engine/src/recovered_flight.cpp",
+        "pixtee-godot/reference/ORIGINAL_PHYSICS_RESEARCH.json"
+      ],
+      "release_gap": "Production commercial-use rights and end-to-end shot test each actual lie"
+    },
+    {
+      "id": "flight_launch",
+      "state": "RESEARCH_PROVEN",
+      "evidence": "Original launch, gravity, drag, spin, heading and trajectory subroutines",
+      "paths": [
+        "engine/src/recovered_flight.cpp",
+        "engine/tests/recovered_flight_tests.cpp"
+      ],
+      "release_gap": "Complete actual-play shot trajectory parity"
+    },
+    {
+      "id": "ground_bounce_roll",
+      "state": "RESEARCH_PROVEN",
+      "evidence": "Ground contact, multi-bounce, lie friction, roll/stop and putt motion",
+      "paths": [
+        "engine/src/recovered_ground.cpp",
+        "engine/tests/recovered_ground_tests.cpp"
+      ],
+      "release_gap": "Actual three-course on-device flight and roll without timeout hacks"
+    },
+    {
+      "id": "swing_start_capture",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Source Welly rising/falling producer and three-press raw control",
+      "paths": [
+        "pixtee-godot/native/src/recovered_welly_tick.cpp",
+        "engine/src/classic_mobile_controls.cpp",
+        "pixtee-godot/native/tests/round_runtime_tests.cpp"
+      ],
+      "release_gap": "Full press cadence, input debounce, pause/resume, controls and colour-zone capture"
+    },
+    {
+      "id": "meter_visual_zones",
+      "state": "BLOCKED",
+      "evidence": "Original numerical accuracy windows recovered; exact rendered zone boundaries not signed off",
+      "paths": [
+        "spec/pixtee/CANONICAL_GAMEPLAY_MECHANICS_LOCK_2026-10-10.md"
+      ],
+      "release_gap": "Obtain original pointer/zones visual evidence; derive horizontal Pixtee zone mapping from source numeric samples, approve in original style"
+    },
+    {
+      "id": "terrain_tables",
+      "state": "RESEARCH_PROVEN",
+      "evidence": "Original 77 terrain descriptors, codes, lie/force mapping and source classification",
+      "paths": [
+        "engine/src/classic_terrain.cpp",
+        "pixtee-godot/reference/ORIGINAL_PHYSICS_RESEARCH.json"
+      ],
+      "release_gap": "Validate all three actual authored tiles and feature interactions"
+    },
+    {
+      "id": "fine_course_geometry",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Original-format MAPM 16x8 world units and MAPI 8x4 per-tile 2x2 subcells",
+      "paths": [
+        "engine/src/classic_course_resources.cpp",
+        "pixtee-godot/native/src/pixtee_course_adapter.cpp"
+      ],
+      "release_gap": "Hole2/Hole3 authorship and edge/overlap tests"
+    },
+    {
+      "id": "green_map_slope",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Separate original-format MAPS green plus 16 directions x16 magnitudes",
+      "paths": [
+        "engine/src/classic_course_resources.cpp",
+        "pixtee-godot/native/tests/fine_course_parity_tests.cpp"
+      ],
+      "release_gap": "Author/approve actual green slopes on all 3 holes and test putt trajectories"
+    },
+    {
+      "id": "bunkers_lies",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Source terrain code7 and distinct sand lie physics",
+      "paths": [
+        "engine/src/classic_terrain.cpp",
+        "pixtee-godot/native/tests/fine_course_parity_tests.cpp"
+      ],
+      "release_gap": "Source-equivalent collision around every bunker lip and each approach"
+    },
+    {
+      "id": "water_named_hazards",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Source code35 stop, event 11, source safe-anchor recovery",
+      "paths": [
+        "engine/src/recovered_hazard_recovery.cpp",
+        "engine/src/recovered_mapped_terminal.cpp"
+      ],
+      "release_gap": "Full active-shot event→pause→restart handling and replay on each authored water crossing"
+    },
+    {
+      "id": "world_oob",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Original distinct out-of-world boundary, extra strokes, source recovery",
+      "paths": [
+        "engine/src/recovered_world_boundary.cpp",
+        "engine/src/classic_hole_session.cpp"
+      ],
+      "release_gap": "Verify full live first-tick near-border path and modal pause on actual Pixtee holes"
+    },
+    {
+      "id": "tree_object_identity_height",
+      "state": "BLOCKED",
+      "evidence": "Actual tree coordinates, object activation, hitbox, vertical extent and deflection missing",
+      "paths": [
+        "spec/pixtee/NINE_AREA_EXECUTION_CHECKPOINT_2026-10-12.md"
+      ],
+      "release_gap": "Recover original object/tree collision behaviour, create independent Pixtee tree manifest, exhaustive low/high ball impact test"
+    },
+    {
+      "id": "flag_presence_deflection",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Original SPT fifth record flag position and isolated source flag contact",
+      "paths": [
+        "engine/src/recovered_flag_setup.cpp",
+        "engine/src/classic_hole_session.cpp"
+      ],
+      "release_gap": "Per-hole authored verified object manifest; full flag→ball live trajectories"
+    },
+    {
+      "id": "cup_lip",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Source code8 capture and cup lip isolated decisions",
+      "paths": [
+        "engine/src/recovered_interactions.cpp",
+        "engine/src/recovered_putter_terminal.cpp"
+      ],
+      "release_gap": "Real approach and putting sequences including cup lip-out, hole completion and stroke state"
+    },
+    {
+      "id": "special_green_9_10",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Original code9/code10 gates, 100 tick pause and differing stroke accounting",
+      "paths": [
+        "engine/src/recovered_putter_terminal.cpp",
+        "engine/src/classic_hole_session.cpp"
+      ],
+      "release_gap": "Full host event and playable source-valid continuation after pause on every relevant authored hole"
+    },
+    {
+      "id": "animation_event_commands",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Ten 20-byte slots, timer/release/wait and authenticated 0x8000 callback token handoff",
+      "paths": [
+        "engine/src/recovered_animation_events.cpp",
+        "engine/tests/recovered_animation_events_tests.cpp"
+      ],
+      "release_gap": "Register licensed Pixtee event callbacks; host must acknowledge without executing raw original addresses"
+    },
+    {
+      "id": "host_shot_turn_lifecycle",
+      "state": "BLOCKED",
+      "evidence": "Source shot admission/dispatcher and partial state machine",
+      "paths": [
+        "engine/src/classic_hole_session.cpp",
+        "pixtee-godot/native/src/pixtee_round_runtime.cpp"
+      ],
+      "release_gap": "Full shot→collision→event ack→settled→next-shot or hole scored end-to-end tests"
+    },
+    {
+      "id": "strokes_penalty_scoring",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Source no-flight charged strokes, hazard counts, cup terminal, hole/round scores",
+      "paths": [
+        "engine/src/classic_round_session.cpp",
+        "engine/src/classic_hole_session.cpp"
+      ],
+      "release_gap": "Hole1–3 scorecard including pars, putts, invalid input, hazard and completion; no optimistic result"
+    },
+    {
+      "id": "prng_replay_save",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Recovered source PRNG, native save/replay and checksum for supported stable shots",
+      "paths": [
+        "engine/src/recovered_prng.cpp",
+        "engine/src/classic_replay_journal.cpp",
+        "pixtee-godot/native/tests/round_runtime_tests.cpp"
+      ],
+      "release_gap": "Save/restore real 3-hole session across interrupts, event states and device lifecycle; identical PRNG"
+    },
+    {
+      "id": "authorised_authored_holes",
+      "state": "PRODUCT_CONTENT_MISSING",
+      "evidence": "Lakewood Hole 1 independent test-course adapter only; 2 further production course manifests missing",
+      "paths": [
+        "pixtee-godot/native/src/pixtee_course_adapter.cpp",
+        "pixtee-godot/native/src/pixtee_course_adapter.hpp"
+      ],
+      "release_gap": "Three distinct production tee/green/hazard/tree/slope layouts, approved authored geometry, tested registration"
+    },
+    {
+      "id": "godot_native_abi",
+      "state": "INTEGRATION_PARTIAL",
+      "evidence": "Godot4.5 native GDExtension, round bridge, headless class-load regression",
+      "paths": [
+        "pixtee-godot/native/SConstruct",
+        "pixtee-godot/scripts/EngineBindingCI.gd"
+      ],
+      "release_gap": "Fully playable three-hole Godot scene using real input and no extra physics, Linux/Android ABI test"
+    },
+    {
+      "id": "portrait_camera_hud",
+      "state": "BLOCKED",
+      "evidence": "Approved overhead camera world scaling and HUD contract; implementation unfinished",
+      "paths": [
+        "spec/pixtee/CANONICAL_GAMEPLAY_MECHANICS_LOCK_2026-10-10.md",
+        "spec/pixtee/SCREEN_RESOLUTION_AND_WORLD_SCALE_2026-10-10.md"
+      ],
+      "release_gap": "Phone portrait and Fold open/closed camera, meter, target X, minimap, wind, score and legible unobstructed UI"
+    },
+    {
+      "id": "art_and_course_events",
+      "state": "BLOCKED",
+      "evidence": "Approved original Pixtee art is separate from engine branch; callback wiring unfinished",
+      "paths": [
+        "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+        "spec/pixtee/PIXTEE_MILESTONE_ONE_WORLD_FX_AND_FEEL_STANDARD_2026-10-12.md"
+      ],
+      "release_gap": "Import unchanged approved art and reconcile the separate Work course standard; implement wind-coherent vegetation, subtly moving water, native-hit-driven grass/sand/water/cup FX, birds/crowd/flags, noncolliding sponsor boards; pass FX-01..FX-10 without modifying C++ physics or gameplay RNG."
+    },
+    {
+      "id": "original_provenance_evidence",
+      "state": "RESEARCH_PROVEN",
+      "evidence": "Original SHA-authenticated x86 findings, reference physics bank and 18-hole numerical research fixture",
+      "paths": [
+        "spec/pixtee/ORIGINAL_PHYSICS_RESEARCH.json",
+        "pixtee-godot/reference/ORIGINAL_ROUND_REFERENCE.txt",
+        "pixtee-godot/tools/verify_reference_data.py"
+      ],
+      "release_gap": "Keep source checksums, x86 test run links and independent code provenance; never distribute original commercial data"
+    },
+    {
+      "id": "commercial_rights",
+      "state": "BLOCKED",
+      "evidence": "Original binary, numeric tables and reverse-engineered engine rights not cleared",
+      "paths": [
+        "pixtee-godot/reference/README.md",
+        "spec/pixtee/ENGINE_COMPLETENESS_GATE_2026-10-11.json"
+      ],
+      "release_gap": "Legal review/licence or independently implemented lawfully distributable substitute, plus product build audit"
+    },
+    {
+      "id": "android_release",
+      "state": "BLOCKED",
+      "evidence": "No verified Android arm64 release/APK, human playable three-hole test, performance or device QA",
+      "paths": [
+        "pixtee-godot/README.md",
+        ".github/workflows/pixtee-godot-gdextension-build.yml"
+      ],
+      "release_gap": "Signed Android native build, 60/90/120Hz parity, device matrix, crash/restart and performance regression"
+    }
+  ],
+  "mandatory_release_checks": [
+    "All 27 required inventory entries have complete source provenance and tests",
+    "Three independently authored hole manifests and compiled collision/green geometry exist",
+    "Actual tree and flag objects use source-informed separate 3D collision envelopes; no sprite-derived hitbox assumptions",
+    "Human player can tee off, aim, select club, capture authentic meter input, hit sand/water/tree/flag, putt and hole out on each hole",
+    "All code8, code9, code10, OOB and hazard branches settle and return control correctly",
+    "3-hole scoring and deterministic replay work over interruption, restart and PRNG",
+    "Commercial Godot scenes render approved assets while C++ remains sole simulation authority",
+    "Portrait standard Android, Fold closed/open and multiple render refresh rates preserve game-state outcomes",
+    "No original executable, commercial course map, sprites or audio in build",
+    "Distribution rights to source-derived engine and numerical tables legally cleared or substituted",
+    "Signed Android arm64 build and physical device QA pass"
+  ],
+  "milestone_one_acceptance": [
+    {
+      "id": "M1-01",
+      "criterion": "Complete 27-area evidence/source inventory and reference-data integrity",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "tools/verify_pixtee_milestone_one_inventory.py",
+        "pixtee-godot/tools/verify_reference_data.py"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-02",
+      "criterion": "Three complete independently authored approved real holes",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/native/src/pixtee_course_adapter.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-03",
+      "criterion": "Verified authored tree collision object mask height and deflection",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/recovered_interactions.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-04",
+      "criterion": "Complete original style flight and rolls on three real holes across FPS",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/classic_shot_model.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-05",
+      "criterion": "Three-click original meter scheduling input and displayed contact zones",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/native/src/recovered_welly_tick.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-06",
+      "criterion": "Sand water named hazards world OOB flag cup and true ball event sequence",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/classic_hole_session.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-07",
+      "criterion": "Code8 code9 code10 and all pause/hazard resume settle and unblock input",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/recovered_putter_terminal.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-08",
+      "criterion": "3-hole full public bridge loop with accurate independent hole and overall scores",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/native/src/pixtee_round_runtime.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-09",
+      "criterion": "PRNG deterministic save replay and interrupted gameplay recovery on all three holes",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/classic_replay_journal.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-10",
+      "criterion": "Godot real playable scenes do not duplicate C++ physics and support touch",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/native/SConstruct"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-11",
+      "criterion": "Frozen approved Pixtee art, portrait/Fold HUD and legible world sponsor boards, plus ten production World FX acceptance checks (shaders, particles, wind/water, genuine event-driven collisions, accessibility, render performance and unchanged native trajectory).",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+        "spec/pixtee/PIXTEE_MILESTONE_ONE_WORLD_FX_AND_FEEL_STANDARD_2026-10-12.md"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-12",
+      "criterion": "Android arm64 release build validated normal phone Fold closed and open",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/project.godot"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-13",
+      "criterion": "Rights audit original data/source code and media commercially cleared",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/reference/README.md"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-14",
+      "criterion": "Performance crash reliability access/input/device/end-to-end QA",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/scripts/EngineBindingCI.gd"
+      ],
+      "signoff_owner": "PENDING"
+    }
+  ]
+}

@@ -1,3 +1,6 @@
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 #include <cstdint>
 #include <stdexcept>
@@ -78,11 +81,32 @@ int main() {
     drive.aim_raw = 0;
     session.begin_shot(drive);
     assert(session.strokes() == 1);
+    assert(!session.pending_cup_capture_event().has_value());
     assert(session.recovered_counters().player_52 == 1);
     assert(session.recovered_counters().player_56 == 1);
     run_active(session);
     assert(session.phase() == HoleSessionPhase::ReadyForShot);
     assert(session.ball_y_raw() > 0);
+
+    // Tested actual original 990 x86 extremes: source charges strokes
+    // even when accuracy misses the club/lie profile and ball never moves.
+    ClassicHoleSession missed(fairway, 0);
+    auto severe_miss=drive;
+    severe_miss.accuracy_tick=105; // club0 + fairway profile 61..65
+    missed.begin_shot(severe_miss);
+    assert(missed.strokes()==1);
+    assert(missed.phase()==HoleSessionPhase::ReadyForShot);
+    assert(!missed.ball_state().holed);
+    assert(missed.ball_x_raw()==0 && missed.ball_y_raw()==0);
+    assert(missed.ball_state().x_raw==missed.ball_x_raw());
+    assert(missed.ball_state().y_raw==missed.ball_y_raw());
+    assert(missed.recovered_counters().player_52==1);
+    assert(missed.recovered_counters().player_56==1);
+    missed.begin_shot(drive);
+    assert(missed.strokes()==2);
+    assert(missed.recovered_counters().player_52==2);
+    assert(missed.recovered_counters().player_56==2);
+    run_active(missed);
 
     // Original zero-distance scoring is not dependent on code-8 tiles.
     // On ordinary fairway, a shot can come to rest at the recovered cup
@@ -118,25 +142,24 @@ int main() {
     hole_session.begin_shot(approach);
     run_active(hole_session);
     assert(hole_session.phase() == HoleSessionPhase::CupTerminal);
+    // The source code8 cup *display* event is only enabled for the
+    // independently verified original putter path; non-putter timing is open.
+    assert(!hole_session.pending_cup_capture_event().has_value());
     assert(hole_session.ball_state().holed);
 
-    // The original zero-distance scored-hole branch is not putter-specific.
-    // A non-putter cup terminal at zero distance scores on the next session
-    // tick without applying the transient club-12 counter correction.
+    // Code-8 CupTerminal alone must NOT count as a scored hole. This
+    // independently authored fixture leaves its cup at (0,0), away from
+    // the actual shot end point. Exact zero-distance non-putter scoring is
+    // exercised in the earlier rest_scored test above.
     ClassicHoleSession scored_approach(
         hole, 0, 0, ClassicHoleMetadata{0, 4});
     scored_approach.begin_shot(approach);
     run_active(scored_approach);
     assert(scored_approach.phase() == HoleSessionPhase::CupTerminal);
-    assert(scored_approach.distance_to_hole() == 0);
+    assert(scored_approach.distance_to_hole() > 0);
     scored_approach.step();
-    assert(scored_approach.phase() == HoleSessionPhase::HoleScored);
+    assert(scored_approach.phase() == HoleSessionPhase::CupTerminal);
     assert(scored_approach.strokes() == 1);
-    assert(scored_approach.recovered_counters().player_52 == 1);
-    assert(scored_approach.recovered_counters().player_56 == 1);
-    assert(scored_approach.recovered_counters().player_58 == 4);
-    assert(scored_approach.recovered_counters().player_48 == 3);
-    assert(scored_approach.recovered_counters().player_70 == 1);
 
     auto water = uniform_course(6);
     ClassicHoleSession water_session(water, 0, 0);
@@ -148,6 +171,7 @@ int main() {
     water_session.begin_shot(water_shot);
     run_active(water_session);
     assert(water_session.phase() == HoleSessionPhase::HazardStopped);
+    assert(water_session.last_hazard_kind() == ClassicNamedHazard::Water);
     assert(water_session.ball_state().hazard);
     assert(water_session.hazard_pause_remaining() == 100);
     const auto hazard_x = water_session.ball_x_raw();
@@ -232,6 +256,9 @@ int main() {
     cup_putt.begin_shot(putter_request());
     run_active(cup_putt);
     assert(cup_putt.phase() == HoleSessionPhase::CupTerminal);
+    assert(cup_putt.pending_cup_capture_event().has_value());
+    assert(cup_putt.pending_cup_capture_event()->dword_420548==0x1000fu);
+    assert(cup_putt.pending_cup_capture_event()->source_esi==0x42067eu);
     assert(cup_putt.ball_state().holed);
     assert(cup_putt.recovered_counters().player_52 == 2);
     assert(cup_putt.recovered_counters().player_56 == 2);
@@ -288,9 +315,17 @@ int main() {
         special_putt.begin_shot(putter_request());
         run_active(special_putt);
         assert(special_putt.phase() == HoleSessionPhase::SpecialGreenStopped);
+    assert(special_putt.pending_special_green_event().has_value());
+    assert(special_putt.pending_special_green_event()->dword_420548==0x1000du);
+
         assert(!special_putt.ball_state().holed);
-        assert(special_putt.recovered_counters().player_52 == 1);
-        assert(special_putt.recovered_counters().player_56 == 1);
+        // Source v1.014 0x40A403 increments on code9 early stop,
+        // but late club-12 code10 enters directly at 0x40A40B.
+        const auto source_strokes=1u; // BOTH club12 code9/10 go direct
+        // 0x40A40B without early-code9 extra stroke.
+        assert(special_putt.strokes()==source_strokes);
+        assert(special_putt.recovered_counters().player_52==source_strokes);
+        assert(special_putt.recovered_counters().player_56==source_strokes);
         assert(special_putt.special_green_pause_remaining() == 100);
 
         bool early_ack_blocked = false;
@@ -306,11 +341,27 @@ int main() {
         }
         assert(special_putt.phase() == HoleSessionPhase::SpecialGreenStopped);
         assert(special_putt.special_green_pause_remaining() == 0);
-
+        // Original x86 decrements the zero WORD once MORE before
+        // continuing (0 -> 0xffff, signed JNS becomes false).
+        bool zero_ack_blocked=false;
+        try {
+            special_putt.acknowledge_special_green_stop();
+        } catch(const std::logic_error&) {
+            zero_ack_blocked=true;
+        }
+        assert(zero_ack_blocked);
+        special_putt.step(); // original delayed pause underflow
+        assert(special_putt.special_green_pause_remaining() == 0);
+        // Same recovered original relocation primitive as the source
+        // code-35 hazard branch: stopped ball and public origin must agree.
+        assert(special_putt.ball_state().x_raw == special_putt.ball_x_raw());
+        assert(special_putt.ball_state().y_raw == special_putt.ball_y_raw());
         special_putt.acknowledge_special_green_stop();
         assert(special_putt.phase() == HoleSessionPhase::ReadyForShot);
         special_putt.begin_shot(putter_request());
-        assert(special_putt.strokes() == 2);
+        assert(special_putt.strokes()==source_strokes+1u);
+        assert(special_putt.recovered_counters().player_52==source_strokes+1u);
+        assert(special_putt.recovered_counters().player_56==source_strokes+1u);
     }
 
     // GREEN D2/code 50 remains unsupported for club 12 until its specific
@@ -328,5 +379,191 @@ int main() {
     assert(blocked.unsupported_descriptor().has_value());
     assert(*blocked.unsupported_descriptor() == 47);
 
+    // The original MAPI descriptor 22 is named OUT OF BOUNDS and shares
+    // code35 physics with water; the product must NOT silently label it
+    // water or charge the separate world-boundary penalty here.
+    {
+        auto oob_tile_course = uniform_course(22);
+        ClassicHoleSession oob_tile(oob_tile_course,0,0);
+        oob_tile.begin_shot(water_shot);
+        run_active(oob_tile);
+        assert(oob_tile.phase()==HoleSessionPhase::HazardStopped);
+        assert(oob_tile.last_hazard_kind()==ClassicNamedHazard::OutOfBoundsTile);
+        assert(!oob_tile.pending_world_oob_event().has_value());
+        assert(oob_tile.hazard_pause_remaining()==100);
+        assert(oob_tile.strokes()==1);
+        assert(oob_tile.recovered_counters().player_52==1);
+        assert(oob_tile.recovered_counters().player_56==1);
+        for(int i=0;i<101;++i)oob_tile.step();
+        assert(oob_tile.phase()==HoleSessionPhase::HazardRecovered);
+        assert(oob_tile.last_hazard_kind()==ClassicNamedHazard::OutOfBoundsTile);
+        oob_tile.acknowledge_hazard_recovery();
+        assert(oob_tile.phase()==HoleSessionPhase::ReadyForShot);
+        oob_tile.begin_shot(water_shot);
+        assert(oob_tile.strokes()==2);
+        assert(oob_tile.last_hazard_kind()==ClassicNamedHazard::None);
+    }
+
+    // Real gameplay world-boundary case: drive aim 0 advances Y. Start\n    // one integer unit below the course's north edge (height 128*8),\n    // rather than trying to escape the EAST X edge on a northward shot.\n    // Do not crash inside MAPI lookup.
+    // The original world negative-AX branch charges TWO counters +1
+    // over the already counted launch stroke, then uses a saved safe
+    // position. It is distinct from an in-map descriptor-22 hazard.
+    {
+        ClassicHoleSession world_oob(fairway,32<<16,1023<<16);
+        world_oob.begin_shot(drive);
+        run_active(world_oob);
+        assert(world_oob.phase()==HoleSessionPhase::HazardStopped);
+        assert(world_oob.last_hazard_kind()==ClassicNamedHazard::OutsideWorld);
+        assert(world_oob.strokes()==2);
+        assert(world_oob.recovered_counters().player_52==2);
+        assert(world_oob.recovered_counters().player_56==2);
+        assert(world_oob.hazard_pause_remaining()==100);
+        assert(world_oob.pending_world_oob_event().has_value());
+        assert(world_oob.pending_world_oob_event()->byte_420fef==1);
+        assert(world_oob.pending_world_oob_event()->dword_420548==0x1000d);
+
+        for(int tick=0;tick<101;++tick)world_oob.step();
+        assert(world_oob.phase()==HoleSessionPhase::HazardRecovered);
+        // Actual original 0x40AACF -> 0x40A871 uses safe anchor +15
+        // and does not leave the ball outside course dimensions.
+        assert(world_oob.ball_x_raw()>=0);
+        assert(world_oob.ball_x_raw()<(64<<16));
+        assert(world_oob.ball_y_raw()>=0);
+        assert(world_oob.ball_y_raw()<(1024<<16));
+        assert(world_oob.last_hazard_kind()==ClassicNamedHazard::OutsideWorld);
+        world_oob.acknowledge_hazard_recovery();
+        assert(world_oob.phase()==HoleSessionPhase::ReadyForShot);
+        assert(!world_oob.pending_world_oob_event().has_value());
+    }
+
+    // Object presence is an explicit source/manifest gate: it cannot
+    // silently activate from a cup location alone, and is immutable
+    // once original stroke/scoring input has been recorded.
+    {
+        auto pflag=uniform_course(3,32,80);
+        recovered::OriginalPrng16 rng{1,2};
+        ClassicHoleSession with_flag(pflag,0,0,std::nullopt,&rng);
+        assert(!with_flag.flag_object_verified());
+        with_flag.set_verified_flag_object(true);
+        assert(with_flag.flag_object_verified());
+        with_flag.begin_shot(drive);
+        bool locked=false;
+        try{with_flag.set_verified_flag_object(false);}
+        catch(const std::logic_error&){locked=true;}
+        assert(locked);
+        ClassicHoleSession no_prng(pflag,0,0);
+        locked=false;
+        try{no_prng.set_verified_flag_object(true);}
+        catch(const std::logic_error&){locked=true;}
+        assert(locked);
+    }
+
+    // Original mode must be explicitly supplied; near-cup lip is not
+    // inferred in unauthenticated sessions or without source PRNG.
+    {
+        auto lip_course=uniform_course(1,0,0);
+        recovered::OriginalPrng16 rng{0x2345,0x6789};
+        ClassicHoleSession marked(lip_course,0,0,std::nullopt,&rng);
+        assert(!marked.original_player_mode_5a().has_value());
+        marked.set_original_player_mode_5a(0);
+        assert(marked.original_player_mode_5a().value()==0);
+        marked.begin_shot(drive);
+        marked.step();
+        assert(marked.original_lip_deflection_last_tick());
+        bool refused=false;
+        try{marked.set_original_player_mode_5a(6);}
+        catch(const std::logic_error&){refused=true;}
+        assert(refused);
+        ClassicHoleSession unseeded(lip_course,0,0);
+        refused=false;
+        try{unseeded.set_original_player_mode_5a(0);}
+        catch(const std::logic_error&){refused=true;}
+        assert(refused);
+        unseeded.set_original_player_mode_5a(4);
+        assert(unseeded.original_player_mode_5a().value()==4);
+    }
+    // Source 0x40A3E0 non-putter code9 emits original animation id2
+    // (rect x-6,y-13,6x12), charges one extra stroke and enters
+    // the 100-tick special stop. Only user-authored art references
+    // may populate the native animation event queue.
+    {
+        auto code9=uniform_course(23,48,250);
+        recovered::OriginalPrng16 rng{0x2345,0x6789};
+        recovered::OriginalAnimationAssetTable sprites{};
+        for(std::size_t i=0;i<sprites.size();++i)
+            sprites[i]=static_cast<std::uint32_t>(1000u+i);
+        ClassicHoleSession early(code9,32<<16,40<<16,
+                                 std::nullopt,&rng);
+        early.set_original_animation_assets(sprites);
+        auto low=drive;
+        low.club_index=0;
+        low.power_tick=20;
+        low.accuracy_tick=63;
+        early.begin_shot(low);
+        run_active(early);
+        assert(early.phase()==HoleSessionPhase::SpecialGreenStopped);
+        assert(early.strokes()==2);
+        const auto& slots=early.original_animation_events();
+        assert(slots[0].status==0);
+        assert(slots[0].asset_pointer==sprites[2]);
+        assert(slots[0].width==6 && slots[0].height==12);
+        assert(slots[0].ticks==4);
+        for(int i=0;i<4;++i)
+            early.step_original_animation_timers();
+        assert(early.original_animation_events()[0].ticks==0);
+        bool needs_script=false;
+        try{early.step_original_animation_timers();}
+        catch(const std::logic_error&){needs_script=true;}
+        assert(needs_script); // cannot fabricate source frames
+        // With an explicit original-format script catalog, the new
+        // source 0x40C539 ordinary-frame handler can advance the actual
+        // code9 event queue; negative command opcodes still reject.
+        const auto active=early.step_original_animation_plain_scripts({
+            {sprites[2],{5,0,0,0,0,0,17,0,19,0}}
+        });
+        assert(active.active_slots==1);
+        assert(early.original_animation_events()[0].ticks==5);
+        assert(early.original_animation_events()[0].height==17);
+        assert(early.original_animation_events()[0].frame_offset==2);
+        const auto progressing=early.step_original_animation_plain_scripts({});
+        assert(progressing.active_slots==1);
+        assert(early.original_animation_events()[0].ticks==4);
+        // The real source queuing/slot lifecycle now supports plain
+        // sprite frame -> 0x8008 WAIT -> 0x8004 release, with only
+        // host-authorized authored script bytes, not copied game art.
+        for(int i=0;i<4;++i)
+            early.step_original_animation_plain_scripts({});
+        assert(early.original_animation_events()[0].ticks==0);
+        const std::vector<std::uint8_t> script_lifecycle{
+            5,0,0,0,0,0,17,0,8,0x80,2,0,4,0x80
+        };
+        auto wait_event=early.step_original_animation_plain_scripts({
+            {sprites[2],script_lifecycle}
+        });
+        assert(wait_event.active_slots==1);
+        assert(early.original_animation_events()[0].ticks==2);
+        assert(early.original_animation_events()[0].frame_offset==6);
+        for(int i=0;i<2;++i)
+            early.step_original_animation_plain_scripts({});
+        assert(early.original_animation_events()[0].ticks==0);
+        auto closure=early.step_original_animation_plain_scripts({
+            {sprites[2],script_lifecycle}
+        });
+        assert(closure.active_slots==1);
+        assert(early.original_animation_events()[0].status==0xffffu);
+        assert(early.original_animation_events()[0].asset_pointer==0);
+        assert(early.original_animation_events()[0].frame_offset==0);
+        assert(early.step_original_animation_plain_scripts({}).active_slots==0);
+
+
+        ClassicHoleSession direct(code9,32<<16,40<<16,
+                                  std::nullopt,&rng);
+        direct.set_original_animation_assets(sprites);
+        direct.begin_shot(putter_request());
+        run_active(direct);
+        assert(direct.phase()==HoleSessionPhase::SpecialGreenStopped);
+        assert(direct.strokes()==1);
+        assert(direct.original_animation_events()[0].status==0xffff);
+    }
     return 0;
 }

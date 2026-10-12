@@ -58,5 +58,21 @@ int main() {
     try{original_cpu_candidate_trial(planned,32,{12,200,300,20});}
     catch(const std::out_of_range&){rejected=true;}
     assert(rejected);
+    // Two authentic original x86 CPU candidate stages compose only if
+    // the preflight original course/club branch 0x40CB6C is confirmed.
+    auto initial=original_cpu_plan_scan(4,0,512,false);
+    const auto simulated=original_cpu_trial_precontact(
+        initial,31,{12,200,300,20},0,1,true);
+    assert(simulated.trial.heading==992);
+    assert(simulated.trial.force.vertical_force==440);
+    assert(simulated.trial.force.horizontal_force==540);
+    assert(simulated.update.state.vertical_force==440-0x2100);
+    assert(simulated.update.state.horizontal_force==540);
+    assert(simulated.update.route==OriginalCpuContactRoute::ContinueMotion);
+    bool unsupported=false;
+    try{original_cpu_trial_precontact(
+        initial,31,{12,200,300,20},0,1,false);}
+    catch(const std::logic_error&){unsupported=true;}
+    assert(unsupported);
     return 0;
 }

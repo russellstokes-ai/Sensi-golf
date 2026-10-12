@@ -53,5 +53,8 @@
     "final_menus_present": false,
     "android_build_playtest_passed": false
   },
-  "next_allowed_implementation": "Create separate source-derived Godot CourseDefinition and deterministic MAPI/MAPM/MAPS compiler from actual verified JSON polygons; maintain distinct cosmetic vs physical objects; source core is sole gameplay authority; do not mutate archive branches or ZIP source files."
+  "next_allowed_implementation": "Create separate source-derived Godot CourseDefinition and deterministic MAPI/MAPM/MAPS compiler from actual verified JSON polygons; maintain distinct cosmetic vs physical objects; source core is sole gameplay authority; do not mutate archive branches or ZIP source files.",
+  "file_integrity_manifest_sha256": "c35cff70dcf45622f7e317f6e4f44a6762ef4a5805cdfdfd7e2fce74e3d14dc6",
+  "checkpoint_archive_branch": "archive/pixtee-lakewood-open-v1-1-intake-2026-10-12",
+  "checkpoint_archive_status": "CREATED_FROM_PINNED_GITHUB_COMMIT_AFTER_THIS_RECORD"
 }

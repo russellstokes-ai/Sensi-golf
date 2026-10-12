@@ -23,6 +23,18 @@ enum class ClassicShotOutcome : std::uint8_t {
     SpecialGreenStop,
 };
 
+// Read-only presentation evidence captured at the actual recovered branch.
+// It never participates in physics, PRNG, scoring or collision decisions.
+struct ClassicPresentationContact {
+    bool impact = false;
+    bool flag = false;
+    bool lip = false;
+    bool hazard = false;
+    bool green_mode = false;
+    std::uint16_t landing_code = 0;
+    std::int32_t x_raw = 0, y_raw = 0;
+};
+
 class ClassicShotModel final : public IClassicModel {
 public:
     static constexpr std::uint32_t kTimerInterval16_16 = 0x03A8;
@@ -49,6 +61,9 @@ public:
     // Set only after original source mode and distance have been supplied.
     bool original_lip_deflection_last_tick() const noexcept {
         return lip_deflection_last_tick_;
+    }
+    const ClassicPresentationContact& presentation_contact() const noexcept {
+        return presentation_contact_;
     }
     void update_surface_context_for_tick(
         const ClassicSurfaceContext& context);
@@ -100,6 +115,7 @@ private:
     bool near_cup_distance_zero_ = false;
     std::uint16_t player_mode_5a_ = 4; // original CPU modes >=4 do not lip
     bool lip_deflection_last_tick_ = false;
+    ClassicPresentationContact presentation_contact_{};
 };
 
 } // namespace sensigolf

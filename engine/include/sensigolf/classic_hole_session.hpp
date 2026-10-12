@@ -94,6 +94,9 @@ public:
     void set_original_player_mode_5a(std::uint16_t mode);
     std::optional<std::uint16_t> original_player_mode_5a() const noexcept;
     bool original_lip_deflection_last_tick() const noexcept;
+    const ClassicPresentationContact& presentation_contact() const noexcept {
+        return shot_.presentation_contact();
+    }
 
 
     HoleSessionPhase phase() const noexcept;

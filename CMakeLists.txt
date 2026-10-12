@@ -7,3 +7,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 enable_testing()
 add_subdirectory(engine)
+
+if(NOT ANDROID)
+    add_executable(pixtee_approved_lakewood_lookup_tests
+        pixtee-godot/native/tests/approved_lakewood_lookup_tests.cpp)
+    target_link_libraries(pixtee_approved_lakewood_lookup_tests PRIVATE sensigolf_core)
+    add_test(NAME pixtee_approved_lakewood_lookup_tests
+        COMMAND pixtee_approved_lakewood_lookup_tests
+        "${CMAKE_CURRENT_SOURCE_DIR}/pixtee-godot/courses/lakewood-hole-1")
+endif()

@@ -49,6 +49,7 @@ void ClassicShotModel::reset() {
     near_cup_distance_zero_ = false;
     player_mode_5a_ = 4;
     lip_deflection_last_tick_ = false;
+    presentation_contact_ = {};
 }
 
 void ClassicShotModel::set_original_interaction_context(
@@ -98,6 +99,7 @@ void ClassicShotModel::set_ball_origin(
 }
 
 void ClassicShotModel::begin_shot(const ShotInput& input) {
+    presentation_contact_ = {};
     if (active_) {
         throw std::logic_error("shot already active");
     }
@@ -127,12 +129,18 @@ void ClassicShotModel::begin_shot(const ShotInput& input) {
 }
 
 void ClassicShotModel::step() {
+    presentation_contact_ = {};
     if (!active_) {
         return;
     }
 
     ++public_.tick;
     lip_deflection_last_tick_=false;
+    presentation_contact_.green_mode=interaction_green_mode_;
+    presentation_contact_.landing_code=surface_.landing_code;
+    presentation_contact_.x_raw=flight_.x;
+    presentation_contact_.y_raw=flight_.y;
+    const auto incoming_height=flight_.height;
 
     // Source-disassembled v1.014 0x40A374..0x40A575: code 9 and flag
     // interactions precede this tick's normal gravity/putter response.
@@ -167,12 +175,14 @@ void ClassicShotModel::step() {
            true,player_mode_5a_,flight_)) {
         lip_deflection_last_tick_=recovered::apply_near_hole_lip_deflection(
             flight_,*interaction_prng_);
+        presentation_contact_.lip=lip_deflection_last_tick_;
     }
     if(flag_object_verified_ && interaction_prng_ &&
        recovered::original_flag_coordinate_hit(
            flight_, flag_x_, flag_y_, interaction_green_mode_)) {
         recovered::apply_flag_coordinate_deflection(
             flight_, *interaction_prng_);
+        presentation_contact_.flag=true;
     }
 
     recovered::GroundStepResult result{};
@@ -211,6 +221,14 @@ void ClassicShotModel::step() {
             surface_.landing_code);
     }
 
+    // A source-ground branch reached from airborne height is an impact;
+    // subsequent rolling contacts are not repeated particle/audio impacts.
+    presentation_contact_.impact=result.contacted_ground && incoming_height>0;
+    presentation_contact_.hazard=result.hazard_stop;
+    if(result.contacted_ground) {
+        presentation_contact_.x_raw=result.contact_x;
+        presentation_contact_.y_raw=result.contact_y;
+    }
     if (result.contacted_ground && !result.resting) {
         public_.phase = ShotPhase::GroundRoll;
     }

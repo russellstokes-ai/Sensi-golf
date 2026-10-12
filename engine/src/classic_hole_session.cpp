@@ -87,6 +87,7 @@ void ClassicHoleSession::reset(
     last_hazard_kind_ = ClassicNamedHazard::None;
     pending_world_oob_event_.reset();
     pending_cup_capture_event_.reset();
+    pending_special_green_event_.reset();
     special_green_pause_remaining_ = 0;
     special_green_continuation_ready_ = false;
     recovered_counters_ = {};
@@ -247,6 +248,7 @@ void ClassicHoleSession::acknowledge_special_green_stop() {
     }
 
     special_green_continuation_ready_ = false;
+    pending_special_green_event_.reset();
     phase_ = HoleSessionPhase::ReadyForShot;
 }
 
@@ -477,6 +479,11 @@ void ClassicHoleSession::step() {
         hazard_pause_remaining_ = 100;
         break;
     case ClassicShotOutcome::SpecialGreenStop: {
+        // Original both early code9 and direct code10 after state setup
+        // enter source 0x40A436 -> 0x40CD00 presentation request, the
+        // same message ID as source out-of-world penalty. Preserve the
+        // *distinct cause* so the host can still label it correctly.
+        pending_special_green_event_=recovered::original_world_oob_event();
         // Original early low-height code-9 contact enters 0x40A403:
         // it increments BOTH stroke counters before 0x40A40B. The
         // late putter code-10 route enters 0x40A40B directly and does
@@ -556,6 +563,11 @@ ClassicHoleSession::pending_world_oob_event() const noexcept {
 std::optional<recovered::OriginalWorldOobEvent>
 ClassicHoleSession::pending_cup_capture_event() const noexcept {
     return pending_cup_capture_event_;
+}
+
+std::optional<recovered::OriginalWorldOobEvent>
+ClassicHoleSession::pending_special_green_event() const noexcept {
+    return pending_special_green_event_;
 }
 
 std::uint16_t ClassicHoleSession::hazard_pause_remaining() const noexcept {

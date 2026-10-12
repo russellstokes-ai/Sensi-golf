@@ -9,7 +9,6 @@ int main(){
         OriginalAnimationSlots slots{};
         std::vector<OriginalAnimationScriptAsset> scripts;
         scripts.reserve(10);
-        std::uint32_t value;
         for(std::size_t i=0;i<10;++i){
             std::uint32_t status,ticks,offset,frame,delay,height,width;
             if(!(std::cin>>status>>ticks>>offset>>frame>>delay>>height>>width)){

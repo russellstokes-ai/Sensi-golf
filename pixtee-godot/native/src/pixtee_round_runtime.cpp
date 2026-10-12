@@ -1,4 +1,5 @@
 #include "pixtee_round_runtime.hpp"
+#include <algorithm>
 #include <stdexcept>
 #include <utility>
 
@@ -266,6 +267,70 @@ bool PixteeRoundRuntime::has_hole() const noexcept {
 }
 const ClassicHoleSession& PixteeRoundRuntime::hole() const {
     return game_->active_hole();
+}
+std::optional<ClassicGreenRegion>
+PixteeRoundRuntime::active_green_region() const {
+    if(!game_->has_active_hole()) return std::nullopt;
+    const auto metadata=game_->active_hole().hole_metadata();
+    if(!metadata) return std::nullopt;
+    const auto found=courses_.find(static_cast<std::uint8_t>(metadata->resource_id));
+    if(found==courses_.end()) return std::nullopt;
+    return found->second.green_region();
+}
+
+std::vector<NativeGreenArrowCell>
+PixteeRoundRuntime::verified_native_green_arrows(
+    std::uint16_t green_detail_stride) const {
+    // This is a pure READ of original MAPS, never a new gameplay slope engine.
+    // Godot must use returned field directly; it cannot infer it from artwork.
+    if(green_detail_stride==0 || green_detail_stride>64)
+        throw std::invalid_argument("green-detail sample spacing must be 1..64");
+    if(!game_->has_active_hole()) return {};
+    const auto metadata=game_->active_hole().hole_metadata();
+    if(!metadata) return {};
+    const auto found=courses_.find(static_cast<std::uint8_t>(metadata->resource_id));
+    if(found==courses_.end()) return {};
+    const auto& source=found->second;
+    const auto origin=source.green_region();
+    if(!origin || !source.has_green_map()) return {};
+    const auto xmax=std::min<std::uint32_t>(
+        0x100u,static_cast<std::uint32_t>(source.green_map_width())*16u);
+    const auto ymax=std::min<std::uint32_t>(
+        0xD0u,static_cast<std::uint32_t>(source.green_map_height())*8u);
+    std::vector<NativeGreenArrowCell> arrows;
+    for(std::uint32_t y=green_detail_stride/2u;y<ymax;
+        y+=green_detail_stride) {
+        for(std::uint32_t x=green_detail_stride/2u;x<xmax;
+            x+=green_detail_stride) {
+            const auto surface=source.resolve_integer_position(
+                static_cast<std::int16_t>(x),static_cast<std::int16_t>(y),true);
+            if(surface.landing_code!=1u || surface.slope_magnitude==0u)
+                continue;
+            if(surface.slope_direction>4095u ||
+               surface.slope_direction%256u!=0u ||
+               surface.slope_magnitude>15u) {
+                throw std::logic_error(
+                    "authored green MAPS returned invalid original slope sectors");
+            }
+            // v1.014 originals use local coords at 2x course unit resolution:
+            // x_world = first MAPM marker origin + MAPS detailed x / 2.
+            const std::uint32_t world_x=origin->origin_x + x/2u;
+            const std::uint32_t world_y=origin->origin_y + y/2u;
+            if(world_x>=source.map_width()*16u ||
+               world_y>=source.map_height()*8u)
+                throw std::logic_error("original MAPS arrow outside course world");
+            arrows.push_back({
+                static_cast<std::int16_t>(world_x),
+                static_cast<std::int16_t>(world_y),
+                surface.slope_direction,surface.slope_magnitude,
+                surface.landing_code
+            });
+            if(arrows.size()>2048u)
+                throw std::logic_error(
+                    "green arrow field exceeds bounded render limit");
+        }
+    }
+    return arrows;
 }
 ClassicMeterStage PixteeRoundRuntime::meter_stage() const noexcept {
     return controls_.stage();

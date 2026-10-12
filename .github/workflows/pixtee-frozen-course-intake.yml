@@ -7,6 +7,7 @@ on:
       - 'tools/pixtee_frozen_course_intake.py'
       - 'pixtee-godot/native/src/pixtee_three_hole_round*'
       - 'pixtee-godot/native/tests/three_hole_preview_gate_tests.cpp'
+      - 'pixtee-godot/native/tests/lakewood_native_boundary_release_gate.cpp'
       - 'tools/tests/test_pixtee_frozen_course_intake.py'
       - '.github/workflows/pixtee-frozen-course-intake.yml'
       - 'spec/pixtee/PIXTEE_COURSE_AND_MENU_INTAKE_CONTRACT_2026-10-12.md'
@@ -30,6 +31,21 @@ jobs:
         run: python3 pixtee-godot/tools/verify_reference_data.py
       - name: Audit milestone-one source register and 14 commercial gates
         run: python3 tools/verify_pixtee_milestone_one_inventory.py
+  lakewood-native-world-boundaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile preserved recovered C++ engine
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j 2
+      - name: Verify native 544x912 Lakewood boundary, real-shot OOB/water and event recovery
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Iengine/include \
+            pixtee-godot/native/tests/lakewood_native_boundary_release_gate.cpp \
+            build/engine/libsensigolf_core.a -o build/lakewood-boundary-gate
+          build/lakewood-boundary-gate
   native-three-hole-preview:
     runs-on: ubuntu-latest
     steps:

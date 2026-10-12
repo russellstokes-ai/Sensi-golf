@@ -50,6 +50,7 @@ void ClassicShotModel::reset() {
     player_mode_5a_ = 4;
     lip_deflection_last_tick_ = false;
     presentation_contact_ = {};
+    authored_trees_=nullptr;last_tree_id_=0;
 }
 
 void ClassicShotModel::set_original_interaction_context(
@@ -141,6 +142,7 @@ void ClassicShotModel::step() {
     presentation_contact_.x_raw=flight_.x;
     presentation_contact_.y_raw=flight_.y;
     const auto incoming_height=flight_.height;
+    const auto previous_flight=flight_;
 
     // Source-disassembled v1.014 0x40A374..0x40A575: code 9 and flag
     // interactions precede this tick's normal gravity/putter response.
@@ -248,6 +250,29 @@ void ClassicShotModel::step() {
         }
     }
 
+    if(active_ && authored_trees_ && !authored_trees_->empty()) {
+        auto point=[&](const recovered::FlightState& state) {
+            return AuthoredTreePoint{tree_green_?state.x/2+tree_origin_x_:state.x,
+                tree_green_?state.y/2+tree_origin_y_:state.y,state.height};
+        };
+        const auto contact=authored_tree_contact(*authored_trees_,point(previous_flight),point(flight_));
+        if(contact.tree_id && contact.tree_id!=last_tree_id_) {
+            if(!interaction_prng_)throw std::logic_error("authored tree impact requires native PRNG");
+            recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
+            if(contact.kind==AuthoredTreeContactKind::Canopy) {
+                const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
+                flight_.vertical_force=rebound.vertical_force;
+                flight_.horizontal_force=rebound.horizontal_force;
+            }
+            // Roll back this tick's horizontal penetration; the existing
+            // native integrator advances the deflected ball on the next tick.
+            flight_.x=previous_flight.x;flight_.y=previous_flight.y;
+            presentation_contact_.tree_id=contact.tree_id;
+            presentation_contact_.canopy=contact.kind==AuthoredTreeContactKind::Canopy;
+            presentation_contact_.x_raw=flight_.x;presentation_contact_.y_raw=flight_.y;
+        }
+        last_tree_id_=contact.tree_id;
+    }
     sync_public_state();
 }
 

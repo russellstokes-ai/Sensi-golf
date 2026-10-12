@@ -101,6 +101,7 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("save_stable_replay"),&PixteeRoundBridge::save_stable_replay);
     ClassDB::bind_method(D_METHOD("restore_replay","payload"),&PixteeRoundBridge::restore_replay);
     ClassDB::bind_method(D_METHOD("snapshot"),&PixteeRoundBridge::snapshot);
+    ClassDB::bind_method(D_METHOD("set_authored_tree_objects","raw_volumes"),&PixteeRoundBridge::set_authored_tree_objects);
     ClassDB::bind_method(D_METHOD("verified_native_green_arrow_cells","green_detail_stride"),&PixteeRoundBridge::verified_native_green_arrow_cells);
     ClassDB::bind_method(D_METHOD("requested_course"),&PixteeRoundBridge::requested_course);
     ClassDB::bind_method(D_METHOD("last_error"),&PixteeRoundBridge::last_error);
@@ -561,6 +562,19 @@ bool PixteeRoundBridge::tick_original_welly(bool pressed) {
     }
 }
 void PixteeRoundBridge::cancel_meter() {if(round_)round_->cancel_meter();}
+bool PixteeRoundBridge::set_authored_tree_objects(const PackedInt32Array& raw) {
+    if(!round_)return false;
+    try {
+        if(raw.size()%8 || raw.size()>128*8)throw std::invalid_argument("tree records require eight raw fields");
+        std::vector<sensigolf::AuthoredTreeVolume> trees;
+        for(int i=0;i<raw.size();i+=8) {
+            if(raw[i]<1)throw std::invalid_argument("tree IDs must be positive");
+            trees.push_back({static_cast<std::uint32_t>(raw[i]),raw[i+1],raw[i+2],raw[i+3],raw[i+4],raw[i+5],raw[i+6],raw[i+7]});
+        }
+        round_->set_authored_tree_objects(trees);
+        last_error_="";return true;
+    }catch(const std::exception& e){last_error_=String(e.what());return false;}
+}
 void PixteeRoundBridge::queue_presentation_event(const char* type,double x,double y,
                                                 std::uint64_t tick) {
     Dictionary event;
@@ -616,6 +630,13 @@ void PixteeRoundBridge::step_tick() {
                 if(type) queue_presentation_event(type,p.first,p.second,ball.tick);
             }
             if(contact.flag) queue_presentation_event("verified_flag_contact",p.first,p.second,ball.tick);
+            if(contact.tree_id) {
+                queue_presentation_event("authored_tree_contact",p.first,p.second,ball.tick);
+                Dictionary event=presentation_events_[presentation_events_.size()-1];
+                event["tree_id"]=static_cast<int64_t>(contact.tree_id);
+                event["contact_part"]=contact.canopy?"canopy":"trunk";
+                event["collision_authority"]="owner-authorized C++ tree volumes";
+            }
             if(contact.lip) queue_presentation_event("cup_lip",p.first,p.second,ball.tick);
         }
         const auto p=world_position(ball.x_raw,ball.y_raw,hole.green_mode());

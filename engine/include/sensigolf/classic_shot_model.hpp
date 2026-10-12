@@ -1,4 +1,5 @@
 #pragma once
+#include "sensigolf/authored_tree_contacts.hpp"
 
 #include <cstdint>
 
@@ -26,6 +27,8 @@ enum class ClassicShotOutcome : std::uint8_t {
 // Read-only presentation evidence captured at the actual recovered branch.
 // It never participates in physics, PRNG, scoring or collision decisions.
 struct ClassicPresentationContact {
+    std::uint32_t tree_id=0;
+    bool canopy=false;
     bool impact = false;
     bool flag = false;
     bool lip = false;
@@ -37,6 +40,10 @@ struct ClassicPresentationContact {
 
 class ClassicShotModel final : public IClassicModel {
 public:
+    void set_authored_tree_context(const std::vector<AuthoredTreeVolume>* trees,
+        std::int32_t origin_x,std::int32_t origin_y,bool green) noexcept {
+        authored_trees_=trees;tree_origin_x_=origin_x;tree_origin_y_=origin_y;tree_green_=green;
+    }
     static constexpr std::uint32_t kTimerInterval16_16 = 0x03A8;
     static constexpr std::uint32_t kNominalTickRateHz = 70;
 
@@ -100,6 +107,10 @@ private:
     void sync_public_state();
 
     recovered::FlightState flight_{};
+    const std::vector<AuthoredTreeVolume>* authored_trees_=nullptr;
+    std::int32_t tree_origin_x_=0,tree_origin_y_=0;
+    bool tree_green_=false;
+    std::uint32_t last_tree_id_=0;
     BallState public_{};
     ClassicSurfaceContext surface_{};
     std::int32_t origin_x_ = 0;

@@ -73,6 +73,7 @@ public:
     // flag deflection is enabled in the existing native shot loop.
     void set_verified_flag_object(bool present);
     bool flag_object_verified() const noexcept;
+    void set_authored_tree_objects(const std::vector<AuthoredTreeVolume>& trees);
     // Host's independently licensed animation manifest supplies 16 stable
     // logical asset keys. The source original event allocator stores a
     // reference into that table: do NOT embed original commercial sprites.
@@ -125,6 +126,7 @@ public:
     const recovered::OriginalPrng16& prng_state() const;
 
 private:
+    std::vector<AuthoredTreeVolume> authored_trees_;
     bool surface_supported_for_active_shot(
         const ResolvedCourseSurface& surface) const noexcept;
     ClassicSurfaceContext to_context(

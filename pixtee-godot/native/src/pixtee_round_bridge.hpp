@@ -71,6 +71,7 @@ public:
     bool nudge_aim_raw(int delta);
     bool set_club_index(int index);
     bool set_verified_flag_object(bool present);
+    bool set_authored_tree_objects(const PackedInt32Array& raw_volumes);
     bool set_original_player_mode_5a(int mode);
     bool cycle_club(int delta);
     bool meter_click_raw(int sample);

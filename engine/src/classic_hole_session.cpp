@@ -192,6 +192,12 @@ void ClassicHoleSession::set_verified_flag_object(bool present) {
 bool ClassicHoleSession::flag_object_verified() const noexcept {
     return flag_object_verified_;
 }
+void ClassicHoleSession::set_authored_tree_objects(const std::vector<AuthoredTreeVolume>& trees) {
+    if(phase_!=HoleSessionPhase::ReadyForShot || strokes_!=0 || !prng_)
+        throw std::logic_error("authored trees require idle loaded hole and native PRNG");
+    validate_authored_trees(trees);
+    authored_trees_=trees;
+}
 
 void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
     if (phase_ != HoleSessionPhase::ReadyForShot) {
@@ -488,6 +494,10 @@ void ClassicHoleSession::step() {
     }
 
     shot_.update_surface_context_for_tick(to_context(surface));
+    const auto tree_origin=course_.green_region();
+    shot_.set_authored_tree_context(&authored_trees_,
+        tree_origin?static_cast<std::int32_t>(tree_origin->origin_x)*65536:0,
+        tree_origin?static_cast<std::int32_t>(tree_origin->origin_y)*65536:0,green_mode_);
     const auto flag=course_.hole_position();
     shot_.set_original_interaction_context(
         prng_, green_mode_, static_cast<std::int16_t>(flag.x),

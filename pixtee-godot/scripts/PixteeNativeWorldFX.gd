@@ -10,6 +10,7 @@ const MAX_LIVE_FLECKS := 128
 const MAX_RIPPLES := 16
 const MAX_REMEMBERED_NATIVE_EVENTS := 4096
 const EVENT_PRESETS := {
+    "authored_tree_contact": {"count": 6, "color": Color(0.47,0.66,0.35), "life": 0.55},
 	"fairway_contact": {"count": 5, "color": Color(0.76,0.80,0.42), "life": 0.40},
 	"rough_contact": {"count": 7, "color": Color(0.51,0.68,0.32), "life": 0.55},
 	"bunker_contact": {"count": 9, "color": Color(0.86,0.72,0.48), "life": 0.65},

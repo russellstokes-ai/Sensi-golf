@@ -66,6 +66,11 @@ void PixteeRoundRuntime::set_verified_flag_object(bool present) {
     }
 }
 
+void PixteeRoundRuntime::set_authored_tree_objects(const std::vector<sensigolf::AuthoredTreeVolume>& trees) {
+    if(!game_->has_active_hole())throw std::logic_error("no loaded hole for authored trees");
+    game_->active_hole().set_authored_tree_objects(trees);
+    if(!trees.empty())replay_supported_=false;
+}
 void PixteeRoundRuntime::set_club(std::uint16_t index) {
     if(original_welly_active_) throw std::logic_error("club locked during original Welly");
     controls_.set_club(index);

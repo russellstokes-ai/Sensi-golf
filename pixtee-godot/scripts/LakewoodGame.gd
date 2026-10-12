@@ -351,6 +351,15 @@ func start_hole() -> void:
 		return
 	core.set_aim_raw(2048)
 	core.set_verified_flag_object(true) # Exact approved manifest flag at native SPT cup.
+	var tree_data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(COURSE+"authored-tree-volumes.json"))
+	var volumes := PackedInt32Array()
+	for tree in tree_data.trees:
+		volumes.append(int(tree.id))
+		for field in ["x","y","trunk_radius","trunk_height","canopy_radius","canopy_bottom","canopy_top"]:
+			volumes.append(int(round(float(tree[field])*65536.0)))
+	if not core.set_authored_tree_objects(volumes):
+		push_error(core.last_error())
+		return
 	attempt_id = profile.begin_attempt()
 	last_result.clear()
 	result_saved = false

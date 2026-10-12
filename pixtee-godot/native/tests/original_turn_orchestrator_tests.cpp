@@ -57,6 +57,7 @@ int main(){
     sel=original_decide_next_turn(r);
     assert(sel.used_competition_controller && sel.active_ball_array==1);
     r.ordinary.count=1;
+    r.competition.side0_flag=1; // source requests slot 1, absent
     refused=false;
     try{original_decide_next_turn(r);}
     catch(const std::logic_error&){refused=true;}

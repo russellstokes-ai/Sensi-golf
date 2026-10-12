@@ -1,4 +1,4 @@
-# Original/licensed game material — keep outside the public repository
+# Original/licensed game material â€” keep outside the public repository
 original/
 analysis/private/
 analysis/binaries/
@@ -26,6 +26,7 @@ __pycache__/
 .DS_Store
 pixtee-godot/native/godot-cpp/
 pixtee-godot/.godot/
+pixtee-godot/review-captures/
 *.obj
 *.os
 *.pdb

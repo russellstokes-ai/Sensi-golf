@@ -18,6 +18,10 @@ func _run() -> void:
 	assert(scene.intro_tween == null and scene.menu_screen == "game")
 	scene.pause_game()
 	var before: Dictionary = scene.core.snapshot()
+	var water_time: float = scene.world.get_child(0).material.get_shader_parameter("presentation_time")
+	await process_frame
+	await process_frame
+	assert(scene.world.get_child(0).material.get_shader_parameter("presentation_time") == water_time)
 	scene.show_help()
 	assert(scene.menu_screen == "help")
 	scene.back_menu()

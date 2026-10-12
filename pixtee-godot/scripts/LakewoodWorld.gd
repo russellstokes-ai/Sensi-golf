@@ -61,6 +61,8 @@ func accept_snapshot(state: Dictionary) -> void:
 func _process(delta: float) -> void:
 	if not reduced_motion:
 		time += minf(delta,0.1)
+		for child in get_children():
+			if child is Polygon2D: child.material.set_shader_parameter("presentation_time",time)
 		queue_redraw()
 
 func _draw() -> void:

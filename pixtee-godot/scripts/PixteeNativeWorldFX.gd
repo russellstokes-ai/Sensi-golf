@@ -38,8 +38,18 @@ func accept_native_ball_snapshot(snapshot: Dictionary) -> bool:
 		return false
 	if not snapshot.has("ball_z_raw") or not snapshot.has("shot_tick"):
 		return false
+	# Native green mode stores local coordinates at 2x world resolution.
+	# The existing bridge has not yet exported its green-region origin.
+	# Never draw a shadow in the wrong place by treating local coords as world.
+	if not snapshot.has("green_mode"):
+		return false
 	var x: float = float(snapshot["ball_x_raw"]) / 65536.0
 	var y: float = float(snapshot["ball_y_raw"]) / 65536.0
+	if snapshot["green_mode"] == true:
+		if not snapshot.has("green_origin_x") or not snapshot.has("green_origin_y"):
+			return false
+		x = x * 0.5 + float(snapshot["green_origin_x"])
+		y = y * 0.5 + float(snapshot["green_origin_y"])
 	var z: float = maxf(0.0, float(snapshot["ball_z_raw"]) / 65536.0)
 	if not is_finite(x) or not is_finite(y) or not is_finite(z):
 		return false

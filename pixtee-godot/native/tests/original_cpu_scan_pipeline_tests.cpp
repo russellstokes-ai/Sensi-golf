@@ -45,5 +45,18 @@ int main() {
     try{original_cpu_plan_scan(10,0,0,false);}
     catch(const std::invalid_argument&){refused=true;}
     assert(refused); // Original 24-row table not available for mode10
+
+    // Real original 0x40CCA4 trial force is now paired with a source
+    // table-produced original candidate heading, not a guessed angle.
+    const auto planned=original_cpu_plan_scan(4,0,512,false);
+    const auto trial=original_cpu_candidate_trial(
+        planned,31,{12,200,300,20});
+    assert(trial.heading==992);
+    assert(trial.force.vertical_force==440);
+    assert(trial.force.horizontal_force==540);
+    bool rejected=false;
+    try{original_cpu_candidate_trial(planned,32,{12,200,300,20});}
+    catch(const std::out_of_range&){rejected=true;}
+    assert(rejected);
     return 0;
 }

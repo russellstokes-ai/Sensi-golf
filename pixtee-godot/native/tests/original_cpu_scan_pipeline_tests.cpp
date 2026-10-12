@@ -41,6 +41,35 @@ int main() {
             assert(tooFew);
         }
     }
+    // Compose the original shot's three source-machine recovered stages,
+    // never invoking gravity for original special/putter early returns.
+    {
+        const auto plan=original_cpu_plan_scan(4,0,512,false);
+        auto result=original_cpu_trial_route_after_lookup(
+            plan,31,{12,200,300,20},1,0,200,100,true);
+        assert(result.trial.heading==992);
+        assert(result.route==OriginalCpuPreflightRoute::Gravity);
+        assert(result.gravity_contact.has_value());
+        assert(result.gravity_contact->state.vertical_force==
+               440-0x2100);
+        result=original_cpu_trial_route_after_lookup(
+            plan,0,{0,-1,3,0},9,0,0,100,true);
+        assert(result.route==OriginalCpuPreflightRoute::ReturnMinusOne);
+        assert(!result.gravity_contact.has_value());
+        result=original_cpu_trial_route_after_lookup(
+            plan,0,{0,-1,3,0},8,12,0,100,true);
+        assert(result.route==OriginalCpuPreflightRoute::ContinueMotion);
+        assert(!result.gravity_contact.has_value());
+        result=original_cpu_trial_route_after_lookup(
+            plan,0,{0,-1,0,0},8,12,0,100,true);
+        assert(result.route==OriginalCpuPreflightRoute::ReturnZero);
+        assert(!result.gravity_contact.has_value());
+        bool invalid=false;
+        try{original_cpu_trial_route_after_lookup(
+            plan,0,{0,1,1,1},9,0,0,100,false);}
+        catch(const std::logic_error&){invalid=true;}
+        assert(invalid);
+    }
     bool refused=false;
     try{original_cpu_plan_scan(10,0,0,false);}
     catch(const std::invalid_argument&){refused=true;}

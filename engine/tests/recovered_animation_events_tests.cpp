@@ -176,29 +176,29 @@ int main(){
 
     // Original 0x8000 command is exposed ONLY as a safe host handoff:
     // no untrusted callback machine pointer is ever executed by C++.
-    OriginalAnimatedEvent callback{};
-    callback.status=0;
-    callback.ticks=0;
-    callback.asset_pointer=0x501000u;
-    callback.frame_offset=2;
-    callback.height=54;
+    OriginalAnimatedEvent callback_handoff{};
+    callback_handoff.status=0;
+    callback_handoff.ticks=0;
+    callback_handoff.asset_pointer=0x501000u;
+    callback_handoff.frame_offset=2;
+    callback_handoff.height=54;
     const std::vector<std::uint8_t> callback_script{
         7,0,0,0,0,0,0,0,
         0,0x80,0x00,0x02,0x50,0x00
     };
     const auto requested=original_animation_prepare_callback(
-        callback,callback_script);
+        callback_handoff,callback_script);
     assert(requested.source_callback_token==0x00500200u);
     assert(requested.original_asset_pointer==0x501000u);
     assert(requested.original_frame_offset==2);
     assert(requested.script_delay==7);
-    assert(callback.ticks==0 && callback.frame_offset==2);
-    original_animation_finalize_callback(callback,requested);
-    assert(callback.ticks==7);
-    assert(callback.frame_offset==8);
-    assert(callback.height==54 && callback.status==0);
+    assert(callback_handoff.ticks==0 && callback_handoff.frame_offset==2);
+    original_animation_finalize_callback(callback_handoff,requested);
+    assert(callback_handoff.ticks==7);
+    assert(callback_handoff.frame_offset==8);
+    assert(callback_handoff.height==54 && callback_handoff.status==0);
     bool stale_ack=false;
-    try{original_animation_finalize_callback(callback,requested);}
+    try{original_animation_finalize_callback(callback_handoff,requested);}
     catch(const std::logic_error&){stale_ack=true;}
     assert(stale_ack);
     OriginalAnimationSlots blocked_callback{};

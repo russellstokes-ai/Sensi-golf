@@ -3,6 +3,7 @@
 #include <vector>
 #include "original_cpu_candidate.hpp"
 #include "original_cpu_trial_force.hpp"
+#include "original_cpu_simulated_contact.hpp"
 #include "original_cpu_difficulty.hpp"
 #include "original_cpu_heading_sweep.hpp"
 #include "original_cpu_shot_variation.hpp"
@@ -55,5 +56,19 @@ struct OriginalCpuTrial {
 OriginalCpuTrial original_cpu_candidate_trial(
     const OriginalCpuScanPlan& plan,std::size_t candidate_index,
     OriginalCpuTrialForceInput original_player_state);
+
+// Composes two independently source-x86 verified original CPU trial
+// stages when the caller can certify original branch 0x40CB6C was reached
+// (non-putter, no earlier special terrain/map termination). Uncertified
+// early branches cannot be executed using this isolated contact helper.
+struct OriginalCpuTrialPrecontact {
+    OriginalCpuTrial trial{};
+    OriginalCpuContactResult update{};
+};
+OriginalCpuTrialPrecontact original_cpu_trial_precontact(
+    const OriginalCpuScanPlan& plan,std::size_t candidate_index,
+    OriginalCpuTrialForceInput source_forces,
+    std::int32_t source_height,std::int32_t source_hole_distance,
+    bool original_airborne_branch_verified);
 
 } // namespace pixtee

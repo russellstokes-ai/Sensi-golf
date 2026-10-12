@@ -1,6 +1,13 @@
 name: Pixtee Frozen Course/Menu Intake Contract
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/pixtee_frozen_course_intake.py'
+      - 'tools/tests/test_pixtee_frozen_course_intake.py'
+      - '.github/workflows/pixtee-frozen-course-intake.yml'
+      - 'spec/pixtee/PIXTEE_COURSE_AND_MENU_INTAKE_CONTRACT_2026-10-12.md'
   push:
     branches: [feat/pixtee-m1-course-intake-safe]
     paths:

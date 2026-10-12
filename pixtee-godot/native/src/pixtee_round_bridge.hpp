@@ -38,6 +38,12 @@ public:
     Dictionary original_cpu_heading_sweep(int original_mode, int course_band, int initial_heading);
     Dictionary original_cpu_scan_grid(int original_mode, int course_band);
     Dictionary original_cpu_search_parameters(int original_mode, bool special_flag);
+    // Exact original 0x40CA8E scored record winner mapped to source
+    // 24-row angular scan table; caller must have real evaluated records.
+    // This API does not implement complete trajectory evaluation.
+    Dictionary original_cpu_scored_record_choice(
+        int mode,int course_band,int initial_heading,int span,int step,
+        const PackedByteArray& source_records,bool genuine_evaluations);
     int original_cpu_candidate_choice(
         const PackedInt32Array& primary_status,
         const PackedInt32Array& secondary_status,

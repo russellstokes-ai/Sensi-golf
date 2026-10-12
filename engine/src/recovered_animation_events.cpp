@@ -25,4 +25,21 @@ OriginalAnimationEnqueueResult original_animation_enqueue(
     }
     return {-1,false};
 }
+OriginalAnimationTimerTick original_animation_tick_countdowns(
+    OriginalAnimationSlots& slots) {
+    for(const auto& slot:slots) {
+        if(slot.status!=0xffffu && slot.ticks==0)
+            throw std::logic_error(
+                "original 0x40C539 event script decoder not recovered for this slot");
+    }
+    OriginalAnimationTimerTick result{};
+    for(auto& slot:slots) {
+        if(slot.status==0xffffu)continue;
+        ++result.active_slots;
+        --slot.ticks;
+        if(slot.ticks==0)++result.newly_ready_for_script;
+    }
+    return result;
+}
+
 } // namespace sensigolf::recovered

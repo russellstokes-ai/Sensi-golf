@@ -2,6 +2,7 @@
 #include <memory>
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/array.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/packed_int32_array.hpp"
 #include "godot_cpp/variant/string.hpp"
@@ -84,6 +85,7 @@ public:
     String save_stable_replay();
     bool restore_replay(const String& payload);
     Dictionary snapshot() const;
+    Array verified_native_green_arrow_cells(int green_detail_stride = 8) const;
     Dictionary requested_course() const;
     String last_error() const {return last_error_;}
 private:

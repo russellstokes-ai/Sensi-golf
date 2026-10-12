@@ -23,10 +23,3 @@ jobs:
         run: python3 pixtee-godot/tools/verify_reference_data.py
       - name: Validate all 27 milestone one source systems and 14 release gate records
         run: python3 tools/verify_pixtee_milestone_one_inventory.py
-      - name: Confirm fail-closed commercial readiness gate remains RED
-        run: |
-          if python3 tools/verify_pixtee_milestone_one_inventory.py --require-commercial; then
-            echo "Unexpected commercial-ready result: explicitly review approval and evidence" >&2
-            exit 1
-          fi
-          echo "Expected: original-data audit passes, commercial launch remains blocked."

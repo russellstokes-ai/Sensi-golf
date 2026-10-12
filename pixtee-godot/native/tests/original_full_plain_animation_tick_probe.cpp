@@ -22,7 +22,7 @@ int main(){
             s.frame_offset=offset;
             s.height=static_cast<std::uint16_t>(height);
             s.width=static_cast<std::uint16_t>(width);
-            s.asset_pointer=static_cast<std::uint32_t>(0x700000+i*128);
+            s.asset_pointer=static_cast<std::uint32_t>(0x502000+i*128);
             std::vector<std::uint8_t> b(offset+8,0);
             b[0]=static_cast<std::uint8_t>(delay);
             b[1]=static_cast<std::uint8_t>(delay>>8);

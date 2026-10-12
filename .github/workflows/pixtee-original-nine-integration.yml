@@ -36,11 +36,14 @@ jobs:
             pixtee-godot/native/tests/original_turn_orchestrator_tests.cpp \
             -o /tmp/pixtee-original-turn-integration
           /tmp/pixtee-original-turn-integration
+      - name: Build recovered portable engine for CPU source terraforming and contact
+        run: |
+          cmake -S . -B /tmp/pixtee-engine-nine -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/pixtee-engine-nine --target sensigolf_core -j 2
       - name: Verify composition of original CPU search grid heading sweep candidate ranking and sampled swing
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror \
             -Iengine/include -Ipixtee-godot/native/src \
-            engine/src/recovered_math.cpp \
             pixtee-godot/native/src/original_cpu_difficulty.cpp \
             pixtee-godot/native/src/original_cpu_search_grid.cpp \
             pixtee-godot/native/src/original_cpu_heading_sweep.cpp \
@@ -54,6 +57,7 @@ jobs:
             pixtee-godot/native/src/original_cpu_simulated_contact.cpp \
             pixtee-godot/native/src/original_cpu_simulated_motion.cpp \
             pixtee-godot/native/tests/original_cpu_scan_pipeline_tests.cpp \
+            /tmp/pixtee-engine-nine/engine/libsensigolf_core.a \
             -o /tmp/pixtee-original-cpu-scan-pipeline
           /tmp/pixtee-original-cpu-scan-pipeline
       - name: Verify native engine regression with Release-mode asserts

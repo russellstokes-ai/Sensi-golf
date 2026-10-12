@@ -21,6 +21,7 @@ int main(){
     assert(!original_green_scene_all_inside(100,50,
         {lower,{213,134}},false));
     assert(!original_green_scene_all_inside(100,50,{},false));
-    assert(!original_green_scene_contains(65535,65535,{8,8},false));
+    assert(original_green_scene_contains(65535,65535,{8,8},false));
+    assert(!original_green_scene_contains(65535,65535,{6,8},false));
     return 0;
 }

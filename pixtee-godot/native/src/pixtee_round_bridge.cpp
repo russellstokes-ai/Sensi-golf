@@ -29,6 +29,9 @@ std::vector<std::uint8_t> native_bytes(const PackedByteArray& a) {
 }
 void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(
+        D_METHOD("original_cpu_reference_penalties"),
+        &PixteeRoundBridge::original_cpu_reference_penalties);
+    ClassDB::bind_method(
         D_METHOD("original_cpu_quality_score","distance",
                  "original_contact_code","green_mode","source_penalties"),
         &PixteeRoundBridge::original_cpu_quality_score);
@@ -253,6 +256,12 @@ Dictionary PixteeRoundBridge::original_cpu_trial_force(
     d["complete_cpu_shot_planner"]=false;
     last_error_="";
     return d;
+}
+PackedInt32Array PixteeRoundBridge::original_cpu_reference_penalties() const {
+    PackedInt32Array out;
+    for(const auto value:pixtee::original_cpu_reference_penalties())
+        out.push_back(static_cast<int>(value));
+    return out;
 }
 Dictionary PixteeRoundBridge::original_cpu_quality_score(
     int distance,int code,int green,const PackedInt32Array& penalties) {

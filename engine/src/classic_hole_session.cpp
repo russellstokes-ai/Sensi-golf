@@ -60,6 +60,10 @@ void ClassicHoleSession::reset(
     safe_anchor_y_raw_ = 0;
     safe_anchor_valid_ = false;
     flag_object_verified_ = false;
+    animation_assets_verified_ = false;
+    animation_assets_ = {};
+    animation_slots_ = {};
+
     original_player_mode_5a_.reset();
     // A launch from a valid low-code lie can exit the map before its first
     // sampled terrain tick. Seed a safe landing anchor from the starting
@@ -118,12 +122,36 @@ bool ClassicHoleSession::surface_supported_for_active_shot(
             || surface.landing_code == 10;
     }
 
+    // Source Windows 0x40A374..0x40A40B handles non-putter code9
+    // BEFORE the ordinary contact function. The source needs an actual
+    // captured PRNG if code9 deflects: never turn it into ordinary turf.
+    if(surface.landing_code==9u) return prng_!=nullptr;
     if (!surface.product_supported) {
         return false;
     }
 
     // GREEN H4 uses putter-specific green drag/slope semantics.
     return surface.landing_code != 1;
+}
+
+void ClassicHoleSession::set_original_animation_assets(
+    const recovered::OriginalAnimationAssetTable& table) {
+    if(phase_!=HoleSessionPhase::ReadyForShot || strokes_!=0)
+        throw std::logic_error(
+            "authored event asset map must be set before the first stroke");
+    if(table[2]==0)
+        throw std::invalid_argument(
+            "original code9 reaction asset at logical source index2 missing");
+    animation_assets_=table;
+    animation_assets_verified_=true;
+}
+const recovered::OriginalAnimationSlots&
+ClassicHoleSession::original_animation_events() const noexcept {
+    return animation_slots_;
+}
+recovered::OriginalAnimationTimerTick
+ClassicHoleSession::step_original_animation_timers() {
+    return recovered::original_animation_tick_countdowns(animation_slots_);
 }
 
 void ClassicHoleSession::set_original_player_mode_5a(std::uint16_t mode) {
@@ -524,6 +552,22 @@ void ClassicHoleSession::step() {
         // NON-PUTTER low-height code9 path.
         const bool early_code9=surface.landing_code==9
                                && active_club_!=12;
+        if(early_code9 && animation_assets_verified_) {
+            // Original 0x40A3E0:
+            // AX = BALL.X.high16 - 6, BX = BALL.Y.high16 - 13;
+            // CX=6, DX=12, BP=2, CALL 0x40C4C0.
+            // The source allocator is independently x86 verified.
+            const auto px=static_cast<std::uint16_t>(
+                static_cast<std::uint32_t>(final.x_raw)>>16);
+            const auto py=static_cast<std::uint16_t>(
+                static_cast<std::uint32_t>(final.y_raw)>>16);
+            (void)recovered::original_animation_enqueue(
+                animation_slots_,
+                {static_cast<std::uint16_t>(px-6u),
+                 static_cast<std::uint16_t>(py-13u),6u,12u,2u},
+                animation_assets_);
+        }
+
         stop=recovered::original_special_green_stop_state(early_code9,stop);
         recovered_counters_.player_52=stop.counter_52;
         recovered_counters_.player_56=stop.counter_56;

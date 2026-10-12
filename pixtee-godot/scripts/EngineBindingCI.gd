@@ -105,6 +105,19 @@ func _initialize() -> void:
         push_error("Original CPU 32-angle heading sweep mismatch in native Godot")
         quit(1)
         return
+    # The SHA-verified original Windows penalty table at 0x41FADF is
+    # exposed by native code, not hand-copied into GDScript gameplay.
+    var original_penalties = round_host.original_cpu_reference_penalties()
+    if original_penalties.size() != 32 or original_penalties[0] != 200 or original_penalties[10] != 1000 or original_penalties[31] != 0:
+        push_error("Original CPU built-in 32-WORD terrain penalty data missing")
+        quit(1)
+        return
+    var original_course_score = round_host.original_cpu_quality_score(
+        50,10,0,original_penalties)
+    if not original_course_score.get("verified",false) or int(original_course_score.get("score_word",-1)) != 1050:
+        push_error("Original CPU source penalty-table score parity failed")
+        quit(1)
+        return
     # Source x86 0x40C9FD: authentic CPU quality uses distance plus
     # source penalty WORD unless original green-mode == 1. Regression
     # passes a synthetic penalty table ONLY to verify the ABI/formula.

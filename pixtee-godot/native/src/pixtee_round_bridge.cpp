@@ -72,6 +72,8 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("cycle_club","delta"),&PixteeRoundBridge::cycle_club);
     ClassDB::bind_method(D_METHOD("set_verified_flag_object","present"),
                          &PixteeRoundBridge::set_verified_flag_object);
+    ClassDB::bind_method(D_METHOD("set_original_player_mode_5a","mode"),
+                         &PixteeRoundBridge::set_original_player_mode_5a);
     ClassDB::bind_method(D_METHOD("meter_click_raw","sample"),&PixteeRoundBridge::meter_click_raw);
     ClassDB::bind_method(D_METHOD("cancel_meter"),&PixteeRoundBridge::cancel_meter);
     ClassDB::bind_method(D_METHOD("start_original_welly"),&PixteeRoundBridge::start_original_welly);
@@ -436,6 +438,21 @@ PIXTEE_WRAP_BOOL(set_aim_raw(int h),round_->set_aim_raw(static_cast<std::uint16_
 PIXTEE_WRAP_BOOL(nudge_aim_raw(int d),round_->nudge_aim_raw(d))
 PIXTEE_WRAP_BOOL(set_club_index(int i),round_->set_club(static_cast<std::uint16_t>(i)))
 PIXTEE_WRAP_BOOL(set_verified_flag_object(bool present),round_->set_verified_flag_object(present))
+bool PixteeRoundBridge::set_original_player_mode_5a(int mode) {
+    if(!round_) {last_error_="Native round is not initialized";return false;}
+    if(mode<0 || mode>15) {
+        last_error_="original player mode must be 0..15";
+        return false;
+    }
+    try {
+        round_->set_original_player_mode_5a(static_cast<std::uint16_t>(mode));
+        last_error_="";
+        return true;
+    }catch(const std::exception& e) {
+        last_error_=String(e.what());
+        return false;
+    }
+}
 PIXTEE_WRAP_BOOL(cycle_club(int d),round_->cycle_club(d))
 PIXTEE_WRAP_BOOL(meter_click_raw(int s),round_->meter_click_raw(static_cast<std::uint16_t>(s)))
 PIXTEE_WRAP_BOOL(acknowledge_hazard(),round_->acknowledge_hazard())
@@ -545,6 +562,10 @@ Dictionary PixteeRoundBridge::snapshot() const {
             d["shot_tick"]=static_cast<int64_t>(ball.tick);
             d["green_mode"]=h.green_mode();
             d["flag_object_verified"]=h.flag_object_verified();
+            d["original_player_mode_assigned"]=h.original_player_mode_5a().has_value();
+            d["original_player_mode_5a"]=h.original_player_mode_5a().has_value()
+                ? static_cast<int>(h.original_player_mode_5a().value()) : -1;
+            d["near_cup_lip_activated_last_tick"]=h.original_lip_deflection_last_tick();
             d["distance_to_hole"]=static_cast<int64_t>(h.distance_to_hole());
             d["hazard_pause_ticks"]=static_cast<int>(h.hazard_pause_remaining());
             d["special_green_pause_ticks"]=static_cast<int>(h.special_green_pause_remaining());

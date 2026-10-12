@@ -8,6 +8,7 @@
 #include "original_competition_turn.hpp"
 #include "original_cpu_candidate.hpp"
 #include "original_cpu_trial_force.hpp"
+#include "original_cpu_scan_pipeline.hpp"
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -26,6 +27,11 @@ std::vector<std::uint8_t> native_bytes(const PackedByteArray& a) {
 }
 }
 void PixteeRoundBridge::_bind_methods() {
+    ClassDB::bind_method(
+        D_METHOD("original_cpu_scored_record_choice",
+                 "mode","course_band","initial_heading","span","step",
+                 "source_records","genuine_evaluations"),
+        &PixteeRoundBridge::original_cpu_scored_record_choice);
     ClassDB::bind_method(
         D_METHOD("original_cpu_candidate_choice","primary_status",
                  "secondary_status","candidate_metrics"),
@@ -242,6 +248,40 @@ Dictionary PixteeRoundBridge::original_cpu_trial_force(
     d["complete_cpu_shot_planner"]=false;
     last_error_="";
     return d;
+}
+Dictionary PixteeRoundBridge::original_cpu_scored_record_choice(
+    int mode,int band,int initial_heading,int span,int step,
+    const PackedByteArray& scored,bool original_evaluations) {
+    Dictionary result;
+    result["verified"]=false;
+    result["complete_cpu_shot_planner"]=false;
+    if(mode<4 || mode>9 || band<0 || band>3 ||
+       initial_heading<0 || initial_heading>4095 ||
+       span<=0 || span>32767 || step<=0 || step>32767) {
+        last_error_="original CPU signed score record inputs outside source range";
+        return result;
+    }
+    try {
+        const auto plan=pixtee::original_cpu_plan_scan(
+            static_cast<std::uint16_t>(mode),static_cast<std::uint8_t>(band),
+            static_cast<std::uint16_t>(initial_heading),false);
+        const auto winner=pixtee::original_cpu_choose_scored_scan(
+            plan,static_cast<std::uint16_t>(span),
+            static_cast<std::uint16_t>(step),
+            native_bytes(scored),original_evaluations);
+        result["verified"]=true;
+        result["found"]=winner.found;
+        result["original_index"]=winner.found ?
+            static_cast<int>(winner.index) : -1;
+        result["heading"]=winner.found ?
+            static_cast<int>(winner.heading) : -1;
+        result["original_score_word"]=static_cast<int>(winner.score_word);
+        result["original_evaluator_supplied"]=original_evaluations;
+        last_error_="";
+    }catch(const std::exception& e) {
+        last_error_=String(e.what());
+    }
+    return result;
 }
 Dictionary PixteeRoundBridge::original_cpu_shot_variation(
     bool bypass, int power, int variation,

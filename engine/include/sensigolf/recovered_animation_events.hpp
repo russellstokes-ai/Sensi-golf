@@ -90,4 +90,25 @@ struct OriginalAnimationSupportedStep {
 OriginalAnimationSupportedStep original_animation_decode_supported_step(
     OriginalAnimatedEvent& slot,
     const std::vector<std::uint8_t>& original_asset_script);
+    
+// Original script opcode 0x8000: source 0x40C56A PUSHAD, CALL DWORD
+// PTR [script cursor], POPAD, then advances the offset by a DWORD.
+// This is a trusted-host *handoff*, never execution of an arbitrary
+// serialized machine address from course/asset data. Caller must run
+// its independently authored callback before finalizing the handoff.
+// Until the host provides a callback implementation, regular live
+// event stepping continues to BLOCK opcode 0x8000.
+struct OriginalAnimationCallbackRequest {
+    std::uint32_t original_asset_pointer=0;
+    std::uint32_t source_callback_token=0; // opaque source script DWORD
+    std::uint32_t original_frame_offset=0;
+    std::uint16_t script_delay=0;
+};
+OriginalAnimationCallbackRequest original_animation_prepare_callback(
+    const OriginalAnimatedEvent& slot,
+    const std::vector<std::uint8_t>& source_format_script);
+void original_animation_finalize_callback(
+    OriginalAnimatedEvent& slot,
+    const OriginalAnimationCallbackRequest& acknowledged);
+
 } // namespace sensigolf::recovered

@@ -42,4 +42,32 @@ OriginalAnimationTimerTick original_animation_tick_countdowns(
     return result;
 }
 
+OriginalAnimationPlainFrame original_animation_decode_plain_frame(
+    OriginalAnimatedEvent& slot,
+    const std::vector<std::uint8_t>& script) {
+    if(slot.status==0xffffu || slot.ticks!=0)
+        throw std::logic_error(
+            "original frame decoder requires an active event with zero countdown");
+    // Original EDI = [slot+0xC]+6+[slot+0x10], AX=WORD[EDI].
+    // Test only within the caller-provided original script byte range.
+    const auto offset=static_cast<std::size_t>(slot.frame_offset);
+    if(script.size()<2 || offset>script.size() ||
+       script.size()-offset<8u)
+        throw std::out_of_range(
+            "original animation script has no complete frame at offset");
+    const std::uint16_t frame=static_cast<std::uint16_t>(
+        static_cast<std::uint16_t>(script[6u+offset]) |
+        (static_cast<std::uint16_t>(script[7u+offset])<<8));
+    if((frame&0x8000u)!=0)
+        throw std::logic_error(
+            "original negative animation script opcode decoder remains unverified");
+    const std::uint16_t delay=static_cast<std::uint16_t>(
+        static_cast<std::uint16_t>(script[0]) |
+        (static_cast<std::uint16_t>(script[1])<<8));
+    slot.ticks=delay;
+    slot.frame_offset=static_cast<std::uint32_t>(slot.frame_offset+2u);
+    slot.height=frame;
+    return {frame,delay};
+}
+
 } // namespace sensigolf::recovered

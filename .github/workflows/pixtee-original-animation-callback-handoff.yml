@@ -5,6 +5,9 @@ on:
     branches: [feat/pixtee-native-portrait-framework]
     paths:
       - 'engine/src/recovered_animation_events.cpp'
+      - 'engine/src/classic_hole_session.cpp'
+      - 'pixtee-godot/native/tests/original_animation_queue_reset_probe.cpp'
+      - 'tools/verify_original_animation_queue_reset.py'
       - 'engine/include/sensigolf/recovered_animation_events.hpp'
       - 'pixtee-godot/native/tests/original_animation_callback_handoff_probe.cpp'
       - 'tools/verify_original_animation_callback_handoff.py'
@@ -13,6 +16,9 @@ on:
     branches: [feat/pixtee-godot-recovered-core]
     paths:
       - 'engine/src/recovered_animation_events.cpp'
+      - 'engine/src/classic_hole_session.cpp'
+      - 'pixtee-godot/native/tests/original_animation_queue_reset_probe.cpp'
+      - 'tools/verify_original_animation_queue_reset.py'
       - 'engine/include/sensigolf/recovered_animation_events.hpp'
       - 'pixtee-godot/native/tests/original_animation_callback_handoff_probe.cpp'
       - 'tools/verify_original_animation_callback_handoff.py'
@@ -52,8 +58,20 @@ jobs:
             --exe "$EXE" \
             --probe /tmp/pixtee-original-callback-probe \
             -o analysis/private/original-animation-callback-handoff-proof.json
+      - name: Verify real original x86 event queue reset across ten slots
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_animation_events.cpp \
+            pixtee-godot/native/tests/original_animation_queue_reset_probe.cpp \
+            -o /tmp/pixtee-original-reset-probe
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_animation_queue_reset.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-reset-probe \
+            -o analysis/private/original-animation-queue-reset-proof.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-animation-0x8000-handoff-proof
-          path: analysis/private/original-animation-callback-handoff-proof.json
+          path: |
+            analysis/private/original-animation-callback-handoff-proof.json
+            analysis/private/original-animation-queue-reset-proof.json
           retention-days: 30

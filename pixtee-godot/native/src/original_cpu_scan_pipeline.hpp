@@ -7,6 +7,7 @@
 #include "original_cpu_trial_force.hpp"
 #include "original_cpu_simulated_contact.hpp"
 #include "original_cpu_simulated_motion.hpp"
+#include "sensigolf/recovered_alt_terrain.hpp"
 #include "original_cpu_trial_preflight.hpp"
 #include <optional>
 #include "original_cpu_difficulty.hpp"
@@ -137,5 +138,20 @@ OriginalCpuMotionContinuation original_cpu_continue_trial_after_contact(
     std::int32_t x,std::int32_t y,std::uint16_t direction,
     std::uint16_t original_green_mode,
     bool source_0x40cbc7_path_verified);
+
+// Source 0x40CC05 mandatory second original MAPI lookup after the
+// ball reaches zero height (or stops during drag). Once the caller
+// supplies its TRUE original landing code, 0x40CC2D either returns 0,
+// returns -1 for 8..10, or continues via source 0x40CBCD rebound.
+// Never use it to manufacture unknown tree/object source hits.
+struct OriginalCpuSecondaryTerrain {
+    sensigolf::recovered::OriginalAlternateTerrainResult response{};
+};
+OriginalCpuSecondaryTerrain original_cpu_secondary_mapped_contact(
+    const OriginalCpuMotionContinuation& prior,
+    std::uint16_t authentic_mapi_landing_code,
+    std::int32_t original_vertical_force,
+    std::int32_t original_horizontal_force,
+    bool original_second_mapi_lookup_verified);
 
 } // namespace pixtee

@@ -67,8 +67,14 @@ func _run() -> void:
 
 	var visual: Node2D = native_fx_source.new()
 	root.add_child(visual)
-	if visual.accept_native_ball_snapshot({"shot_tick":1,"ball_x_raw":20*65536,"ball_y_raw":30*65536,"ball_z_raw":65536}) != true:
+	if visual.accept_native_ball_snapshot({"shot_tick":1,"ball_x_raw":20*65536,"ball_y_raw":30*65536,"ball_z_raw":65536,"green_mode":false}) != true:
 		fail("Native fixed-point ball height rejected")
+		return
+	if visual.accept_native_ball_snapshot({"shot_tick":2,"ball_x_raw":100*65536,"ball_y_raw":60*65536,"ball_z_raw":0,"green_mode":true}):
+		fail("Green local ball coordinate was incorrectly rendered as course-world coordinate")
+		return
+	if not visual.accept_native_ball_snapshot({"shot_tick":2,"ball_x_raw":100*65536,"ball_y_raw":60*65536,"ball_z_raw":0,"green_mode":true,"green_origin_x":90,"green_origin_y":70}):
+		fail("Verified original green-local to course-world mapping was rejected")
 		return
 	if visual.submit_confirmed_native_event({"confirmed_native":false,"event_id":"shot1-water","event_type":"water_contact","world_x":20,"world_y":30}):
 		fail("Fake unsigned physics contact was permitted")

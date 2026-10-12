@@ -27,6 +27,10 @@ constexpr std::size_t kOriginalAnimationEventSlots=10u;
 using OriginalAnimationSlots=
     std::array<OriginalAnimatedEvent,kOriginalAnimationEventSlots>;
 using OriginalAnimationAssetTable=std::array<std::uint32_t,16>;
+// Source original v1.014 0x40C5C0..0x40C5E8 resets all ten
+// packed animation event records: status=0xFFFF, all remaining
+// 18 bytes zero. This is NOT a UI renderer/host scheduler.
+void original_animation_reset_all(OriginalAnimationSlots& slots) noexcept;
 struct OriginalAnimationEnqueueResult {
     int slot=-1; // -1 means original RET without altering any slot
     bool inserted=false;

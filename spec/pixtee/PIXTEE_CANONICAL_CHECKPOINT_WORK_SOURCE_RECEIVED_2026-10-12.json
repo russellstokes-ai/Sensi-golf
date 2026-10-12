@@ -1,0 +1,57 @@
+{
+  "schema": "pixtee.canonical-checkpoint.work-source-received.v1",
+  "date": "2026-10-12",
+  "immutable_policy": "All source ZIPs, original engine baselines and approved final assets are read-only; any authored Godot compiler or changes must be derivatives with new hashes.",
+  "supersedes_logical_work_handoff": "Before this upload, newest Work HTML and separate v1.1 standard were known only by local Windows paths. Now exact uploaded ZIP bytes were read and separately backed up in ChatGPT Library. Earlier source-lock archives are unchanged.",
+  "source_intake_metadata": "spec/pixtee/PIXTEE_LAKEWOOD_OPEN_AND_COURSE_STANDARD_V1_1_INTAKE_2026-10-12.json",
+  "human_readable_integration": "spec/pixtee/PIXTEE_COURSE_AND_MENU_INTAKE_CONTRACT_2026-10-12.md",
+  "file_integrity_manifest_library": "/Pixtee Canonical Backups/2026-10-12/Work Course and Standards/pixtee_canonical_course_standards_integrity_2026-10-12.json",
+  "frozen_originals": [
+    {
+      "name": "Latest Lakewood Open HTML visual and authored course reference",
+      "source_uploaded": "pixtee-lakewood-open.zip",
+      "frozen_library": "/Pixtee Canonical Backups/2026-10-12/Work Course and Standards/pixtee-lakewood-open-ORIGINAL.zip",
+      "sha256": "82c0df6831241e31ad0c83a4302df145349afb9b63503487a914b964d05c7ff3",
+      "files": 43,
+      "verification": "ZIP CRC and exact Library-backup SHA and byte equality PASS",
+      "role": "Approved candidate visual and polygons; not yet native collision/physics or Godot scenes"
+    },
+    {
+      "name": "Latest separate course construction rules/catalogue",
+      "source_uploaded": "pixtee-production-standards-v1-1.zip",
+      "frozen_library": "/Pixtee Canonical Backups/2026-10-12/Work Course and Standards/pixtee-production-standards-v1-1-ORIGINAL.zip",
+      "sha256": "1544ac4782b64d2a2b968a581f31b9cf7b37b6e0cf4583dd665e21d1d81ffe17",
+      "files": 3,
+      "verification": "ZIP CRC and exact Library-backup SHA and byte equality PASS",
+      "role": "Current v1.1 future production authority, 50-course planning catalogue and mountain/fog effects addendum"
+    },
+    {
+      "name": "User-approved final production art",
+      "source_uploaded": "Pixtee golf assets(1).zip",
+      "frozen_library": "/Pixtee Canonical Backups/2026-10-12/Pixtee golf assets(1) - CANONICAL FROZEN.zip",
+      "sha256": "2043e9c678b9904311778d17a1f341d577344e6d49a3a9d48ce6c3aef3b5239e",
+      "files": 16,
+      "verification": "Previously ZIP CRC and byte-for-byte validated",
+      "role": "Canonical art bytes; no replacements by older git previews"
+    }
+  ],
+  "recovered_engine_archived_branch": "archive/pixtee-engine-pre-integration-2026-10-12",
+  "recovered_engine_sha": "1203f8c440cc96f56e18c3a50336a632ab10efaf",
+  "portrait_archive_branch": "archive/pixtee-portrait-framework-2026-10-12",
+  "portrait_archive_sha": "7b849d29db2a7e37ac039e51c39a80dce0106e0c",
+  "previous_canonical_branch": "archive/pixtee-canonical-verified-assets-2026-10-12",
+  "previous_canonical_sha": "fcf4207e1d14028f6c3fb90d30ec187d3409f54b",
+  "latest_work_content_status": {
+    "lakewood_visual_reference_approved": true,
+    "separate_standard_v1_1_approved_for_new_course_production": true,
+    "course_zip_internal_older_standard_kept_untouched": true,
+    "frozen_prior_reference_sha_csv_missing": true,
+    "prior_independently_recorded_hash_equality": "NOT_ESTABLISHED",
+    "geometry_imported_into_godot": false,
+    "tree_collision_verified": false,
+    "commercial_3_hole_gameplay_ready": false,
+    "final_menus_present": false,
+    "android_build_playtest_passed": false
+  },
+  "next_allowed_implementation": "Create separate source-derived Godot CourseDefinition and deterministic MAPI/MAPM/MAPS compiler from actual verified JSON polygons; maintain distinct cosmetic vs physical objects; source core is sole gameplay authority; do not mutate archive branches or ZIP source files."
+}

@@ -90,4 +90,38 @@ OriginalCpuTrialRoute original_cpu_trial_route_after_lookup(
     }
     return out;
 }
+OriginalCpuScoredChoice original_cpu_choose_scored_scan(
+    const OriginalCpuScanPlan& plan,std::uint16_t span,
+    std::uint16_t step,const std::vector<std::uint8_t>& bytes,
+    bool source_verified) {
+    if(!source_verified)
+        throw std::logic_error(
+            "CPU score candidates must come from original trajectory evaluation");
+    // Reject original signed overflow or unbounded host parameters. The
+    // original scans signed CX; actual source scan order must be a
+    // one-to-one match with the 24-row source heading candidate table.
+    if(span==0 || span>0x7fffu || step==0 || step>span)
+        throw std::invalid_argument("CPU original signed score scan bounds invalid");
+    const std::size_t expected=
+        (static_cast<std::size_t>(span)+step-1u)/step;
+    if(expected!=plan.sweep.candidate_headings.size() ||
+       expected>kOriginalCpuScoreSafeRecords)
+        throw std::invalid_argument(
+            "original scoring record order does not match source heading sweep");
+    if(bytes.size()<expected*kOriginalCpuScoreRecordBytes ||
+       bytes.size()>kOriginalCpuScoreSafeRecords*kOriginalCpuScoreRecordBytes)
+        throw std::out_of_range("original CPU 14-byte score scratch length invalid");
+
+    const auto selected=original_cpu_select_best_scored_record(
+        span,step,bytes);
+    if(!selected.found)
+        return {};
+    if(selected.original_index>=expected ||
+       selected.offset_bytes!=selected.original_index*kOriginalCpuScoreRecordBytes)
+        throw std::logic_error("source CPU score record index outside verified heading order");
+    return {true,selected.original_index,
+            plan.sweep.candidate_headings[selected.original_index],
+            selected.original_score_word};
+}
+
 } // namespace pixtee

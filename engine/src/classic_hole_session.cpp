@@ -60,6 +60,7 @@ void ClassicHoleSession::reset(
     safe_anchor_y_raw_ = 0;
     safe_anchor_valid_ = false;
     flag_object_verified_ = false;
+    original_player_mode_5a_.reset();
     // A launch from a valid low-code lie can exit the map before its first
     // sampled terrain tick. Seed a safe landing anchor from the starting
     // lie to avoid an unrecoverable missing-anchor state. The -15 geometry
@@ -123,6 +124,26 @@ bool ClassicHoleSession::surface_supported_for_active_shot(
 
     // GREEN H4 uses putter-specific green drag/slope semantics.
     return surface.landing_code != 1;
+}
+
+void ClassicHoleSession::set_original_player_mode_5a(std::uint16_t mode) {
+    if(mode>15)
+        throw std::invalid_argument(
+            "source original player mode is outside verified 0..15");
+    if(phase_!=HoleSessionPhase::ReadyForShot || strokes_!=0)
+        throw std::logic_error(
+            "source original player mode must be assigned before first swing");
+    if(mode<4 && !prng_)
+        throw std::logic_error(
+            "source human-mode near-cup lip needs captured original PRNG");
+    original_player_mode_5a_=mode;
+}
+std::optional<std::uint16_t>
+ClassicHoleSession::original_player_mode_5a() const noexcept {
+    return original_player_mode_5a_;
+}
+bool ClassicHoleSession::original_lip_deflection_last_tick() const noexcept {
+    return shot_.original_lip_deflection_last_tick();
 }
 
 void ClassicHoleSession::set_verified_flag_object(bool present) {
@@ -436,7 +457,13 @@ void ClassicHoleSession::step() {
     const auto flag=course_.hole_position();
     shot_.set_original_interaction_context(
         prng_, green_mode_, static_cast<std::int16_t>(flag.x),
-        static_cast<std::int16_t>(flag.y),flag_object_verified_);
+        static_cast<std::int16_t>(flag.y),flag_object_verified_,
+        original_player_mode_5a_.has_value() &&
+        recovered::distance_to_hole(
+            static_cast<std::int32_t>(state.x_raw),
+            static_cast<std::int32_t>(state.y_raw),
+            mode_hole_position().x,mode_hole_position().y,green_mode_)==0,
+        original_player_mode_5a_.value_or(4));
     shot_.step();
 
     // The original transition dispatcher can switch coordinate spaces as the

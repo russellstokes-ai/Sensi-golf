@@ -519,12 +519,37 @@ Dictionary PixteeRoundBridge::snapshot() const {
             d["distance_to_hole"]=static_cast<int64_t>(h.distance_to_hole());
             d["hazard_pause_ticks"]=static_cast<int>(h.hazard_pause_remaining());
             d["special_green_pause_ticks"]=static_cast<int>(h.special_green_pause_remaining());
+            d["hazard_kind"]=static_cast<int>(h.last_hazard_kind());
+            const auto world_oob=h.pending_world_oob_event();
+            d["world_oob_event_pending"]=world_oob.has_value();
+            if(world_oob) {
+                d["world_oob_message_id"]=static_cast<int64_t>(world_oob->dword_420548);
+                d["world_oob_display_code"]=static_cast<int64_t>(world_oob->dword_420544);
+                d["world_oob_source_resource"]=static_cast<int64_t>(world_oob->source_esi);
+            }
+            const auto cup_event=h.pending_cup_capture_event();
+            d["cup_event_pending"]=cup_event.has_value();
+            if(cup_event) {
+                d["cup_message_id"]=static_cast<int64_t>(cup_event->dword_420548);
+                d["cup_display_code"]=static_cast<int64_t>(cup_event->dword_420544);
+                d["cup_source_resource"]=static_cast<int64_t>(cup_event->source_esi);
+            }
+            // A genuine off-map ball has no valid MAPI descriptor. The
+            // original executable reports AX=-1 instead of fetching a
+            // nonexistent tile. Do not turn a valid OOB penalty into
+            // a Godot snapshot_error by calling current_surface().
+            const bool original_world_oob= h.last_hazard_kind()==
+                sensigolf::ClassicNamedHazard::OutsideWorld &&
+                h.phase()==sensigolf::HoleSessionPhase::HazardStopped;
+            d["terrain_available"]=!original_world_oob;
+            if(!original_world_oob) {
             const auto surface=h.current_surface();
             d["terrain_descriptor"]=static_cast<int>(surface.descriptor_index);
             d["surface_code"]=static_cast<int>(surface.landing_code);
             d["lie_profile"]=static_cast<int>(surface.profile_slot);
             d["slope_direction"]=static_cast<int>(surface.slope_direction);
             d["slope_magnitude"]=static_cast<int>(surface.slope_magnitude);
+            } // only if a valid original world MAPI position exists
         }
     } catch(const std::exception& e) {d["snapshot_error"]=String(e.what());}
     return d;

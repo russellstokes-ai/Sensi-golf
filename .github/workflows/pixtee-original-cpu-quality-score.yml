@@ -5,6 +5,8 @@ on:
     branches: [feat/pixtee-godot-recovered-core]
     paths:
       - 'tools/verify_original_cpu_quality_score.py'
+      - 'tools/verify_original_cpu_reference_penalties.py'
+      - 'pixtee-godot/native/tests/original_cpu_reference_penalty_probe.cpp'
       - 'pixtee-godot/native/src/original_cpu_quality_score.*'
       - 'pixtee-godot/native/tests/original_cpu_quality_score_*'
       - '.github/workflows/pixtee-original-cpu-quality-score.yml'
@@ -42,8 +44,20 @@ jobs:
           python tools/verify_original_cpu_quality_score.py \
             --exe "$EXE" --probe /tmp/pixtee-original-cpu-quality-probe \
             -o analysis/private/original-cpu-quality-x86.json
+      - name: Verify genuine unmodified original 32-WORD CPU penalty table
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_quality_score.cpp \
+            pixtee-godot/native/tests/original_cpu_reference_penalty_probe.cpp \
+            -o /tmp/pixtee-source-cpu-penalty-probe
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_cpu_reference_penalties.py \
+            --exe "$EXE" --probe /tmp/pixtee-source-cpu-penalty-probe \
+            -o analysis/private/original-cpu-reference-penalties-x86.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-source-cpu-distance-penalty-score
-          path: analysis/private/original-cpu-quality-x86.json
+          path: |
+            analysis/private/original-cpu-quality-x86.json
+            analysis/private/original-cpu-reference-penalties-x86.json
           retention-days: 30

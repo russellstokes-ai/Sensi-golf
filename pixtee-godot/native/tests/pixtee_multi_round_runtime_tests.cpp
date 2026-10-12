@@ -21,6 +21,16 @@ sensigolf::ClassicCourseResources fixture() {
 }
 }
 int main(){
+    using sensigolf::HoleSessionPhase;
+    using pixtee::host_turn_handoff_phase_allowed;
+    static_assert(host_turn_handoff_phase_allowed(HoleSessionPhase::ReadyForShot));
+    static_assert(host_turn_handoff_phase_allowed(HoleSessionPhase::HoleScored));
+    static_assert(!host_turn_handoff_phase_allowed(HoleSessionPhase::ShotActive));
+    static_assert(!host_turn_handoff_phase_allowed(HoleSessionPhase::HazardStopped));
+    static_assert(!host_turn_handoff_phase_allowed(HoleSessionPhase::HazardRecovered));
+    static_assert(!host_turn_handoff_phase_allowed(HoleSessionPhase::SpecialGreenStopped));
+    static_assert(!host_turn_handoff_phase_allowed(HoleSessionPhase::CupTerminal));
+    static_assert(!host_turn_handoff_phase_allowed(HoleSessionPhase::UnsupportedTerrain));
     std::array<std::uint8_t,18> order{};
     std::array<std::uint8_t,100> pars{};
     for(unsigned i=0;i<18;i++){order[i]=static_cast<std::uint8_t>(i+1);pars[i+1]=4;}

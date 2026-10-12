@@ -196,5 +196,41 @@ int main() {
         catch(const std::out_of_range&){refused=true;}
         assert(refused && records==before);
     }
+
+    // The original CPU 0x40CBC7 checks ground contact BEFORE horizontal
+    // drag and position update. If source height==0, do not move or
+    // skip the genuine second MAPI lookup; lip PRNG remains explicit.
+    {
+        OriginalCpuContactResult contact{};
+        contact.state.horizontal_force=0x2000;
+        contact.state.ball_height=100;
+        contact.route=OriginalCpuContactRoute::ContinueMotion;
+        auto next=original_cpu_continue_trial_after_contact(
+            contact,100,200,0,0,true);
+        assert(next.kind==OriginalCpuContinuationKind::AppliedOriginalMotion);
+        assert(next.motion.has_value());
+        assert(next.motion->state.horizontal_force==0x1100);
+        assert(next.motion->state.x==100);
+        assert(next.motion->state.y>200);
+        contact.state.ball_height=0;
+        next=original_cpu_continue_trial_after_contact(
+            contact,100,200,0,0,true);
+        assert(next.kind==OriginalCpuContinuationKind::RequiresOriginalMappedContact);
+        assert(!next.motion.has_value());
+        contact.route=OriginalCpuContactRoute::RequestOriginalLipRandom;
+        next=original_cpu_continue_trial_after_contact(
+            contact,100,200,0,0,true);
+        assert(next.kind==OriginalCpuContinuationKind::RequiresOriginalLipPrng);
+        assert(!next.motion.has_value());
+        contact.route=OriginalCpuContactRoute::ReturnZeroStop;
+        next=original_cpu_continue_trial_after_contact(
+            contact,100,200,0,0,true);
+        assert(next.kind==OriginalCpuContinuationKind::TerminalStop);
+        bool refused=false;
+        try{original_cpu_continue_trial_after_contact(
+            contact,100,200,0,0,false);}
+        catch(const std::logic_error&){refused=true;}
+        assert(refused);
+    }
     return 0;
 }

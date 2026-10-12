@@ -9,6 +9,9 @@ enable_testing()
 add_subdirectory(engine)
 
 if(NOT ANDROID)
+    add_executable(pixtee_authored_tree_contacts_tests engine/tests/authored_tree_contacts_tests.cpp)
+    target_link_libraries(pixtee_authored_tree_contacts_tests PRIVATE sensigolf_core)
+    add_test(NAME pixtee_authored_tree_contacts_tests COMMAND pixtee_authored_tree_contacts_tests)
     add_executable(pixtee_approved_lakewood_lookup_tests
         pixtee-godot/native/tests/approved_lakewood_lookup_tests.cpp)
     target_link_libraries(pixtee_approved_lakewood_lookup_tests PRIVATE sensigolf_core)

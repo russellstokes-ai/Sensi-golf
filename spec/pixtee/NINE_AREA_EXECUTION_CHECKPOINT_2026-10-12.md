@@ -174,3 +174,33 @@ comparisons**. [Original reset CI](https://github.com/russellstokes-ai/Sensi-gol
 These are authentic source subroutines, **not** proof of host callback
 effects, presentation timing, complete shared shot/event dispatcher or
 tree collision. Keep every full-gameplay release gate OPEN.
+
+### CPU evaluator score winner (third authenticated stage)
+
+Original Windows `0x40CA8E..0x40CAE0`, after the preceding
+`0x40CA5A` eligibility gate, uses the first record's signed
+`[record+0xC]` score as incumbent. It scans remaining original
+14-byte records, excludes either-negative-status entries, and
+replaces the winner **only** when a later record's signed score is
+strictly lower. Equal scores preserve the earlier winner. A fully
+ineligible collection returns the base record pointer without a valid
+winner; new mobile API represents this as `found=false`.
+
+- Native `original_cpu_select_best_scored_record` requires caller-
+  supplied source-format score data; it never generates fabricated
+  candidate quality values and rejects unsafe input sizes.
+- **2,900 / 2,900 exact authentic source x86 comparisons** covering
+  signed negative/wrapping scores, noneligible records, first-vs-
+  subsequent record outcomes, stable ties and no-winner returns.
+  [Original-source verification](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38237924678).
+- All three newly recovered CPU evaluator stages from this
+  continuation total **7,350 / 7,350** independently compared x86
+  cases. These are source-scoped test vectors, not a complete AI
+  opponent match.
+
+This evaluator selection at `0x40CA5A..` is not conflated with
+the separately authenticated CPU candidate chooser at
+`0x40C78B..`, which has different original first-candidate rules.
+The original score-creation subprocess and completed CPU shot
+planning/execution remain blocked. Do not activate a presumed score
+source or close full-player/game-mode parity.

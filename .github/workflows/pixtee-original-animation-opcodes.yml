@@ -1,0 +1,35 @@
+name: Pixtee Original Animation Script Opcode Table
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/trace_original_animation_opcode_table.py'
+      - '.github/workflows/pixtee-original-animation-opcodes.yml'
+permissions: {contents: read}
+jobs:
+  original-script-command-map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Hash-authenticated original executable in ephemeral CI
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Extract authentic numeric event opcode table targets
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/trace_original_animation_opcode_table.py \
+            --exe "$EXE" -o analysis/private/original-animation-opcode-table.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-animation-command-target-map
+          path: analysis/private/original-animation-opcode-table.json
+          retention-days: 30

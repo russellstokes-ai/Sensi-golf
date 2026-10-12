@@ -3,6 +3,7 @@
 #include <vector>
 #include "original_cpu_candidate.hpp"
 #include "original_cpu_score_scratch.hpp"
+#include "original_cpu_quality_score.hpp"
 #include "original_cpu_trial_force.hpp"
 #include "original_cpu_simulated_contact.hpp"
 #include "original_cpu_trial_preflight.hpp"
@@ -104,5 +105,17 @@ OriginalCpuScoredChoice original_cpu_choose_scored_scan(
     std::uint16_t original_step,
     const std::vector<std::uint8_t>& original_scored_records,
     bool genuine_source_evaluations);
+
+// Original CPU record+12 score write after independently source-verified
+// trajectory/contact and distance. Emits only that WORD and preserves all
+// preceding 14-byte candidate status/data. No manufactured trajectories.
+void original_cpu_write_quality_record(
+    std::vector<std::uint8_t>& source_score_records,
+    std::size_t original_index,
+    std::uint16_t original_distance,
+    std::uint16_t original_contact_code,
+    std::uint16_t original_green_mode,
+    const OriginalCpuPenaltyTable& original_penalty_table,
+    bool original_trajectory_evaluation_complete);
 
 } // namespace pixtee

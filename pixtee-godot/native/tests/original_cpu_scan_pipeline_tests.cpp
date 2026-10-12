@@ -232,5 +232,45 @@ int main() {
         catch(const std::logic_error&){refused=true;}
         assert(refused);
     }
+
+    // A completed original secondary MAPI lookup may now use the
+    // independently original x86 proven 0x40CC2D terminal/rebound
+    // handler. Original code35/60 return zero without force changes;
+    // green codes 8..10 return -1 and other codes may rebound.
+    {
+        OriginalCpuContactResult contact{};
+        contact.route=OriginalCpuContactRoute::ContinueMotion;
+        contact.state.ball_height=0;
+        contact.state.horizontal_force=10000;
+        auto continuation=original_cpu_continue_trial_after_contact(
+            contact,0,0,0,0,true);
+        assert(continuation.kind==
+               OriginalCpuContinuationKind::RequiresOriginalMappedContact);
+        const auto hazard=original_cpu_secondary_mapped_contact(
+            continuation,35,-0x2100,10000,true);
+        assert(hazard.response.route==
+               sensigolf::recovered::OriginalAlternateTerrainRoute::ReturnZero);
+        assert(hazard.response.vertical_force==-0x2100);
+        assert(hazard.response.horizontal_force==10000);
+        const auto cup=original_cpu_secondary_mapped_contact(
+            continuation,8,-0x2100,10000,true);
+        assert(cup.response.route==
+               sensigolf::recovered::OriginalAlternateTerrainRoute::ReturnMinusOne);
+        const auto ball=original_cpu_secondary_mapped_contact(
+            continuation,3,-0x2100,10000,true);
+        assert(ball.response.route==
+               sensigolf::recovered::OriginalAlternateTerrainRoute::ContinueGround);
+        bool refused=false;
+        try{original_cpu_secondary_mapped_contact(
+            continuation,3,-0x2100,10000,false);}
+        catch(const std::logic_error&){refused=true;}
+        assert(refused);
+        continuation.kind=OriginalCpuContinuationKind::AppliedOriginalMotion;
+        refused=false;
+        try{original_cpu_secondary_mapped_contact(
+            continuation,3,-0x2100,10000,true);}
+        catch(const std::logic_error&){refused=true;}
+        assert(refused);
+    }
     return 0;
 }

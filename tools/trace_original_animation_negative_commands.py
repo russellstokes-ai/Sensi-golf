@@ -70,7 +70,7 @@ def main():
           len(edges),"control transfers",
           len(field_accesses),"slot/global accesses")
     for ins in instructions:
-        if 0x40C55A <= ins.address <= 0x40C5A8:
+        if 0x40C55A <= ins.address < 0x40C5F0:
             # Print a compact machine-instruction study trace to Actions.
             # No executable bytes/resources or game art are exported.
             print(hex(ins.address),ins.mnemonic,ins.op_str)

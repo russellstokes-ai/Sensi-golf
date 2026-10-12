@@ -173,4 +173,45 @@ int main(){
 
 
 
+
+    // Original 0x8000 command is exposed ONLY as a safe host handoff:
+    // no untrusted callback machine pointer is ever executed by C++.
+    OriginalAnimatedEvent callback{};
+    callback.status=0;
+    callback.ticks=0;
+    callback.asset_pointer=0x501000u;
+    callback.frame_offset=2;
+    callback.height=54;
+    const std::vector<std::uint8_t> callback_script{
+        7,0,0,0,0,0,0,0,
+        0,0x80,0x00,0x02,0x50,0x00
+    };
+    const auto requested=original_animation_prepare_callback(
+        callback,callback_script);
+    assert(requested.source_callback_token==0x00500200u);
+    assert(requested.original_asset_pointer==0x501000u);
+    assert(requested.original_frame_offset==2);
+    assert(requested.script_delay==7);
+    assert(callback.ticks==0 && callback.frame_offset==2);
+    original_animation_finalize_callback(callback,requested);
+    assert(callback.ticks==7);
+    assert(callback.frame_offset==8);
+    assert(callback.height==54 && callback.status==0);
+    bool stale_ack=false;
+    try{original_animation_finalize_callback(callback,requested);}
+    catch(const std::logic_error&){stale_ack=true;}
+    assert(stale_ack);
+    OriginalAnimationSlots blocked_callback{};
+    blocked_callback[0].status=0;
+    blocked_callback[0].ticks=0;
+    blocked_callback[0].frame_offset=2;
+    blocked_callback[0].asset_pointer=0x501000u;
+    bool refused_direct_call=false;
+    try{original_animation_tick_with_plain_scripts(blocked_callback,
+        {{0x501000u,callback_script}});}
+    catch(const std::logic_error&){refused_direct_call=true;}
+    assert(refused_direct_call);
+    assert(blocked_callback[0].ticks==0 &&
+           blocked_callback[0].frame_offset==2);
+
 }

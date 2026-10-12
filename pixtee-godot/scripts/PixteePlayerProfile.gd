@@ -37,11 +37,14 @@ func _read_slot(index: int) -> Dictionary:
 	if not FileAccess.file_exists(path): return {}
 	var file := FileAccess.open(path,FileAccess.READ)
 	if file == null or file.get_length() > 65536: return {}
-	var envelope = JSON.parse_string(file.get_as_text())
+	var parser := JSON.new()
+	if parser.parse(file.get_as_text()) != OK: return {}
+	var envelope = parser.data
 	if not envelope is Dictionary or not envelope.get("payload") is String: return {}
 	var payload: String = envelope.payload
 	if payload.sha256_text() != envelope.get("sha256",""): return {}
-	var record = JSON.parse_string(payload)
+	if parser.parse(payload) != OK: return {}
+	var record = parser.data
 	if not record is Dictionary or record.get("schema") != 1 or not record.get("state") is Dictionary: return {}
 	if not _valid(record.state): return {}
 	var generation = record.get("generation",0)

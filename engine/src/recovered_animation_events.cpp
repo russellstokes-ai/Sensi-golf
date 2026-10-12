@@ -2,6 +2,12 @@
 #include <stdexcept>
 #include <algorithm>
 namespace sensigolf::recovered {
+void original_animation_reset_all(OriginalAnimationSlots& slots) noexcept {
+    // Source v1.014 0x40C5C0: STOSW(0xffff), then 9 STOSW(0)
+    // repeated for 10 packed event records of 20 bytes each.
+    // C++ assigns field values, not potentially padded raw bytes.
+    for(auto& slot:slots)slot=OriginalAnimatedEvent{};
+}
 OriginalAnimationEnqueueResult original_animation_enqueue(
     OriginalAnimationSlots& slots,
     OriginalAnimationEventInput event,

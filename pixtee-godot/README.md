@@ -1,5 +1,13 @@
 # Pixtee Golf — Godot 4.5 + recovered Sensible Golf C++ core
 
+> **Milestone One authoritative handover (12 October):**
+> [Commercial-quality three-hole native engine data and acceptance plan](../spec/pixtee/MILESTONE_ONE_COMMERCIAL_ENGINE_HANDOVER_2026-10-12.md),
+> [complete 27-area source inventory](../spec/pixtee/MILESTONE_ONE_ENGINE_DATA_INVENTORY_2026-10-12.json),
+> and [automated audit](../tools/verify_pixtee_milestone_one_inventory.py).
+> The original physics research bank is retained; 3-hole gameplay, commercial
+> rights, Android production and all 14 release gates are **NOT YET COMPLETE**.
+> Passing original x86 comparisons and headless bindings do not mean ready-to-sell.
+
 **Status: native-engine integration scaffold, NOT a finished hole or Android APK.**
 
 The project invokes the existing recovered C++ gameplay implementation via a

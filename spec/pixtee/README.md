@@ -1,5 +1,7 @@
 # Pixtee Golf — independent Android experiment
 
+> **CURRENT CANONICAL SOURCE LOCK — 12 October 2026:** [READ FIRST: Pixtee saved engine/portrait fallback, frozen Work Hole 1 and final approved asset pack](PIXTEE_CANONICAL_SOURCE_AND_RECOVERY_BASELINE_2026-10-12.md). [Machine-readable exact SHA/preservation status](PIXTEE_CANONICAL_CHECKPOINT_2026-10-12.json). The older planning and art-status notes below predate the owner-approved asset ZIP and Godot engine recovery; they are historic references, **not permission to replace frozen approved graphics or the canonical native engine**. The frozen local HTML and approved ZIP are separate Windows originals requiring hash-verified backup, not presumed committed to GitHub.
+
 **Working name:** Pixtee Golf (not a trademark clearance)
 **Product goal:** feel as close to classic 1990s overhead arcade golf as legally achievable, with cleaner pixel-art assets, smoother rendering, original courses, optional enhancements, offline career, stats, and rewards.
 **Source project:** intended to move into its own clean repository. These are planning/data-contract files only, stored here because the GitHub connection does not expose new-repository creation. Do not link or import the Sensi-golf source tree into Pixtee builds.

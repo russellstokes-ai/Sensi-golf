@@ -81,6 +81,7 @@ int main() {
     drive.aim_raw = 0;
     session.begin_shot(drive);
     assert(session.strokes() == 1);
+    assert(!session.pending_cup_capture_event().has_value());
     assert(session.recovered_counters().player_52 == 1);
     assert(session.recovered_counters().player_56 == 1);
     run_active(session);
@@ -141,6 +142,8 @@ int main() {
     hole_session.begin_shot(approach);
     run_active(hole_session);
     assert(hole_session.phase() == HoleSessionPhase::CupTerminal);
+    assert(session.pending_cup_capture_event().has_value());
+    assert(session.pending_cup_capture_event()->dword_420548==0x1000fu);
     assert(hole_session.ball_state().holed);
 
     // Code-8 CupTerminal alone must NOT count as a scored hole. This

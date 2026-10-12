@@ -1,0 +1,49 @@
+name: Pixtee Original CPU Trial Preflight Source Parity
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'pixtee-godot/native/src/original_cpu_trial_preflight.*'
+      - 'pixtee-godot/native/tests/original_cpu_trial_preflight_*'
+      - 'tools/verify_original_cpu_trial_preflight.py'
+      - '.github/workflows/pixtee-original-cpu-trial-preflight.yml'
+permissions: {contents: read}
+jobs:
+  authentic-cpu-route:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Ingest SHA verified original Windows game transiently
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Native source-boundary preflight unit regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_trial_preflight.cpp \
+            pixtee-godot/native/tests/original_cpu_trial_preflight_tests.cpp \
+            -o /tmp/pixtee-original-cpu-preflight-tests
+          /tmp/pixtee-original-cpu-preflight-tests
+          g++ -std=c++17 -Wall -Wextra -Werror -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_trial_preflight.cpp \
+            pixtee-godot/native/tests/original_cpu_trial_preflight_probe.cpp \
+            -o /tmp/pixtee-original-cpu-preflight-probe
+      - name: Compare original x86 code9 and putter trial branches
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_cpu_trial_preflight.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-cpu-preflight-probe \
+            -o analysis/private/original-cpu-preflight-routes.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-cpu-preflight-source-results
+          path: analysis/private/original-cpu-preflight-routes.json
+          retention-days: 30

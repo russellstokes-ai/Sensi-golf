@@ -6,6 +6,7 @@
 #include "original_cpu_quality_score.hpp"
 #include "original_cpu_trial_force.hpp"
 #include "original_cpu_simulated_contact.hpp"
+#include "original_cpu_simulated_motion.hpp"
 #include "original_cpu_trial_preflight.hpp"
 #include <optional>
 #include "original_cpu_difficulty.hpp"
@@ -117,5 +118,24 @@ void original_cpu_write_quality_record(
     std::uint16_t original_green_mode,
     const OriginalCpuPenaltyTable& original_penalty_table,
     bool original_trajectory_evaluation_complete);
+
+// Original 0x40CBC7 contact exit: if ball height becomes zero, the
+// CPU simulator rechecks authentic MAPI before any planar update;
+// PRNG lip side effects must finish before proceeding to motion.
+enum class OriginalCpuContinuationKind : std::uint8_t {
+    TerminalStop=0,
+    RequiresOriginalLipPrng=1,
+    RequiresOriginalMappedContact=2,
+    AppliedOriginalMotion=3
+};
+struct OriginalCpuMotionContinuation {
+    OriginalCpuContinuationKind kind=OriginalCpuContinuationKind::TerminalStop;
+    std::optional<OriginalCpuMotionResult> motion{};
+};
+OriginalCpuMotionContinuation original_cpu_continue_trial_after_contact(
+    const OriginalCpuContactResult& original_contact,
+    std::int32_t x,std::int32_t y,std::uint16_t direction,
+    std::uint16_t original_green_mode,
+    bool source_0x40cbc7_path_verified);
 
 } // namespace pixtee

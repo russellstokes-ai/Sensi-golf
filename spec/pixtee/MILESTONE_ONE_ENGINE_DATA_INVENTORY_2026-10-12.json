@@ -318,5 +318,148 @@
     "No original executable, commercial course map, sprites or audio in build",
     "Distribution rights to source-derived engine and numerical tables legally cleared or substituted",
     "Signed Android arm64 build and physical device QA pass"
+  ],
+  "milestone_one_acceptance": [
+    {
+      "id": "M1-01",
+      "criterion": "Complete 27-area evidence/source inventory and reference-data integrity",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "tools/verify_pixtee_milestone_one_inventory.py",
+        "pixtee-godot/tools/verify_reference_data.py"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-02",
+      "criterion": "Three complete independently authored approved real holes",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/native/src/pixtee_course_adapter.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-03",
+      "criterion": "Verified authored tree collision object mask height and deflection",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/recovered_interactions.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-04",
+      "criterion": "Complete original style flight and rolls on three real holes across FPS",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/classic_shot_model.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-05",
+      "criterion": "Three-click original meter scheduling input and displayed contact zones",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/native/src/recovered_welly_tick.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-06",
+      "criterion": "Sand water named hazards world OOB flag cup and true ball event sequence",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/classic_hole_session.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-07",
+      "criterion": "Code8 code9 code10 and all pause/hazard resume settle and unblock input",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/recovered_putter_terminal.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-08",
+      "criterion": "3-hole full public bridge loop with accurate independent hole and overall scores",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/native/src/pixtee_round_runtime.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-09",
+      "criterion": "PRNG deterministic save replay and interrupted gameplay recovery on all three holes",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "engine/src/classic_replay_journal.cpp"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-10",
+      "criterion": "Godot real playable scenes do not duplicate C++ physics and support touch",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/native/SConstruct"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-11",
+      "criterion": "Approved art and ads integrated with no physics side effects, responsive HUD",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-12",
+      "criterion": "Android arm64 release build validated normal phone Fold closed and open",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/project.godot"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-13",
+      "criterion": "Rights audit original data/source code and media commercially cleared",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/reference/README.md"
+      ],
+      "signoff_owner": "PENDING"
+    },
+    {
+      "id": "M1-14",
+      "criterion": "Performance crash reliability access/input/device/end-to-end QA",
+      "status": "RED",
+      "evidence_links": [],
+      "starter_sources": [
+        "pixtee-godot/scripts/EngineBindingCI.gd"
+      ],
+      "signoff_owner": "PENDING"
+    }
   ]
 }

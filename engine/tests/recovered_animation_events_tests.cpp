@@ -34,4 +34,29 @@ int main(){
     try{original_animation_enqueue(slots,{0,0,0,0,100},assets);}
     catch(const std::out_of_range&){refused=true;}
     assert(refused);
+    OriginalAnimationSlots timed{};
+    timed[0].status=0;
+    timed[0].ticks=4;
+    timed[0].frame_offset=0x12345678;
+    timed[1].status=1;
+    timed[1].ticks=1;
+    auto tick=original_animation_tick_countdowns(timed);
+    assert(tick.active_slots==2);
+    assert(tick.newly_ready_for_script==1);
+    assert(timed[0].ticks==3);
+    assert(timed[1].ticks==0);
+    assert(timed[0].frame_offset==0x12345678);
+    bool no_script=false;
+    try{original_animation_tick_countdowns(timed);}
+    catch(const std::logic_error&){no_script=true;}
+    assert(no_script);
+    // A source-consistent host may close or decode slot 1 before
+    // advancing the next animation frame.
+    timed[1].status=0xffff;
+    for(int i=0;i<3;++i) {
+        tick=original_animation_tick_countdowns(timed);
+    }
+    assert(timed[0].ticks==0);
+    assert(tick.newly_ready_for_script==1);
+
 }

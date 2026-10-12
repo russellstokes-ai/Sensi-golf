@@ -6,6 +6,8 @@ on:
     paths:
       - 'pixtee-godot/native/src/original_turn_orchestrator.*'
       - 'pixtee-godot/native/tests/original_turn_orchestrator_tests.cpp'
+      - 'pixtee-godot/native/src/original_cpu_scan_pipeline.*'
+      - 'pixtee-godot/native/tests/original_cpu_scan_pipeline_tests.cpp'
       - '.github/workflows/pixtee-original-nine-integration.yml'
 permissions:
   contents: read
@@ -25,6 +27,19 @@ jobs:
             pixtee-godot/native/tests/original_turn_orchestrator_tests.cpp \
             -o /tmp/pixtee-original-turn-integration
           /tmp/pixtee-original-turn-integration
+      - name: Verify composition of original CPU search grid heading sweep candidate ranking and sampled swing
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_difficulty.cpp \
+            pixtee-godot/native/src/original_cpu_search_grid.cpp \
+            pixtee-godot/native/src/original_cpu_heading_sweep.cpp \
+            pixtee-godot/native/src/original_cpu_candidate.cpp \
+            pixtee-godot/native/src/original_cpu_shot_variation.cpp \
+            pixtee-godot/native/src/original_cpu_scan_pipeline.cpp \
+            pixtee-godot/native/tests/original_cpu_scan_pipeline_tests.cpp \
+            -o /tmp/pixtee-original-cpu-scan-pipeline
+          /tmp/pixtee-original-cpu-scan-pipeline
       - name: Verify native engine regression with Release-mode asserts
         run: |
           cmake -S . -B /tmp/pixtee-engine-nine -DCMAKE_BUILD_TYPE=Release

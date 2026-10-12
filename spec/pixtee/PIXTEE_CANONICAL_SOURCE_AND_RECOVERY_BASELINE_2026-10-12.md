@@ -39,7 +39,7 @@
 
 ### Canonical documentation snapshot (third archive)
 
-The source-lock rules, exact fallback commit IDs, 27-area recovered-engine inventory, 14-point commercial checklist, course-effects standard, and Windows copy-only SHA-256 helper are preserved together in the separate **[Pixtee canonical source-lock archive](https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-canonical-source-lock-2026-10-12)**. Use this archival copy as the *read-only source of record* when development documentation subsequently changes. It does **not** include any uncommitted Windows Work files or the final approved ZIP unless those files were separately added and checked — they were not verified in this checkpoint.
+The most complete source-lock rules, exact fallback commit IDs, 27-area recovered-engine inventory, 14-point commercial checklist, **verified approved asset ZIP hash/Library backup**, course-effects standard, and Windows copy-only SHA-256 helper are preserved together in the **[Pixtee canonical verified-assets archive](https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-canonical-verified-assets-2026-10-12)**. The [earlier first documentation snapshot](https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-canonical-source-lock-2026-10-12) remains preserved, unchanged, as an additional fallback. Use this archival copy as the *read-only source of record* when development documentation subsequently changes. It does **not** include any uncommitted Windows Work files or the final approved ZIP unless those files were separately added and checked — they were not verified in this checkpoint.
 
 ## 2. Frozen Work course — LOCAL ORIGINAL, do not touch
 

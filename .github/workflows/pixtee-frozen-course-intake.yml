@@ -1,0 +1,23 @@
+name: Pixtee Frozen Course/Menu Intake Contract
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-m1-course-intake-safe]
+    paths:
+      - 'tools/pixtee_frozen_course_intake.py'
+      - 'tools/tests/test_pixtee_frozen_course_intake.py'
+      - '.github/workflows/pixtee-frozen-course-intake.yml'
+      - 'spec/pixtee/PIXTEE_COURSE_AND_MENU_INTAKE_CONTRACT_2026-10-12.md'
+permissions:
+  contents: read
+jobs:
+  safe-readonly-intake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit test immutable source path, hash, ZIP and menu scanning
+        run: python3 -m unittest discover -s tools/tests -p 'test_pixtee_frozen_course_intake.py' -v
+      - name: Check original canonical research bank integrity
+        run: python3 pixtee-godot/tools/verify_reference_data.py
+      - name: Audit milestone-one source register and 14 commercial gates
+        run: python3 tools/verify_pixtee_milestone_one_inventory.py

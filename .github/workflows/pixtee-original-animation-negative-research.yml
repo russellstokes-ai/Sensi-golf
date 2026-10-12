@@ -5,6 +5,7 @@ on:
     branches: [feat/pixtee-native-portrait-framework]
     paths:
       - 'tools/trace_original_animation_negative_commands.py'
+      - 'tools/trace_original_animation_opcode_table.py'
       - 'tools/probe_original_animation_negative_routes.py'
       - '.github/workflows/pixtee-original-animation-negative-research.yml'
   push:
@@ -36,6 +37,12 @@ jobs:
           python tools/trace_original_animation_negative_commands.py \
             --exe "$EXE" \
             -o analysis/private/original-animation-negative-command-cfg.json
+      - name: Identify original script command jump-table addresses
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/trace_original_animation_opcode_table.py \
+            --exe "$EXE" \
+            -o analysis/private/original-animation-opcode-jump-table.json
       - name: Probe signed original animation commands without host side effects
         run: |
           EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
@@ -48,4 +55,5 @@ jobs:
           path: |
             analysis/private/original-animation-negative-command-cfg.json
             analysis/private/original-animation-negative-dynamic-routes.json
+            analysis/private/original-animation-opcode-jump-table.json
           retention-days: 30

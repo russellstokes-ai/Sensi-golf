@@ -28,6 +28,10 @@ public:
         const PackedInt32Array& totals,
         const PackedInt32Array& completed,
         const PackedInt32Array& ball_distances);
+    // Source x86 0x40CCA4..0x40CCC1, raw CPU simulated shot
+    // trial force generation. Not a complete AI trajectory.
+    Dictionary original_cpu_trial_force(
+        int player_scale,int vertical_base,int horizontal_base,int captured_power);
     Dictionary original_cpu_shot_variation(
         bool bypass, int power, int variation,
         int random100, int random_power, int random_direction);

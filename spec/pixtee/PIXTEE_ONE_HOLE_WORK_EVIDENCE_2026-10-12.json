@@ -80,5 +80,39 @@
     "apk_created": false,
     "local_runtime_verification": "blocked by managed sandbox; tested in GitHub Linux Godot4.5 CI",
     "local_git_network": "blocked; remote commits created through GitHub connector; working tree matches changed source files but local HEAD remains previous fetched checkpoint"
+  },
+  "menu_journey_increment": {
+    "tested_source_head": "618d51bd97dd511e98844803561e64b7273ec57a",
+    "workflow": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38301228517",
+    "implemented": [
+      "native live/final scorecard and committed results",
+      "persistent best/average/last statistics with attempt deduplication",
+      "safe help/settings/player/results navigation",
+      "restart/leave confirmation",
+      "scrollable portrait and wide menus",
+      "low/standard/high cosmetic presets and 30/60/90/120 FPS limits",
+      "reduced flashes and reduced motion",
+      "skippable approved-logo opening; cancellation before play",
+      "cosmetic water time freezes with pause",
+      "schema1 profile migration and JSON numeric validation",
+      "score saving recovers after failed attempt allocation"
+    ],
+    "tests": "25 native tests, 9 tools (1 skipped), 61 root, all Godot journey checks and actual software-rendered menu captures PASS",
+    "visual_artifact": {
+      "id": 11770214869,
+      "run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38301228517",
+      "sha256": "cb094086090b774a684c8f7172c0d51ca028e77891111c30464861036da4d01a",
+      "screenshots": 6,
+      "manual_visual_review": "pending; browser artifact transfer did not complete"
+    },
+    "native_process_death_resume": "OPEN: stable replay rejects pending shots and verified flag interactions; no unsafe fallback implemented",
+    "audio_owner": "user",
+    "music_scope": [
+      "title screen",
+      "pause menu"
+    ],
+    "sound_files_added": false,
+    "apk_created": false,
+    "commercial_gates_promoted": 0
   }
 }

@@ -311,7 +311,14 @@
     "playable_holes": 1,
     "instruction_date": "2026-10-12",
     "historical_three_hole_register_retained": true,
-    "commercial_release_ready": false
+    "commercial_release_ready": false,
+    "audio_owner": "user",
+    "music_usage": [
+      "title",
+      "pause"
+    ],
+    "gameplay_music_required": false,
+    "no_apk_until_commercial_ready": true
   },
   "latest_incremental_evidence": "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
 }

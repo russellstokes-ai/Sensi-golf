@@ -95,9 +95,14 @@ OriginalAnimationTimerTick original_animation_tick_with_plain_scripts(
         const auto frame=static_cast<std::uint16_t>(
             static_cast<std::uint16_t>(bytes[6u+offset])|
             (static_cast<std::uint16_t>(bytes[7u+offset])<<8));
-        if((frame&0x8000u)!=0)
-            throw std::logic_error(
-                "original animation script command opcode not decoded");
+        if((frame&0x8000u)!=0) {
+            if(frame!=0x8004u && frame!=0x8008u)
+                throw std::logic_error(
+                    "original animation script callback/opcode not recovered");
+            if(frame==0x8008u && bytes.size()-offset<10)
+                throw std::out_of_range(
+                    "original animation wait command payload truncated");
+        }
     }
     OriginalAnimationTimerTick result{};
     for(auto& slot:slots) {
@@ -112,9 +117,55 @@ OriginalAnimationTimerTick original_animation_tick_with_plain_scripts(
             [&slot](const OriginalAnimationScriptAsset& asset) {
                 return asset.source_pointer==slot.asset_pointer;
             });
-        (void)original_animation_decode_plain_frame(slot,it->script);
+        (void)original_animation_decode_supported_step(slot,it->script);
     }
     return result;
+}
+
+OriginalAnimationSupportedStep original_animation_decode_supported_step(
+    OriginalAnimatedEvent& slot,const std::vector<std::uint8_t>& script) {
+    if(slot.status==0xffffu || slot.ticks!=0)
+        throw std::logic_error(
+            "original animation decoder requires active slot and zero tick");
+    const auto offset=static_cast<std::size_t>(slot.frame_offset);
+    if(script.size()<2 || offset>script.size() ||
+       script.size()-offset<8)
+        throw std::out_of_range(
+            "original animation script missing frame/command word");
+    const auto opcode=static_cast<std::uint16_t>(
+        static_cast<std::uint16_t>(script[6u+offset])|
+        (static_cast<std::uint16_t>(script[7u+offset])<<8));
+    if((opcode&0x8000u)==0) {
+        const auto result=original_animation_decode_plain_frame(slot,script);
+        return {OriginalAnimationSupportedCommand::PlainFrame,
+                result.displayed_frame,result.delay};
+    }
+    // Refuse unverified original indirect callbacks/opcodes before
+    // mutating any slot state. Only recovered 0x8004/0x8008 are legal.
+    if(opcode!=0x8004u && opcode!=0x8008u)
+        throw std::logic_error(
+            "original animation script command not source-authenticated");
+    if(opcode==0x8004u) {
+        // Source 0x40C539 -> 0x40C55A -> 0x40C573.
+        // Delay assignment preceding the indirect JMP is overwritten
+        // with zero by the original release handler.
+        slot.asset_pointer=0;
+        slot.frame_offset=0;
+        slot.ticks=0;
+        slot.status=0xffffu;
+        return {OriginalAnimationSupportedCommand::CloseSlot,0,0};
+    }
+    // Source 0x40C58D reads the WORD after command and adds a second
+    // 2 bytes to the frame offset (first +2 was 0x40C549).
+    if(script.size()-offset<10)
+        throw std::out_of_range(
+            "source original 0x8008 wait command missing tick WORD");
+    const auto ticks=static_cast<std::uint16_t>(
+        static_cast<std::uint16_t>(script[8u+offset])|
+        (static_cast<std::uint16_t>(script[9u+offset])<<8));
+    slot.ticks=ticks;
+    slot.frame_offset=static_cast<std::uint32_t>(slot.frame_offset+4u);
+    return {OriginalAnimationSupportedCommand::WaitTicks,0,ticks};
 }
 
 } // namespace sensigolf::recovered

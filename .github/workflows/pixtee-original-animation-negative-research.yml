@@ -1,6 +1,12 @@
 name: Pixtee Original Negative Animation Command Research
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [feat/pixtee-native-portrait-framework]
+    paths:
+      - 'tools/trace_original_animation_negative_commands.py'
+      - 'tools/probe_original_animation_negative_routes.py'
+      - '.github/workflows/pixtee-original-animation-negative-research.yml'
   push:
     branches: [feat/pixtee-godot-recovered-core]
     paths:

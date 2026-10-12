@@ -81,6 +81,13 @@ public:
     const recovered::OriginalAnimationSlots&
     original_animation_events() const noexcept;
     recovered::OriginalAnimationTimerTick step_original_animation_timers();
+    // Complete original ten-slot countdown and ordinary nonnegative
+    // source animation frames when the host supplies original-format,
+    // independently authored script bytes. Unsupported commands fail
+    // explicitly; no renderer/audio is invented.
+    recovered::OriginalAnimationTimerTick
+    step_original_animation_plain_scripts(
+        const std::vector<recovered::OriginalAnimationScriptAsset>& scripts);
 
     // Caller supplies real original player mode (source [ESI+0x5A]).
     // Omitted/unset means no speculative lip activation in native engine.

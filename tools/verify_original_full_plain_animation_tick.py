@@ -10,8 +10,9 @@ Negative opcode dispatch and renderer/SFX remain open, not faked.
 import argparse,hashlib,json,random,struct,subprocess,sys
 from pathlib import Path
 from unicorn import UC_HOOK_CODE
+from unicorn.x86_const import UC_X86_REG_ESP
 sys.path.insert(0,str(Path(__file__).resolve().parent))
-from original_v1014_oracle import build_uc,REFERENCE_SHA256,w16,wu32,ru16,ru32
+from original_v1014_oracle import build_uc,REFERENCE_SHA256,STACK,w16,wu32,ru16,ru32
 # The hash-authenticated Unicorn harness already maps PLAYER=0x500000
 # for 64 KiB of scratch. Use a nonoverlapping offset within that region
 # rather than remapping a PE-address range and triggering UC_ERR_MAP.
@@ -46,6 +47,10 @@ def original(uc,slots):
         w16(uc,slot+8,width)
         wu32(uc,slot+0xc,asset)
         wu32(uc,slot+0x10,offset)
+    # The authentic source loops with CALL 0x40C52D for active slots.
+    # Seed a mapped scratch stack for x86 PUSH/RET, rather than leaving
+    # Unicorn ESP at the unmapped default address zero.
+    uc.reg_write(UC_X86_REG_ESP,STACK+0xf000)
     seen=[]
     def hook(m,addr,size,user):
         if addr==STOP:

@@ -4,6 +4,8 @@ on:
     branches: [feat/pixtee-godot-recovered-core]
     paths:
       - 'tools/verify_original_animation_event_queue.py'
+      - 'tools/verify_original_animation_event_tick.py'
+      - 'pixtee-godot/native/tests/original_animation_event_tick_probe.cpp'
       - 'engine/src/recovered_animation_events.cpp'
       - 'engine/include/sensigolf/recovered_animation_events.hpp'
       - 'pixtee-godot/native/tests/original_animation_event_queue_probe.cpp'
@@ -43,8 +45,20 @@ jobs:
           python tools/verify_original_animation_event_queue.py \
             --exe "$EXE" --probe /tmp/pixtee-original-animation-event-probe \
             -o analysis/private/original-animation-event-slot-x86.json
+      - name: Source-original per-event 10-slot timer dispatcher parity
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iengine/include \
+            engine/src/recovered_animation_events.cpp \
+            pixtee-godot/native/tests/original_animation_event_tick_probe.cpp \
+            -o /tmp/pixtee-original-animation-tick-probe
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_animation_event_tick.py \
+            --exe "$EXE" --probe /tmp/pixtee-original-animation-tick-probe \
+            -o analysis/private/original-animation-timer-tick-x86.json
       - uses: actions/upload-artifact@v4
         with:
           name: pixtee-original-animation-event-queue
-          path: analysis/private/original-animation-event-slot-x86.json
+          path: |
+            analysis/private/original-animation-event-slot-x86.json
+            analysis/private/original-animation-timer-tick-x86.json
           retention-days: 30

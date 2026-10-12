@@ -46,7 +46,6 @@ jobs:
             pixtee-godot/native/src/original_cpu_trial_force.cpp \
             pixtee-godot/native/src/original_cpu_trial_preflight.cpp \
             pixtee-godot/native/src/original_cpu_simulated_contact.cpp \
-            pixtee-godot/native/src/original_cpu_simulated_contact.cpp \
             pixtee-godot/native/tests/original_cpu_scan_pipeline_tests.cpp \
             -o /tmp/pixtee-original-cpu-scan-pipeline
           /tmp/pixtee-original-cpu-scan-pipeline

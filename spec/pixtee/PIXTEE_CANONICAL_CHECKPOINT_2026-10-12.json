@@ -22,6 +22,12 @@
       "frozen_content": "All Git-tracked portrait Android framework, concept/preproduction art source/previews, artist's batch manifests, UI/scale, sponsor boards and documentation at the above commit",
       "verification": "GitHub branch created from exact commit SHA in this session",
       "note": "Historic Git art registers were written before owner later approved the separate final ZIP. Preview files and rejected placeholder art in an old branch are historical, not automatic production-approved assets."
+    },
+    "canonical_documentation_snapshot": {
+      "archival_branch": "archive/pixtee-canonical-source-lock-2026-10-12",
+      "link": "https://github.com/russellstokes-ai/Sensi-golf/tree/archive/pixtee-canonical-source-lock-2026-10-12",
+      "frozen_content": "Canonical source-lock Markdown, Work Hole 1/asset archive procedure, copy-only SHA256 Windows tool, M1 engine handover, World FX integration standard, data and original provenance",
+      "note": "Created from working branch only after lock documents are committed; branch is a named fallback, not server-enforced branch protection."
     }
   },
   "original_windows_reference": {

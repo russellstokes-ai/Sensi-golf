@@ -69,6 +69,11 @@ def main():
           report["source_window"],len(instructions),"instructions;",
           len(edges),"control transfers",
           len(field_accesses),"slot/global accesses")
+    for ins in instructions:
+        if 0x40C55A <= ins.address <= 0x40C5A8:
+            # Print a compact machine-instruction study trace to Actions.
+            # No executable bytes/resources or game art are exported.
+            print(hex(ins.address),ins.mnemonic,ins.op_str)
     for e in edges:print(e["address"],e["operation"],e["target"])
     print("Original signed-command effects remain intentionally unimplemented")
 if __name__=="__main__":

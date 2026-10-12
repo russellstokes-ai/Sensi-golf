@@ -62,7 +62,7 @@ void ClassicHoleSession::reset(
     flag_object_verified_ = false;
     animation_assets_verified_ = false;
     animation_assets_ = {};
-    animation_slots_ = {};
+    recovered::original_animation_reset_all(animation_slots_);
 
     original_player_mode_5a_.reset();
     // A launch from a valid low-code lie can exit the map before its first

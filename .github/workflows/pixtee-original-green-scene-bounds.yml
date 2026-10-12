@@ -5,6 +5,7 @@ on:
     branches: [feat/pixtee-godot-recovered-core]
     paths:
       - 'engine/src/recovered_green_scene_bounds.cpp'
+      - 'engine/tests/recovered_green_scene_bounds_tests.cpp'
       - 'engine/include/sensigolf/recovered_green_scene_bounds.hpp'
       - 'tools/verify_original_green_scene_bounds.py'
       - 'pixtee-godot/native/tests/original_green_scene_bounds_probe.cpp'

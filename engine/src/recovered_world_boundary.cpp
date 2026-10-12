@@ -66,4 +66,9 @@ OriginalWorldOobEvent original_world_oob_event() noexcept {
     return OriginalWorldOobEvent{1u,0x46u,0x1000du,0x420670u};
 }
 
+OriginalWorldOobEvent original_cup_capture_event() noexcept {
+    // Original x86: 0x40CD25..0x40CD45 JMP 0x40CFE9.
+    return OriginalWorldOobEvent{1u,0x46u,0x1000fu,0x42067eu};
+}
+
 } // namespace sensigolf::recovered

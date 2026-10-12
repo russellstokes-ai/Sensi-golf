@@ -1,0 +1,32 @@
+name: Pixtee Milestone One Original Data and Commercial Gate Audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'spec/pixtee/MILESTONE_ONE_*'
+      - 'spec/pixtee/ORIGINAL_PHYSICS_RESEARCH.json'
+      - 'spec/pixtee/ENGINE_COMPLETENESS_GATE_2026-10-11.json'
+      - 'pixtee-godot/reference/**'
+      - 'tools/verify_pixtee_milestone_one_inventory.py'
+      - 'pixtee-godot/tools/verify_reference_data.py'
+      - '.github/workflows/pixtee-milestone-one-engine-handover-gate.yml'
+permissions:
+  contents: read
+jobs:
+  reference-and-data-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original reference dataset has not drifted
+        run: python3 pixtee-godot/tools/verify_reference_data.py
+      - name: Validate all 27 milestone one source systems and 14 release gate records
+        run: python3 tools/verify_pixtee_milestone_one_inventory.py
+      - name: Confirm fail-closed commercial readiness gate remains RED
+        run: |
+          if python3 tools/verify_pixtee_milestone_one_inventory.py --require-commercial; then
+            echo "Unexpected commercial-ready result: explicitly review approval and evidence" >&2
+            exit 1
+          fi
+          echo "Expected: original-data audit passes, commercial launch remains blocked."

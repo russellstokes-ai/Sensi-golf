@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <vector>
 #include "original_cpu_candidate.hpp"
+#include "original_cpu_trial_force.hpp"
 #include "original_cpu_difficulty.hpp"
 #include "original_cpu_heading_sweep.hpp"
 #include "original_cpu_shot_variation.hpp"
@@ -43,4 +44,16 @@ OriginalCpuSampledSwing original_cpu_resolve_sampled_swing(
     std::uint16_t source_variation,
     std::uint16_t random_100,std::uint16_t random_power,
     std::uint16_t random_direction);
+// The exact original 0x40CCA4 trial initial velocity with one original
+// candidate's heading. Caller supplies authoritative original player
+// scale/base fields and captured power. This does NOT simulate/score a
+// trajectory or choose the club. Never substitute a guessed evaluator.
+struct OriginalCpuTrial {
+    std::uint16_t heading=0;
+    OriginalCpuTrialForce force{};
+};
+OriginalCpuTrial original_cpu_candidate_trial(
+    const OriginalCpuScanPlan& plan,std::size_t candidate_index,
+    OriginalCpuTrialForceInput original_player_state);
+
 } // namespace pixtee

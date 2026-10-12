@@ -2,6 +2,12 @@
 #include <cstdint>
 namespace pixtee {
 void OriginalWellyTick::reset() noexcept {state_={};}
+void OriginalWellyTick::start_from_original_ui_entry() noexcept {
+    state_={};
+    state_.accumulator=8u;  // original x86 MOV [0x41D596], 8
+    state_.saved_angle=0x40u; // original MOV [0x41D59C], 0x40
+}
+
 void OriginalWellyTick::complete() noexcept {
     state_.stage=0;
     state_.step_setting=5;

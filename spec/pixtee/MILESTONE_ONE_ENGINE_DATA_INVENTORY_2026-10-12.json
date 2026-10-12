@@ -270,9 +270,10 @@
       "state": "BLOCKED",
       "evidence": "Approved original Pixtee art is separate from engine branch; callback wiring unfinished",
       "paths": [
-        "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md"
+        "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+        "spec/pixtee/PIXTEE_MILESTONE_ONE_WORLD_FX_AND_FEEL_STANDARD_2026-10-12.md"
       ],
-      "release_gap": "Import only approved source asset pack; register pivots, animated wind/grass/water/birds, noncolliding sponsor boards"
+      "release_gap": "Import unchanged approved art and reconcile the separate Work course standard; implement wind-coherent vegetation, subtly moving water, native-hit-driven grass/sand/water/cup FX, birds/crowd/flags, noncolliding sponsor boards; pass FX-01..FX-10 without modifying C++ physics or gameplay RNG."
     },
     {
       "id": "original_provenance_evidence",
@@ -423,11 +424,12 @@
     },
     {
       "id": "M1-11",
-      "criterion": "Approved art and ads integrated with no physics side effects, responsive HUD",
+      "criterion": "Frozen approved Pixtee art, portrait/Fold HUD and legible world sponsor boards, plus ten production World FX acceptance checks (shaders, particles, wind/water, genuine event-driven collisions, accessibility, render performance and unchanged native trajectory).",
       "status": "RED",
       "evidence_links": [],
       "starter_sources": [
-        "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md"
+        "spec/pixtee/ASTRA_FINAL_ART_ASSET_BIBLE_2026-10-10.md",
+        "spec/pixtee/PIXTEE_MILESTONE_ONE_WORLD_FX_AND_FEEL_STANDARD_2026-10-12.md"
       ],
       "signoff_owner": "PENDING"
     },

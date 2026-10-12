@@ -11,6 +11,9 @@ on:
       - 'engine/src/classic_terrain.cpp'
       - 'spec/pixtee/ORIGINAL_PHYSICS_RESEARCH.json'
       - 'engine/tests/fixtures/original_round_all_eighteen.txt'
+      - 'spec/pixtee/MILESTONE_ONE_*'
+      - 'spec/pixtee/ENGINE_COMPLETENESS_GATE_2026-10-11.json'
+      - 'tools/verify_pixtee_milestone_one_inventory.py'
 jobs:
   original-data-provenance:
     runs-on: ubuntu-latest
@@ -18,3 +21,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify source-derived engine tables and 18-hole research fixture
         run: python3 pixtee-godot/tools/verify_reference_data.py
+      - name: Audit full 27-area Milestone One references and 14 commercial readiness gates
+        run: python3 tools/verify_pixtee_milestone_one_inventory.py

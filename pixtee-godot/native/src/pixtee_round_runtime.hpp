@@ -31,6 +31,7 @@ public:
     void nudge_aim_raw(std::int32_t delta);
     void set_club(std::uint16_t index);
     void set_verified_flag_object(bool present);
+    void set_original_player_mode_5a(std::uint16_t source_mode);
     void cycle_club(int delta);
     void meter_click_raw(std::uint16_t sample);
     void start_original_welly();

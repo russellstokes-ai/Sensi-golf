@@ -30,6 +30,7 @@ public:
     void set_aim_raw(std::uint16_t raw);
     void nudge_aim_raw(std::int32_t delta);
     void set_club(std::uint16_t index);
+    void set_verified_flag_object(bool present);
     void cycle_club(int delta);
     void meter_click_raw(std::uint16_t sample);
     void start_original_welly();

@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <cstdint>
+#include <vector>
 namespace sensigolf::recovered {
 // Original Windows v1.014 animation event slots 0x41F8F0, each 0x14 bytes.
 // Source 0x40C4C0..0x40C50A enqueues into FIRST status==0xFFFF slot.
@@ -44,5 +45,18 @@ struct OriginalAnimationTimerTick {
 };
 OriginalAnimationTimerTick original_animation_tick_countdowns(
     OriginalAnimationSlots& slots);
+
+// Original Windows v1.014 0x40C539..0x40C559. This is strictly the
+// nonnegative-frame branch; negative script words are dynamic source
+// opcodes and have NOT been recovered. The original frame word at
+// [slot+6] replaces the queue's previous height field as the
+// animation advances (a reused structure union in original code).
+struct OriginalAnimationPlainFrame {
+    std::uint16_t displayed_frame=0;
+    std::uint16_t delay=0;
+};
+OriginalAnimationPlainFrame original_animation_decode_plain_frame(
+    OriginalAnimatedEvent& slot,
+    const std::vector<std::uint8_t>& original_asset_script);
 
 } // namespace sensigolf::recovered

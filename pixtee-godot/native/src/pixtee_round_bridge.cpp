@@ -7,6 +7,7 @@
 #include "original_turn_score_adjust.hpp"
 #include "original_competition_turn.hpp"
 #include "original_cpu_candidate.hpp"
+#include "original_cpu_trial_force.hpp"
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -38,6 +39,10 @@ void PixteeRoundBridge::_bind_methods() {
         D_METHOD("original_turn_score_adjust","player_count",
                  "strokes","totals","completed","ball_distances"),
         &PixteeRoundBridge::original_turn_score_adjust);
+    ClassDB::bind_method(
+        D_METHOD("original_cpu_trial_force",
+                 "player_scale","vertical_base","horizontal_base","captured_power"),
+        &PixteeRoundBridge::original_cpu_trial_force);
     ClassDB::bind_method(
         D_METHOD("original_cpu_shot_variation",
                  "bypass","power","variation",
@@ -213,6 +218,26 @@ Dictionary PixteeRoundBridge::original_turn_score_adjust(
     d["strokes"]=out_strokes;
     d["totals"]=out_total;
     d["entire_multiplayer_mode_implemented"]=false;
+    last_error_="";
+    return d;
+}
+Dictionary PixteeRoundBridge::original_cpu_trial_force(
+    int player_scale,int vertical_base,int horizontal_base,int captured_power) {
+    Dictionary d;
+    if(captured_power<0 || captured_power>65535) {
+        last_error_="original CPU trial captured power must fit source word";
+        d["verified"]=false;
+        return d;
+    }
+    const auto output=pixtee::original_cpu_trial_force({
+        static_cast<std::int32_t>(player_scale),
+        static_cast<std::int32_t>(vertical_base),
+        static_cast<std::int32_t>(horizontal_base),
+        static_cast<std::uint16_t>(captured_power)});
+    d["verified"]=true;
+    d["vertical_force"]=static_cast<int64_t>(output.vertical_force);
+    d["horizontal_force"]=static_cast<int64_t>(output.horizontal_force);
+    d["complete_cpu_shot_planner"]=false;
     last_error_="";
     return d;
 }

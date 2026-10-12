@@ -1,0 +1,41 @@
+name: Pixtee Original CPU Evaluator Source Entry
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [feat/pixtee-native-portrait-framework]
+    paths:
+      - 'tools/trace_original_cpu_evaluator_entry.py'
+      - '.github/workflows/pixtee-original-cpu-evaluator-entry.yml'
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/trace_original_cpu_evaluator_entry.py'
+      - '.github/workflows/pixtee-original-cpu-evaluator-entry.yml'
+permissions: {contents: read}
+jobs:
+  original-cpu-evaluator-entry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Ingest SHA-authenticated executable transiently
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Trace candidate evaluation branch without gameplay assumptions
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/trace_original_cpu_evaluator_entry.py \
+            --exe "$EXE" \
+            -o analysis/private/original-cpu-evaluator-entry.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-cpu-evaluator-entry
+          path: analysis/private/original-cpu-evaluator-entry.json
+          retention-days: 30

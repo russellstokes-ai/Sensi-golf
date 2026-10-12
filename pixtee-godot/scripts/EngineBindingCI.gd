@@ -152,6 +152,77 @@ func _initialize() -> void:
         push_error("Original competition mode4/6 turn-owner source state mismatch")
         quit(1)
         return
+    # Native multiplayer must be a real Godot class: two isolated player
+    # rounds, explicit source turn selection, and separated original strokes.
+    if not ClassDB.class_exists("PixteeMultiRoundBridge"):
+        push_error("Native original multiplayer bridge was not registered")
+        quit(1)
+        return
+    var multi = ClassDB.instantiate("PixteeMultiRoundBridge")
+    if not multi.begin_multi_round(
+        2, order, pars,
+        PackedInt32Array([0x1234,0x5678]),
+        PackedInt32Array([0xabcd,0x1234])):
+        push_error("Native 2-player original-rule session failed: " + multi.last_error())
+        quit(1)
+        return
+    var m_map = PackedByteArray()
+    m_map.resize(0x60 + 4*128*2)
+    m_map[0x54] = 0
+    m_map[0x55] = 4
+    m_map[0x56] = 0
+    m_map[0x57] = 128
+    var m_spt = PackedByteArray()
+    m_spt.resize(50)
+    m_spt[46] = 0
+    m_spt[47] = 64
+    var m_desc = PackedByteArray()
+    m_desc.resize(8)
+    m_desc[1] = 7 # original named code8 green descriptor
+    var m_selector = PackedByteArray()
+    m_selector.resize(8)
+    if not multi.register_course_resource(
+        1,m_map,m_spt,m_desc,m_selector,PackedByteArray()) or        not multi.load_next_hole_for_everyone():
+        push_error("Original format course or parallel multiplayer hole load failed: " + multi.last_error())
+        quit(1)
+        return
+    if not multi.propose_original_turn(
+        0,PackedInt32Array([3,7]),PackedInt32Array([0,0]),
+        PackedInt32Array([0,1])):
+        push_error("Source original multiplayer turn selection failed: " + multi.last_error())
+        quit(1)
+        return
+    var waiting = multi.snapshot()
+    if not bool(waiting.get("turn_switch_pending",false)) or int(waiting.get("active_owner",-2)) != -1:
+        push_error("Original turn must not become active until acknowledged")
+        quit(1)
+        return
+    if multi.propose_original_turn(
+        0,PackedInt32Array([3,7]),PackedInt32Array([0,0]),
+        PackedInt32Array([0,1])):
+        push_error("Original multiplayer accepted duplicate unacknowledged turn")
+        quit(1)
+        return
+    if multi.acknowledge_original_turn() != 1:
+        push_error("Original multiplayer active owner was not second player")
+        quit(1)
+        return
+    if not multi.set_club_index(12) or        not multi.meter_click_raw(0) or        not multi.meter_click_raw(30) or        not multi.meter_click_raw(105):
+        push_error("Original multiplayer raw stroke input failed: " + multi.last_error())
+        quit(1)
+        return
+    var two_scores = multi.snapshot()
+    var hole_strokes = two_scores.get("hole_strokes",PackedInt32Array())
+    if hole_strokes.size()!=2 or hole_strokes[0]!=0 or hole_strokes[1]!=1:
+        push_error("Original multiplayer round leaked ball or stroke state between players: " + str(hole_strokes))
+        quit(1)
+        return
+    if not multi.propose_original_turn(
+        0,PackedInt32Array([10,7]),PackedInt32Array([0,0]),
+        PackedInt32Array([0,1])) or multi.acknowledge_original_turn()!=0:
+        push_error("Original multiplayer failed handoff back to first player")
+        quit(1)
+        return
     var req = round_host.requested_course()
     if int(req.get("resource_id",0)) != 1:
         push_error("Original round controller did not request hole one")

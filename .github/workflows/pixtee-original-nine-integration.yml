@@ -1,0 +1,32 @@
+name: Pixtee Original Nine Area Integration Regression
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'pixtee-godot/native/src/original_turn_orchestrator.*'
+      - 'pixtee-godot/native/tests/original_turn_orchestrator_tests.cpp'
+      - '.github/workflows/pixtee-original-nine-integration.yml'
+permissions:
+  contents: read
+jobs:
+  source-turn-coordination:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile source-authenticated original turn selection integration
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_next_player.cpp \
+            pixtee-godot/native/src/original_competition_turn.cpp \
+            pixtee-godot/native/src/original_turn_orchestrator.cpp \
+            pixtee-godot/native/tests/original_turn_orchestrator_tests.cpp \
+            -o /tmp/pixtee-original-turn-integration
+          /tmp/pixtee-original-turn-integration
+      - name: Verify native engine regression with Release-mode asserts
+        run: |
+          cmake -S . -B /tmp/pixtee-engine-nine -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/pixtee-engine-nine -j 2
+          ctest --test-dir /tmp/pixtee-engine-nine --output-on-failure

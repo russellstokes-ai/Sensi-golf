@@ -1,6 +1,6 @@
 # Pixtee Golf — Godot 4.5 + recovered Sensible Golf C++ core
 
-> **DO NOT CHANGE FROZEN SOURCES:** [Canonical source lock, exact GitHub fallback commits and Work-approved Hole 1/art backup procedure](../spec/pixtee/PIXTEE_CANONICAL_SOURCE_AND_RECOVERY_BASELINE_2026-10-12.md). GitHub engine and portrait archived baselines are available; locally frozen Work HTML and final approved asset ZIP must be hashed/copied separately before marking their backup complete.
+> **DO NOT CHANGE FROZEN SOURCES:** [Canonical source lock, exact GitHub fallback commits and Work-approved Hole 1/art backup procedure](../spec/pixtee/PIXTEE_CANONICAL_SOURCE_AND_RECOVERY_BASELINE_2026-10-12.md). GitHub engine and portrait archived baselines are available; the [approved final ZIP has a byte-identical SHA-256-verified Library backup](../spec/pixtee/PIXTEE_APPROVED_ASSETS_CANONICAL_SHA256_2026-10-12.json), but the newer locally frozen Work HTML folder still requires its own copy and checksum.
 
 > **Milestone One authoritative handover (12 October):**
 > [Commercial-quality three-hole native engine data and acceptance plan](../spec/pixtee/MILESTONE_ONE_COMMERCIAL_ENGINE_HANDOVER_2026-10-12.md),

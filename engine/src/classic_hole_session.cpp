@@ -85,6 +85,7 @@ void ClassicHoleSession::reset(
     hazard_pause_remaining_ = 0;
     last_hazard_kind_ = ClassicNamedHazard::None;
     pending_world_oob_event_.reset();
+    pending_cup_capture_event_.reset();
     special_green_pause_remaining_ = 0;
     special_green_continuation_ready_ = false;
     recovered_counters_ = {};
@@ -438,6 +439,11 @@ void ClassicHoleSession::step() {
 
     switch (shot_.outcome()) {
     case ClassicShotOutcome::CupTerminal:
+        // v1.014 source code8 terminal requests the separate original
+        // 0x40CD25 cup-event payload. The proven club-12 path is exposed
+        // without guessing non-putter event timing.
+        if(active_club_==12)
+            pending_cup_capture_event_=recovered::original_cup_capture_event();
         // Scoped original putter code-8 terminal increments both counters
         // once more. Non-putter cup counter semantics remain separately scoped.
         if (active_club_ == 12) {
@@ -531,6 +537,11 @@ ClassicNamedHazard ClassicHoleSession::last_hazard_kind() const noexcept {
 std::optional<recovered::OriginalWorldOobEvent>
 ClassicHoleSession::pending_world_oob_event() const noexcept {
     return pending_world_oob_event_;
+}
+
+std::optional<recovered::OriginalWorldOobEvent>
+ClassicHoleSession::pending_cup_capture_event() const noexcept {
+    return pending_cup_capture_event_;
 }
 
 std::uint16_t ClassicHoleSession::hazard_pause_remaining() const noexcept {

@@ -32,4 +32,19 @@ struct OriginalCpuScoreFirstEligible {
 OriginalCpuScoreFirstEligible original_cpu_first_eligible_score(
     std::uint16_t original_span,std::uint16_t original_step,
     const std::vector<std::uint8_t>& scoring_bytes);
+// Original 0x40CA8E..0x40CAE0: scan eligible candidates' signed
+// [record+12] score WORD and keep the lowest; equal values retain
+// the earlier record (source JLE). If all records are ineligible,
+// source 0x40CAC4 returns the base pointer and no chosen record.
+// The returned offset is relative to caller-owned scratch, never a
+// raw pointer into the original Windows executable address space.
+struct OriginalCpuBestScoredRecord {
+    bool found=false;
+    std::size_t original_index=0;
+    std::size_t offset_bytes=0;
+    std::uint16_t original_score_word=0;
+};
+OriginalCpuBestScoredRecord original_cpu_select_best_scored_record(
+    std::uint16_t original_span,std::uint16_t original_step,
+    const std::vector<std::uint8_t>& scoring_bytes);
 } // namespace pixtee

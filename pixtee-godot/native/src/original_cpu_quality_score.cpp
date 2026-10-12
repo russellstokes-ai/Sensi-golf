@@ -1,6 +1,19 @@
 #include "original_cpu_quality_score.hpp"
 #include <stdexcept>
 namespace pixtee {
+const OriginalCpuPenaltyTable& original_cpu_reference_penalties() noexcept {
+    // Windows 1.014 GOLFWIN.EXE SHA256 3ab09a789a...c7f1ec8;
+    // first original .data image at absolute 0x41FADF.
+    // Source-loader runtime table rewrite search remains separate.
+    static const OriginalCpuPenaltyTable values{{
+        200u,40u,30u,20u,5u,0u,0u,200u,
+        200u,200u,1000u,0u,0u,0u,0u,0u,
+        0u,0u,200u,200u,200u,0u,0u,0u,
+        0u,0u,0u,0u,0u,0u,0u,0u
+    }};
+    return values;
+}
+
 std::uint16_t original_cpu_quality_score(
     std::uint16_t distance,std::uint16_t code,
     std::uint16_t green,const OriginalCpuPenaltyTable& penalties) {

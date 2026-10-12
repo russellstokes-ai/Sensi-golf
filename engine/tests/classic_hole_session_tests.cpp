@@ -528,6 +528,33 @@ int main() {
         const auto progressing=early.step_original_animation_plain_scripts({});
         assert(progressing.active_slots==1);
         assert(early.original_animation_events()[0].ticks==4);
+        // The real source queuing/slot lifecycle now supports plain
+        // sprite frame -> 0x8008 WAIT -> 0x8004 release, with only
+        // host-authorized authored script bytes, not copied game art.
+        for(int i=0;i<4;++i)
+            early.step_original_animation_plain_scripts({});
+        assert(early.original_animation_events()[0].ticks==0);
+        const std::vector<std::uint8_t> script_lifecycle{
+            5,0,0,0,0,0,17,0,8,0x80,2,0,4,0x80
+        };
+        auto wait_event=early.step_original_animation_plain_scripts({
+            {sprites[2],script_lifecycle}
+        });
+        assert(wait_event.active_slots==1);
+        assert(early.original_animation_events()[0].ticks==2);
+        assert(early.original_animation_events()[0].frame_offset==6);
+        for(int i=0;i<2;++i)
+            early.step_original_animation_plain_scripts({});
+        assert(early.original_animation_events()[0].ticks==0);
+        auto closure=early.step_original_animation_plain_scripts({
+            {sprites[2],script_lifecycle}
+        });
+        assert(closure.active_slots==1);
+        assert(early.original_animation_events()[0].status==0xffffu);
+        assert(early.original_animation_events()[0].asset_pointer==0);
+        assert(early.original_animation_events()[0].frame_offset==0);
+        assert(early.step_original_animation_plain_scripts({}).active_slots==0);
+
 
         ClassicHoleSession direct(code9,32<<16,40<<16,
                                   std::nullopt,&rng);

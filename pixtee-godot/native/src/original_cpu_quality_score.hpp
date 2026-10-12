@@ -11,6 +11,12 @@ namespace pixtee {
 constexpr std::size_t kOriginalCpuSafePenaltySlots=32;
 using OriginalCpuPenaltyTable=
     std::array<std::uint16_t,kOriginalCpuSafePenaltySlots>;
+// Numeric gameplay constants from SHA-verified original Windows
+// v1.014 .data at 0x41FADF (32 little-endian WORDs). This is NOT
+// an original sprite, course, executable or other commercial asset.
+// The source table may be runtime-mutated elsewhere; static image
+// parity is authenticated, but game-wide mode mutation still open.
+const OriginalCpuPenaltyTable& original_cpu_reference_penalties() noexcept;
 std::uint16_t original_cpu_quality_score(
     std::uint16_t distance_word,
     std::uint16_t source_contact_code,

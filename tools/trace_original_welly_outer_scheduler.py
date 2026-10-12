@@ -26,6 +26,7 @@ def main():
     base,_,secs=parse_pe(exe)
     md=Cs(CS_ARCH_X86,CS_MODE_32)
     records=[]
+    handler_region=[]
     for sec in secs:
         rva=0x40768b-base
         if not(sec["rva"]<=rva<sec["rva"]+
@@ -34,6 +35,10 @@ def main():
         ins=list(md.disasm(
             exe[sec["raw_offset"]:sec["raw_offset"]+sec["raw_size"]],
             base+sec["rva"]))
+        handler_region=[
+            f"{z.address:#x} {z.mnemonic} {z.op_str}"
+            for z in ins if 0x407600<=z.address<=0x407985
+        ]
         for k,i in enumerate(ins):
             tokens=i.op_str.lower()
             knd="producer_call" if i.mnemonic=="call" and tokens in PRODUCERS else (
@@ -45,8 +50,11 @@ def main():
                "instruction":i.mnemonic+" "+i.op_str,
                "context":[f"{z.address:#x} {z.mnemonic} {z.op_str}"
                           for z in nearby]})
+    print("Original Welly on-screen meter source transition neighbourhood:")
+    print("\\n".join(handler_region))
     out={"schema":"pixtee.original-welly-outer-scheduler-xref.v1",
         "source_sha256":ORIGINAL,"refs":records,
+        "meter_handler_instructions":handler_region,
         "producer_call_count":sum(r["kind"]=="producer_call" for r in records),
         "meter_global_reference_count":sum(r["kind"]=="meter_state_reference" for r in records),
         "scope":"Static source CALL and input/state-xref audit. No timer interval, debounce or event-loop cadence claimed absent dynamic original execution."}

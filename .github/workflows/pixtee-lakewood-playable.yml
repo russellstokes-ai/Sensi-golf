@@ -22,7 +22,13 @@ jobs:
           ctest --test-dir build --output-on-failure
           python3 -m unittest discover -s tools/tests
           python3 -m unittest discover -s tests
+      - uses: actions/cache@v4
+        id: native-cache
+        with:
+          path: pixtee-godot/bin/libpixtee_gameplay.linux.template_debug.x86_64.so
+          key: pixtee-native-godot45-linux-${{ hashFiles('engine/src/**', 'engine/include/**', 'pixtee-godot/native/src/**', 'pixtee-godot/native/SConstruct') }}
       - name: Build native Godot extension
+        if: steps.native-cache.outputs.cache-hit != 'true'
         run: |
           python3 -m pip install --user scons
           git clone --depth 1 --branch 4.5 https://github.com/godotengine/godot-cpp.git pixtee-godot/native/godot-cpp
@@ -37,3 +43,4 @@ jobs:
           /tmp/Godot_v4.5-stable_linux.x86_64 --headless --path pixtee-godot --script res://scripts/EngineBindingCI.gd
           /tmp/Godot_v4.5-stable_linux.x86_64 --headless --path pixtee-godot --script res://scripts/CommercialPresentationSmokeCI.gd
           /tmp/Godot_v4.5-stable_linux.x86_64 --headless --path pixtee-godot --script res://scripts/LakewoodSceneCI.gd
+          /tmp/Godot_v4.5-stable_linux.x86_64 --headless --path pixtee-godot --script res://scripts/PlayerJourneyCI.gd

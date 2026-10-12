@@ -44,6 +44,7 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror \
             -Iengine/include -Ipixtee-godot/native/src \
+            engine/src/recovered_math.cpp \
             pixtee-godot/native/src/original_cpu_difficulty.cpp \
             pixtee-godot/native/src/original_cpu_search_grid.cpp \
             pixtee-godot/native/src/original_cpu_heading_sweep.cpp \

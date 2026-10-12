@@ -5,6 +5,8 @@ on:
     branches: [feat/pixtee-godot-recovered-core]
     paths:
       - 'tools/pixtee_frozen_course_intake.py'
+      - 'pixtee-godot/native/src/pixtee_three_hole_round*'
+      - 'pixtee-godot/native/tests/three_hole_preview_gate_tests.cpp'
       - 'tools/tests/test_pixtee_frozen_course_intake.py'
       - '.github/workflows/pixtee-frozen-course-intake.yml'
       - 'spec/pixtee/PIXTEE_COURSE_AND_MENU_INTAKE_CONTRACT_2026-10-12.md'
@@ -28,3 +30,23 @@ jobs:
         run: python3 pixtee-godot/tools/verify_reference_data.py
       - name: Audit milestone-one source register and 14 commercial gates
         run: python3 tools/verify_pixtee_milestone_one_inventory.py
+  native-three-hole-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile recovered native engine and run original baseline tests
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j 2
+          ctest --test-dir build --output-on-failure
+      - name: Run three-hole preview product gate against actual original-native cup events
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Iengine/include -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/pixtee_round_runtime.cpp \
+            pixtee-godot/native/src/recovered_welly_tick.cpp \
+            pixtee-godot/native/src/pixtee_three_hole_round.cpp \
+            pixtee-godot/native/tests/three_hole_preview_gate_tests.cpp \
+            build/engine/libsensigolf_core.a \
+            -o build/pixtee-three-hole-gate
+          build/pixtee-three-hole-gate

@@ -91,7 +91,7 @@ Create exactly three **separate authored** hole packages (no original copyrighte
 
 | ID | Required PASS, no substitute | How to verify | Current |
 |---|---|---|---|
-| M1-01 | 27-area inventory paths and evidence still present; source/reference integrity verified | [Inventory audit script](../../tools/verify_pixtee_milestone_one_inventory.py), [existing bank verifier](../../pixtee-godot/tools/verify_reference_data.py) | **DOCUMENTED / check pending** |
+| M1-01 | 27-area inventory paths and evidence still present; source/reference integrity verified | [Inventory audit script](../../tools/verify_pixtee_milestone_one_inventory.py), [existing bank verifier](../../pixtee-godot/tools/verify_reference_data.py), [54 paths and source bank CI PASS](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38246626705) | **SOURCE AUDIT PASSED; commercial gate RED pending full signoff** |
 | M1-02 | Three independent, complete and owner-approved collision/green course resource packages | Three registered IDs, dimension/tee/cup/object assertions, test actual collisions | **RED** (1 adapter) |
 | M1-03 | Original-informed trees: object identity, altitude, deflection and solid-vs-decorative | Source machine study + native high/low tree trajectory parity | **RED** |
 | M1-04 | Fixed-step flight/roll on real three holes; no 60/90/120Hz changes | Headless trajectory golden files + real Godot snapshots + ball follow | **RED** |

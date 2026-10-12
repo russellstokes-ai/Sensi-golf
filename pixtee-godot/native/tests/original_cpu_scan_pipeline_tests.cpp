@@ -152,5 +152,49 @@ int main() {
         catch(const std::out_of_range&){blocked=true;}
         assert(blocked);
     }
+
+    // The source evaluator's independently verified 0x40C9FD quality
+    // formula populates a real 14-byte score record, then the original
+    // 0x40CA8E signed stable-min selector can choose a real angle.
+    {
+        auto plan=original_cpu_plan_scan(4,0,512,false);
+        const auto count=plan.sweep.candidate_headings.size();
+        std::vector<std::uint8_t> records(
+            count*kOriginalCpuScoreRecordBytes,0);
+        OriginalCpuPenaltyTable penalties{};
+        penalties[3]=0xff00u;
+        for(std::size_t i=0;i<count;++i)
+            original_cpu_write_quality_record(
+                records,i,100,0,0,penalties,true);
+        original_cpu_write_quality_record(
+            records,3,80,3,0,penalties,true); // signed -176
+        original_cpu_write_quality_record(
+            records,4,0xff50,3,1,penalties,true); // same signed -176
+        assert(records[3*kOriginalCpuScoreRecordBytes+12u]==0x50u);
+        assert(records[3*kOriginalCpuScoreRecordBytes+13u]==0xffu);
+        const auto scored=original_cpu_choose_scored_scan(
+            plan,96,3,records,true);
+        assert(scored.found && scored.index==3);
+        assert(scored.heading==plan.sweep.candidate_headings[3]);
+        assert(scored.score_word==0xff50u);
+        // Absent trajectory evidence, the original record bytes MUST
+        // remain unchanged; no default or synthetic CPU score permitted.
+        const auto before=records;
+        bool refused=false;
+        try{original_cpu_write_quality_record(
+            records,2,0,3,0,penalties,false);}
+        catch(const std::logic_error&){refused=true;}
+        assert(refused && records==before);
+        refused=false;
+        try{original_cpu_write_quality_record(
+            records,count,0,3,0,penalties,true);}
+        catch(const std::out_of_range&){refused=true;}
+        assert(refused && records==before);
+        refused=false;
+        try{original_cpu_write_quality_record(
+            records,0,0,32,0,penalties,true);}
+        catch(const std::out_of_range&){refused=true;}
+        assert(refused && records==before);
+    }
     return 0;
 }

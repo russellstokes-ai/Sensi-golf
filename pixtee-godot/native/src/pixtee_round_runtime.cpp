@@ -73,7 +73,7 @@ void PixteeRoundRuntime::start_original_welly() {
     if(original_welly_active_ || !game_->has_active_hole() ||
        !controls_.enabled() || controls_.stage()!=ClassicMeterStage::Idle)
         throw std::logic_error("original Welly needs an idle playable hole");
-    original_welly_.reset();
+    original_welly_.start_from_original_ui_entry();
     original_welly_active_=true;
     original_welly_first_press_=false;
     original_welly_rejected_=false;

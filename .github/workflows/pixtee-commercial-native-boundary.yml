@@ -1,0 +1,33 @@
+name: Pixtee Commercial Native Hazard Boundary
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-commercial-hardening-2026-10-12]
+    paths:
+      - 'pixtee-godot/native/tests/lakewood_native_boundary_release_gate.cpp'
+      - '.github/workflows/pixtee-commercial-native-boundary.yml'
+  pull_request:
+    branches: [feat/pixtee-m1-course-intake-safe]
+    paths:
+      - 'pixtee-godot/native/tests/lakewood_native_boundary_release_gate.cpp'
+      - '.github/workflows/pixtee-commercial-native-boundary.yml'
+permissions:
+  contents: read
+jobs:
+  authentic-lakewood-world-oob:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build recovered source-authoritative C++ core
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j 2
+      - name: Run real native Lakewood-dimension OOB/water/event tests
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -Iengine/include -Ipixtee-godot/native/src \
+            pixtee-godot/native/tests/lakewood_native_boundary_release_gate.cpp \
+            build/engine/libsensigolf_core.a -o build/pixtee-lakewood-native-boundary
+          build/pixtee-lakewood-native-boundary
+      - name: Run complete existing original physics tests
+        run: ctest --test-dir build --output-on-failure

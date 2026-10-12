@@ -321,7 +321,8 @@ int main() {
         assert(!special_putt.ball_state().holed);
         // Source v1.014 0x40A403 increments on code9 early stop,
         // but late club-12 code10 enters directly at 0x40A40B.
-        const auto source_strokes=descriptor==23 ? 2u : 1u;
+        const auto source_strokes=1u; // BOTH club12 code9/10 go direct
+        // 0x40A40B without early-code9 extra stroke.
         assert(special_putt.strokes()==source_strokes);
         assert(special_putt.recovered_counters().player_52==source_strokes);
         assert(special_putt.recovered_counters().player_56==source_strokes);

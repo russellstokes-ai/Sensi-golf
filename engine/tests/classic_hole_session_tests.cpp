@@ -432,5 +432,27 @@ int main() {
         assert(!world_oob.pending_world_oob_event().has_value());
     }
 
+    // Object presence is an explicit source/manifest gate: it cannot
+    // silently activate from a cup location alone, and is immutable
+    // once original stroke/scoring input has been recorded.
+    {
+        auto pflag=uniform_course(3,32,80);
+        recovered::OriginalPrng16 rng{1,2};
+        ClassicHoleSession with_flag(pflag,0,0,std::nullopt,&rng);
+        assert(!with_flag.flag_object_verified());
+        with_flag.set_verified_flag_object(true);
+        assert(with_flag.flag_object_verified());
+        with_flag.begin_shot(drive);
+        bool locked=false;
+        try{with_flag.set_verified_flag_object(false);}
+        catch(const std::logic_error&){locked=true;}
+        assert(locked);
+        ClassicHoleSession no_prng(pflag,0,0);
+        locked=false;
+        try{no_prng.set_verified_flag_object(true);}
+        catch(const std::logic_error&){locked=true;}
+        assert(locked);
+    }
+
     return 0;
 }

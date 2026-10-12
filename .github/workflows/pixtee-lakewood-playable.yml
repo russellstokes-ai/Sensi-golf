@@ -55,3 +55,14 @@ jobs:
           verify_godot --headless --path pixtee-godot --script res://scripts/LakewoodSceneCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/PlayerJourneyCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/MenuJourneyCI.gd
+      - name: Render supplied menus in portrait and wide windows
+        run: |
+          set -o pipefail
+          timeout 120 xvfb-run -a /tmp/Godot_v4.5-stable_linux.x86_64 --rendering-method gl_compatibility --path pixtee-godot --script res://scripts/MenuVisualCI.gd 2>&1 | tee /tmp/pixtee-menu-visual.log
+          if grep -E 'SCRIPT ERROR:|ERROR:' /tmp/pixtee-menu-visual.log; then exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pixtee-menu-visuals
+          path: pixtee-godot/review-captures/*.png
+          if-no-files-found: warn

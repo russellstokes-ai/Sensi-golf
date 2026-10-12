@@ -43,7 +43,13 @@ public:
     void set_original_interaction_context(
         recovered::OriginalPrng16* prng, bool green_mode,
         std::int16_t flag_x, std::int16_t flag_y,
-        bool flag_object_verified = false) noexcept;
+        bool flag_object_verified = false,
+        bool near_cup_distance_zero = false,
+        std::uint16_t player_mode_5a = 4) noexcept;
+    // Set only after original source mode and distance have been supplied.
+    bool original_lip_deflection_last_tick() const noexcept {
+        return lip_deflection_last_tick_;
+    }
     void update_surface_context_for_tick(
         const ClassicSurfaceContext& context);
     const ClassicSurfaceContext& surface_context() const noexcept;
@@ -91,6 +97,9 @@ private:
     std::int16_t flag_x_ = 0;
     std::int16_t flag_y_ = 0;
     bool flag_object_verified_ = false;
+    bool near_cup_distance_zero_ = false;
+    std::uint16_t player_mode_5a_ = 4; // original CPU modes >=4 do not lip
+    bool lip_deflection_last_tick_ = false;
 };
 
 } // namespace sensigolf

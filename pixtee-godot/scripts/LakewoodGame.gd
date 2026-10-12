@@ -33,6 +33,7 @@ var menu_scroll: ScrollContainer
 var attempt_id := 0
 var last_result: Dictionary = {}
 var result_saved := false
+var intro_tween: Tween
 
 func _ready() -> void:
 	profile.load_profile()
@@ -61,7 +62,7 @@ func _ready() -> void:
 	make_hud()
 	get_viewport().size_changed.connect(update_ui_layout)
 	update_ui_layout()
-	show_title()
+	show_intro()
 
 func update_ui_layout() -> void:
 	var screen := get_viewport().get_visible_rect().size
@@ -138,6 +139,7 @@ func text_line(text: String) -> Label:
 	return label
 
 func show_title() -> void:
+	stop_intro()
 	menu_screen = "title"
 	hud.hide()
 	clear_menu()
@@ -150,6 +152,26 @@ func show_title() -> void:
 	panel.add_child(button("Settings",show_settings))
 	panel.add_child(button("How to play",show_help))
 	camera.position = Vector2(256,700)
+
+func stop_intro() -> void:
+	if intro_tween != null and intro_tween.is_valid(): intro_tween.kill()
+	intro_tween = null
+
+func show_intro() -> void:
+	if reduced_motion:
+		show_title()
+		return
+	menu_screen = "intro"
+	clear_menu()
+	camera.position = Vector2(256,700)
+	var logo := image_control("logo",Vector2(288,180))
+	logo.modulate.a = 0.0
+	panel.add_child(logo)
+	panel.add_child(button("Skip",show_title))
+	intro_tween = create_tween()
+	intro_tween.tween_property(logo,"modulate:a",1.0,0.7).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	intro_tween.tween_interval(1.2)
+	intro_tween.tween_callback(show_title)
 
 func show_golfers() -> void:
 	open_auxiliary("golfers")
@@ -309,6 +331,8 @@ func make_hud() -> void:
 	bottom.add_child(shoot)
 
 func start_hole() -> void:
+	stop_intro()
+	menu_screen = "game"
 	core = PixteeRoundBridge.new()
 	var order := PackedInt32Array()
 	order.resize(18)
@@ -426,6 +450,7 @@ func show_pause() -> void:
 
 func resume_game() -> void:
 	if not playing or core == null: return
+	menu_screen = "game"
 	paused = false
 	world.set_process(true)
 	fx.set_process(true)
@@ -542,6 +567,9 @@ func _notification(what: int) -> void:
 		pause_game()
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and menu_screen == "intro" and event.keycode in [KEY_ESCAPE,KEY_ENTER,KEY_SPACE]:
+		show_title()
+		return
 	if event is InputEventKey and event.pressed and not event.echo and playing:
 		if event.keycode == KEY_ESCAPE:
 			if not player_draft.is_empty(): cancel_player_edit()

@@ -12,7 +12,10 @@ func _run() -> void:
 		quit(1)
 		return
 	assert(scene.profile.load_profile("user://tests/menu-"+str(Time.get_ticks_usec())))
+	scene.show_intro()
+	assert(scene.menu_screen == "intro")
 	scene.start_hole()
+	assert(scene.intro_tween == null and scene.menu_screen == "game")
 	scene.pause_game()
 	var before: Dictionary = scene.core.snapshot()
 	scene.show_help()

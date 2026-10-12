@@ -7,6 +7,22 @@
 int main(){
     using namespace sensigolf::recovered;
     OriginalAnimationSlots slots{};
+    // Source reset 0x40C5C0 clears every byte except status=0xFFFF.
+    OriginalAnimationSlots reset_slots{};
+    for(std::size_t i=0;i<reset_slots.size();++i) {
+        auto& s=reset_slots[i];
+        s.status=static_cast<std::uint16_t>(i);
+        s.x=100;s.y=101;s.height=102;s.width=103;s.ticks=104;
+        s.asset_pointer=0xffffffffu;
+        s.frame_offset=0x89abcdefu;
+    }
+    original_animation_reset_all(reset_slots);
+    for(const auto& s:reset_slots) {
+        assert(s.status==0xffffu);
+        assert(s.x==0 && s.y==0 && s.height==0 &&
+               s.width==0 && s.ticks==0);
+        assert(s.asset_pointer==0u && s.frame_offset==0u);
+    }
     OriginalAnimationAssetTable assets{};
     for(std::size_t i=0;i<assets.size();++i)
         assets[i]=static_cast<std::uint32_t>(0x420000+i*12);

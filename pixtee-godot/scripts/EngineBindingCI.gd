@@ -105,6 +105,30 @@ func _initialize() -> void:
         push_error("Original CPU 32-angle heading sweep mismatch in native Godot")
         quit(1)
         return
+    # Source x86 0x40CA8E: lowest signed score, earliest tie, only
+    # with authentic ordered 14-byte records from the evaluator.
+    # These synthetic regression records exercise the native contract;
+    # they do NOT claim that the original trajectory scorer is recovered.
+    var score_records = PackedByteArray()
+    score_records.resize(32*14)
+    for i in range(32):
+        score_records[i*14+12] = 100
+    score_records[5*14+12] = 248  # -8 as signed 16-bit
+    score_records[5*14+13] = 255
+    score_records[6*14+12] = 248
+    score_records[6*14+13] = 255
+    var scored = round_host.original_cpu_scored_record_choice(
+        4,0,512,96,3,score_records,true)
+    if not scored.get("verified",false) or not scored.get("found",false) or int(scored.get("original_index",-1)) != 5 or int(scored.get("heading",-1)) != 160 or int(scored.get("original_score_word",-1)) != 65528 or bool(scored.get("complete_cpu_shot_planner",true)):
+        push_error("Original CPU source signed score record/heading join failed")
+        quit(1)
+        return
+    var unverified = round_host.original_cpu_scored_record_choice(
+        4,0,512,96,3,score_records,false)
+    if unverified.get("verified",true):
+        push_error("Original CPU source must reject invented candidate scores")
+        quit(1)
+        return
     var ai_pick = round_host.original_cpu_candidate_choice(
         PackedInt32Array([0, 1, -1]),
         PackedInt32Array([0, 0, 0]),

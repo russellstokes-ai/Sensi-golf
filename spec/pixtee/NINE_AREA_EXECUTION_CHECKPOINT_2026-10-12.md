@@ -78,3 +78,19 @@ DRAFT and canonical Pixtee sprites/Astra HTML untouched.
 - Original x86 **5,650/5,650 exact comparisons** for source 0x8004 release (status 0xFFFF, pointer/offset/ticks reset) and 0x8008 wait (reads next WORD delay and advances frame offset a total of 4 bytes), preserving other animation slot fields. [Source command CI 38229701187](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38229701187). Native `original_animation_decode_supported_step` supports only nonnegative frames, 0x8004 and 0x8008. Unrecovered 0x8000 dynamic callbacks and unknown script words **still throw without modifying slot state**; nothing fabricated.
 - The original `ClassicHoleSession` code9 reaction now has a native integration regression that executes an authored source-format **frame → wait → release** script through original ten-slot slot/timer machinery; original sprite/audio rendering and real scene animation side effects are not yet implemented. Follow-up native/Godot CI was queued as of this documentation write.
 - All full-gameplay acceptance gates remain BLOCKED. The recovered source opcode interpreter is only a **three-action whitelisted subset**, not a full animation event system.
+
+### Host multi-player ownership safety (not original scheduler parity)
+
+`PixteeMultiRoundRuntime::propose_original_turn` now refuses to transfer
+ownership while the current original hole session is in `ShotActive`,
+`HazardStopped`, `HazardRecovered`, `SpecialGreenStopped`,
+`CupTerminal` or `UnsupportedTerrain`. The small constexpr helper
+`host_turn_handoff_phase_allowed` and exhaustive phase-table assertions
+are tested in `pixtee_multi_round_runtime_tests.cpp`. The host may
+request a new original turn only when `ReadyForShot` or `HoleScored`.
+This prevents bypassing an unsettled OOB/hazard/special event or live ball
+flight; it is a protective integration rule **not** an assertion that
+the original Windows UI used precisely this predicate. Preserve the
+source-original next-player chooser, and leave the full original shared
+event/turn scheduler parity release gate OPEN. Native/Godot CI on this
+new commit must pass before this guard is called verified.

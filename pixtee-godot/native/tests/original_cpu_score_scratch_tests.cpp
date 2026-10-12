@@ -51,6 +51,32 @@ int main() {
     try{pixtee::original_cpu_first_eligible_score(100,0,candidate_statuses);}
     catch(const std::invalid_argument&){blocked=true;}
     assert(blocked);
+    // Original minimum signed score across eligible 14-byte records.
+    // An equal score must preserve the EARLIER index.
+    std::vector<std::uint8_t> ranked(14*110,0xff);
+    for(unsigned i=0;i<4;++i) {
+        const auto off=14*i;
+        ranked[off]=0;ranked[off+1]=0;
+        ranked[off+2]=0;ranked[off+3]=0;
+    }
+    ranked[12]=100; ranked[13]=0;
+    ranked[14+12]=10; ranked[14+13]=0;
+    ranked[28+12]=10; ranked[28+13]=0;
+    ranked[42+12]=0xfb; ranked[42+13]=0xff; // signed -5
+    auto chosen=pixtee::original_cpu_select_best_scored_record(
+        4,1,ranked);
+    assert(chosen.found && chosen.original_index==3 &&
+           chosen.offset_bytes==42 && chosen.original_score_word==0xfffb);
+    ranked[42]=0xff;ranked[43]=0xff;
+    chosen=pixtee::original_cpu_select_best_scored_record(4,1,ranked);
+    assert(chosen.found && chosen.original_index==1 &&
+           chosen.original_score_word==10);
+    // No eligible record keeps the source base pointer (offset zero).
+    ranked[0]=0xff;ranked[1]=0xff;
+    ranked[14]=0xff;ranked[15]=0xff;
+    ranked[28]=0xff;ranked[29]=0xff;
+    chosen=pixtee::original_cpu_select_best_scored_record(4,1,ranked);
+    assert(!chosen.found && chosen.offset_bytes==0);
     std::vector<std::uint8_t> edge(14,0xa5);
     r=pixtee::original_cpu_clear_scoring_records(65535,1,edge);
     assert(r.cleared_records==1 && edge[13]==0);

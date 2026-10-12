@@ -21,6 +21,7 @@ var accumulator := 0.0
 var pending_press := false
 var reduced_motion := false
 var panel: VBoxContainer
+var ui_scale := 1.0
 
 func _ready() -> void:
 	world = Node2D.new()
@@ -43,7 +44,19 @@ func _ready() -> void:
 	layer.add_child(hud)
 	hud.hide()
 	make_hud()
+	get_viewport().size_changed.connect(update_ui_layout)
+	update_ui_layout()
 	show_title()
+
+func update_ui_layout() -> void:
+	var screen := get_viewport().get_visible_rect().size
+	ui_scale = maxf(0.5,minf(screen.x/360.0,screen.y/760.0))
+	for control in [menu,hud]:
+		control.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		control.size = screen/ui_scale
+		control.scale = Vector2.ONE*ui_scale
+	if playing and core != null:
+		update_view(core.snapshot())
 
 func image_control(file: String, dimensions: Vector2) -> TextureRect:
 	var image := TextureRect.new()
@@ -226,9 +239,12 @@ func update_view(s: Dictionary) -> void:
 	world.accept_snapshot(s)
 	fx.accept_native_ball_snapshot(s)
 	var screen := get_viewport().get_visible_rect().size
+	# Keep a close world crop on high-density phones and unfolded windows.
+	# Both camera axes share the same scale; native coordinates never change.
+	camera.zoom = Vector2.ONE*maxf(1.0,minf(screen.x,screen.y)/240.0)
 	# Reserve actual HUD space. The world is cropped, never squeezed to fit.
-	var half_view := Vector2(screen.x,maxf(120,screen.y-240)) / camera.zoom / 2.0
-	camera.offset.y = 56.0/camera.zoom.y
+	var half_view := Vector2(screen.x,maxf(120,screen.y-240*ui_scale)) / camera.zoom / 2.0
+	camera.offset.y = 56.0*ui_scale/camera.zoom.y
 	var at: Vector2 = world.ball_world
 	camera.position.x = 272 if half_view.x >= 272 else clampf(at.x,half_view.x,544-half_view.x)
 	camera.position.y = 456 if half_view.y >= 456 else clampf(at.y-60,half_view.y,912-half_view.y)

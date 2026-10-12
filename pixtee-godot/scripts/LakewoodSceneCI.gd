@@ -22,6 +22,27 @@ func _run() -> void:
 		push_error("Approved visual placement count changed")
 		quit(1)
 		return
+	# A high-density or wide window must retain uniform art and a close crop.
+	root.size = Vector2i(1080,1920)
+	await process_frame
+	scene.update_ui_layout()
+	if absf(scene.camera.zoom.x-scene.camera.zoom.y)>0.0001 or scene.camera.zoom.x<4.0:
+		push_error("High-density phone camera must crop uniformly")
+		quit(1)
+		return
+	if absf(scene.menu.scale.x-scene.menu.scale.y)>0.0001:
+		quit(1)
+		return
+	root.size = Vector2i(1200,1000)
+	await process_frame
+	scene.update_ui_layout()
+	if scene.world.view_rect.size.y>=912:
+		push_error("Wide window must not fit the whole course")
+		quit(1)
+		return
+	root.size = Vector2i(360,760)
+	await process_frame
+	scene.update_ui_layout()
 	# Existing native solver found this real tee-to-cup sequence. These are test
 	# inputs only; interactive play uses the recovered native Welly producer.
 	var sequence := [[0,105,1946],[4,95,1913],[12,75,2087],[12,20,248]]

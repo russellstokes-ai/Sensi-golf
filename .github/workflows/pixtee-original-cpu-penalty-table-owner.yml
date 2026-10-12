@@ -1,0 +1,35 @@
+name: Pixtee Original CPU Penalty Table Runtime Owner Research
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/research_original_cpu_penalty_table.py'
+      - '.github/workflows/pixtee-original-cpu-penalty-table-owner.yml'
+permissions: {contents: read}
+jobs:
+  source-penalty-ownership:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4 capstone==5.0.6
+      - name: Obtain original executable transiently, validate SHA
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/pixtee-source-ingest.json
+      - name: Identify original pre-initialized CPU penalty table and readers
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/research_original_cpu_penalty_table.py \
+            --exe "$EXE" -o analysis/private/original-cpu-penalty-table-lifecycle.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-cpu-penalty-table-lifecycle
+          path: analysis/private/original-cpu-penalty-table-lifecycle.json
+          retention-days: 30

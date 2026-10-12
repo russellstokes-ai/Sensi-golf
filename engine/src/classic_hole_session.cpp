@@ -518,7 +518,12 @@ void ClassicHoleSession::step() {
         recovered::OriginalSpecialGreenStopState stop{};
         stop.counter_52=recovered_counters_.player_52;
         stop.counter_56=recovered_counters_.player_56;
-        const bool early_code9=surface.landing_code==9;
+        // Both original club-12/code9 and club-12/code10 enter
+        // 0x40A40B DIRECTLY from 0x40A5F7, bypassing 0x40A403.
+        // Source 0x40A403 extra stroke is exclusively the earlier
+        // NON-PUTTER low-height code9 path.
+        const bool early_code9=surface.landing_code==9
+                               && active_club_!=12;
         stop=recovered::original_special_green_stop_state(early_code9,stop);
         recovered_counters_.player_52=stop.counter_52;
         recovered_counters_.player_56=stop.counter_56;

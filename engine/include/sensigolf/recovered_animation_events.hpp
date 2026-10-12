@@ -72,4 +72,22 @@ OriginalAnimationTimerTick original_animation_tick_with_plain_scripts(
     OriginalAnimationSlots& slots,
     const std::vector<OriginalAnimationScriptAsset>& scripts);
 
+// The original signed animation-script command jump table
+// [0x41F89C] has been identified directly in authenticated source:
+// 0x8000 -> 0x40C56A invokes an external callback (UNSUPPORTED);
+// 0x8004 -> 0x40C573 closes/releases this animation slot;
+// 0x8008 -> 0x40C58D reads the following signed-independent delay
+// WORD and advances original script offset by two further bytes.
+// Original nonnegative frame decoder remains separately callable.
+enum class OriginalAnimationSupportedCommand : std::uint8_t {
+    PlainFrame=0, CloseSlot=1, WaitTicks=2
+};
+struct OriginalAnimationSupportedStep {
+    OriginalAnimationSupportedCommand kind=OriginalAnimationSupportedCommand::PlainFrame;
+    std::uint16_t frame=0;
+    std::uint16_t delay=0;
+};
+OriginalAnimationSupportedStep original_animation_decode_supported_step(
+    OriginalAnimatedEvent& slot,
+    const std::vector<std::uint8_t>& original_asset_script);
 } // namespace sensigolf::recovered

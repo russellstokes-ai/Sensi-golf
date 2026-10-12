@@ -57,7 +57,21 @@ python tools/pixtee_frozen_course_intake.py `
 
 [GitHub workflow](../../.github/workflows/pixtee-frozen-course-intake.yml) runs these tests and existing reference-bank and engine-completeness audits. **CI with synthetic fixture bytes is not a test of the real Work course, the real menus, all 3 holes or the Android app**.
 
-### 6. Handoff boundary
+### 6. Native 3-hole round stop — NEW isolated product layer
+
+**Confirmed architectural gap:** `ClassicHolePlan`, `ClassicRoundSession` and `ClassicGameSession` are source-accurate **18-hole** controllers. Do not change them simply to finish our first three-hole preview, and never pretend the original Windows game finished a round after three.
+
+On this separate feature branch, [`PixteeThreeHoleRound`](../../pixtee-godot/native/src/pixtee_three_hole_round.hpp) wraps the original `PixteeRoundRuntime` and applies a strictly product-owned **three-hole milestone stop**:
+- Accept **exactly three distinct course resource IDs** and real per-hole par metadata; reject duplicate or invalid input before starting.
+- Register only the three approved authored native course resources. Course bytes cannot be replaced after a hole starts.
+- Delegate real shots, swing and physical collisions, scored holes, strokes, par, hazard acknowledgements and fixed native ticks to the existing untouched recovered core.
+- After exactly three separately scored holes, report **`preview.complete()==true`** and forbid playing a fourth. The underlying original native round correctly stays at `holes_completed=3`, `round_complete=false` because its source contract remains 18-hole.
+- The internal 18-byte original plan is padded for constructor compatibility only and the additional resource requests are **never exposed as playable courses**. These are not 15 phantom products; the real three Work courses remain pending.
+- Preserve original native deterministic stable shot replay serialization. **3-hole restore replay is not exposed yet**, since safe atomic verification of the restored three-hole product boundary is unfinished.
+
+[Native three-hole regression](../../pixtee-godot/native/tests/three_hole_preview_gate_tests.cpp) exercises actual native cup scoring on three artificial CI-only small numeric fixtures, metadata checks, invalid/duplicate resource rejection, impossible early commits, and attempted fourth-hole access. **These fixtures are not production-design courses or a playable Android/Godot scene.** Live three-hole assets, Work HTML conversion, native Godot binding and save/restart remain separate acceptance gates.
+
+### 7. Handoff boundary
 
 **At this moment:** the canonical art ZIP is separately backed up with matching hashes; the recovered engine is archived; the Work Hole 1 and newer menus are not supplied to this GitHub branch. Intake tooling is designed not to interfere with parallel Work production.
 

@@ -46,17 +46,23 @@ void ClassicShotModel::reset() {
     flag_x_ = 0;
     flag_y_ = 0;
     flag_object_verified_ = false;
+    near_cup_distance_zero_ = false;
+    player_mode_5a_ = 4;
+    lip_deflection_last_tick_ = false;
 }
 
 void ClassicShotModel::set_original_interaction_context(
     recovered::OriginalPrng16* prng, bool green_mode,
     std::int16_t flag_x, std::int16_t flag_y,
-    bool flag_object_verified) noexcept {
+    bool flag_object_verified,bool near_cup_distance_zero,
+    std::uint16_t player_mode_5a) noexcept {
     interaction_prng_ = prng;
     interaction_green_mode_ = green_mode;
     flag_x_ = flag_x;
     flag_y_ = flag_y;
     flag_object_verified_ = flag_object_verified;
+    near_cup_distance_zero_=near_cup_distance_zero;
+    player_mode_5a_=player_mode_5a;
 }
 
 void ClassicShotModel::set_surface_context(
@@ -126,6 +132,7 @@ void ClassicShotModel::step() {
     }
 
     ++public_.tick;
+    lip_deflection_last_tick_=false;
 
     // Source-disassembled v1.014 0x40A374..0x40A575: code 9 and flag
     // interactions precede this tick's normal gravity/putter response.
@@ -150,6 +157,17 @@ void ClassicShotModel::step() {
     // Standalone physics fixtures may have no original PRNG. Their
     // non-interaction behaviour remains testable; the real game session
     // always supplies the captured original PRNG for event activation.
+    // Original v1.014 0x40A456..0x40A4A6 near-cup lip contact occurs
+    // after code9 but before the flagpole check and normal shot advance.
+    // It must not activate from an inferred source player mode or a
+    // stale saved ball position. It consumes precisely one original PRNG
+    // call only on the source-proven high-speed lip branch.
+    if(near_cup_distance_zero_ && interaction_prng_ &&
+       recovered::original_near_cup_lip_contact(
+           true,player_mode_5a_,flight_)) {
+        lip_deflection_last_tick_=recovered::apply_near_hole_lip_deflection(
+            flight_,*interaction_prng_);
+    }
     if(flag_object_verified_ && interaction_prng_ &&
        recovered::original_flag_coordinate_hit(
            flight_, flag_x_, flag_y_, interaction_green_mode_)) {

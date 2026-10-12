@@ -1,0 +1,36 @@
+name: Pixtee Original Negative Animation Command Research
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/trace_original_animation_negative_commands.py'
+      - '.github/workflows/pixtee-original-animation-negative-research.yml'
+permissions: {contents: read}
+jobs:
+  trace-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Ingest SHA-authenticated research source transiently
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Inspect authenticated original command control-flow
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/trace_original_animation_negative_commands.py \
+            --exe "$EXE" \
+            -o analysis/private/original-animation-negative-command-cfg.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-negative-animation-cfg-research
+          path: analysis/private/original-animation-negative-command-cfg.json
+          retention-days: 30

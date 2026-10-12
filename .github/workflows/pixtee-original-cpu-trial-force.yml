@@ -1,0 +1,49 @@
+name: Pixtee Original Computer Trial Force Source Parity
+on:
+  push:
+    branches: [feat/pixtee-godot-recovered-core]
+    paths:
+      - 'tools/verify_original_cpu_trial_force.py'
+      - 'pixtee-godot/native/src/original_cpu_trial_force.*'
+      - 'pixtee-godot/native/tests/original_cpu_trial_force_*'
+      - '.github/workflows/pixtee-original-cpu-trial-force.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  cpu-trial-forces:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Transient original binary, SHA verified
+        run: |
+          curl -fL --retry 4 --retry-delay 3 \
+            https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip \
+            -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip \
+            --workspace analysis/private/step2 >/tmp/sensi-ingest.json
+      - name: Compile C++ original CPU trial initial-force model
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_trial_force.cpp \
+            pixtee-godot/native/tests/original_cpu_trial_force_tests.cpp \
+            -o /tmp/pixtee-cpu-forces-tests
+          /tmp/pixtee-cpu-forces-tests
+          g++ -std=c++17 -Wall -Wextra -Werror -Ipixtee-godot/native/src \
+            pixtee-godot/native/src/original_cpu_trial_force.cpp \
+            pixtee-godot/native/tests/original_cpu_trial_force_probe.cpp \
+            -o /tmp/pixtee-cpu-forces-probe
+      - name: Execute 9000 plus original CPU force combinations against native
+        run: |
+          EXE="$(find analysis/private/step2/input -iname GOLFWIN.EXE -type f -print -quit)"
+          python tools/verify_original_cpu_trial_force.py \
+            --exe "$EXE" --probe /tmp/pixtee-cpu-forces-probe \
+            -o analysis/private/original-cpu-trial-force-x86.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixtee-original-cpu-trial-forces
+          path: analysis/private/original-cpu-trial-force-x86.json
+          retention-days: 30

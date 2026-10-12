@@ -70,3 +70,11 @@ verified native command routes with event/replay state tests. Continue
 actual tree-geometry discovery, original CPU shot evaluation, host
 acknowledgement and multiplayer turn settlement separately. Keep the PR
 DRAFT and canonical Pixtee sprites/Astra HTML untouched.
+
+
+### Original animation source command table and lifecycle completion (12 October)
+
+- Authenticated original source Windows v1.014 command table at `0x41F89C`: opcode `0x8000` points at `0x40C56A` external callback; opcode `0x8004` points at `0x40C573` slot release; opcode `0x8008` points at `0x40C58D` wait-duration loader. Source jump-table audit [CI 38229176857](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38229176857). Arbitrary table offsets after these entries are **not established command IDs**.
+- Original x86 **5,650/5,650 exact comparisons** for source 0x8004 release (status 0xFFFF, pointer/offset/ticks reset) and 0x8008 wait (reads next WORD delay and advances frame offset a total of 4 bytes), preserving other animation slot fields. [Source command CI 38229701187](https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38229701187). Native `original_animation_decode_supported_step` supports only nonnegative frames, 0x8004 and 0x8008. Unrecovered 0x8000 dynamic callbacks and unknown script words **still throw without modifying slot state**; nothing fabricated.
+- The original `ClassicHoleSession` code9 reaction now has a native integration regression that executes an authored source-format **frame → wait → release** script through original ten-slot slot/timer machinery; original sprite/audio rendering and real scene animation side effects are not yet implemented. Follow-up native/Godot CI was queued as of this documentation write.
+- All full-gameplay acceptance gates remain BLOCKED. The recovered source opcode interpreter is only a **three-action whitelisted subset**, not a full animation event system.

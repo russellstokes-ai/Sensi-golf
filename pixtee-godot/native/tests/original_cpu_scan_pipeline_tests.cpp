@@ -103,5 +103,54 @@ int main() {
         initial,31,{12,200,300,20},0,1,false);}
     catch(const std::logic_error&){unsupported=true;}
     assert(unsupported);
+
+    // Authentic evaluator record selection is source-scored and stable
+    // across signed negative score values and ties. Never rank scores
+    // provided without matching original candidate evaluation evidence.
+    {
+        auto plan=original_cpu_plan_scan(4,0,512,false);
+        const auto n=plan.sweep.candidate_headings.size();
+        assert(n==32);
+        std::vector<std::uint8_t> records(
+            n*kOriginalCpuScoreRecordBytes,0);
+        const auto set_word=[&records](std::size_t index,
+                                       std::size_t offset,
+                                       std::uint16_t value) {
+            const auto pos=index*kOriginalCpuScoreRecordBytes+offset;
+            records.at(pos)=static_cast<std::uint8_t>(value);
+            records.at(pos+1)=static_cast<std::uint8_t>(value>>8);
+        };
+        for(std::size_t i=0;i<n;++i)set_word(i,12,100u);
+        set_word(5,12,0xfff8u); // original signed -8
+        set_word(6,12,0xfff8u); // tie retains earliest score
+        auto winner=original_cpu_choose_scored_scan(
+            plan,96,3,records,true);
+        assert(winner.found && winner.index==5);
+        assert(winner.heading==plan.sweep.candidate_headings.at(5));
+        assert(winner.score_word==0xfff8u);
+        set_word(5,0,0xffffu); // first status negative: ineligible
+        winner=original_cpu_choose_scored_scan(
+            plan,96,3,records,true);
+        assert(winner.found && winner.index==6);
+        for(std::size_t i=0;i<n;++i)set_word(i,2,0xffffu);
+        assert(!original_cpu_choose_scored_scan(
+            plan,96,3,records,true).found);
+        bool blocked=false;
+        try{original_cpu_choose_scored_scan(
+            plan,96,3,records,false);}
+        catch(const std::logic_error&){blocked=true;}
+        assert(blocked);
+        blocked=false;
+        try{original_cpu_choose_scored_scan(
+            plan,93,3,records,true);}
+        catch(const std::invalid_argument&){blocked=true;}
+        assert(blocked);
+        records.resize(20);
+        blocked=false;
+        try{original_cpu_choose_scored_scan(
+            plan,96,3,records,true);}
+        catch(const std::out_of_range&){blocked=true;}
+        assert(blocked);
+    }
     return 0;
 }

@@ -1,4 +1,6 @@
 # Pixtee — Frozen Work Hole 1, Menu and Approved Art Intake Contract
+
+> **OWNER LOCK: DO NOT STRETCH ANY GRAPHICS.** Mandatory [zero-stretch course, sprites, camera, Fold and collision-alignment rules](PIXTEE_ZERO_STRETCH_ART_AND_CAMERA_LOCK_2026-10-12.md). The provisional 0.947 native geometry transform is **NOT approved**; never scale visual art, clip the green or introduce a hidden collision mismatch. Preserve the original 544×912 layout, crop/scroll the camera and resolve the MAPS integration difference explicitly.
 **12 October 2026 · Safe pre-integration handoff · New working branch: `feat/pixtee-m1-course-intake-safe`**
 
 ## Work course and production standard RECEIVED — verified canonical intake, 12 October 2026

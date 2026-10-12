@@ -92,11 +92,13 @@ int main() {
     preview.register_course(27,fixture);
     preview.register_course(45,fixture);
 
+    const std::array<int,3> authored_ids{{11,27,45}};
+    const std::array<int,3> authored_pars{{2,3,4}};
     for(std::size_t i=0;i<3;++i) {
         const auto requested=preview.next_hole();
         assert(requested);
-        assert(requested->resource_id==std::array<int,3>{11,27,45}[i]);
-        assert(requested->par==std::array<int,3>{2,3,4}[i]);
+        assert(requested->resource_id==authored_ids[i]);
+        assert(requested->par==authored_pars[i]);
         assert(requested->round_index==i);
         preview.load_next_hole();
         expect_logic_error([&]{preview.load_next_hole();});

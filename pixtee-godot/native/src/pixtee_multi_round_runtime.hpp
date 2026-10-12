@@ -9,6 +9,15 @@
 #include "pixtee_round_runtime.hpp"
 
 namespace pixtee {
+// A host safety gate, NOT a recovered claim about the original UI tick
+// scheduler. A pending hazard, cup transition, special green or unsupported
+// dynamic collision cannot be abandoned merely because the original
+// next-player selector returned an index.
+inline constexpr bool host_turn_handoff_phase_allowed(
+    sensigolf::HoleSessionPhase phase) noexcept {
+    return phase==sensigolf::HoleSessionPhase::ReadyForShot
+        || phase==sensigolf::HoleSessionPhase::HoleScored;
+}
 // Portable multi-player *session isolation* using native recovered shot,
 // round, score and replay controllers for each participant. Turn choice is
 // delegated to the original source-verified selector. Host must supply

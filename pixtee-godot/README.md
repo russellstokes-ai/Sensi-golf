@@ -1,9 +1,12 @@
 # Pixtee Golf — Godot 4.5 + recovered Sensible Golf C++ core
 
+> **DO NOT CHANGE FROZEN SOURCES:** [Canonical source lock, exact GitHub fallback commits and Work-approved Hole 1/art backup procedure](../spec/pixtee/PIXTEE_CANONICAL_SOURCE_AND_RECOVERY_BASELINE_2026-10-12.md). GitHub engine and portrait archived baselines are available; locally frozen Work HTML and final approved asset ZIP must be hashed/copied separately before marking their backup complete.
+
 > **Milestone One authoritative handover (12 October):**
 > [Commercial-quality three-hole native engine data and acceptance plan](../spec/pixtee/MILESTONE_ONE_COMMERCIAL_ENGINE_HANDOVER_2026-10-12.md),
 > [complete 27-area source inventory](../spec/pixtee/MILESTONE_ONE_ENGINE_DATA_INVENTORY_2026-10-12.json),
-> [World FX/shader/particle standard](../spec/pixtee/PIXTEE_MILESTONE_ONE_WORLD_FX_AND_FEEL_STANDARD_2026-10-12.md),\n> and [automated audit](../tools/verify_pixtee_milestone_one_inventory.py).
+> [World FX/shader/particle standard](../spec/pixtee/PIXTEE_MILESTONE_ONE_WORLD_FX_AND_FEEL_STANDARD_2026-10-12.md),
+> and [automated audit](../tools/verify_pixtee_milestone_one_inventory.py).
 > The original physics research bank is retained; 3-hole gameplay, commercial
 > rights, Android production and all 14 release gates are **NOT YET COMPLETE**.
 > Passing original x86 comparisons and headless bindings do not mean ready-to-sell.

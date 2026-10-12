@@ -19,6 +19,10 @@ struct OriginalWellyTickState {
 class OriginalWellyTick {
 public:
     void reset() noexcept;
+    // Authentic outer original 0x407620..0x407686 start handler. Source
+    // stage2 becomes native isolated rising stage1; start accumulator 8
+    // differs from the 0x00010000 isolated oracle precondition.
+    void start_from_original_ui_entry() noexcept;
     void step(bool button_pressed, std::uint16_t original_club_index) noexcept;
     const OriginalWellyTickState& state() const noexcept {return state_;}
 private:

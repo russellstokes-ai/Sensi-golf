@@ -34,13 +34,23 @@ jobs:
           git clone --depth 1 --branch 4.5 https://github.com/godotengine/godot-cpp.git pixtee-godot/native/godot-cpp
           cd pixtee-godot/native
           ~/.local/bin/scons platform=linux target=template_debug -j2
+      - uses: actions/cache/save@v4
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        with:
+          path: pixtee-godot/bin/libpixtee_gameplay.linux.template_debug.x86_64.so
+          key: ${{ steps.native-cache.outputs.cache-primary-key }}
       - name: Verify real approved scene, tee-to-score and unique events
         run: |
+          set -o pipefail
           curl -fL --retry 3 -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_64.zip
           unzip -q /tmp/godot.zip -d /tmp
           chmod +x /tmp/Godot_v4.5-stable_linux.x86_64
-          /tmp/Godot_v4.5-stable_linux.x86_64 --headless --editor --path pixtee-godot --import --quit
-          /tmp/Godot_v4.5-stable_linux.x86_64 --headless --path pixtee-godot --script res://scripts/EngineBindingCI.gd
-          /tmp/Godot_v4.5-stable_linux.x86_64 --headless --path pixtee-godot --script res://scripts/CommercialPresentationSmokeCI.gd
-          /tmp/Godot_v4.5-stable_linux.x86_64 --headless --path pixtee-godot --script res://scripts/LakewoodSceneCI.gd
-          /tmp/Godot_v4.5-stable_linux.x86_64 --headless --path pixtee-godot --script res://scripts/PlayerJourneyCI.gd
+          verify_godot() {
+            timeout 120 /tmp/Godot_v4.5-stable_linux.x86_64 "$@" 2>&1 | tee /tmp/pixtee-verification.log
+            if grep -E 'SCRIPT ERROR:|ERROR:' /tmp/pixtee-verification.log; then exit 1; fi
+          }
+          verify_godot --headless --editor --path pixtee-godot --import --quit
+          verify_godot --headless --path pixtee-godot --script res://scripts/EngineBindingCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/CommercialPresentationSmokeCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/LakewoodSceneCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/PlayerJourneyCI.gd

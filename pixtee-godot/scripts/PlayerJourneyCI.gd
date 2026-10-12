@@ -48,6 +48,11 @@ func _run() -> void:
 	var before: Dictionary = scene.core.snapshot()
 	var clock: float = scene.world.time
 	scene.show_player()
+	assert(not scene.hud.visible)
+	scene.change_club(1)
+	scene.change_aim(32)
+	scene.on_shoot()
+	assert(scene.core.snapshot() == before)
 	scene.player_name.text = "Paused Player"
 	scene.cancel_player_edit()
 	assert(scene.profile.snapshot().display_name == "Willow Player")

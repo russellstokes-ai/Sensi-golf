@@ -89,6 +89,12 @@ func button(text: String, action: Callable, dimensions := Vector2(288,51)) -> Bu
 	result.add_child(art)
 	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	art.show_behind_parent = true
+	result.draw.connect(func():
+		var state := "button_normal"
+		if result.disabled: state = "button_disabled"
+		elif result.button_pressed: state = "button_pressed"
+		elif result.is_hovered() or result.has_focus(): state = "button_selected"
+		art.texture = load(UI+state+".png"))
 	result.pressed.connect(action)
 	return result
 
@@ -114,6 +120,7 @@ func text_line(text: String) -> Label:
 	return label
 
 func show_title() -> void:
+	hud.hide()
 	clear_menu()
 	panel.add_child(image_control("logo",Vector2(288,180)))
 	panel.add_child(text_line("LAKEWOOD · WILLOW CREEK\nHole 1 · Par 4"))
@@ -237,10 +244,10 @@ func make_hud() -> void:
 	var controls := HBoxContainer.new()
 	controls.alignment = BoxContainer.ALIGNMENT_CENTER
 	bottom.add_child(controls)
-	controls.add_child(button("− Club",func(): core.cycle_club(-1),Vector2(82,40)))
-	controls.add_child(button("◀",func(): core.nudge_aim_raw(-32),Vector2(70,40)))
-	controls.add_child(button("▶",func(): core.nudge_aim_raw(32),Vector2(70,40)))
-	controls.add_child(button("+ Club",func(): core.cycle_club(1),Vector2(82,40)))
+	controls.add_child(button("− Club",func(): change_club(-1),Vector2(82,40)))
+	controls.add_child(button("◀",func(): change_aim(-32),Vector2(70,40)))
+	controls.add_child(button("▶",func(): change_aim(32),Vector2(70,40)))
+	controls.add_child(button("+ Club",func(): change_club(1),Vector2(82,40)))
 	meter = ProgressBar.new()
 	meter.max_value = 105
 	meter.show_percentage = false
@@ -281,11 +288,18 @@ func start_hole() -> void:
 	update_view(core.snapshot())
 
 func on_shoot() -> void:
+	if not playing or paused or core == null: return
 	var s: Dictionary = core.snapshot()
 	if s.get("original_welly_active",false):
 		pending_press = true
 	elif s.get("can_shoot",false):
 		core.start_original_welly()
+
+func change_club(direction: int) -> void:
+	if playing and not paused and core != null: core.cycle_club(direction)
+
+func change_aim(amount: int) -> void:
+	if playing and not paused and core != null: core.nudge_aim_raw(amount)
 
 func _process(delta: float) -> void:
 	if not playing or paused or core == null: return
@@ -339,6 +353,7 @@ func pause_game() -> void:
 	accumulator = 0
 	world.set_process(false)
 	fx.set_process(false)
+	hud.hide()
 	show_pause()
 
 func show_pause() -> void:
@@ -356,6 +371,7 @@ func resume_game() -> void:
 	world.set_process(true)
 	fx.set_process(true)
 	menu.hide()
+	hud.show()
 
 func show_score(s: Dictionary) -> void:
 	paused = true

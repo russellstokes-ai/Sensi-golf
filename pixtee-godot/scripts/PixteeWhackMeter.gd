@@ -7,6 +7,7 @@ var reduced_motion := false
 var clock := 0.0
 var transition := 0.0
 var tween: Tween
+var tween_paused := false
 var glow: ShaderMaterial
 var trail: Array[float] = []
 var previous_reading := -1
@@ -39,6 +40,7 @@ func accept_snapshot(snapshot: Dictionary) -> void:
 	if changed:
 		trail.clear()
 		if tween != null and tween.is_valid(): tween.kill()
+		tween_paused = false
 		transition = 0.0 if reduced_motion else 1.0
 		if not reduced_motion:
 			tween = create_tween()
@@ -54,9 +56,17 @@ func accept_snapshot(snapshot: Dictionary) -> void:
 func _process(delta: float) -> void:
 	# Hidden/paused HUD freezes both shader and tween decoration.
 	if not is_visible_in_tree():
-		if tween != null and tween.is_valid(): tween.pause()
+		if tween != null and tween.is_running():
+			tween.pause()
+			tween_paused = true
 		return
-	if tween != null and tween.is_valid(): tween.play()
+	if tween_paused and tween != null and tween.is_valid():
+		tween.play()
+		tween_paused = false
+	if reduced_motion:
+		if tween != null and tween.is_valid(): tween.kill()
+		transition = 0.0
+		trail.clear()
 	if not reduced_motion: clock += minf(delta,0.1)
 	if glow != null:
 		glow.set_shader_parameter("presentation_time",clock)

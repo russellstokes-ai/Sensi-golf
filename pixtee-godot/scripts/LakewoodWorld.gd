@@ -41,6 +41,7 @@ func _ready() -> void:
 		water.z_index = -1
 		var material := ShaderMaterial.new()
 		material.shader = load("res://shaders/pixtee_subtle_water.gdshader")
+		material.set_shader_parameter("presentation_time",time)
 		water.material = material
 		add_child(water)
 	# Ground stays beneath water and objects; scale is uniform 4x export -> 1x world.

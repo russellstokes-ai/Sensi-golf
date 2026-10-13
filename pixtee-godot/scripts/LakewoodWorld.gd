@@ -11,6 +11,8 @@ var reduced_flashes := false
 var visual_quality := 1
 var native_state: Dictionary = {}
 var ball_world := Vector2(256,850)
+var golfer_world := Vector2(249,853)
+var golfer_position_initialized := false
 var view_rect := Rect2(0,0,544,912)
 
 func _ready() -> void:
@@ -57,7 +59,20 @@ func accept_snapshot(state: Dictionary) -> void:
 	ball_world = Vector2(float(state.get("ball_x_raw",0)),float(state.get("ball_y_raw",0))) / 65536.0
 	if state.get("green_mode",false):
 		ball_world = ball_world * 0.5 + Vector2(state.green_origin_x,state.green_origin_y)
+	# Keep the golfer at the lie while the ball travels. Only an actual native
+	# ready-for-shot state moves the golfer to the next lie/recovery position.
+	if not golfer_position_initialized or int(state.get("hole_phase",-1)) == 0:
+		golfer_world = ball_world + Vector2(-7,3)
+		golfer_position_initialized = true
 	queue_redraw()
+
+func bird_frame_rect(species: String, frame: int, centre: Vector2) -> Rect2:
+	# Preserve the original 64px animation canvas and a single pixel scale.
+	# Cropping each flap to its own bounds and forcing it to 5px high made
+	# the bird body change size whenever its wings changed position.
+	var asset: Dictionary = assets[species+str(frame)]
+	var canvas: Vector2 = textures[asset.image].get_size() * 0.125
+	return Rect2(centre-canvas*0.5,canvas)
 
 func _process(delta: float) -> void:
 	if not reduced_motion:
@@ -71,7 +86,7 @@ func _draw() -> void:
 	for o in placements:
 		var pos := Vector2(o.x,o.y)
 		if o.type == "golfer":
-			pos = ball_world + Vector2(-7,3)
+			pos = golfer_world if golfer_position_initialized else pos
 		if not view_rect.grow(60).has_point(pos): continue
 		if o.type == "board":
 			for i in boards.size():
@@ -90,7 +105,7 @@ func _draw() -> void:
 			var rate := 0.85 if o.type != "photographer" else 0.43
 			rect = a.frames[int(time/rate+o.phase) % a.frames.size()]
 		# Every frame keeps its own aspect ratio; there is no nonuniform sprite scale.
-		var size := Vector2(float(o.h)*float(rect[2])/float(rect[3]),o.h)
+		var size := Vector2(float(rect[2]),float(rect[3])) * (float(o.h)/float(a.rect[3]))
 		var angle := 0.0
 		if o.type in ["tree","grass","flowers","reeds"] and not reduced_motion and visual_quality > 0:
 			angle = sin(time*0.7+o.phase)*0.009
@@ -105,10 +120,8 @@ func _draw() -> void:
 			var progress := (flight-11.0)/24.0
 			var species: String = ["bird","gull","blackbird","kingfisher"][int(time/79.0) % 4]
 			var a: Dictionary = assets[species+str(int(time/0.19) % 8)]
-			var r: Array = a.rect
-			var size := Vector2(float(r[2])/float(r[3])*5,5)
 			var at := Vector2(-25+progress*600,650+sin(progress*3.5)*15)
-			draw_texture_rect_region(textures[a.image],Rect2(at-size/2,size),Rect2(r[0],r[1],r[2],r[3]))
+			draw_texture_rect(textures[a.image],bird_frame_rect(species,int(time/0.19) % 8,at),false)
 	if not native_state.is_empty():
 		var z := maxf(0,float(native_state.get("ball_z_raw",0))/65536.0)
 		var ball_texture: Texture2D = textures.ball

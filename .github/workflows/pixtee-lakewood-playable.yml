@@ -82,6 +82,7 @@ jobs:
           verify_godot --headless --editor --path pixtee-godot --import --quit
           verify_godot --headless --path pixtee-godot --script res://scripts/EngineBindingCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/CommercialPresentationSmokeCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/PlayerReportedRenderingCI.gd
           verify_godot --headless --verbose --path pixtee-godot --script res://scripts/OwnerAudioCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/LakewoodSceneCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/TreeContactsCI.gd
@@ -98,4 +99,3 @@ jobs:
           name: pixtee-menu-visuals
           path: pixtee-godot/review-captures/*.png
           if-no-files-found: warn
-

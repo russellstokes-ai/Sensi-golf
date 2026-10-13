@@ -56,5 +56,7 @@ func _run() -> void:
 	for i in range(16):
 		if not check(audio.consume_confirmed_native_event({"confirmed_native":true,"event_id":"impact:%d"%i,"event_type":"fairway_contact"}), "Bounded pool must accept new impacts"): return
 	audio.stop_all_for_application_pause()
+	audio.free()
+	await create_timer(0.1).timeout # Let AudioServer release pending mix voices.
 	print("Owner audio PASS: 20 recordings decoded; context, loops, native routing, dedupe, mute and bounded voices")
 	quit(0)

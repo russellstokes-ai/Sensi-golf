@@ -105,5 +105,5 @@ func _run() -> void:
 		fail("Reduced-motion mode stretched artwork")
 		return
 
-	print("PASS GODOT PRESENTATION: 256 native slope combos, 25-audio fail-closed, unique native FX, no-stretch breeze, water shader")
+	print("PASS GODOT PRESENTATION: 256 native slope combos, required audio fail-closed, unique native FX, no-stretch breeze, water shader")
 	quit(0)

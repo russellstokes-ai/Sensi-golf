@@ -268,3 +268,9 @@ func stop_all_for_application_pause() -> void:
 		player.stop()
 	for player in _sfx_pool:
 		player.stop()
+
+func _exit_tree() -> void:
+	stop_all_for_application_pause()
+	for player in _players.values(): player.stream = null
+	for player in _sfx_pool: player.stream = null
+	_catalog.clear()

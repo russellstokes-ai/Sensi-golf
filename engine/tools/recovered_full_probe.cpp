@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
         std::cerr
             << "usage: recovered_full_probe "
             << "<club> <lie> <power> <accuracy_tick> <direction> <max_ticks> "
-            << "[surface_code [slope_direction slope_magnitude]]\n";
+            << "[surface_code [slope_direction slope_magnitude [green_mode]]]\n";
         return 2;
     }
 
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
             ? static_cast<std::uint16_t>(parse_long(argv[9], "slope_magnitude"))
             : 0;
 
-        const auto green_mode=argc==11?parse_long(argv[10],"green_mode"):1;
+        const auto green_mode=argc==11?parse_long(argv[10],"green_mode"):(surface_code==1?1:0);
         if(green_mode<0 || green_mode>1)throw std::invalid_argument("green mode must be0/1");
 
         auto state = launch_normal_shot(input);
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
         if (input.club_index == 12) {
             if (surface_code < 1 || surface_code > 7) {
                 throw std::invalid_argument(
-                    "club 12 recovered full probe currently scopes flat GREEN H4 code 1");
+                    "club12 full probe requires ordinary native landing code1..7");
             }
             landing = PointEvent{0, state.x, state.y};
         }

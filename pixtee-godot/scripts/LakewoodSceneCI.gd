@@ -45,7 +45,13 @@ func _run() -> void:
 	scene.update_ui_layout()
 	# Existing native solver found this real tee-to-cup sequence. These are test
 	# inputs only; interactive play uses the recovered native Welly producer.
-	var sequence := [[0,105,1946],[4,95,1913],[12,75,2087],[12,20,248]]
+	assert(scene.arrows.arrows_are_verified() and scene.arrows.arrow_count()>0)
+	assert(s.get("green_origin_x")==304 and s.get("green_origin_y")==120)
+	for cell in scene.core.verified_native_green_arrow_cells(16):
+		assert(cell.verified_native and cell.terrain_code==1)
+		assert(cell.direction_raw==0 and cell.magnitude==1)
+	assert(scene.core.snapshot()==s) # Reading arrows must never advance gameplay.
+	var sequence := [[0,105,1946],[1,95,1942],[12,105,2121]]
 	var seen: Dictionary = {}
 	var impact_count := 0
 	for shot in sequence:
@@ -69,7 +75,7 @@ func _run() -> void:
 			quit(1)
 			return
 	s = scene.core.snapshot()
-	if s.get("hole_phase") != 6 or s.get("strokes") != 4 or impact_count == 0 or s.has("snapshot_error"):
+	if s.get("hole_phase") != 6 or s.get("strokes") != 3 or impact_count == 0 or s.has("snapshot_error"):
 		push_error("Native tee-to-score sequence failed: " + str(s))
 		quit(1)
 		return
@@ -79,7 +85,8 @@ func _run() -> void:
 		push_error("Completed one-hole game must not offer live gameplay resume")
 		quit(1)
 		return
-	print("LAKEWOOD_SCENE_PASS: 445 objects, native tee-to-score in 4 strokes, %d unique native events" % seen.size())
+	print("LAKEWOOD_SCENE_PASS: 445 objects, native tee-to-score in 3 strokes, %d unique native events" % seen.size())
+	print("LAKEWOOD_GREEN_SCENE_PASS: actual MAPS, native-derived arrows, unchanged gameplay on field reads")
 	scene.start_hole()
 	scene.pause_game()
 	scene.start_hole()

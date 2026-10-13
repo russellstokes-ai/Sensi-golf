@@ -137,6 +137,40 @@ def compile_maps_window(layout, origin, slope_cells, descriptor_bank=b'', select
             'MAPI-selectors.bin':bytes(selectors)}
 
 
+def compile_authored_green_resources(layout, authored, source):
+    """Separate authored detail bundle; original banks/positions stay immutable."""
+    if authored.get('schema') != 'pixtee.authored-green-slopes.v1':
+        raise ValueError('Explicit authored green slope schema required')
+    sector,magnitude = authored.get('sector'),authored.get('magnitude')
+    if type(sector) is not int or not 0 <= sector <= 15 or type(magnitude) is not int or not 1 <= magnitude <= 15:
+        raise ValueError('Authored plane requires native sector0..15 and strength1..15')
+    origin=authored.get('origin',[])
+    mapping=green_detail_mapping(layout,origin)
+    field={(int(x),int(y)):(sector,magnitude) for x,y in mapping['sample_world']
+           if inside(layout['surfaces']['green'],x,y)}
+    detail=compile_maps_window(layout,origin,field,source['MAPI-descriptors.bin'],source['MAPI-selectors.bin'])
+    mapm=bytearray(source['MAPM.bin'])
+    if len(mapm)!=0x60+34*114*2 or struct.unpack_from('>HH',mapm,0x54)!=(34,114):
+        raise ValueError('Unchanged approved 34x114 MAPM required')
+    tx,ty=origin[0]//16,origin[1]//8
+    for x in range(tx,tx+3):
+        offset=0x60+2*(ty*34+x)
+        word=struct.unpack_from('>H',mapm,offset)[0]
+        struct.pack_into('>H',mapm,offset,word|0xE000)
+    # Independent expected physical words for exhaustive native parser tests.
+    cup=next(p for p in layout['placements'] if p['type']=='flag')
+    surfaces=layout['surfaces'];expected=bytearray()
+    for x,y in mapping['sample_world']:
+        polygons=[(6,surfaces['water']),(6,surfaces['river'])]
+        polygons += [(5,p) for p in surfaces['bunkers']]
+        polygons += [(31|sector<<8|magnitude<<12,surfaces['green']),(1,surfaces['tee']),(1,surfaces['fairway'])]
+        word=next((d for d,p in polygons if p and inside(p,x,y)),3)
+        if (int(x),int(y))==(int(cup['x']),int(cup['y'])) and word&127==31:word=7
+        expected.extend(struct.pack('>H',word))
+    return {**detail,'MAPM.bin':bytes(mapm),'SPT.bin':source['SPT.bin'],
+            'expected-detail-words.bin':bytes(expected)}
+
+
 def raster(layout):
     """Sample the actual 2x2 lookup cells, at their centre; no map scaling."""
     width, height = layout['world']

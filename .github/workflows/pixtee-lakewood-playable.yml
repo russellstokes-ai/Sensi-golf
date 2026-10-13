@@ -22,6 +22,15 @@ jobs:
           ctest --test-dir build --output-on-failure
           python3 -m unittest discover -s tools/tests
           python3 -m unittest discover -s tests
+          python3 tools/pixtee_green_compile.py --course pixtee-godot/courses/lakewood-hole-1 --authored pixtee-godot/courses/lakewood-hole-1/authored-green-slopes.json --output /tmp/pixtee-native-green
+          python3 - <<'PY'
+          import pathlib
+          compiled=pathlib.Path('/tmp/pixtee-native-green')
+          checked=pathlib.Path('pixtee-godot/courses/lakewood-hole-1/native-green-v1')
+          for file in compiled.glob('*'):
+              assert file.read_bytes()==(checked/file.name).read_bytes(),file.name
+          print('GREEN_BUNDLE_REPRODUCIBLE_PASS: exact native resources and SHA manifest')
+          PY
       - uses: actions/cache@v4
         id: native-cache
         with:

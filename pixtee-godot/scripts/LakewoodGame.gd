@@ -2,6 +2,7 @@ extends Node
 
 const TICK_SECONDS := 936.0/65536.0
 const COURSE := "res://courses/lakewood-hole-1/"
+const NATIVE_COURSE := COURSE+"native-green-v1/"
 const UI := "res://ui/supplied/"
 const CLUBS := ["Driver","3 Wood","5 Wood","2 Iron","3 Iron","4 Iron","5 Iron","6 Iron","7 Iron","8 Iron","9 Iron","Wedge","Putter"]
 var core: PixteeRoundBridge
@@ -144,7 +145,7 @@ func show_title() -> void:
 	hud.hide()
 	clear_menu()
 	panel.add_child(image_control("logo",Vector2(288,180)))
-	panel.add_child(text_line("LAKEWOOD Â· WILLOW CREEK\nHole 1 Â· Par 4"))
+	panel.add_child(text_line("LAKEWOOD · WILLOW CREEK\nHole 1 · Par 4"))
 	panel.add_child(button("Play",start_hole))
 	panel.add_child(button("Player",show_player))
 	panel.add_child(button("Golfers",show_golfers))
@@ -305,10 +306,10 @@ func make_hud() -> void:
 	backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(top)
 	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	status = text_line("Willow Creek Â· Par 4")
+	status = text_line("Willow Creek · Par 4")
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(status)
-	top.add_child(button("â…¡",pause_game,Vector2(52,51)))
+	top.add_child(button("Ⅱ",pause_game,Vector2(52,51)))
 	var bottom := VBoxContainer.new()
 	hud.add_child(bottom)
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -318,9 +319,9 @@ func make_hud() -> void:
 	var controls := HBoxContainer.new()
 	controls.alignment = BoxContainer.ALIGNMENT_CENTER
 	bottom.add_child(controls)
-	controls.add_child(button("âˆ’ Club",func(): change_club(-1),Vector2(82,40)))
-	controls.add_child(button("â—€",func(): change_aim(-32),Vector2(70,40)))
-	controls.add_child(button("â–¶",func(): change_aim(32),Vector2(70,40)))
+	controls.add_child(button("− Club",func(): change_club(-1),Vector2(82,40)))
+	controls.add_child(button("◀",func(): change_aim(-32),Vector2(70,40)))
+	controls.add_child(button("▶",func(): change_aim(32),Vector2(70,40)))
 	controls.add_child(button("+ Club",func(): change_club(1),Vector2(82,40)))
 	meter = ProgressBar.new()
 	meter.max_value = 105
@@ -343,7 +344,7 @@ func start_hole() -> void:
 	if not core.begin_round(order,pars,0x1234,0xabcd):
 		push_error(core.last_error())
 		return
-	if not core.register_course_resource(1,FileAccess.get_file_as_bytes(COURSE+"MAPM.bin"),FileAccess.get_file_as_bytes(COURSE+"SPT.bin"),FileAccess.get_file_as_bytes(COURSE+"MAPI-descriptors.bin"),FileAccess.get_file_as_bytes(COURSE+"MAPI-selectors.bin"),PackedByteArray()):
+	if not core.register_course_resource(1,FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPM.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"SPT.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPI-descriptors.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPI-selectors.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPS.bin")):
 		push_error(core.last_error())
 		return
 	if not core.load_next_hole():
@@ -359,6 +360,11 @@ func start_hole() -> void:
 			volumes.append(int(round(float(tree[field])*65536.0)))
 	if not core.set_authored_tree_objects(volumes):
 		push_error(core.last_error())
+		return
+	var arrow_cells: Array[Dictionary] = []
+	for cell in core.verified_native_green_arrow_cells(16): arrow_cells.append(cell)
+	if not arrows.load_native_maps_arrow_cells(arrow_cells) or arrows.arrow_count()==0:
+		push_error("Native Lakewood slope field unavailable")
 		return
 	attempt_id = profile.begin_attempt()
 	last_result.clear()
@@ -431,7 +437,7 @@ func update_view(s: Dictionary) -> void:
 	camera.position.y = 456 if half_view.y >= 456 else clampf(at.y-60,half_view.y,912-half_view.y)
 	var rendered_half := screen/camera.zoom/2.0
 	world.view_rect = Rect2(camera.position+camera.offset-rendered_half,rendered_half*2)
-	status.text = "H1 Â· Par 4 Â· Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
+	status.text = "H1 · Par 4 · Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
 	club.text = CLUBS[int(s.get("club_index",0))]
 	meter.value = clampf(float(s.get("welly_counter",0)),0,105)
 	shoot.disabled = not s.get("can_shoot",false) and not s.get("original_welly_active",false)
@@ -488,7 +494,7 @@ func show_results() -> void:
 	menu_screen = "results"
 	clear_menu()
 	panel.add_child(image_control("trophy",Vector2(150,150)))
-	panel.add_child(text_line("WILLOW CREEK\n%d strokes Â· Par %d" % [last_result.get("total_strokes",0),last_result.get("cumulative_par",4)]))
+	panel.add_child(text_line("WILLOW CREEK\n%d strokes · Par %d" % [last_result.get("total_strokes",0),last_result.get("cumulative_par",4)]))
 	panel.add_child(text_line(relative_score(int(last_result.get("relative_to_par",0)))))
 	if not result_saved:
 		panel.add_child(text_line("Score complete. Statistics could not be saved."))
@@ -524,7 +530,7 @@ func show_help() -> void:
 	open_auxiliary("help")
 	clear_menu()
 	panel.add_child(text_line("HOW TO PLAY"))
-	panel.add_child(paragraph("Choose a club with âˆ’ Club and + Club. Use the arrows to aim."))
+	panel.add_child(paragraph("Choose a club with − Club and + Club. Use the arrows to aim."))
 	panel.add_child(paragraph("Press Swing to start the meter, Power to set strength, then Accuracy to complete the shot. Space performs the same action."))
 	panel.add_child(paragraph("Watch the ball land before taking the next shot. Water and out-of-bounds penalties recover automatically."))
 	panel.add_child(paragraph("Pause freezes the shot. Player and settings edits keep your ball and score unchanged. Escape opens pause; settings include reduced motion and flashes."))
@@ -534,12 +540,12 @@ func show_scorecard() -> void:
 	open_auxiliary("scorecard")
 	clear_menu()
 	panel.add_child(text_line("SCORECARD"))
-	panel.add_child(text_line("Willow Creek Â· Hole 1 Â· Par 4"))
+	panel.add_child(text_line("Willow Creek · Hole 1 · Par 4"))
 	var s: Dictionary = core.snapshot() if core != null else {}
 	if s.get("has_hole",false):
-		panel.add_child(text_line("Strokes: %d Â· In play" % s.get("strokes",0)))
+		panel.add_child(text_line("Strokes: %d · In play" % s.get("strokes",0)))
 	elif not last_result.is_empty():
-		panel.add_child(text_line("Strokes: %d Â· %s" % [last_result.total_strokes,relative_score(int(last_result.relative_to_par))]))
+		panel.add_child(text_line("Strokes: %d · %s" % [last_result.total_strokes,relative_score(int(last_result.relative_to_par))]))
 	else:
 		panel.add_child(text_line("No round started"))
 	panel.add_child(button("Back",back_menu))
@@ -553,7 +559,7 @@ func show_statistics() -> void:
 	panel.add_child(text_line("Completed rounds: %d" % stats.played))
 	if stats.played > 0:
 		panel.add_child(text_line("Best: %d strokes\nAverage: %.1f strokes" % [stats.best,float(stats.strokes)/float(stats.played)]))
-		panel.add_child(text_line("Last round: %d Â· %s" % [stats.last.strokes,relative_score(int(stats.last.relative))]))
+		panel.add_child(text_line("Last round: %d · %s" % [stats.last.strokes,relative_score(int(stats.last.relative))]))
 	else: panel.add_child(text_line("Complete a round to record your first score."))
 	panel.add_child(button("Back",back_menu))
 

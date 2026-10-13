@@ -5,6 +5,31 @@ import unittest
 MODULE = Path(__file__).parents[1] / 'pixtee_course_compile.py'
 
 class CourseCompileTests(unittest.TestCase):
+    def test_authored_green_bundle_preserves_world_map_and_bank_prefix(self):
+        import struct
+        spec = importlib.util.spec_from_file_location('compiler', MODULE)
+        compiler = importlib.util.module_from_spec(spec);spec.loader.exec_module(compiler)
+        layout = {'world':[544,912], 'surfaces':{'green':[[310,112],[408,112],[408,222],[310,222]],'water':[],'river':[],'bunkers':[],'tee':[],'fairway':[]},'placements':[{'type':'flag','x':364,'y':168}]}
+        mapm=bytearray(0x60+34*114*2);struct.pack_into('>HH',mapm,0x54,34,114)
+        desc,selectors=compiler.encode_tile([3]*32)
+        source={'MAPM.bin':bytes(mapm),'SPT.bin':bytes(50),'MAPI-descriptors.bin':desc,'MAPI-selectors.bin':selectors}
+        before=dict(source)
+        authored={'schema':'pixtee.authored-green-slopes.v1','origin':[304,120],'sector':0,'magnitude':1}
+        result=compiler.compile_authored_green_resources(layout,authored,source)
+        self.assertEqual(source,before)
+        self.assertEqual(result['SPT.bin'],source['SPT.bin'])
+        self.assertTrue(result['MAPI-descriptors.bin'].startswith(desc))
+        self.assertTrue(result['MAPI-selectors.bin'].startswith(selectors))
+        changed=[]
+        for at in range(0x60,len(mapm),2):
+            old=struct.unpack_from('>H',mapm,at)[0];new=struct.unpack_from('>H',result['MAPM.bin'],at)[0]
+            self.assertEqual(old&1023,new&1023)
+            if old!=new: changed.append((at-0x60)//2)
+        self.assertEqual(changed,[15*34+19,15*34+20,15*34+21])
+        self.assertEqual(len(result['expected-detail-words.bin']),128*104*2)
+        for invalid in [{'sector':16},{'magnitude':0},{'origin':[305,120]}]:
+            with self.assertRaises(ValueError): compiler.compile_authored_green_resources(layout,{**authored,**invalid},source)
+
     def test_detail_window_preserves_hazard_priority_over_green(self):
         spec = importlib.util.spec_from_file_location('compiler', MODULE)
         compiler = importlib.util.module_from_spec(spec)

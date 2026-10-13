@@ -41,7 +41,7 @@ func _run() -> void:
 	assert(not scene.profile.set_setting("graphics_quality",9))
 	scene.back_menu()
 	scene.resume_game()
-	var sequence := [[0,105,1946],[4,95,1913],[12,75,2087],[12,20,248]]
+	var sequence := [[0,105,1946],[1,95,1942],[12,105,2121]]
 	for shot in sequence:
 		scene.core.set_club_index(shot[0])
 		scene.core.set_aim_raw(shot[2])
@@ -55,7 +55,7 @@ func _run() -> void:
 	scene.show_score(scored)
 	assert(scene.menu_screen == "results" and not scene.hud.visible)
 	assert(scene.profile.snapshot().statistics.played == 1)
-	assert(scene.profile.snapshot().statistics.best == 4)
+	assert(scene.profile.snapshot().statistics.best == 3)
 	assert(scene.core.snapshot().holes_completed == 1)
 	# Revisiting results or replaying a save cannot count one attempt twice.
 	assert(scene.profile.record_committed_result(scene.attempt_id,scene.core.snapshot()))
@@ -69,7 +69,7 @@ func _run() -> void:
 	var restored = load("res://scripts/PixteePlayerProfile.gd").new()
 	assert(restored.load_profile(scene.profile.storage_base()))
 	assert(restored.snapshot().statistics.played == 1)
-	assert(restored.snapshot().statistics.best == 4)
+	assert(restored.snapshot().statistics.best == 3)
 	assert(restored.snapshot().settings.reduced_flashes)
 	assert(not restored.record_committed_result(scene.attempt_id+1,{"total_strokes":2}))
 	scene.show_title()

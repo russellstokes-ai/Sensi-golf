@@ -17,7 +17,7 @@ std::vector<std::uint8_t> read(const std::string& root, const char* file) {
     return {std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
 }
 int main(int argc, char** argv) {
-    assert(argc == 2);
+    assert(argc == 3);
     const std::string root = argv[1];
     sensigolf::ClassicCourseResources course(read(root,"MAPM.bin"),
         read(root,"SPT.bin"), read(root,"MAPI-descriptors.bin"),
@@ -57,4 +57,41 @@ int main(int argc, char** argv) {
     assert(hole.phase()!=sensigolf::HoleSessionPhase::UnsupportedTerrain);
     std::cout << "approved Lakewood: 496128 native pixel lookups; shot ticks="
               << ticks << " phase=" << static_cast<int>(hole.phase()) << '\n';
+    const std::string green_root=argv[2];
+    sensigolf::ClassicCourseResources green(read(green_root,"MAPM.bin"),read(green_root,"SPT.bin"),
+        read(green_root,"MAPI-descriptors.bin"),read(green_root,"MAPI-selectors.bin"),read(green_root,"MAPS.bin"));
+    const auto region=green.green_region();
+    assert(region && region->origin_x==304 && region->origin_y==120);
+    const auto words=read(green_root,"expected-detail-words.bin");
+    assert(words.size()==128*104*2);
+    for(int y=0;y<104;++y)for(int x=0;x<128;++x) {
+        const auto offset=2*(y*128+x);
+        const auto word=(unsigned(words[offset])<<8)|words[offset+1];
+        const auto native=green.resolve_integer_position(2*x+1,2*y+1,true);
+        assert(native.descriptor_index==(word&127));
+        assert(native.slope_direction==((word>>8)&15)*256);
+        assert(native.slope_magnitude==((word>>12)&15));
+        // Adding markers and appending MAPI must preserve course lookup.
+        assert(green.resolve_integer_position(304+x,120+y).descriptor_index==
+               course.resolve_integer_position(304+x,120+y).descriptor_index);
+    }
+    sensigolf::ClassicHoleSession approach(green,320*65536,140*65536);
+    request.club_index=0;request.aim_raw=2048;request.power_tick=30;
+    approach.begin_shot(request);
+    bool entered=false,left=false;
+    for(int tick=0;tick<4096 && approach.phase()==sensigolf::HoleSessionPhase::ShotActive;++tick) {
+        approach.step();
+        if(approach.green_mode())entered=true;
+        else if(entered)left=true;
+    }
+    assert(entered && left && approach.phase()==sensigolf::HoleSessionPhase::ReadyForShot);
+    sensigolf::ClassicHoleSession cup(green,364*65536,168*65536,sensigolf::ClassicHoleMetadata{0,4,1});
+    request.club_index=12;request.power_tick=1;request.aim_raw=0;
+    cup.begin_shot(request);cup.step();
+    assert(cup.green_mode() && cup.phase()==sensigolf::HoleSessionPhase::CupTerminal);
+    assert(cup.ball_x_raw()==120*65536 && cup.ball_y_raw()==96*65536);
+    assert(cup.distance_to_hole()==0 && cup.pending_cup_capture_event().has_value());
+    cup.step();
+    assert(cup.phase()==sensigolf::HoleSessionPhase::HoleScored && cup.strokes()==1);
+    std::cout<<"LAKEWOOD_GREEN_NATIVE_PASS: 13312 detail cells, unchanged world map, native entry/exit and cup-to-score\n";
 }

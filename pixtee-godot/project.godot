@@ -3,6 +3,7 @@ config_version=5
 
 [application]
 config/name="Pixtee Golf"
+config/icon="res://branding/pixtee-app-icon.png"
 run/main_scene="res://scenes/Lakewood.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 

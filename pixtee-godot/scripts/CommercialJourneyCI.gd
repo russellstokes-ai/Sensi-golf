@@ -29,7 +29,11 @@ func _run() -> void:
 	assert(restored.snapshot() == scene.core.snapshot())
 	var stable: Dictionary = restored.snapshot()
 	assert(not restored.restore_native_session(save.native+"bad"))
-	assert(restored.snapshot() == stable, "Corrupt replay cannot partially replace live state")
+	var failed: Dictionary = restored.snapshot()
+	assert(not str(failed.error).is_empty())
+	failed.erase("error")
+	stable.erase("error")
+	assert(failed == stable, "Corrupt replay cannot partially replace live state")
 	# Torn newest write falls back to the older verified save slot.
 	assert(scene.session_store.save(save.native,scene.course_hash,scene.attempt_id,false))
 	var damaged := FileAccess.open(scene.session_store.base+".%d.json" % (scene.session_store.generation%2),FileAccess.WRITE)

@@ -136,7 +136,9 @@ func record_committed_result(attempt: int, native: Dictionary) -> bool:
 	if native.get("physics_authority") != "Recovered Sensible Golf ClassicGameSession" or native.get("has_hole",true) != false or native.get("holes_completed") != 1: return false
 	var strokes = native.get("total_strokes")
 	if not _integer(strokes,1,65535) or native.get("cumulative_par") != 4: return false
-	if native.get("relative_to_par") != strokes-4 or attempt <= 0 or attempt != int(_state.statistics.round_sequence): return false
+	# Source scoreboard stores par minus strokes. Journal/display use the
+	# conventional strokes minus par; preserve native counters unchanged.
+	if native.get("relative_to_par") != 4-strokes or attempt <= 0 or attempt != int(_state.statistics.round_sequence): return false
 	if attempt == int(_state.statistics.last_recorded): return _state.statistics.last.strokes == strokes
 	var candidate := snapshot()
 	var stats: Dictionary = candidate.statistics
@@ -144,5 +146,5 @@ func record_committed_result(attempt: int, native: Dictionary) -> bool:
 	stats.played += 1
 	stats.strokes += int(strokes)
 	stats.best = int(strokes) if stats.best == 0 else mini(int(stats.best),int(strokes))
-	stats.last = {"strokes":int(strokes),"par":int(native.cumulative_par),"relative":int(native.relative_to_par)}
+	stats.last = {"strokes":int(strokes),"par":int(native.cumulative_par),"relative":-int(native.relative_to_par)}
 	return _save(candidate)

@@ -47,9 +47,11 @@ func _run() -> void:
 	# inputs only; interactive play uses the recovered native Welly producer.
 	assert(scene.arrows.arrows_are_verified() and scene.arrows.arrow_count()>0)
 	assert(s.get("green_origin_x")==304 and s.get("green_origin_y")==120)
+	s = scene.core.snapshot()
 	for cell in scene.core.verified_native_green_arrow_cells(16):
 		assert(cell.verified_native and cell.terrain_code==1)
 		assert(cell.direction_raw==0 and cell.magnitude==1)
+		assert(cell.world_x>=312 and cell.world_x<=416 and cell.world_y>=128 and cell.world_y<=204)
 	assert(scene.core.snapshot()==s) # Reading arrows must never advance gameplay.
 	var sequence := [[0,105,1946],[1,95,1942],[12,105,2121]]
 	var seen: Dictionary = {}

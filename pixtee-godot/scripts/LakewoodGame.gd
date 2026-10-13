@@ -495,7 +495,7 @@ func show_results() -> void:
 	clear_menu()
 	panel.add_child(image_control("trophy",Vector2(150,150)))
 	panel.add_child(text_line("WILLOW CREEK\n%d strokes · Par %d" % [last_result.get("total_strokes",0),last_result.get("cumulative_par",4)]))
-	panel.add_child(text_line(relative_score(int(last_result.get("relative_to_par",0)))))
+	panel.add_child(text_line(relative_score(-int(last_result.get("relative_to_par",0)))))
 	if not result_saved:
 		panel.add_child(text_line("Score complete. Statistics could not be saved."))
 		panel.add_child(button("Retry save",func():
@@ -545,7 +545,7 @@ func show_scorecard() -> void:
 	if s.get("has_hole",false):
 		panel.add_child(text_line("Strokes: %d · In play" % s.get("strokes",0)))
 	elif not last_result.is_empty():
-		panel.add_child(text_line("Strokes: %d · %s" % [last_result.total_strokes,relative_score(int(last_result.relative_to_par))]))
+		panel.add_child(text_line("Strokes: %d · %s" % [last_result.total_strokes,relative_score(-int(last_result.relative_to_par))]))
 	else:
 		panel.add_child(text_line("No round started"))
 	panel.add_child(button("Back",back_menu))

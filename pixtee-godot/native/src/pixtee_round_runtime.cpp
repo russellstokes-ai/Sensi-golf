@@ -307,6 +307,12 @@ PixteeRoundRuntime::verified_native_green_arrows(
         y+=green_detail_stride) {
         for(std::uint32_t x=green_detail_stride/2u;x<xmax;
             x+=green_detail_stride) {
+            // MAPS extends beyond the original scene admission rectangle.
+            // Outside it the ball uses MAPM, so a MAPS arrow would advertise
+            // a slope force that does not apply at that world position.
+            if(!origin->contains_course(
+                    static_cast<std::int16_t>(origin->origin_x+x/2u),
+                    static_cast<std::int16_t>(origin->origin_y+y/2u)))continue;
             const auto surface=source.resolve_integer_position(
                 static_cast<std::int16_t>(x),static_cast<std::int16_t>(y),true);
             if(surface.landing_code!=1u || surface.slope_magnitude==0u)

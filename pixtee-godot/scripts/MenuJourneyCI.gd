@@ -56,6 +56,8 @@ func _run() -> void:
 	assert(scene.menu_screen == "results" and not scene.hud.visible)
 	assert(scene.profile.snapshot().statistics.played == 1)
 	assert(scene.profile.snapshot().statistics.best == 3)
+	assert(scene.last_result.relative_to_par==1) # Original positive means birdie.
+	assert(scene.profile.snapshot().statistics.last.relative == -1)
 	assert(scene.core.snapshot().holes_completed == 1)
 	# Revisiting results or replaying a save cannot count one attempt twice.
 	assert(scene.profile.record_committed_result(scene.attempt_id,scene.core.snapshot()))
@@ -70,6 +72,7 @@ func _run() -> void:
 	assert(restored.load_profile(scene.profile.storage_base()))
 	assert(restored.snapshot().statistics.played == 1)
 	assert(restored.snapshot().statistics.best == 3)
+	assert(restored.snapshot().statistics.last.relative == -1)
 	assert(restored.snapshot().settings.reduced_flashes)
 	assert(not restored.record_committed_result(scene.attempt_id+1,{"total_strokes":2}))
 	scene.show_title()

@@ -6,6 +6,9 @@
 #include <cstdint>
 #include <stdexcept>
 #include <vector>
+#include <fstream>
+#include <iterator>
+#include <string>
 
 #include "pixtee_round_runtime.hpp"
 #include "pixtee_course_adapter.hpp"
@@ -20,7 +23,7 @@ pixtee::PixteeRoundRuntime preview() {
 }
 } // namespace
 
-int main() {
+int main(int argc,char** argv) {
     // The source-authored fine-map transfer is tested at ALL verified 16x16
     // slope direction and strength combinations. Godot must never guess
     // these values from a screenshot or one arrow sprite orientation.
@@ -67,8 +70,22 @@ int main() {
             assert(bad);
         }
     }
-    // This tests only the historic temporary native authoring fixture.
-    // Source Work Lakewood Green geometry (544x912) still requires exact,
-    // no-stretch integration and real tee-to-hole Android acceptance.
+    if(argc==2) {
+        const std::string root=argv[1];
+        const auto read=[&](const char* name) {
+            std::ifstream input(root+"/"+name,std::ios::binary);assert(input.good());
+            return std::vector<std::uint8_t>(std::istreambuf_iterator<char>(input),{});
+        };
+        sensigolf::ClassicCourseResources real(read("MAPM.bin"),read("SPT.bin"),
+            read("MAPI-descriptors.bin"),read("MAPI-selectors.bin"),read("MAPS.bin"));
+        auto session=preview();session.register_course(1,real);session.load_next_hole();
+        const auto arrows=session.verified_native_green_arrows(16);
+        assert(!arrows.empty());
+        const auto origin=real.green_region();assert(origin);
+        for(const auto& arrow:arrows) {
+            assert(origin->contains_course(arrow.world_x,arrow.world_y));
+            assert(arrow.slope_direction_raw==0 && arrow.slope_magnitude==1);
+        }
+    }
     return 0;
 }

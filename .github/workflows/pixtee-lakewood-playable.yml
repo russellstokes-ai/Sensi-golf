@@ -36,13 +36,34 @@ jobs:
         with:
           path: pixtee-godot/bin/libpixtee_gameplay.linux.template_debug.x86_64.so
           key: pixtee-native-godot45-linux-${{ hashFiles('engine/src/**', 'engine/include/**', 'pixtee-godot/native/src/**', 'pixtee-godot/native/SConstruct') }}
+      - name: Identify SDK compiler
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        id: sdk-toolchain
+        run: echo "compiler=$(g++ -dumpfullversion -dumpversion)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        id: sdk-cache
+        with:
+          path: |
+            pixtee-godot/native/godot-cpp
+            pixtee-godot/native/.sconsign.dblite
+          key: pixtee-godot45-linux-debug-sdk-${{ steps.sdk-toolchain.outputs.compiler }}-${{ hashFiles('pixtee-godot/native/SConstruct') }}
       - name: Build native Godot extension
         if: steps.native-cache.outputs.cache-hit != 'true'
         run: |
           python3 -m pip install --user scons
-          git clone --depth 1 --branch 4.5 https://github.com/godotengine/godot-cpp.git pixtee-godot/native/godot-cpp
+          if [ ! -d pixtee-godot/native/godot-cpp/.git ]; then
+            git clone --depth 1 --branch 4.5 https://github.com/godotengine/godot-cpp.git pixtee-godot/native/godot-cpp
+          fi
           cd pixtee-godot/native
           ~/.local/bin/scons platform=linux target=template_debug -j2
+      - uses: actions/cache/save@v4
+        if: steps.native-cache.outputs.cache-hit != 'true' && steps.sdk-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            pixtee-godot/native/godot-cpp
+            pixtee-godot/native/.sconsign.dblite
+          key: ${{ steps.sdk-cache.outputs.cache-primary-key }}
       - uses: actions/cache/save@v4
         if: steps.native-cache.outputs.cache-hit != 'true'
         with:

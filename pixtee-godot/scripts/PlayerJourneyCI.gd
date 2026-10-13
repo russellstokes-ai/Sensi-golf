@@ -19,6 +19,18 @@ func _run() -> void:
 	assert(profile.set_setting("Music",0.25))
 	assert(not profile.set_setting("Music",INF))
 	assert(not profile.set_setting("Music",1.1))
+	# Original scoreboard sign is par-strokes; a six-shot par4 is native -2.
+	var over_par = Profile.new()
+	assert(over_par.load_profile(storage+"-over-par"))
+	var over_attempt: int = over_par.begin_attempt()
+	assert(over_par.record_committed_result(over_attempt,{
+		"physics_authority":"Recovered Sensible Golf ClassicGameSession",
+		"has_hole":false,"holes_completed":1,"total_strokes":6,
+		"cumulative_par":4,"relative_to_par":-2}))
+	assert(over_par.snapshot().statistics.last.relative==2)
+	var over_restored = Profile.new()
+	assert(over_restored.load_profile(storage+"-over-par"))
+	assert(over_restored.snapshot().statistics.last.relative==2)
 	draft = profile.begin_edit()
 	draft.outfit_id = "shirt" # Supplied UI thumbnail is not a verified wearable.
 	assert(not profile.apply_edit(draft))

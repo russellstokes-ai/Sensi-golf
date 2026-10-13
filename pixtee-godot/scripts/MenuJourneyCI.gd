@@ -57,6 +57,8 @@ func _run() -> void:
 	assert(scene.profile.snapshot().statistics.played == 1)
 	assert(scene.profile.snapshot().statistics.best == 3)
 	assert(scene.last_result.relative_to_par==1) # Original positive means birdie.
+	assert(scene.relative_score(-int(scene.last_result.relative_to_par))=="-1")
+	assert(scene.relative_score(2)=="+2")
 	assert(scene.profile.snapshot().statistics.last.relative == -1)
 	assert(scene.core.snapshot().holes_completed == 1)
 	# Revisiting results or replaying a save cannot count one attempt twice.

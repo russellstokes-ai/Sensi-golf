@@ -2,7 +2,7 @@ extends RefCounted
 
 # Cosmetic preferences and a record of committed native scores only.
 # This journal cannot restore or choose a native shot outcome.
-const DEFAULTS := {"display_name":"Player", "outfit_id":"lakewood-classic", "settings":{"reduced_motion":false,"reduced_flashes":false,"graphics_quality":1,"frame_limit":60,"Music":0.8,"SFX":1.0,"Ambience":0.7,"UI":0.8},"statistics":{"round_sequence":0,"last_recorded":0,"played":0,"strokes":0,"best":0,"last":{}}}
+const DEFAULTS := {"display_name":"Player", "outfit_id":"lakewood-classic", "settings":{"reduced_motion":false,"reduced_flashes":false,"graphics_quality":1,"frame_limit":60,"Music":0.8,"SFX":1.0,"Ambience":1.0,"UI":0.8},"statistics":{"round_sequence":0,"last_recorded":0,"played":0,"strokes":0,"best":0,"last":{}}}
 var _state: Dictionary = DEFAULTS.duplicate(true)
 var _base := "user://pixtee/player"
 var _generation := 0
@@ -148,3 +148,4 @@ func record_committed_result(attempt: int, native: Dictionary) -> bool:
 	stats.best = int(strokes) if stats.best == 0 else mini(int(stats.best),int(strokes))
 	stats.last = {"strokes":int(strokes),"par":int(native.cumulative_par),"relative":-int(native.relative_to_par)}
 	return _save(candidate)
+

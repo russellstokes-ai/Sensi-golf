@@ -148,6 +148,7 @@ func show_title() -> void:
 	clear_menu()
 	panel.add_child(image_control("logo",Vector2(288,180)))
 	panel.add_child(text_line("LAKEWOOD · WILLOW CREEK\nHole 1 · Par 4"))
+	add_music_toggle()
 	panel.add_child(button("Play",start_hole))
 	panel.add_child(button("Player",show_player))
 	panel.add_child(button("Golfers",show_golfers))
@@ -464,6 +465,7 @@ func show_pause() -> void:
 	menu_screen = "pause"
 	clear_menu()
 	panel.add_child(text_line("PAUSED"))
+	add_music_toggle()
 	panel.add_child(button("Resume",resume_game))
 	panel.add_child(button("Player",show_player))
 	panel.add_child(button("Scorecard",show_scorecard))
@@ -607,3 +609,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else: pause_game()
 		elif event.keycode == KEY_SPACE and not paused:
 			on_shoot()
+
+func add_music_toggle() -> void:
+	var toggle := CheckButton.new()
+	toggle.text = "Music"
+	toggle.button_pressed = float(profile.snapshot().settings.Music) > 0.0
+	toggle.toggled.connect(func(enabled: bool):
+		if profile.set_setting("Music",0.8 if enabled else 0.0): apply_saved_settings())
+	panel.add_child(toggle)

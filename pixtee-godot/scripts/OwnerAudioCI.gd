@@ -12,13 +12,29 @@ func check(condition: bool, message: String) -> bool:
 func _run() -> void:
 	var audio := PixteeCommercialAudio.new()
 	root.add_child(audio)
-	if not check(audio.load_owner_pack().is_empty(), "All 23 MP3s must decode"): return
-	if not check(audio._catalog.size() == 23, "All supplied recordings must be indexed"): return
+	if not check(audio.load_owner_pack().is_empty(), "All 25 MP3s must decode"): return
+	if not check(audio._catalog.size() == 25, "All supplied recordings must be indexed"): return
 	if not check(not audio.is_fully_populated(), "Pack ingestion must not certify commercial completeness"): return
 	audio.set_context("menu")
 	var music: AudioStreamPlayer = audio._players["Music"]
 	var ambience: AudioStreamPlayer = audio._players["Ambience"]
-	if not check(music.playing and (music.stream as AudioStreamMP3).loop, "Menu theme must play and loop"): return
+	if not check(music.playing and not (music.stream as AudioStreamMP3).loop, "Menu theme must play without looping"): return
+	music.stop()
+	audio._theme_finished()
+	if not check(audio._music_gap.time_left > 59.0 and audio._music_gap.time_left <= 60.0,"One minute silence after theme"): return
+	audio._music_gap.stop()
+	audio._play_next_theme()
+	if not check(music.stream == audio._catalog["menu_music_1"],"Playlist advances to medium theme"): return
+	var last_pause := -1
+	for attempt in range(8):
+		audio.set_context("course")
+		audio.set_context("menu")
+		if not check(audio._last_pause_theme != last_pause,"Pause opening varies without consecutive repeats"): return
+		last_pause = audio._last_pause_theme
+	audio.set_channel_level("Music",0.0)
+	if not check(not music.playing and audio._music_gap.is_stopped(),"Music off stops playback and scheduling"): return
+	audio.set_channel_level("Music",0.8)
+	if not check(music.playing,"Music on resumes menu playlist"): return
 	audio.set_context("course")
 	if not check(not music.playing and not audio._ambience_timer.is_stopped(), "Course starts intermittent ambience without gameplay music"): return
 	if not check(absf(db_to_linear(ambience.volume_db)-0.75)<0.0001, "Nature recordings at 75 percent base volume"): return
@@ -74,5 +90,5 @@ func _run() -> void:
 	audio.stop_all_for_application_pause()
 	audio.free()
 	await create_timer(0.5).timeout # Allow multiple 4096-frame Dummy mixer cycles and main-thread retirement.
-	print("Owner audio PASS: 23 recordings decoded; context, loops, native routing, dedupe, mute and bounded voices")
+	print("Owner audio PASS: 25 recordings decoded; context, loops, native routing, dedupe, mute and bounded voices")
 	quit(0)

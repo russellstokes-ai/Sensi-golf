@@ -43,6 +43,10 @@ var _ready_for_commercial_audio := false
 var _ambience_timer: Timer
 var _ambience_rng := RandomNumberGenerator.new()
 var _context := ""
+var _music_gap: Timer
+var _theme_index := 0
+var _last_pause_theme := -1
+const THEMES := ["Pixtee main long version music.mp3", "Pixtee main medium length version music.mp3", "Pixtee main short length version music.mp3"]
 
 func _ready() -> void:
 	# A separate bus for each of four volume controls, independent of gameplay.
@@ -57,6 +61,11 @@ func _ready() -> void:
 		player.bus = name
 		add_child(player)
 		_players[name] = player
+	_music_gap = Timer.new()
+	_music_gap.one_shot = true
+	add_child(_music_gap)
+	_music_gap.timeout.connect(_play_next_theme)
+	_players["Music"].finished.connect(_theme_finished)
 	_players["Ambience"].volume_db = linear_to_db(0.75)
 	_players["Ambience"].finished.connect(_schedule_course_ambience)
 	_ambience_rng.randomize() # Cosmetic scheduling only; never native gameplay PRNG.
@@ -116,6 +125,7 @@ func load_owner_pack() -> PackedStringArray:
 		return failures
 	var loaded: Dictionary = {}
 	for cue in manifest.cues:
+		if cue == "menu_music": continue
 		var stream: Variant = load(base+str(manifest.cues[cue]))
 		if not stream is AudioStream or stream.get_length() <= 0:
 			failures.append(str(cue)+": recording could not be decoded")
@@ -130,6 +140,13 @@ func load_owner_pack() -> PackedStringArray:
 			failures.append(str(cue)+": recording could not be decoded")
 		else:
 			loaded[cue] = recording
+	for i in THEMES.size():
+		var theme: Variant = load("res://audio/menu-themes-v2/"+THEMES[i])
+		if not theme is AudioStreamMP3 or theme.get_length() <= 0:
+			failures.append("Replacement theme could not be decoded")
+		else:
+			theme.loop = false
+			loaded["menu_music" if i == 0 else "menu_music_%d" % i] = theme
 	if failures.is_empty():
 		_catalog = loaded
 		_ready_for_commercial_audio = false
@@ -139,11 +156,16 @@ func set_context(context: String) -> void:
 	if context == _context: return
 	var previous := _context
 	_context = context
+	_music_gap.paused = context == "background"
+	if context in ["course","results"]: _music_gap.stop()
 	if context == "menu":
 		_ambience_timer.paused = true
 		_players["Ambience"].stream_paused = true
 		for voice in _sfx_pool: voice.stream_paused = true
-		play_music("menu_music")
+		if previous == "course":
+			_theme_index = _ambience_rng.randi_range(0,2) if _last_pause_theme < 0 else (_last_pause_theme + _ambience_rng.randi_range(1,2)) % 3
+			_last_pause_theme = _theme_index
+		if previous != "background": _play_next_theme()
 	elif context == "course":
 		_ambience_timer.paused = false
 		_players["Music"].stop()
@@ -183,30 +205,31 @@ func set_channel_level(channel: String, linear_volume: float) -> bool:
 	AudioServer.set_bus_mute(index, clamped == 0.0)
 	if clamped > 0.0:
 		AudioServer.set_bus_volume_db(index, linear_to_db(clamped))
+	if channel == "Music":
+		if clamped == 0.0:
+			_players["Music"].stop()
+			_music_gap.stop()
+		elif _context == "menu" and not _players["Music"].playing and _music_gap.is_stopped():
+			_play_next_theme()
 	return true
 
-func play_music(cue: String) -> bool:
-	if not _catalog.has(cue) or not [
-		"intro_music", "menu_music", "gameplay_music", "hole_scored_music",
-		"birdie_sting", "eagle_sting", "hole_in_one_sting"
-	].has(cue):
-		return false
-	var player: AudioStreamPlayer = _players.get("Music")
-	if player == null:
-		return false
-	# Author-approved recording must provide genuine loop points or real
-	# outro; commercial gap remains until crossfade/loop tests pass.
-	if player.playing and player.stream == _catalog[cue]:
-		player.stream_paused = false
-		return true
-	player.stop()
-	player.stream = _catalog[cue]
-	if cue == "menu_music" and player.stream is AudioStreamMP3:
-		var looped := player.stream as AudioStreamMP3
-		looped.loop = true
+func _play_next_theme() -> void:
+	if _context != "menu" or AudioServer.is_bus_mute(AudioServer.get_bus_index("Music")): return
+	var key := "menu_music" if _theme_index == 0 else "menu_music_%d" % _theme_index
+	if not _catalog.has(key): return
+	var player: AudioStreamPlayer = _players["Music"]
+	player.stream = _catalog[key]
 	player.stream_paused = false
 	player.play()
-	return true
+	_theme_index = (_theme_index + 1) % 3
+
+func _theme_finished() -> void:
+	if _context == "menu": _music_gap.start(60.0)
+
+func play_music(cue: String) -> bool:
+	if cue != "menu_music" or _context != "menu": return false
+	_play_next_theme()
+	return _players["Music"].playing
 
 func play_ambience(cue: String) -> bool:
 	if not _catalog.has(cue) or not [
@@ -281,6 +304,7 @@ func reset_event_cursor_on_confirmed_new_round() -> void:
 	_event_order.clear()
 
 func stop_all_for_application_pause() -> void:
+	_music_gap.stop()
 	_ambience_timer.stop()
 	for player in _players.values():
 		player.stop()

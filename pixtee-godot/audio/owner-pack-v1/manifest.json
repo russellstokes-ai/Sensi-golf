@@ -1,0 +1,134 @@
+{
+  "schema": "pixtee.owner-audio.v1",
+  "source": "Owner supplied Pixtee audio pack.zip, 2026-10-13",
+  "zip_sha256": "2c1331b09ec0df2ca3dbbad514fb1da7ecb9294c8ae3827a528087511b5342f1",
+  "files": [
+    {
+      "file": "ball hitting bird sound effect.mp3",
+      "bytes": 48753,
+      "sha256": "89b0b46020b1dcc796ec97af6ed6e9bc13be576f28ef3a3762380506cdc8a11e"
+    },
+    {
+      "file": "ball hitting rough grass or bush.mp3",
+      "bytes": 14479,
+      "sha256": "7e80ba0bb93bc788732fde07fb2130b3748fb0d93684a6e14854d393e1183ae9"
+    },
+    {
+      "file": "Ball into hole sound 1.mp3",
+      "bytes": 17181,
+      "sha256": "1bdfa4202299c444aa1cecfaa5ce3fd4f248bdb31ff253c29c4519f7f30348f1"
+    },
+    {
+      "file": "Ball into hole sound 2.mp3",
+      "bytes": 33481,
+      "sha256": "ad9960c569486b84794fa0e3eff3d9ab134454b543e2581d138e8579085840c8"
+    },
+    {
+      "file": "bunker hit by ball sound effect.mp3",
+      "bytes": 113324,
+      "sha256": "0b8411bd7d6b6fc23241547ec437f73ebbb1dce234c2e9882861f51f652ed7b3"
+    },
+    {
+      "file": "Course ambient sound 2.mp3",
+      "bytes": 111789,
+      "sha256": "8777014bdb7918c6e9c06e7b09136fb0d5fe35d90f3abccd4c4955a9cc0833fb"
+    },
+    {
+      "file": "Course ambient sound 3.mp3",
+      "bytes": 148269,
+      "sha256": "7a0ce00289c9d4334e4006cad3d9a3c9ff3dd17103e848babfffc68ff775e5ca"
+    },
+    {
+      "file": "Course ambient sound 4.mp3",
+      "bytes": 74924,
+      "sha256": "b15a2137a5cc317d5b17ede1c96280c1b70714835e9d6c2a526fd84a1268b764"
+    },
+    {
+      "file": "Course ambient sound 5.mp3",
+      "bytes": 387116,
+      "sha256": "1cd8e456883132b1115b90a9e20d89c2a24f6d00d305bc232ff60ad5e199309a"
+    },
+    {
+      "file": "Course ambient sound 6.mp3",
+      "bytes": 84981,
+      "sha256": "f7ab51da0befd69849aaa6caa9d1e6312d1dd1ebae33df26354604d240c447e8"
+    },
+    {
+      "file": "Course amibient sound 1.mp3",
+      "bytes": 90669,
+      "sha256": "948d2ad37cd11b393c416e0dbc1695367b662f1c52d40615c44d67e2dd17d449"
+    },
+    {
+      "file": "Eagle sound effect.mp3",
+      "bytes": 76338,
+      "sha256": "cf64e5f6f127f55ea509c19858a5e56b1fd98e9d06fdcfca8486665cb54bbad5"
+    },
+    {
+      "file": "Flagpole hit by ball sound effect.mp3",
+      "bytes": 79916,
+      "sha256": "ae47bcfe473bfc330064b598cb94ea7562e78c53739243a02c0c89af7d91acb2"
+    },
+    {
+      "file": "Golf Ball Hit driver and iron club.mp3",
+      "bytes": 64940,
+      "sha256": "e9ee5c83b2f4832d830a4c020acf67996773acb2fac16f5b0076c91cf231420c"
+    },
+    {
+      "file": "Golf sound effect hitting ball out of rough.mp3",
+      "bytes": 11948,
+      "sha256": "3cf993e7e2e111baacd7f15b8872f066985643aa4a9f8a2728b4c16b948aa6f3"
+    },
+    {
+      "file": "Grass Landing - Sound Effect for editing.mp3",
+      "bytes": 288428,
+      "sha256": "b0a83aece95db7fd80a0f9f4dbbda6cbbb3ec5a1b532ce189e91664ea456ded5"
+    },
+    {
+      "file": "Rock hit by ball sound effect.mp3",
+      "bytes": 83372,
+      "sha256": "041724288d6cfc6e1352e3d0dca07d720628edd2466d111c6e2e95057b491957"
+    },
+    {
+      "file": "Title and pause menu screen music Funk It - Dyalla.mp3",
+      "bytes": 7049963,
+      "sha256": "5de50d115a807fcf5eee5375b6468c7310826933398d845f85dc0dd511530a86"
+    },
+    {
+      "file": "Tree hit by ball.mp3",
+      "bytes": 20780,
+      "sha256": "56248b6e2e9515cffda3d97173ddb1438d7be0e3420aa9a7cc72deec00c11b0b"
+    },
+    {
+      "file": "Water Hazard hit by ball.mp3",
+      "bytes": 32684,
+      "sha256": "6cde7c491fe8ca2724e503145b13aea45ff083a2d62d6475963ad80cf6eea5c6"
+    }
+  ],
+  "cues": {
+    "bird_impact": "ball hitting bird sound effect.mp3",
+    "rough_hit": "ball hitting rough grass or bush.mp3",
+    "cup_capture": "Ball into hole sound 1.mp3",
+    "cup_rattle": "Ball into hole sound 2.mp3",
+    "bunker_sand": "bunker hit by ball sound effect.mp3",
+    "course_ambient_2": "Course ambient sound 2.mp3",
+    "course_ambient_3": "Course ambient sound 3.mp3",
+    "course_ambient_4": "Course ambient sound 4.mp3",
+    "course_ambient_5": "Course ambient sound 5.mp3",
+    "course_ambient_6": "Course ambient sound 6.mp3",
+    "course_ambient_1": "Course amibient sound 1.mp3",
+    "eagle_recording": "Eagle sound effect.mp3",
+    "flag_hit": "Flagpole hit by ball sound effect.mp3",
+    "club_strike": "Golf Ball Hit driver and iron club.mp3",
+    "rough_club_strike": "Golf sound effect hitting ball out of rough.mp3",
+    "fairway_hit": "Grass Landing - Sound Effect for editing.mp3",
+    "rock_impact": "Rock hit by ball sound effect.mp3",
+    "menu_music": "Title and pause menu screen music Funk It - Dyalla.mp3",
+    "tree_impact": "Tree hit by ball.mp3",
+    "water_splash": "Water Hazard hit by ball.mp3"
+  },
+  "rights_status": "Owner-supplied; no licence documentation in ZIP; clearance gate remains open",
+  "unassigned_recordings": [
+    "eagle_recording"
+  ],
+  "coverage_note": "Pack completeness is not commercial audio completeness. Bird/rock impacts require real native contacts. Cup variants and ambience require listening QA."
+}

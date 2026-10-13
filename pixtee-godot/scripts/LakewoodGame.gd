@@ -40,6 +40,7 @@ func _ready() -> void:
 	profile.load_profile()
 	audio = PixteeCommercialAudio.new()
 	add_child(audio)
+	for failure in audio.load_owner_pack(): push_error(failure)
 	world = Node2D.new()
 	world.set_script(load("res://scripts/LakewoodWorld.gd"))
 	add_child(world)
@@ -140,6 +141,7 @@ func text_line(text: String) -> Label:
 	return label
 
 func show_title() -> void:
+	audio.set_context("menu")
 	stop_intro()
 	menu_screen = "title"
 	hud.hide()
@@ -378,6 +380,7 @@ func start_hole() -> void:
 	fx.set_process(true)
 	fx.on_confirmed_restart_or_replay_seek()
 	audio.reset_event_cursor_on_confirmed_new_round()
+	audio.set_context("course")
 	menu.hide()
 	hud.show()
 	update_view(core.snapshot())
@@ -452,6 +455,7 @@ func pause_game() -> void:
 	show_pause()
 
 func show_pause() -> void:
+	audio.set_context("menu")
 	menu_screen = "pause"
 	clear_menu()
 	panel.add_child(text_line("PAUSED"))
@@ -465,6 +469,7 @@ func show_pause() -> void:
 
 func resume_game() -> void:
 	if not playing or core == null: return
+	audio.set_context("course")
 	menu_screen = "game"
 	paused = false
 	world.set_process(true)
@@ -473,6 +478,7 @@ func resume_game() -> void:
 	hud.show()
 
 func show_score(_s: Dictionary) -> void:
+	audio.set_context("results")
 	paused = true
 	playing = false
 	if not core.commit_scored_hole():
@@ -580,6 +586,11 @@ func confirm_leave(restart: bool) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and playing and not paused:
 		pause_game()
+	if audio != null:
+		if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+			audio.set_context("background")
+		elif what == NOTIFICATION_APPLICATION_RESUMED or what == NOTIFICATION_APPLICATION_FOCUS_IN:
+			audio.set_context("results" if menu_screen == "results" else ("course" if playing and not paused else "menu"))
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and menu_screen == "intro" and event.keycode in [KEY_ESCAPE,KEY_ENTER,KEY_SPACE]:

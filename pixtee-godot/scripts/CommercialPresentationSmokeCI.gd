@@ -55,7 +55,7 @@ func _run() -> void:
 	var audio: Node = audio_source.new()
 	root.add_child(audio)
 	var missing: PackedStringArray = audio.validate_and_load_catalog({})
-	if missing.size() != 25 or audio.is_fully_populated():
+	if missing.size() != audio.REQUIRED_TRACKS.size() or audio.is_fully_populated():
 		fail("Commercial audio accepted missing intro/music/ambient/SFX catalog")
 		return
 	if audio.play_music("intro_music"):

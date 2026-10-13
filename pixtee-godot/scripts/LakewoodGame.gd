@@ -15,7 +15,6 @@ var hud: Control
 var status: Label
 var club: Label
 var meter: Control
-var shoot: Button
 var playing := false
 var paused := false
 var accumulator := 0.0
@@ -316,7 +315,7 @@ func make_hud() -> void:
 	var bottom := VBoxContainer.new()
 	hud.add_child(bottom)
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -240
+	bottom.offset_top = -145
 	club = text_line("Driver")
 	bottom.add_child(club)
 	var controls := HBoxContainer.new()
@@ -329,8 +328,6 @@ func make_hud() -> void:
 	meter = preload("res://scripts/PixteeWhackMeter.gd").new()
 	meter.pressed.connect(on_shoot)
 	bottom.add_child(meter)
-	shoot = button("Swing",on_shoot)
-	bottom.add_child(shoot)
 
 func start_hole() -> void:
 	stop_intro()
@@ -438,7 +435,7 @@ func update_view(s: Dictionary) -> void:
 	# Both camera axes share the same scale; native coordinates never change.
 	camera.zoom = Vector2.ONE*maxf(1.0,minf(screen.x,screen.y)/240.0)
 	# Reserve actual HUD space. The world is cropped, never squeezed to fit.
-	var half_view := Vector2(screen.x,maxf(120,screen.y-304*ui_scale)) / camera.zoom / 2.0
+	var half_view := Vector2(screen.x,maxf(120,screen.y-209*ui_scale)) / camera.zoom / 2.0
 	camera.offset.y = 56.0*ui_scale/camera.zoom.y
 	var at: Vector2 = world.ball_world
 	camera.position.x = 272 if half_view.x >= 272 else clampf(at.x,half_view.x,544-half_view.x)
@@ -447,10 +444,8 @@ func update_view(s: Dictionary) -> void:
 	world.view_rect = Rect2(camera.position+camera.offset-rendered_half,rendered_half*2)
 	status.text = "H1 · Par 4 · Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
 	club.text = CLUBS[int(s.get("club_index",0))]
+	meter.reduced_motion = reduced_motion
 	meter.accept_snapshot(s)
-	shoot.disabled = not s.get("can_shoot",false) and not s.get("original_welly_active",false)
-	shoot.text = meter.instruction
-	if s.get("original_welly_active",false) and s.get("welly_power_captured",false) and int(s.get("welly_phase",0)) == 1: shoot.disabled = true
 
 func pause_game() -> void:
 	paused = true
@@ -544,7 +539,7 @@ func show_help() -> void:
 	clear_menu()
 	panel.add_child(text_line("HOW TO PLAY"))
 	panel.add_child(paragraph("Choose a club with − Club and + Club. Use the arrows to aim."))
-	panel.add_child(paragraph("Press Swing to start the meter, Power to set strength, then Accuracy to complete the shot. Space performs the same action."))
+	panel.add_child(paragraph("Tap the bottom bar to start, tap to select power, then tap to set accuracy."))
 	panel.add_child(paragraph("Watch the ball land before taking the next shot. Water and out-of-bounds penalties recover automatically."))
 	panel.add_child(paragraph("Pause freezes the shot. Player and settings edits keep your ball and score unchanged. Escape opens pause; settings include reduced motion and flashes."))
 	panel.add_child(button("Back",back_menu))
@@ -607,8 +602,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		if event.keycode == KEY_ESCAPE:
 			if not player_draft.is_empty(): cancel_player_edit()
 			else: pause_game()
-		elif event.keycode == KEY_SPACE and not paused:
-			on_shoot()
 
 func add_music_toggle() -> void:
 	var toggle := CheckButton.new()

@@ -226,5 +226,49 @@
     "commercial_gates_promoted": 0,
     "commercial_release_ready": false,
     "apk_created": false
+  },
+  "owner_audio_increment_2026_10_13": {
+    "source_head": "826f768b37ea1df6c140ebcd33c9c0cfd2fdc3e5",
+    "source_zip_sha256": "2c1331b09ec0df2ca3dbbad514fb1da7ecb9294c8ae3827a528087511b5342f1",
+    "original_zip_and_recordings_unchanged": true,
+    "recordings": 20,
+    "manifest": "pixtee-godot/audio/owner-pack-v1/manifest.json",
+    "native_scene_run": 38386496817,
+    "native_scene_job": 115259479829,
+    "verification": {
+      "native_tests": 27,
+      "tools_python_tests": 13,
+      "root_python_tests": 61,
+      "godot_audio_context_decode_dedupe_mute": "PASS",
+      "native_three_shot_completion": "PASS",
+      "player_and_menu_journeys": "PASS",
+      "portrait_and_wide_renders": "PASS",
+      "hands_on_listening": "PENDING",
+      "windows_runtime_manual_play": "PENDING"
+    },
+    "owner_audio_scope": {
+      "base_pack_now": true,
+      "additional_applause_reward_gameplay_sounds": "later",
+      "music": [
+        "title",
+        "pause"
+      ],
+      "gameplay_music": false,
+      "nature_base_volume": 0.75,
+      "nature_schedule": "random individual full clips, then 8-20 seconds quiet; cosmetic RNG only"
+    },
+    "native_bird_collision": "OPEN; recording retained, no fabricated proximity contact",
+    "native_flag_audio": "verified_flag_contact routed to supplied recording",
+    "windows_test_package": {
+      "filename": "Pixtee-Lakewood-Owner-Audio-Windows-2026-10-13-r3.zip",
+      "sha256": "fe96c16f0856ce345dffb74f0bdfe1112efd303bc0e7d11fdbc7f43b91056c88",
+      "bytes": 109918774,
+      "files": 335
+    },
+    "independent_code_review": "review_native_increment: score-transition fix verified; no remaining important audio issue",
+    "restoration_branch": "restore/pixtee-owner-audio-826f768-2026-10-13",
+    "commercial_gates_promoted": 0,
+    "commercial_ready": false,
+    "apk_created": false
   }
 }

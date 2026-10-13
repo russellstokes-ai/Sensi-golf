@@ -178,7 +178,9 @@
       "requirements": "One owner-approved theme for title and pause, looping and clean transitions; no gameplay music per owner instruction. Required scoring sound cues and audio provenance.",
       "proof_required": "Approved audio files, proof of rights, seamless loops/crossfades and no copyrighted Sensible Golf media",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -187,7 +189,9 @@
       "requirements": "Club whoosh/hit and surface variation, fairway/rough/bunker contact, water impact/splash, tree contact, flag/cup, wind/special/hazard cues; bird collision sound is mandatory and must follow an actual C++ collision.",
       "proof_required": "SFX dispatched by verified native events only, zero duplicates, music ducking, synced visual/audio timing",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -196,7 +200,9 @@
       "requirements": "Birds by biome, grass/leaf breeze, flowing water, spectators/crowd/photographer, restrained atmosphere",
       "proof_required": "Loop seam QA, spatial/distance audio when appropriate, independent ambience bus, bird recurrence limits, volume accessibility",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -205,7 +211,9 @@
       "requirements": "Independent Music/SFX/Ambience/UI master controls, mute and background audio behaviour, Bluetooth and interruption recovery",
       "proof_required": "System phone audio focus/headphone/disconnect, app pause/resume, volume memory and no click/pop/overlapping effects",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -311,7 +319,7 @@
     }
   ],
   "core_m1_gate_reference": "spec/pixtee/MILESTONE_ONE_ENGINE_DATA_INVENTORY_2026-10-12.json",
-  "video_and_media_source_status": "Owner audio pack supplied 2026-10-13: 20 exact MP3s indexed with SHA manifest. Integration in progress; listening, missing cues, native bird contact and audio rights remain open.",
+  "video_and_media_source_status": "Owner base pack integrated: 20 unchanged recordings decoded; title/pause theme, intermittent random 75-percent nature clips, genuine native contact routing and cleanup PASS in run38386496817. Listening/device/rights and native bird collision remain OPEN; applause/rewards/further gameplay audio are a later owner pass.",
   "green_arrow_status": "LIVE LAKEWOOD NATIVE MAPS/ARROWS INTEGRATED AND GODOT-TESTED; source scene-mode routing proven; full player/visual/device QA remains OPEN",
   "tree_collision_status": "OWNER-AUTHORIZED AUTHORED C++ TRUNK/CANOPY IMPLEMENTED; genuine Lakewood native canopy contact, earliest-contact and nonpenetration regressions PASS; full geometry/player QA remains OPEN",
   "godot_playable_three_holes": false,

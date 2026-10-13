@@ -14,6 +14,37 @@ func capture(scene: Node, filename: String, check_menu := true) -> void:
 	else: assert(is_equal_approx(scene.camera.zoom.x,scene.camera.zoom.y))
 
 func _run() -> void:
+	# A real rendered pixel must match its selected palette, not multiply the
+	# source colour a second time. Exercise the same atlas used by the player UI.
+	var palette_view := SubViewport.new()
+	palette_view.size = Vector2i(362,181)
+	palette_view.transparent_bg = true
+	palette_view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	root.add_child(palette_view)
+	var sprite := Sprite2D.new()
+	sprite.texture = load("res://courses/lakewood-hole-1/visual/golfer.png")
+	sprite.centered = false
+	sprite.region_enabled = true
+	sprite.region_rect = Rect2(0,0,362,181)
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.material = PixteeOutfit.material("kit:3:2:1")
+	palette_view.add_child(sprite)
+	await process_frame
+	await RenderingServer.frame_post_draw
+	var source: Image = sprite.texture.get_image()
+	var rendered := palette_view.get_texture().get_image()
+	var checked := false
+	for y in range(181):
+		for x in range(362):
+			var original := source.get_pixel(x,y)
+			if original.a > 0.99 and original.r > 0.8 and original.g < 0.1 and original.b < 0.1:
+				var changed := rendered.get_pixel(x,y)
+				assert(changed.b > changed.r and changed.b > 0.3,"Purple shirt must render purple, not source-red multiplied")
+				checked = true
+				break
+		if checked: break
+	assert(checked)
+	palette_view.queue_free()
 	assert(DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://review-captures")) == OK)
 	var scene = load("res://scenes/Lakewood.tscn").instantiate()
 	root.add_child(scene)

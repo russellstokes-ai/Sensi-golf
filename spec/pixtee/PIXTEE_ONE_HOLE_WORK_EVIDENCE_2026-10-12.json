@@ -114,5 +114,62 @@
     "sound_files_added": false,
     "apk_created": false,
     "commercial_gates_promoted": 0
+  },
+  "tree_green_increment_2026_10_13": {
+    "tested_code_head": "394a62e98220f3cd97c9f7470b027d211d1b8dea",
+    "restoration_branch": "restore/pixtee-tree-green-394a62e-2026-10-13",
+    "native_scene_run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38372068348",
+    "native_scene_job": 115211230110,
+    "tests": {
+      "native": 26,
+      "tools": 11,
+      "root": 61,
+      "godot_scene_and_journeys": "PASS",
+      "menu_renders": "PASS; manual review pending"
+    },
+    "real_tree_contact": {
+      "club": 7,
+      "power": 105,
+      "accuracy": 63,
+      "aim": 1152,
+      "tree_id": 16,
+      "part": "canopy",
+      "confirmed_native": true
+    },
+    "tree_authority": "Owner-authorized authored C++ volumes; not recovered original detector parity",
+    "review_fixes": [
+      "Earliest trunk/canopy intersection across trees; stable ID/part ties",
+      "Every intersecting tick prevents penetration; PRNG/events remain deduped"
+    ],
+    "windows_regressions": "PASS: contact ordering, 64 grazing seeds with contact coverage, non-putter green session admission",
+    "source_green_proof": {
+      "run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38368664196",
+      "traces": 24,
+      "tolerance": 0,
+      "scope": "Non-putter clubs 0..11, powers30/105, GREEN H4 descriptor31/profile6, controlled surface green-mode0"
+    },
+    "green_changes": [
+      "Source-verified non-putter GREEN H4 admitted by native session",
+      "MAPS compiler preserves water/sand priority over overlapping green polygons"
+    ],
+    "green_remaining": [
+      "Authored slope field",
+      "Live MAPS activation and native scene-transition/cup integration",
+      "Real Lakewood arrow field and full green play verification"
+    ],
+    "app_icon": {
+      "path": "pixtee-godot/branding/pixtee-app-icon.png",
+      "sha256": "ea107ea7e3fefcb3c60c8089f67e3fbea6578344c0812c666f74a5833b0e8bd9",
+      "original_bytes_equal": true,
+      "configured": true
+    },
+    "apk_policy": {
+      "packaging_disabled": true,
+      "unrequested_legacy_artifact_removed": true,
+      "legacy_run_artifacts_empty": 38315147064,
+      "release_apk_created": false
+    },
+    "commercial_gates_promoted": 0,
+    "commercial_release_ready": false
   }
 }

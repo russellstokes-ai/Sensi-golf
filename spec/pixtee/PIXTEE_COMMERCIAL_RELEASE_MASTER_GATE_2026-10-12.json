@@ -36,7 +36,9 @@
       "requirements": "Actual trees from approved course manifest with verified collision footprint, altitude, deflection and low/high shot handling",
       "proof_required": "Source-or independently authored collision-spec provenance; test actual ball strikes against trunk and canopy, plus deliberate misses; collision changes full native trajectory only",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -134,7 +136,9 @@
       "requirements": "Shot turf flecks, rough/dust, bunker sand scatter, water splash/ripple, leaves from genuine tree hit, native-derived ball elevation shadow",
       "proof_required": "Every effect emitted ONCE from authoritative event; event UUID dedupe; no effect based on proximity or causes changed C++ RNG/trajectory",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -302,8 +306,8 @@
   ],
   "core_m1_gate_reference": "spec/pixtee/MILESTONE_ONE_ENGINE_DATA_INVENTORY_2026-10-12.json",
   "video_and_media_source_status": "NO VERIFIED ORIGINAL OR LICENSED INTRO / MUSIC / COMPLETE SFX LIBRARY YET",
-  "green_arrow_status": "SOURCE 16 DIRECTIONS X 16 MAGNITUDES VERIFIED; full Godot visual field placement not yet integrated",
-  "tree_collision_status": "UNRESOLVED AUTHENTIC COLLIDER HEIGHT/REBOUND; mandatory blocker",
+  "green_arrow_status": "SOURCE 16x16 ARROW SUPPORT VERIFIED; GREEN H4 non-putter admission source-proven; Lakewood live MAPS/slope/arrow activation remains OPEN",
+  "tree_collision_status": "OWNER-AUTHORIZED AUTHORED C++ TRUNK/CANOPY IMPLEMENTED; genuine Lakewood native canopy contact, earliest-contact and nonpenetration regressions PASS; full geometry/player QA remains OPEN",
   "godot_playable_three_holes": false,
   "copyright_clearance": false,
   "commercial_release_ready": false,
@@ -318,7 +322,8 @@
       "pause"
     ],
     "gameplay_music_required": false,
-    "no_apk_until_commercial_ready": true
+    "no_apk_until_commercial_ready": true,
+    "tree_collision_authority": "Owner authorized authored C++ tree collisions; original detector parity not claimed"
   },
   "latest_incremental_evidence": "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
 }

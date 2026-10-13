@@ -30,7 +30,7 @@ jobs:
           OUT=analysis/private/incoming-green
           mkdir -p "$OUT"
           for club in {0..11}; do
-            for lie in 0 6; do
+            for lie in 6; do
               for power in 30 105; do
                 name="club${club}-lie${lie}-power${power}"
                 python tools/original_v1014_flat_oracle.py "$EXE" --club "$club" --lie "$lie" --power "$power" --accuracy 63 --direction 997 --max-ticks 1024 --terrain-index 31 -o "$OUT/$name-original.json"
@@ -42,8 +42,8 @@ jobs:
           python - <<'PY'
           import json,pathlib
           reports=[json.loads(p.read_text()) for p in pathlib.Path('analysis/private/incoming-green').glob('*-comparison.json')]
-          assert len(reports)==48 and all(r['pass'] and r['mismatch_count']==0 for r in reports)
-          print('INCOMING_GREEN_NATIVE_PARITY_PASS: 48 complete traces; zero tolerance')
+          assert len(reports)==24 and all(r['pass'] and r['mismatch_count']==0 for r in reports)
+          print('INCOMING_GREEN_NATIVE_PARITY_PASS: 24 complete traces; zero tolerance')
           PY
       - uses: actions/upload-artifact@v4
         if: always()

@@ -61,7 +61,7 @@ func _run() -> void:
 	var clock: float = scene.world.time
 	scene.show_player()
 	assert(not scene.hud.visible)
-	scene.change_club(1)
+	scene.select_club(1)
 	scene.change_aim(32)
 	scene.on_shoot()
 	assert(scene.core.snapshot() == before)

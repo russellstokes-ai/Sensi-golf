@@ -1,0 +1,53 @@
+name: Pixtee incoming green native parity
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-lakewood-playable-work-2026-10-12]
+    paths: ['.github/workflows/pixtee-incoming-green-parity.yml']
+permissions: {contents: read}
+jobs:
+  incoming-green:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Load verified original transiently
+        run: |
+          curl -fL --retry 3 https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Build recovered trace probe
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --target sensigolf_recovered_full_probe -j2
+      - name: Compare incoming non-putter GREEN H4 launches exactly
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXE="$(find analysis/private/step2/input -type f -iname GOLFWIN.EXE -print -quit)"
+          OUT=analysis/private/incoming-green
+          mkdir -p "$OUT"
+          for club in {0..11}; do
+            for lie in 0 6; do
+              for power in 30 105; do
+                name="club${club}-lie${lie}-power${power}"
+                python tools/original_v1014_flat_oracle.py "$EXE" --club "$club" --lie "$lie" --power "$power" --accuracy 63 --direction 997 --max-ticks 1024 --terrain-index 31 -o "$OUT/$name-original.json"
+                ./build/engine/sensigolf_recovered_full_probe "$club" "$lie" "$power" 63 997 1024 1 > "$OUT/$name-recovered.json"
+                python tools/compare_full_oracle.py "$OUT/$name-original.json" "$OUT/$name-recovered.json" -o "$OUT/$name-comparison.json"
+              done
+            done
+          done
+          python - <<'PY'
+          import json,pathlib
+          reports=[json.loads(p.read_text()) for p in pathlib.Path('analysis/private/incoming-green').glob('*-comparison.json')]
+          assert len(reports)==48 and all(r['pass'] and r['mismatch_count']==0 for r in reports)
+          print('INCOMING_GREEN_NATIVE_PARITY_PASS: 48 complete traces; zero tolerance')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pixtee-incoming-green-native-traces
+          path: analysis/private/incoming-green/*.json
+          retention-days: 30

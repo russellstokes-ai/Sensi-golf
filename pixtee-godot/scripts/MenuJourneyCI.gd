@@ -83,4 +83,6 @@ func _run() -> void:
 	assert(scene.panel.size.x <= scene.menu_scroll.size.x)
 	assert(scene.menu_scroll.get_v_scroll_bar().max_value >= scene.menu_scroll.size.y)
 	print("MENU_JOURNEY_PASS: native score journal/dedupe, pause navigation, cosmetic presets, accessible scrolling, results lifecycle")
+	scene.free()
+	await create_timer(0.5).timeout # Retire audio mixer voices before quitting.
 	quit(0)

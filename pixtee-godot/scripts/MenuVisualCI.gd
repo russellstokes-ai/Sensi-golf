@@ -61,4 +61,6 @@ func _run() -> void:
 	await capture(scene,"green-wide",false)
 	print("GREEN_VISUAL_PASS: actual native green and slope arrows rendered in portrait/wide crops")
 	print("MENU_VISUAL_PASS: actual supplied artwork and menu renders captured in portrait/wide windows")
+	scene.free()
+	await create_timer(0.5).timeout # Retire audio mixer voices before quitting.
 	quit(0)

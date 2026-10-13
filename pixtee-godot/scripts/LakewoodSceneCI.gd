@@ -109,4 +109,6 @@ func _run() -> void:
 		quit(1)
 		return
 	print("LAKEWOOD_OOB_EVENT_PASS: exactly one native penalty event")
+	scene.free()
+	await create_timer(0.5).timeout # Retire audio mixer voices before quitting.
 	quit(0)

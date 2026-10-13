@@ -87,4 +87,6 @@ func _run() -> void:
 	assert(scene.core.snapshot().hole_phase == 0)
 	assert(scene.core.snapshot().can_shoot)
 	print("PLAYER_JOURNEY_PASS: durable profile, torn-write recovery, thumbnail rejection, pause edit invariance, live hazard recovery")
+	scene.free()
+	await create_timer(0.5).timeout # Retire audio mixer voices before quitting.
 	quit(0)

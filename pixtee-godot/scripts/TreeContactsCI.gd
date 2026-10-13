@@ -34,6 +34,8 @@ func _run() -> void:
 				assert(event.confirmed_native and ids.has(int(event.tree_id)))
 				assert(event.contact_part in ["trunk","canopy"])
 				print("LAKEWOOD_AUTHORED_TREE_CONTACT_PASS club=",club_index," aim=",aim," id=",event.tree_id," part=",event.contact_part)
+				scene.free()
+				await create_timer(0.5).timeout # Retire audio mixer voices before quitting.
 				quit(0)
 				return
 	push_error("No genuine authored tree contact from approved Lakewood native input sweep")

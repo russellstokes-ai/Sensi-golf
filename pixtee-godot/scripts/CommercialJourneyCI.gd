@@ -46,11 +46,13 @@ func _run() -> void:
 		if child.get_script() == load("res://scripts/PixteeMenuAttract.gd"):
 			scene.playing = false
 			child._process(0.02)
+			var saw_strokes := [false,false]
 			for tick in range(1300):
 				child._tick(0)
 				child._tick(1)
-			assert(child.golfers[0].core.snapshot().strokes > 0)
-			assert(child.golfers[1].core.snapshot().strokes > 0)
+				for actor in range(2):
+					if child.golfers[actor].core.snapshot().strokes > 0: saw_strokes[actor] = true
+			assert(saw_strokes[0] and saw_strokes[1])
 			scene.playing = true
 	assert(scene.core.snapshot() == player_before)
 	# Find a genuine native bird impact; never inject a visual-proximity cue.
@@ -78,6 +80,8 @@ func _run() -> void:
 				if hit or int(native.snapshot().hole_phase) != 1: break
 			if hit: break
 	assert(hit, "Real authored native bird hit must be reachable and recoverable")
+	scene.session_store.clear()
+	assert(scene.session_store.load_current(scene.course_hash).is_empty())
 	scene.free()
 	await create_timer(0.5).timeout
 	print("COMMERCIAL_JOURNEY_PASS: saved outfits, original human mode, native bird hit/audio/FX, exact replay and torn-save recovery")

@@ -170,7 +170,8 @@ func show_title() -> void:
 	panel.add_child(image_control("logo",Vector2(288,180)))
 	panel.add_child(text_line("LAKEWOOD · WILLOW CREEK\nHole 1 · Par 4"))
 	add_music_toggle()
-	if not session_store.load_current(course_hash).is_empty(): panel.add_child(button("Continue",resume_saved_game))
+	var checkpoint: Dictionary = session_store.load_current(course_hash)
+	if not checkpoint.is_empty() and int(checkpoint.attempt)>int(profile.snapshot().statistics.last_recorded): panel.add_child(button("Continue",resume_saved_game))
 	panel.add_child(button("Play",start_hole))
 	panel.add_child(button("Player",show_player))
 	panel.add_child(button("Golfers",show_golfers))
@@ -514,7 +515,9 @@ func show_score(_s: Dictionary) -> void:
 func save_result() -> bool:
 	# A temporary storage failure at tee-off must remain recoverable at results.
 	if attempt_id == 0: attempt_id = profile.begin_attempt()
-	return profile.record_committed_result(attempt_id,last_result)
+	var saved: bool = profile.record_committed_result(attempt_id,last_result)
+	if saved: session_store.clear()
+	return saved
 
 func show_results() -> void:
 	menu_screen = "results"
@@ -685,7 +688,7 @@ func save_session_checkpoint() -> void:
 
 func resume_saved_game() -> void:
 	var record := session_store.load_current(course_hash)
-	if record.is_empty(): return
+	if record.is_empty() or int(record.attempt)<=int(profile.snapshot().statistics.last_recorded): return
 	start_hole(true)
 	if core == null or not core.restore_native_session(record.native):
 		playing = false

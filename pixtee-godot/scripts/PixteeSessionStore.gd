@@ -9,10 +9,13 @@ func load_current(course_hash: String) -> Dictionary:
 		if not FileAccess.file_exists(path): continue
 		var file := FileAccess.open(path,FileAccess.READ)
 		if file == null or file.get_length()>20*1024*1024: continue
-		var envelope: Variant = JSON.parse_string(file.get_as_text())
+		var parser := JSON.new()
+		if parser.parse(file.get_as_text()) != OK: continue
+		var envelope: Variant = parser.data
 		if not envelope is Dictionary or not envelope.get("payload") is String: continue
 		if envelope.payload.sha256_text() != envelope.get("sha256",""): continue
-		var record: Variant = JSON.parse_string(envelope.payload)
+		if parser.parse(envelope.payload) != OK: continue
+		var record: Variant = parser.data
 		if not record is Dictionary or record.get("schema",0) != 1 or record.get("course_hash","") != course_hash or not record.get("native") is String: continue
 		if not record.get("generation") is float and not record.get("generation") is int: continue
 		if not record.get("attempt") is float and not record.get("attempt") is int: continue
@@ -36,3 +39,8 @@ func save(native: String,course_hash: String,attempt: int,pending_press: bool) -
 	if error != OK: return false
 	var restored := load_current(course_hash)
 	return not restored.is_empty() and int(restored.generation)==next
+
+func clear() -> void:
+	for slot in range(2):
+		var path := base+".%d.json" % slot
+		if FileAccess.file_exists(path): DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

@@ -10,7 +10,12 @@ func _ready() -> void:
 	_resize_map()
 
 func _resize_map() -> void:
-	size = Vector2(112,185) if expanded else Vector2(84,138)
+	var dimensions := Vector2(112,185) if expanded else Vector2(84,138)
+	set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	offset_left = -8-dimensions.x
+	offset_right = -8
+	offset_top = 54
+	offset_bottom = 54+dimensions.y
 	queue_redraw()
 
 func _tap(event: InputEvent) -> void:

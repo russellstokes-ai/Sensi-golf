@@ -321,16 +321,15 @@ func make_hud() -> void:
 	bottom.offset_top = -64
 	club_card = preload("res://scripts/PixteeClubCard.gd").new()
 	hud.add_child(club_card)
-	club_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	club_card.offset_left = -172
-	club_card.offset_right = -8
+	club_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	club_card.offset_left = 8
+	club_card.offset_right = 172
 	club_card.offset_top = 54
 	club_card.offset_bottom = 180
 	club_card.club_selected.connect(select_club)
 	minimap = preload("res://scripts/PixteeMiniMap.gd").new()
 	minimap.world = world
 	hud.add_child(minimap)
-	minimap.position = Vector2(8,54)
 	aim_touch = preload("res://scripts/PixteeAimTouch.gd").new()
 	aim_touch.game = self
 	hud.add_child(aim_touch)

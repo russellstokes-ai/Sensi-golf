@@ -13,6 +13,9 @@ constexpr std::int32_t kGravityPerTick = 0x2100;
 constexpr std::int32_t kHorizontalDragPerTick = 0x0F00;
 constexpr std::int32_t kGreenHorizontalDragPerTick = 0x0780;
 
+struct AccuracyWindow { std::int32_t lower; std::int32_t upper; std::int32_t center; };
+AccuracyWindow original_accuracy_window(std::uint16_t club, std::uint16_t lie);
+
 struct ClubLaunchParameters {
     std::int32_t vertical_base;
     std::int32_t horizontal_base;

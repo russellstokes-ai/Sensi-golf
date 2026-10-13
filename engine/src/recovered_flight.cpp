@@ -127,6 +127,12 @@ bool accuracy_within_original_profile_bounds(
     const auto bounds=kProfileBounds[id-1];
     return accuracy_tick >= bounds.lower && accuracy_tick <= bounds.upper;
 }
+AccuracyWindow original_accuracy_window(std::uint16_t club, std::uint16_t lie) {
+    if(club >= kClubTable.size() || lie >= 10)
+        throw std::out_of_range("invalid original club/lie profile selector");
+    const auto bounds=kProfileBounds[kProfileSelector[club][lie]-1];
+    return {bounds.lower,bounds.upper,kAccuracyCenter};
+}
 FlightState launch_normal_shot(const LaunchInput& input) {
     if (input.club_index >= kClubTable.size()) {
         throw std::out_of_range("club index outside original 0..12 range");

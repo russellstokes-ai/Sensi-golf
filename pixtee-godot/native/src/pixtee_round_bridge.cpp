@@ -1,4 +1,5 @@
 #include "pixtee_round_bridge.hpp"
+#include "sensigolf/recovered_flight.hpp"
 #include "original_next_player.hpp"
 #include "original_cpu_difficulty.hpp"
 #include "original_cpu_search_grid.hpp"
@@ -740,6 +741,9 @@ Dictionary PixteeRoundBridge::snapshot() const {
         d["original_welly_rejected"]=round_->original_welly_rejected();
         const auto& meter=round_->original_welly_state();
         d["welly_phase"]=static_cast<int>(meter.stage);
+        d["welly_power_captured"]=meter.capture_flag!=0;
+        // The recovered falling callback decrements BEFORE accepting a press.
+        d["welly_press_accuracy"]=meter.stage==2 ? static_cast<int>(meter.counter)-1 : 63;
         d["welly_counter"]=static_cast<int>(meter.counter);
         d["welly_saved_power"]=static_cast<int>(meter.captured_power);
         d["welly_angle"]=static_cast<int>(meter.angle);
@@ -813,6 +817,10 @@ Dictionary PixteeRoundBridge::snapshot() const {
             d["terrain_descriptor"]=static_cast<int>(surface.descriptor_index);
             d["surface_code"]=static_cast<int>(surface.landing_code);
             d["lie_profile"]=static_cast<int>(surface.profile_slot);
+            const auto window=sensigolf::recovered::original_accuracy_window(round_->club_index(),surface.profile_slot);
+            d["welly_window_low"]=window.lower;
+            d["welly_window_high"]=window.upper;
+            d["welly_window_center"]=window.center;
             d["slope_direction"]=static_cast<int>(surface.slope_direction);
             d["slope_magnitude"]=static_cast<int>(surface.slope_magnitude);
             } // only if a valid original world MAPI position exists

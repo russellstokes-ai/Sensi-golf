@@ -14,7 +14,7 @@ var menu: Control
 var hud: Control
 var status: Label
 var club: Label
-var meter: ProgressBar
+var meter: Control
 var shoot: Button
 var playing := false
 var paused := false
@@ -316,7 +316,7 @@ func make_hud() -> void:
 	var bottom := VBoxContainer.new()
 	hud.add_child(bottom)
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -176
+	bottom.offset_top = -240
 	club = text_line("Driver")
 	bottom.add_child(club)
 	var controls := HBoxContainer.new()
@@ -326,10 +326,8 @@ func make_hud() -> void:
 	controls.add_child(button("◀",func(): change_aim(-32),Vector2(70,40)))
 	controls.add_child(button("▶",func(): change_aim(32),Vector2(70,40)))
 	controls.add_child(button("+ Club",func(): change_club(1),Vector2(82,40)))
-	meter = ProgressBar.new()
-	meter.max_value = 105
-	meter.show_percentage = false
-	meter.custom_minimum_size.y = 20
+	meter = preload("res://scripts/PixteeWhackMeter.gd").new()
+	meter.pressed.connect(on_shoot)
 	bottom.add_child(meter)
 	shoot = button("Swing",on_shoot)
 	bottom.add_child(shoot)
@@ -390,6 +388,7 @@ func on_shoot() -> void:
 	if not playing or paused or core == null: return
 	var s: Dictionary = core.snapshot()
 	if s.get("original_welly_active",false):
+		if s.get("welly_power_captured",false) and int(s.get("welly_phase",0)) == 1: return
 		pending_press = true
 	elif s.get("can_shoot",false):
 		core.start_original_welly()
@@ -439,7 +438,7 @@ func update_view(s: Dictionary) -> void:
 	# Both camera axes share the same scale; native coordinates never change.
 	camera.zoom = Vector2.ONE*maxf(1.0,minf(screen.x,screen.y)/240.0)
 	# Reserve actual HUD space. The world is cropped, never squeezed to fit.
-	var half_view := Vector2(screen.x,maxf(120,screen.y-240*ui_scale)) / camera.zoom / 2.0
+	var half_view := Vector2(screen.x,maxf(120,screen.y-304*ui_scale)) / camera.zoom / 2.0
 	camera.offset.y = 56.0*ui_scale/camera.zoom.y
 	var at: Vector2 = world.ball_world
 	camera.position.x = 272 if half_view.x >= 272 else clampf(at.x,half_view.x,544-half_view.x)
@@ -448,9 +447,10 @@ func update_view(s: Dictionary) -> void:
 	world.view_rect = Rect2(camera.position+camera.offset-rendered_half,rendered_half*2)
 	status.text = "H1 · Par 4 · Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
 	club.text = CLUBS[int(s.get("club_index",0))]
-	meter.value = clampf(float(s.get("welly_counter",0)),0,105)
+	meter.accept_snapshot(s)
 	shoot.disabled = not s.get("can_shoot",false) and not s.get("original_welly_active",false)
-	shoot.text = "Swing" if not s.get("original_welly_active",false) else ("Power" if s.get("welly_phase",1) == 1 else "Accuracy")
+	shoot.text = meter.instruction
+	if s.get("original_welly_active",false) and s.get("welly_power_captured",false) and int(s.get("welly_phase",0)) == 1: shoot.disabled = true
 
 func pause_game() -> void:
 	paused = true

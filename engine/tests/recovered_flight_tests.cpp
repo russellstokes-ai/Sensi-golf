@@ -6,6 +6,20 @@
 using namespace sensigolf::recovered;
 
 int main() {
+    // Every display window must match shot admission, including both edges.
+    for(unsigned club=0;club<13;++club) for(unsigned lie=0;lie<10;++lie) {
+        const auto window=original_accuracy_window(club,lie);
+        assert(window.center==63);
+        for(int reading=0;reading<=105;++reading)
+            assert(accuracy_within_original_profile_bounds(club,lie,reading)==
+                (reading>=window.lower && reading<=window.upper));
+    }
+    const auto fairway=original_accuracy_window(0,4);
+    const auto rough=original_accuracy_window(0,2);
+    const auto sand=original_accuracy_window(0,0);
+    assert(fairway.lower==55 && fairway.upper==70);
+    assert(rough.lower==60 && rough.upper==66);
+    assert(sand.lower==61 && sand.upper==65);
     const auto& clubs = club_launch_parameters();
     assert(clubs.size() == 13);
     assert(clubs[0].vertical_base == 8192);

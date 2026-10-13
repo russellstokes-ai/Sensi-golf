@@ -2,15 +2,16 @@
 config_version=5
 
 [application]
-config/name="Pixtee Golf — Native Core Integration"
-run/main_scene="res://scenes/CoreSmoke.tscn"
+config/name="Pixtee Golf"
+config/icon="res://branding/pixtee-app-icon.png"
+run/main_scene="res://scenes/Lakewood.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 
 [display]
 window/size/viewport_width=360
 window/size/viewport_height=760
 window/handheld/orientation=1
-window/stretch/mode="canvas_items"
+window/stretch/mode="disabled"
 
 [rendering]
 renderer/rendering_method="gl_compatibility"

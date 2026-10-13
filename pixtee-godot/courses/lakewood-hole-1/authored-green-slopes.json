@@ -1,0 +1,9 @@
+{
+  "schema": "pixtee.authored-green-slopes.v1",
+  "authority": "Pixtee-authored gameplay contour; original native slope encoding and force calculation",
+  "layout_sha256": "cf4efdfd3e3d3e9740e0f85372ffad6acb83a58682e72b9fbcdccd7765083e78",
+  "origin": [304, 120],
+  "sector": 0,
+  "magnitude": 1,
+  "design": "Gentle southward fall toward the approach; strength1 of15. Native detail window only; unchanged MAPM outside it. No visual geometry or sprite alteration."
+}

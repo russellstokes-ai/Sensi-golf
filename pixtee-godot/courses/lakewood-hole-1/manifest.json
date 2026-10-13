@@ -1,0 +1,72 @@
+{
+  "schema": "pixtee.approved-polygon-compile.v1",
+  "source_zip_sha256": "82c0df6831241e31ad0c83a4302df145349afb9b63503487a914b964d05c7ff3",
+  "world": [
+    544,
+    912
+  ],
+  "mapm_tiles": [
+    34,
+    114
+  ],
+  "cell_size": [
+    2,
+    2
+  ],
+  "coordinate_scale": 1,
+  "tile_count": 300,
+  "tee": [
+    256,
+    850
+  ],
+  "cup": [
+    364,
+    168
+  ],
+  "green_bounds": [
+    310.875,
+    112.9300537109375,
+    408.9296875,
+    221.59375
+  ],
+  "maps_native_world_window": [
+    128,
+    104
+  ],
+  "maps_enabled": false,
+  "authored_slope_field_present": false,
+  "open_gates": [
+    "approved_green_exceeds_native_MAPS_height",
+    "authored_slope_data_not_supplied",
+    "path_lie_not_source_verified",
+    "tree_object_collision_not_integrated",
+    "playable_scene_not_verified"
+  ],
+  "sampling": "polygon centre at each original 2x2 cell; maximum one unit per axis",
+  "files": {
+    "MAPM.bin": {
+      "sha256": "68d40762291918c7fc2851ea60e891a60a98e385a4e9d21476e13dc62473cfe6",
+      "size": 7848
+    },
+    "SPT.bin": {
+      "sha256": "b2aeba4843794eb494fb342e697ca46b65223b7db8c6b1c424f2b2bb55accf1d",
+      "size": 50
+    },
+    "MAPI-descriptors.bin": {
+      "sha256": "4e7d88bc332e6dda523ba3e7eebcbce48080868661d741c0dcd234a4e80dab94",
+      "size": 2400
+    },
+    "MAPI-selectors.bin": {
+      "sha256": "5a24d4cda8418d86d34ba0cf5b456d4a3a9ae750cf60c01b012209ae962eadf9",
+      "size": 2400
+    },
+    "expected-subcells.bin": {
+      "sha256": "9f103f612abb83ff7af49f22d2f947fd6688abe4c51722610190b0bfb7c083ed",
+      "size": 124032
+    },
+    "course-layout.json": {
+      "sha256": "cf4efdfd3e3d3e9740e0f85372ffad6acb83a58682e72b9fbcdccd7765083e78",
+      "size": 261140
+    }
+  }
+}

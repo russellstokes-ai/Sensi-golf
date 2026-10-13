@@ -1,0 +1,3 @@
+# Approved-source copies and asset manifests retain their exact bytes on Windows.
+pixtee-godot/courses/** -text
+pixtee-godot/ui/supplied/** -text

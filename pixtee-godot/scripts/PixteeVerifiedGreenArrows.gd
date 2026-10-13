@@ -13,7 +13,7 @@ const MAX_AUTHORED_ARROW_CELLS := 2048
 	set(value):
 		arrows_enabled = value
 		queue_redraw()
-@export var arrow_colour: Color = Color(0.96, 0.93, 0.76, 0.86)
+@export var arrow_colour: Color = Color(0.76, 1.0, 0.60, 0.86)
 @export var arrow_outline_colour: Color = Color(0.05, 0.12, 0.16, 0.75)
 
 var _arrows: Array[Dictionary] = []

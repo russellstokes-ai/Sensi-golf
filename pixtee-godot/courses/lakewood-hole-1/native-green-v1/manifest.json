@@ -1,0 +1,45 @@
+{
+  "schema": "pixtee.authored-green-compile.v1",
+  "source_zip_sha256": "82c0df6831241e31ad0c83a4302df145349afb9b63503487a914b964d05c7ff3",
+  "authored_field_sha256": "4024419797f05c7052cf085ce16a2e9782d36cc468b9ad97ad75c1250faf44e1",
+  "origin": [
+    304,
+    120
+  ],
+  "native_detail_size": [
+    256,
+    208
+  ],
+  "world_detail_size": [
+    128,
+    104
+  ],
+  "source_bank_prefix_preserved": true,
+  "course_scale": 1,
+  "files": {
+    "MAPS.bin": {
+      "sha256": "be576c569a85a36d98b725465e4af3e613ab9b14524fb703627b1570a9d2a79c",
+      "size": 928
+    },
+    "MAPI-descriptors.bin": {
+      "sha256": "ae1701bd1b486d14010e4e7c3f8a11e967f81462f74b31fdac7bdc9581a0b41d",
+      "size": 3048
+    },
+    "MAPI-selectors.bin": {
+      "sha256": "96d0c067cf4e3ba5bf2eee0b9aee87d3568a95890b862c1e0917917f3fe83dda",
+      "size": 3048
+    },
+    "MAPM.bin": {
+      "sha256": "246c0507c893e66f3f65968b4f9ae200fedc455143d9e359e3dbbb4ddd1098bf",
+      "size": 7848
+    },
+    "SPT.bin": {
+      "sha256": "b2aeba4843794eb494fb342e697ca46b65223b7db8c6b1c424f2b2bb55accf1d",
+      "size": 50
+    },
+    "expected-detail-words.bin": {
+      "sha256": "b3b9e6cce6828ec45f33ed1f529055006471d9848ade4c8c468d6dd58ca36eb0",
+      "size": 26624
+    }
+  }
+}

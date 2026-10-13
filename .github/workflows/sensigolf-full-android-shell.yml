@@ -16,6 +16,8 @@ permissions:
 
 jobs:
   compile-full-game-shell:
+    # Owner prohibits APK creation until commercial acceptance is complete.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:

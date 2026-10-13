@@ -1,0 +1,54 @@
+name: Pixtee green scene putter mode parity
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/pixtee-lakewood-playable-work-2026-10-12]
+    paths: ['.github/workflows/pixtee-green-mode-putter-parity.yml']
+permissions: {contents: read}
+jobs:
+  putter-mode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check unicorn==2.1.4
+      - name: Load verified original transiently
+        run: |
+          curl -fL --retry 3 https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip -o /tmp/Sensible_Golf_PC.zip
+          python tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/step2 >/tmp/ingest.json
+      - name: Build recovered probe
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --target sensigolf_recovered_full_probe -j2
+      - name: Compare original scene-mode routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXE="$(find analysis/private/step2/input -type f -iname GOLFWIN.EXE -print -quit)"
+          OUT=analysis/private/green-mode-putter
+          mkdir -p "$OUT"
+          for descriptor in 0 1 31; do
+            case "$descriptor" in 0) lie=5; code=2;; 1) lie=4; code=3;; 31) lie=6; code=1;; esac
+            for mode in 0 1; do
+              for power in 30 105; do
+                name="d${descriptor}-mode${mode}-power${power}"
+                python tools/original_v1014_putter_oracle.py "$EXE" --power "$power" --accuracy 63 --direction 997 --max-ticks 1024 --terrain-index "$descriptor" --green-mode "$mode" -o "$OUT/$name-original.json"
+                ./build/engine/sensigolf_recovered_full_probe 12 "$lie" "$power" 63 997 1024 "$code" 0 0 "$mode" > "$OUT/$name-recovered.json"
+                python tools/compare_full_oracle.py "$OUT/$name-original.json" "$OUT/$name-recovered.json" -o "$OUT/$name-comparison.json"
+              done
+            done
+          done
+          python - <<'PY'
+          import json,pathlib
+          reports=[json.loads(p.read_text()) for p in pathlib.Path('analysis/private/green-mode-putter').glob('*-comparison.json')]
+          assert len(reports)==12 and all(r['pass'] and r['mismatch_count']==0 for r in reports)
+          print('PUTTER_SCENE_MODE_PARITY_PASS: 12 complete original traces; zero tolerance')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pixtee-green-mode-putter-traces
+          path: analysis/private/green-mode-putter/*.json
+          retention-days: 30

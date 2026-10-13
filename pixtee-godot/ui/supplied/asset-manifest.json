@@ -1,0 +1,709 @@
+{
+  "version": 1,
+  "status": "ART_REVIEW_CANDIDATES",
+  "assets": [
+    {
+      "id": "logo",
+      "path": "assets/individual/logo.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        32,
+        0,
+        640,
+        409
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "wood_header",
+      "path": "assets/individual/wood_header.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        698,
+        70,
+        815,
+        205
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "nav_header",
+      "path": "assets/individual/nav_header.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        735,
+        285,
+        748,
+        112
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "button_normal",
+      "path": "assets/individual/button_normal.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        32,
+        410,
+        625,
+        110
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "button_selected",
+      "path": "assets/individual/button_selected.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        32,
+        522,
+        625,
+        112
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "button_pressed",
+      "path": "assets/individual/button_pressed.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        32,
+        635,
+        625,
+        110
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "button_disabled",
+      "path": "assets/individual/button_disabled.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        32,
+        746,
+        625,
+        110
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "panel_large",
+      "path": "assets/individual/panel_large.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        663,
+        412,
+        540,
+        421
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "item_card",
+      "path": "assets/individual/item_card.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        1216,
+        444,
+        282,
+        377
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "tab",
+      "path": "assets/individual/tab.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        22,
+        865,
+        324,
+        111
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "slider",
+      "path": "assets/individual/slider.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        350,
+        865,
+        408,
+        111
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "checkbox_on",
+      "path": "assets/individual/checkbox_on.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        776,
+        863,
+        91,
+        106
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "checkbox_off",
+      "path": "assets/individual/checkbox_off.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        870,
+        863,
+        91,
+        106
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "toggle_on",
+      "path": "assets/individual/toggle_on.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        970,
+        863,
+        151,
+        110
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "toggle_off",
+      "path": "assets/individual/toggle_off.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        1125,
+        863,
+        160,
+        110
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "scroll_thumb",
+      "path": "assets/individual/scroll_thumb.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        1301,
+        840,
+        59,
+        157
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "focus_brackets",
+      "path": "assets/individual/focus_brackets.png",
+      "source": "ui-controls-sheet-v1.png",
+      "rect": [
+        1369,
+        839,
+        157,
+        153
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "stars_0",
+      "path": "assets/individual/stars_0.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        36,
+        30,
+        350,
+        138
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "stars_1",
+      "path": "assets/individual/stars_1.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        405,
+        30,
+        345,
+        138
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "stars_2",
+      "path": "assets/individual/stars_2.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        785,
+        30,
+        342,
+        138
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "stars_3",
+      "path": "assets/individual/stars_3.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        1160,
+        30,
+        344,
+        138
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "trophy",
+      "path": "assets/individual/trophy.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        28,
+        180,
+        293,
+        268
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "medal_silver",
+      "path": "assets/individual/medal_silver.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        315,
+        180,
+        184,
+        263
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "medal_bronze",
+      "path": "assets/individual/medal_bronze.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        511,
+        181,
+        184,
+        263
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "medal_gold",
+      "path": "assets/individual/medal_gold.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        716,
+        181,
+        184,
+        263
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "chest_closed",
+      "path": "assets/individual/chest_closed.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        900,
+        200,
+        286,
+        243
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "chest_open",
+      "path": "assets/individual/chest_open.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        1190,
+        166,
+        336,
+        286
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "back",
+      "path": "assets/individual/back.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        24,
+        468,
+        168,
+        167
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "home",
+      "path": "assets/individual/home.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        195,
+        467,
+        172,
+        167
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "pause",
+      "path": "assets/individual/pause.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        369,
+        468,
+        167,
+        164
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "play",
+      "path": "assets/individual/play.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        540,
+        468,
+        165,
+        167
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "settings",
+      "path": "assets/individual/settings.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        710,
+        464,
+        174,
+        176
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "help",
+      "path": "assets/individual/help.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        893,
+        466,
+        127,
+        171
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "course_map",
+      "path": "assets/individual/course_map.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        1040,
+        455,
+        284,
+        185
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "player",
+      "path": "assets/individual/player.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        1330,
+        454,
+        183,
+        188
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "rewards",
+      "path": "assets/individual/rewards.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        22,
+        639,
+        160,
+        179
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "stats",
+      "path": "assets/individual/stats.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        180,
+        639,
+        167,
+        179
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "career",
+      "path": "assets/individual/career.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        347,
+        639,
+        168,
+        179
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "arcade",
+      "path": "assets/individual/arcade.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        521,
+        639,
+        162,
+        179
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "lock",
+      "path": "assets/individual/lock.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        684,
+        637,
+        129,
+        178
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "check",
+      "path": "assets/individual/check.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        803,
+        637,
+        163,
+        178
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "save",
+      "path": "assets/individual/save.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        962,
+        637,
+        161,
+        178
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "audio_on",
+      "path": "assets/individual/audio_on.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        1121,
+        634,
+        186,
+        185
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "audio_off",
+      "path": "assets/individual/audio_off.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        1306,
+        633,
+        196,
+        186
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "wind",
+      "path": "assets/individual/wind.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        19,
+        828,
+        174,
+        188
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "club",
+      "path": "assets/individual/club.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        181,
+        828,
+        176,
+        188
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "lie",
+      "path": "assets/individual/lie.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        355,
+        825,
+        202,
+        191
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "cap",
+      "path": "assets/individual/cap.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        550,
+        824,
+        168,
+        192
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "shirt",
+      "path": "assets/individual/shirt.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        713,
+        820,
+        151,
+        196
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "trousers",
+      "path": "assets/individual/trousers.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        860,
+        812,
+        122,
+        205
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "shoes",
+      "path": "assets/individual/shoes.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        978,
+        830,
+        169,
+        187
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "bag",
+      "path": "assets/individual/bag.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        1145,
+        813,
+        165,
+        204
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "locked_badge",
+      "path": "assets/individual/locked_badge.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        1305,
+        856,
+        111,
+        152
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    },
+    {
+      "id": "equipped_badge",
+      "path": "assets/individual/equipped_badge.png",
+      "source": "ui-rewards-icons-sheet-v1.png",
+      "rect": [
+        1410,
+        856,
+        121,
+        152
+      ],
+      "status": "candidate",
+      "needs_owner_approval": true
+    }
+  ],
+  "note": "Sprite regions preserve original alpha and pixel content. Candidate controls still require production scale/9-slice normalization."
+}

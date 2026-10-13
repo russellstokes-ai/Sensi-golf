@@ -1,0 +1,104 @@
+name: Pixtee approved Lakewood native scene
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'engine/**'
+      - 'pixtee-godot/**'
+      - 'tools/pixtee_course_compile.py'
+      - 'tools/tests/test_pixtee_course_compile.py'
+      - 'CMakeLists.txt'
+      - '.github/workflows/pixtee-lakewood-playable.yml'
+jobs:
+  native-scene:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recovered core and exhaustive approved-course lookup
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j2
+          ctest --test-dir build --output-on-failure
+          python3 -m unittest discover -s tools/tests
+          python3 -m unittest discover -s tests
+          python3 tools/pixtee_green_compile.py --course pixtee-godot/courses/lakewood-hole-1 --authored pixtee-godot/courses/lakewood-hole-1/authored-green-slopes.json --output /tmp/pixtee-native-green
+          python3 - <<'PY'
+          import pathlib
+          compiled=pathlib.Path('/tmp/pixtee-native-green')
+          checked=pathlib.Path('pixtee-godot/courses/lakewood-hole-1/native-green-v1')
+          for file in compiled.glob('*'):
+              assert file.read_bytes()==(checked/file.name).read_bytes(),file.name
+          print('GREEN_BUNDLE_REPRODUCIBLE_PASS: exact native resources and SHA manifest')
+          PY
+      - uses: actions/cache@v4
+        id: native-cache
+        with:
+          path: pixtee-godot/bin/libpixtee_gameplay.linux.template_debug.x86_64.so
+          key: pixtee-native-godot45-linux-${{ hashFiles('engine/src/**', 'engine/include/**', 'pixtee-godot/native/src/**', 'pixtee-godot/native/SConstruct') }}
+      - name: Identify SDK compiler
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        id: sdk-toolchain
+        run: echo "compiler=$(g++ -dumpfullversion -dumpversion)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        id: sdk-cache
+        with:
+          path: |
+            pixtee-godot/native/godot-cpp
+            pixtee-godot/native/.sconsign.dblite
+          key: pixtee-godot45-linux-debug-sdk-${{ steps.sdk-toolchain.outputs.compiler }}-${{ hashFiles('pixtee-godot/native/SConstruct') }}
+      - name: Build native Godot extension
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        run: |
+          python3 -m pip install --user scons
+          if [ ! -d pixtee-godot/native/godot-cpp/.git ]; then
+            git clone --depth 1 --branch 4.5 https://github.com/godotengine/godot-cpp.git pixtee-godot/native/godot-cpp
+          fi
+          cd pixtee-godot/native
+          ~/.local/bin/scons platform=linux target=template_debug -j2
+      - uses: actions/cache/save@v4
+        if: steps.native-cache.outputs.cache-hit != 'true' && steps.sdk-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            pixtee-godot/native/godot-cpp
+            pixtee-godot/native/.sconsign.dblite
+          key: ${{ steps.sdk-cache.outputs.cache-primary-key }}
+      - uses: actions/cache/save@v4
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        with:
+          path: pixtee-godot/bin/libpixtee_gameplay.linux.template_debug.x86_64.so
+          key: ${{ steps.native-cache.outputs.cache-primary-key }}
+      - name: Verify real approved scene, tee-to-score and unique events
+        run: |
+          set -o pipefail
+          curl -fL --retry 3 -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp
+          chmod +x /tmp/Godot_v4.5-stable_linux.x86_64
+          verify_godot() {
+            timeout 120 /tmp/Godot_v4.5-stable_linux.x86_64 "$@" 2>&1 | tee /tmp/pixtee-verification.log
+            if grep -E 'SCRIPT ERROR:|ERROR:' /tmp/pixtee-verification.log; then exit 1; fi
+          }
+          verify_godot --headless --editor --path pixtee-godot --import --quit
+          verify_godot --headless --path pixtee-godot --script res://scripts/EngineBindingCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/CommercialPresentationSmokeCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/PlayerReportedRenderingCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/WhackMeterCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/MobileHUDCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/CommercialJourneyCI.gd
+          verify_godot --headless --verbose --path pixtee-godot --script res://scripts/OwnerAudioCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/LakewoodSceneCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/TreeContactsCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/PlayerJourneyCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/MenuJourneyCI.gd
+      - name: Render supplied menus in portrait and wide windows
+        run: |
+          set -o pipefail
+          timeout 120 xvfb-run -a /tmp/Godot_v4.5-stable_linux.x86_64 --audio-driver Dummy --rendering-method gl_compatibility --path pixtee-godot --script res://scripts/MenuVisualCI.gd 2>&1 | tee /tmp/pixtee-menu-visual.log
+          if grep -E 'SCRIPT ERROR:|ERROR:' /tmp/pixtee-menu-visual.log; then exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pixtee-menu-visuals
+          path: pixtee-godot/review-captures/*.png
+          if-no-files-found: warn

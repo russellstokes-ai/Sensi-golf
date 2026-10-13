@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <stdexcept>
 #include <utility>
+#include <sstream>
+#include <limits>
 
 namespace pixtee {
 using namespace sensigolf;
@@ -10,7 +12,7 @@ PixteeRoundRuntime::PixteeRoundRuntime(
     std::array<std::uint8_t,18> order,
     std::array<std::uint8_t,100> pars,
     std::uint16_t seed0, std::uint16_t seed1)
-    : plan_(order,pars), initial_seed_{seed0,seed1},
+    : pars_(pars), plan_(order,pars), initial_seed_{seed0,seed1},
       game_(std::make_unique<ClassicGameSession>(plan_,0,initial_seed_)) {}
 
 void PixteeRoundRuntime::register_course(
@@ -35,19 +37,20 @@ void PixteeRoundRuntime::load_next_hole() {
     original_welly_first_press_=false;
     original_welly_rejected_=false;
     original_welly_.reset();
+    record_command('L');
 }
 void PixteeRoundRuntime::set_aim_raw(std::uint16_t raw) {
     if(original_welly_active_) throw std::logic_error("aim locked during original Welly");
-    controls_.set_aim_raw(raw);
+    controls_.set_aim_raw(raw);record_command('A',{raw});
 }
 void PixteeRoundRuntime::nudge_aim_raw(std::int32_t delta) {
     if(original_welly_active_) throw std::logic_error("aim locked during original Welly");
-    controls_.nudge_aim(delta);
+    controls_.nudge_aim(delta);record_command('N',{delta});
 }
 void PixteeRoundRuntime::set_original_player_mode_5a(std::uint16_t source_mode) {
     if(!game_->has_active_hole())
         throw std::logic_error("original player mode requires a loaded hole");
-    game_->active_hole().set_original_player_mode_5a(source_mode);
+    game_->active_hole().set_original_player_mode_5a(source_mode);record_command('M',{source_mode});
     // The replay journal does not yet store original player role. Human
     // role enables PRNG-dependent original near-cup lip collision; never
     // claim replay determinism until role and PRNG state are journalled.
@@ -57,7 +60,7 @@ void PixteeRoundRuntime::set_original_player_mode_5a(std::uint16_t source_mode) 
 void PixteeRoundRuntime::set_verified_flag_object(bool present) {
     if(!game_->has_active_hole())
         throw std::logic_error("no loaded hole for verified flag object");
-    game_->active_hole().set_verified_flag_object(present);
+    game_->active_hole().set_verified_flag_object(present);record_command('F',{present?1:0});
     if(present) {
         // The stable replay format does NOT serialize authored flag
         // object presence; don't claim deterministic restoration until
@@ -66,18 +69,30 @@ void PixteeRoundRuntime::set_verified_flag_object(bool present) {
     }
 }
 
+void PixteeRoundRuntime::set_authored_tree_objects(const std::vector<sensigolf::AuthoredTreeVolume>& trees) {
+    if(!game_->has_active_hole())throw std::logic_error("no loaded hole for authored trees");
+    game_->active_hole().set_authored_tree_objects(trees);
+    std::vector<std::int64_t> args;
+    for(const auto& t:trees) for(auto value:{static_cast<std::int32_t>(t.id),t.x,t.y,t.trunk_radius,t.trunk_height,t.canopy_radius,t.canopy_bottom,t.canopy_top})args.push_back(value);
+    record_command('T',std::move(args));
+    if(!trees.empty())replay_supported_=false;
+}
+void PixteeRoundRuntime::set_authored_birds_enabled(bool enabled) {
+    game_->active_hole().set_authored_birds_enabled(enabled);record_command('B',{enabled?1:0});
+    replay_supported_=false;
+}
 void PixteeRoundRuntime::set_club(std::uint16_t index) {
     if(original_welly_active_) throw std::logic_error("club locked during original Welly");
-    controls_.set_club(index);
+    controls_.set_club(index);record_command('C',{index});
 }
 void PixteeRoundRuntime::cycle_club(int delta) {
     if(original_welly_active_) throw std::logic_error("club locked during original Welly");
-    controls_.cycle_club(delta);
+    controls_.cycle_club(delta);record_command('Y',{delta});
 }
 void PixteeRoundRuntime::meter_click_raw(std::uint16_t sample) {
     if(!game_->has_active_hole()) throw std::logic_error("no active native hole");
     if(original_welly_active_) throw std::logic_error("cannot mix original meter with manual samples");
-    controls_.meter_click(sample); // Recovered atomic three-press sequence.
+    controls_.meter_click(sample);record_command('I',{sample}); // Recovered atomic three-press sequence.
     if(controls_.stage()!=ClassicMeterStage::ShotQueued) return;
     const auto shot=*controls_.queued_shot();
     if(!controls_.dispatch_to(game_->active_hole()))
@@ -100,12 +115,13 @@ void PixteeRoundRuntime::start_original_welly() {
     original_welly_active_=true;
     original_welly_first_press_=false;
     original_welly_rejected_=false;
+    record_command('W');
 }
 bool PixteeRoundRuntime::tick_original_welly(bool pressed) {
     if(!original_welly_active_)
         throw std::logic_error("original Welly was not started");
     const auto before=original_welly_.state();
-    original_welly_.step(pressed,controls_.club_index());
+    original_welly_.step(pressed,controls_.club_index());record_command('P',{pressed?1:0});
     const auto& after=original_welly_.state();
     if(after.capture_flag) original_welly_first_press_=true;
     if(after.stage!=0) return false;
@@ -162,7 +178,7 @@ PixteeRoundRuntime::original_welly_state() const noexcept {
 
 void PixteeRoundRuntime::cancel_meter() noexcept {
     original_welly_active_=false;
-    controls_.cancel_meter();
+    controls_.cancel_meter();record_command('K');
 }
 
 void PixteeRoundRuntime::record_charged_no_flight(
@@ -204,19 +220,19 @@ void PixteeRoundRuntime::maybe_record_stable_shot() {
 }
 void PixteeRoundRuntime::step_tick() {
     if(!game_->has_active_hole()) return;
-    game_->active_hole().step();
+    game_->active_hole().step();record_command('S');
     controls_.sync_hole(game_->active_hole());
     maybe_record_stable_shot();
 }
 void PixteeRoundRuntime::acknowledge_hazard() {
     if(!game_->has_active_hole()) throw std::logic_error("no native hole");
-    game_->active_hole().acknowledge_hazard_recovery();
+    game_->active_hole().acknowledge_hazard_recovery();record_command('H');
     controls_.sync_hole(game_->active_hole());
     maybe_record_stable_shot();
 }
 void PixteeRoundRuntime::acknowledge_special_green() {
     if(!game_->has_active_hole()) throw std::logic_error("no native hole");
-    game_->active_hole().acknowledge_special_green_stop();
+    game_->active_hole().acknowledge_special_green_stop();record_command('G');
     // Original code 9/10 post-pause continuation is not proven; do not
     // generate a superficially valid "exact replay" from an unsupported path.
     replay_supported_=false;
@@ -227,7 +243,7 @@ void PixteeRoundRuntime::commit_scored_hole() {
     if(!game_->has_active_hole()) throw std::logic_error("no native hole");
     maybe_record_stable_shot();
     if(pending_) throw std::logic_error("incomplete original shot cannot be committed");
-    game_->commit_scored_hole(); // Original cumulative counters / turns.
+    game_->commit_scored_hole();record_command('E'); // Original cumulative counters / turns.
     controls_.reset();
 }
 std::string PixteeRoundRuntime::serialize_stable_replay() const {
@@ -302,6 +318,12 @@ PixteeRoundRuntime::verified_native_green_arrows(
         y+=green_detail_stride) {
         for(std::uint32_t x=green_detail_stride/2u;x<xmax;
             x+=green_detail_stride) {
+            // MAPS extends beyond the original scene admission rectangle.
+            // Outside it the ball uses MAPM, so a MAPS arrow would advertise
+            // a slope force that does not apply at that world position.
+            if(!origin->contains_course(
+                    static_cast<std::int16_t>(origin->origin_x+x/2u),
+                    static_cast<std::int16_t>(origin->origin_y+y/2u)))continue;
             const auto surface=source.resolve_integer_position(
                 static_cast<std::int16_t>(x),static_cast<std::int16_t>(y),true);
             if(surface.landing_code!=1u || surface.slope_magnitude==0u)

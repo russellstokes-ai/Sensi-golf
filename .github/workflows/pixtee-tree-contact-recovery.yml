@@ -1,0 +1,34 @@
+name: Pixtee native tree contact source recovery
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pixtee-tree-contact-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --disable-pip-version-check capstone==5.0.6
+      - name: Ingest integrity-checked original research source
+        run: |
+          curl -fL --retry 3 --retry-delay 2 https://cors.archive.org/cors/msdos_Sensible_Golf_1994/Sensible_Golf_1994.zip -o /tmp/Sensible_Golf_PC.zip
+          python3 tools/ingest_pc_build.py /tmp/Sensible_Golf_PC.zip --workspace analysis/private/tree-contact >/tmp/tree-ingest.json
+      - name: Trace the actual pre-contact calls and object status reader
+        run: |
+          set -euo pipefail
+          EXE="$(find analysis/private/tree-contact/input -type f -iname GOLFWIN.EXE -print -quit)"
+          python3 tools/pe_disasm_range.py "$EXE" --start-va 0x40AE06 --end-va 0x40AFB0 -o /tmp/pre-contact.json
+          python3 tools/pe_disasm_range.py "$EXE" --start-va 0x40B965 --end-va 0x40BAB0 -o /tmp/contact-status.json
+          python3 - <<'PY'
+          import json,hashlib,pathlib
+          for p in ['/tmp/pre-contact.json','/tmp/contact-status.json']:
+              d=json.loads(pathlib.Path(p).read_text())
+              print('RESEARCH_WINDOW',pathlib.Path(p).name,'sha256',hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest())
+              for i in d['instructions']:
+                  print(f"{i['address']:08x} {i['mnemonic']:8} {i['op_str']}")
+          print('No original binaries/course assets published; source tracing alone does not prove tree geometry.')
+          PY

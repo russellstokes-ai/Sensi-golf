@@ -1,0 +1,20 @@
+{
+  "schema": "pixtee.character-roster.v1",
+  "source": "owner supplied 2026-10-12",
+  "gameplay_policy": "Character descriptions are presentation content. Native source-compatible AI is the sole gameplay authority; no personality-derived physics or PRNG.",
+  "characters": [
+    {"id":"barry-bunkers","name":"Barry Bunkers","personality":"Somehow lands in every bunker, even when there isn't one nearby."},
+    {"id":"chip-shanks","name":"Chip Shanks","personality":"Terrible driver, incredible short game. Master of impossible recoveries."},
+    {"id":"doug-divot","name":"Doug Divot","personality":"Destroys more grass than anyone. Every swing resembles an excavation."},
+    {"id":"wally-whackit","name":"Wally Whackit","personality":"Maximum power, minimum accuracy. Hits it miles, rarely in the right direction."},
+    {"id":"sir-reginald-slicington","name":"Sir Reginald Slicington","personality":"Posh, arrogant, spectacular slice. Blames his caddie for everything."},
+    {"id":"big-dave-bogey","name":"Big Dave Bogey","personality":"Huge bloke, tiny putter. Always one shot away from greatness."},
+    {"id":"hugh-jass","name":"Hugh Jass","personality":"Hits absolutely enormous drives. Has difficulty fitting into golf carts."},
+    {"id":"al-batroz","name":"Al Batroz","personality":"Thinks he's the greatest golfer alive. Celebrates every shot, including bogeys."},
+    {"id":"pat-mcshank","name":"Pat McShank","personality":"Irish wildcard. Brilliant one minute, absolutely disastrous the next."},
+    {"id":"duncan-dufflebag","name":"Duncan Dufflebag","personality":"Carries 40 clubs, can't hit one. Constantly changing equipment."},
+    {"id":"nick-falco","name":"Nick Falco","personality":"Ice-cold British professional. Takes forever lining up shots and never smiles."},
+    {"id":"whappy-gilmore","name":"Whappy Gilmore","personality":"Former hockey player with a violent swing, explosive temper and outrageous driving power."},
+    {"id":"shooter-mcshooter","name":"Shooter McShooter","personality":"Smug, finger-gun-waving show-off. Excellent golfer until someone gets under his skin."}
+  ]
+}

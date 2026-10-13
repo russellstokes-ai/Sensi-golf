@@ -1,4 +1,4 @@
-# Original/licensed game material — keep outside the public repository
+# Original/licensed game material â€” keep outside the public repository
 original/
 analysis/private/
 analysis/binaries/
@@ -10,6 +10,7 @@ analysis/input-sha256.json
 *.img
 *.iso
 *.bin
+!pixtee-godot/courses/**/*.bin
 *.cue
 
 # Reverse-engineering work products
@@ -23,3 +24,16 @@ analysis/input-sha256.json
 __pycache__/
 *.pyc
 .DS_Store
+pixtee-godot/native/godot-cpp/
+pixtee-godot/.godot/
+pixtee-godot/review-captures/
+*.obj
+*.os
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.dll
+*.so
+.sconsign*
+*.obj.import

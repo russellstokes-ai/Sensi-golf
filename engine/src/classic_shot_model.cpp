@@ -49,6 +49,8 @@ void ClassicShotModel::reset() {
     near_cup_distance_zero_ = false;
     player_mode_5a_ = 4;
     lip_deflection_last_tick_ = false;
+    presentation_contact_ = {};
+    authored_trees_=nullptr;last_tree_id_=0;
 }
 
 void ClassicShotModel::set_original_interaction_context(
@@ -98,6 +100,7 @@ void ClassicShotModel::set_ball_origin(
 }
 
 void ClassicShotModel::begin_shot(const ShotInput& input) {
+    presentation_contact_ = {};
     if (active_) {
         throw std::logic_error("shot already active");
     }
@@ -127,12 +130,19 @@ void ClassicShotModel::begin_shot(const ShotInput& input) {
 }
 
 void ClassicShotModel::step() {
+    presentation_contact_ = {};
     if (!active_) {
         return;
     }
 
     ++public_.tick;
     lip_deflection_last_tick_=false;
+    presentation_contact_.green_mode=interaction_green_mode_;
+    presentation_contact_.landing_code=surface_.landing_code;
+    presentation_contact_.x_raw=flight_.x;
+    presentation_contact_.y_raw=flight_.y;
+    const auto incoming_height=flight_.height;
+    const auto previous_flight=flight_;
 
     // Source-disassembled v1.014 0x40A374..0x40A575: code 9 and flag
     // interactions precede this tick's normal gravity/putter response.
@@ -167,12 +177,14 @@ void ClassicShotModel::step() {
            true,player_mode_5a_,flight_)) {
         lip_deflection_last_tick_=recovered::apply_near_hole_lip_deflection(
             flight_,*interaction_prng_);
+        presentation_contact_.lip=lip_deflection_last_tick_;
     }
     if(flag_object_verified_ && interaction_prng_ &&
        recovered::original_flag_coordinate_hit(
            flight_, flag_x_, flag_y_, interaction_green_mode_)) {
         recovered::apply_flag_coordinate_deflection(
             flight_, *interaction_prng_);
+        presentation_contact_.flag=true;
     }
 
     recovered::GroundStepResult result{};
@@ -193,14 +205,14 @@ void ClassicShotModel::step() {
             return;
         }
 
-        if (surface_.landing_code == 1) {
-            result = recovered::step_green_putt(
-                flight_,
-                surface_.slope_direction,
-                surface_.slope_magnitude);
-        } else if (surface_.landing_code >= 2
+        if (surface_.landing_code >= 1
                    && surface_.landing_code <= 7) {
-            result = recovered::step_non_green_putt(flight_);
+            // Original scene flag controls drag/slope on every ordinary lie.
+            // Descriptor-only routing incorrectly slowed MAPM green putts and
+            // applied full drag to MAPS fringe. Source12-trace matrix proves it.
+            result = interaction_green_mode_
+                ? recovered::step_green_putt(flight_,surface_.slope_direction,surface_.slope_magnitude)
+                : recovered::step_non_green_putt(flight_);
         } else {
             throw std::logic_error(
                 "club-12 surface is not yet product-integrated");
@@ -211,6 +223,14 @@ void ClassicShotModel::step() {
             surface_.landing_code);
     }
 
+    // A source-ground branch reached from airborne height is an impact;
+    // subsequent rolling contacts are not repeated particle/audio impacts.
+    presentation_contact_.impact=result.contacted_ground && incoming_height>0;
+    presentation_contact_.hazard=result.hazard_stop;
+    if(result.contacted_ground) {
+        presentation_contact_.x_raw=result.contact_x;
+        presentation_contact_.y_raw=result.contact_y;
+    }
     if (result.contacted_ground && !result.resting) {
         public_.phase = ShotPhase::GroundRoll;
     }
@@ -230,6 +250,46 @@ void ClassicShotModel::step() {
         }
     }
 
+    if(active_ && authored_trees_ && !authored_trees_->empty()) {
+        auto point=[&](const recovered::FlightState& state) {
+            return AuthoredTreePoint{tree_green_?state.x/2+tree_origin_x_:state.x,
+                tree_green_?state.y/2+tree_origin_y_:state.y,state.height};
+        };
+        const auto contact=authored_tree_contact(*authored_trees_,point(previous_flight),point(flight_));
+        if(contact.tree_id && contact.tree_id!=last_tree_id_) {
+            if(!interaction_prng_)throw std::logic_error("authored tree impact requires native PRNG");
+            recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
+            if(contact.kind==AuthoredTreeContactKind::Canopy) {
+                const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
+                flight_.vertical_force=rebound.vertical_force;
+                flight_.horizontal_force=rebound.horizontal_force;
+            }
+            presentation_contact_.tree_id=contact.tree_id;
+            presentation_contact_.canopy=contact.kind==AuthoredTreeContactKind::Canopy;
+            presentation_contact_.x_raw=previous_flight.x;presentation_contact_.y_raw=previous_flight.y;
+        }
+        // Dedupe only PRNG/event emission. Every intersecting tick still
+        // prevents penetration, even if a grazing deflection hits again.
+        if(contact.tree_id) {
+            flight_.x=previous_flight.x;flight_.y=previous_flight.y;
+        }
+        last_tree_id_=contact.tree_id;
+    }
+    if(active_ && bird_hit_ && !*bird_hit_) {
+        const auto point=[&](const recovered::FlightState& state) {
+            return AuthoredTreePoint{tree_green_?state.x/2+tree_origin_x_:state.x,
+                tree_green_?state.y/2+tree_origin_y_:state.y,state.height};
+        };
+        if(authored_bird_contact(bird_before_,bird_after_,point(previous_flight),point(flight_))) {
+            if(!interaction_prng_)throw std::logic_error("bird impact requires native PRNG");
+            recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
+            const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
+            flight_.vertical_force=rebound.vertical_force;flight_.horizontal_force=rebound.horizontal_force;
+            *bird_hit_=true;
+            presentation_contact_.bird_id=bird_after_.id;
+            presentation_contact_.x_raw=previous_flight.x;presentation_contact_.y_raw=previous_flight.y;
+        }
+    }
     sync_public_state();
 }
 

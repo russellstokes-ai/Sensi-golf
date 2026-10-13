@@ -1,0 +1,195 @@
+{
+  "schema": "pixtee.owner-authored-tree-volumes.v1",
+  "authority": "Owner authorized authored C++ collision geometry; not original detector parity",
+  "coordinate_units": "unaltered world units; native adapter converts to fixed16.16",
+  "response": "existing native code9 heading deflection; canopy also uses native terminal rebound; native PRNG only",
+  "trees": [
+    {
+      "id": 1,
+      "art_id": "oak",
+      "x": 404,
+      "y": 88,
+      "trunk_radius": 2,
+      "trunk_height": 26,
+      "canopy_radius": 18,
+      "canopy_bottom": 16,
+      "canopy_top": 45
+    },
+    {
+      "id": 2,
+      "art_id": "oak2",
+      "x": 246,
+      "y": 114,
+      "trunk_radius": 2,
+      "trunk_height": 27,
+      "canopy_radius": 18,
+      "canopy_bottom": 16,
+      "canopy_top": 46
+    },
+    {
+      "id": 3,
+      "art_id": "oak",
+      "x": 98,
+      "y": 135,
+      "trunk_radius": 2,
+      "trunk_height": 28,
+      "canopy_radius": 20,
+      "canopy_bottom": 17,
+      "canopy_top": 49
+    },
+    {
+      "id": 4,
+      "art_id": "oak2",
+      "x": 462,
+      "y": 176,
+      "trunk_radius": 2,
+      "trunk_height": 28,
+      "canopy_radius": 20,
+      "canopy_bottom": 17,
+      "canopy_top": 49
+    },
+    {
+      "id": 5,
+      "art_id": "oak",
+      "x": 191,
+      "y": 266,
+      "trunk_radius": 2,
+      "trunk_height": 24,
+      "canopy_radius": 17,
+      "canopy_bottom": 15,
+      "canopy_top": 42
+    },
+    {
+      "id": 6,
+      "art_id": "oak",
+      "x": 446,
+      "y": 296,
+      "trunk_radius": 2,
+      "trunk_height": 30,
+      "canopy_radius": 20,
+      "canopy_bottom": 18,
+      "canopy_top": 51
+    },
+    {
+      "id": 7,
+      "art_id": "oak",
+      "x": 295,
+      "y": 328,
+      "trunk_radius": 2,
+      "trunk_height": 24,
+      "canopy_radius": 17,
+      "canopy_bottom": 15,
+      "canopy_top": 42
+    },
+    {
+      "id": 8,
+      "art_id": "oak2",
+      "x": 78,
+      "y": 350,
+      "trunk_radius": 2,
+      "trunk_height": 25,
+      "canopy_radius": 17,
+      "canopy_bottom": 15,
+      "canopy_top": 43
+    },
+    {
+      "id": 9,
+      "art_id": "pine",
+      "x": 476,
+      "y": 359,
+      "trunk_radius": 2,
+      "trunk_height": 28,
+      "canopy_radius": 12,
+      "canopy_bottom": 17,
+      "canopy_top": 48
+    },
+    {
+      "id": 10,
+      "art_id": "oak",
+      "x": 166,
+      "y": 402,
+      "trunk_radius": 2,
+      "trunk_height": 25,
+      "canopy_radius": 17,
+      "canopy_bottom": 15,
+      "canopy_top": 43
+    },
+    {
+      "id": 11,
+      "art_id": "oak2",
+      "x": 119,
+      "y": 482,
+      "trunk_radius": 2,
+      "trunk_height": 28,
+      "canopy_radius": 19,
+      "canopy_bottom": 17,
+      "canopy_top": 48
+    },
+    {
+      "id": 12,
+      "art_id": "oak",
+      "x": 174,
+      "y": 578,
+      "trunk_radius": 2,
+      "trunk_height": 32,
+      "canopy_radius": 22,
+      "canopy_bottom": 19,
+      "canopy_top": 55
+    },
+    {
+      "id": 13,
+      "art_id": "pine",
+      "x": 103,
+      "y": 665,
+      "trunk_radius": 2,
+      "trunk_height": 23,
+      "canopy_radius": 10,
+      "canopy_bottom": 14,
+      "canopy_top": 40
+    },
+    {
+      "id": 14,
+      "art_id": "oak2",
+      "x": 355,
+      "y": 746,
+      "trunk_radius": 2,
+      "trunk_height": 31,
+      "canopy_radius": 22,
+      "canopy_bottom": 19,
+      "canopy_top": 54
+    },
+    {
+      "id": 15,
+      "art_id": "oak",
+      "x": 188,
+      "y": 755,
+      "trunk_radius": 2,
+      "trunk_height": 22,
+      "canopy_radius": 15,
+      "canopy_bottom": 13,
+      "canopy_top": 38
+    },
+    {
+      "id": 16,
+      "art_id": "oak",
+      "x": 449,
+      "y": 816,
+      "trunk_radius": 2,
+      "trunk_height": 26,
+      "canopy_radius": 18,
+      "canopy_bottom": 15,
+      "canopy_top": 44
+    },
+    {
+      "id": 17,
+      "art_id": "oak",
+      "x": 420,
+      "y": 866,
+      "trunk_radius": 2,
+      "trunk_height": 24,
+      "canopy_radius": 17,
+      "canopy_bottom": 15,
+      "canopy_top": 42
+    }
+  ]
+}

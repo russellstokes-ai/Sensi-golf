@@ -1,4 +1,5 @@
 #include "pixtee_round_bridge.hpp"
+#include "sensigolf/recovered_flight.hpp"
 #include "original_next_player.hpp"
 #include "original_cpu_difficulty.hpp"
 #include "original_cpu_search_grid.hpp"
@@ -86,6 +87,9 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("cycle_club","delta"),&PixteeRoundBridge::cycle_club);
     ClassDB::bind_method(D_METHOD("set_verified_flag_object","present"),
                          &PixteeRoundBridge::set_verified_flag_object);
+    ClassDB::bind_method(D_METHOD("save_native_session"),&PixteeRoundBridge::save_native_session);
+    ClassDB::bind_method(D_METHOD("restore_native_session","payload"),&PixteeRoundBridge::restore_native_session);
+    ClassDB::bind_method(D_METHOD("set_authored_birds_enabled","enabled"),&PixteeRoundBridge::set_authored_birds_enabled);
     ClassDB::bind_method(D_METHOD("set_original_player_mode_5a","mode"),
                          &PixteeRoundBridge::set_original_player_mode_5a);
     ClassDB::bind_method(D_METHOD("meter_click_raw","sample"),&PixteeRoundBridge::meter_click_raw);
@@ -96,10 +100,12 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("acknowledge_special_green"),&PixteeRoundBridge::acknowledge_special_green);
     ClassDB::bind_method(D_METHOD("commit_scored_hole"),&PixteeRoundBridge::commit_scored_hole);
     ClassDB::bind_method(D_METHOD("step_tick"),&PixteeRoundBridge::step_tick);
+    ClassDB::bind_method(D_METHOD("drain_presentation_events"),&PixteeRoundBridge::drain_presentation_events);
     ClassDB::bind_method(D_METHOD("step_ticks","count"),&PixteeRoundBridge::step_ticks);
     ClassDB::bind_method(D_METHOD("save_stable_replay"),&PixteeRoundBridge::save_stable_replay);
     ClassDB::bind_method(D_METHOD("restore_replay","payload"),&PixteeRoundBridge::restore_replay);
     ClassDB::bind_method(D_METHOD("snapshot"),&PixteeRoundBridge::snapshot);
+    ClassDB::bind_method(D_METHOD("set_authored_tree_objects","raw_volumes"),&PixteeRoundBridge::set_authored_tree_objects);
     ClassDB::bind_method(D_METHOD("verified_native_green_arrow_cells","green_detail_stride"),&PixteeRoundBridge::verified_native_green_arrow_cells);
     ClassDB::bind_method(D_METHOD("requested_course"),&PixteeRoundBridge::requested_course);
     ClassDB::bind_method(D_METHOD("last_error"),&PixteeRoundBridge::last_error);
@@ -521,6 +527,7 @@ bool PixteeRoundBridge::METHOD { \
     try {CODE;last_error_="";return true;} \
     catch(const std::exception& e) {last_error_=String(e.what());return false;} \
 }
+PIXTEE_WRAP_BOOL(set_authored_birds_enabled(bool enabled),round_->set_authored_birds_enabled(enabled))
 PIXTEE_WRAP_BOOL(load_next_hole(),round_->load_next_hole())
 PIXTEE_WRAP_BOOL(start_original_welly(),round_->start_original_welly())
 PIXTEE_WRAP_BOOL(set_aim_raw(int h),round_->set_aim_raw(static_cast<std::uint16_t>(h)))
@@ -560,21 +567,129 @@ bool PixteeRoundBridge::tick_original_welly(bool pressed) {
     }
 }
 void PixteeRoundBridge::cancel_meter() {if(round_)round_->cancel_meter();}
+bool PixteeRoundBridge::set_authored_tree_objects(const PackedInt32Array& raw) {
+    if(!round_)return false;
+    try {
+        if(raw.size()%8 || raw.size()>128*8)throw std::invalid_argument("tree records require eight raw fields");
+        std::vector<sensigolf::AuthoredTreeVolume> trees;
+        for(int i=0;i<raw.size();i+=8) {
+            if(raw[i]<1)throw std::invalid_argument("tree IDs must be positive");
+            trees.push_back({static_cast<std::uint32_t>(raw[i]),raw[i+1],raw[i+2],raw[i+3],raw[i+4],raw[i+5],raw[i+6],raw[i+7]});
+        }
+        round_->set_authored_tree_objects(trees);
+        last_error_="";return true;
+    }catch(const std::exception& e){last_error_=String(e.what());return false;}
+}
+void PixteeRoundBridge::queue_presentation_event(const char* type,double x,double y,
+                                                std::uint64_t tick) {
+    Dictionary event;
+    event["confirmed_native"]=true;
+    event["event_id"]=String(std::to_string(++presentation_serial_).c_str());
+    event["event_type"]=type;
+    event["world_x"]=x; event["world_y"]=y;
+    event["native_tick"]=static_cast<int64_t>(tick);
+    presentation_events_.append(event);
+}
+Array PixteeRoundBridge::drain_presentation_events() {
+    Array events=presentation_events_;
+    presentation_events_=Array();
+    return events;
+}
 void PixteeRoundBridge::step_tick() {
     if(!round_) return;
-    try {round_->step_tick();last_error_="";}
+    try {
+        if(!round_->has_hole()) {round_->step_tick();return;}
+        const auto before_phase=round_->hole().phase();
+        const auto before_tick=round_->hole().ball_state().tick;
+        const auto before_vz=round_->hole().ball_state().vz_raw;
+        const auto before_z=round_->hole().ball_state().z_raw;
+        const bool before_cup=round_->hole().pending_cup_capture_event().has_value();
+        const bool before_world_oob=round_->hole().pending_world_oob_event().has_value();
+        round_->step_tick();
+        const auto& hole=round_->hole();
+        const auto& ball=hole.ball_state();
+        auto world_position=[&](std::int64_t x,std::int64_t y,bool green) {
+            double wx=static_cast<double>(x)/65536.,wy=static_cast<double>(y)/65536.;
+            if(green) {
+                const auto origin=round_->active_green_region();
+                if(!origin) throw std::logic_error("native contact lacks green origin");
+                wx=wx*.5+origin->origin_x;wy=wy*.5+origin->origin_y;
+            }
+            return std::pair<double,double>{wx,wy};
+        };
+        if(before_phase==sensigolf::HoleSessionPhase::ShotActive && ball.tick>before_tick) {
+            const auto& contact=hole.presentation_contact();
+            const auto p=world_position(contact.x_raw,contact.y_raw,contact.green_mode);
+            if(before_tick==0) queue_presentation_event("club_contact",p.first,p.second,ball.tick);
+            if(contact.impact || contact.hazard) {
+                // Report actual native rebounds, never proximity or a visual arc.
+                if(contact.impact && !contact.hazard && before_vz<0 && ball.vz_raw>0) {
+                    queue_presentation_event("ball_bounce",p.first,p.second,ball.tick);
+                    Dictionary rebound=presentation_events_[presentation_events_.size()-1];
+                    rebound["rebound_vz_raw"]=static_cast<int64_t>(ball.vz_raw);
+                }
+                const char* type=nullptr;
+                switch(contact.landing_code) {
+                case 2:case 3:case 4:type="fairway_contact";break;
+                case 5:case 6:type="rough_contact";break;
+                case 7:type="bunker_contact";break;
+                case 35:
+                    // Native descriptor distinguishes water from mapped OOB;
+                    // this authored map has descriptor 6 for water only.
+                    if(hole.last_hazard_kind()==sensigolf::ClassicNamedHazard::Water)
+                        type="water_contact";
+                    break;
+                }
+                if(type) queue_presentation_event(type,p.first,p.second,ball.tick);
+            }
+            if(contact.bird_id) {
+                queue_presentation_event("authored_bird_contact",p.first,p.second,ball.tick);
+                Dictionary event=presentation_events_[presentation_events_.size()-1];
+                event["bird_id"]=static_cast<int64_t>(contact.bird_id);
+                event["world_z"]=static_cast<double>(before_z)/65536.;
+            }
+            if(contact.flag) queue_presentation_event("verified_flag_contact",p.first,p.second,ball.tick);
+            if(contact.tree_id) {
+                queue_presentation_event("authored_tree_contact",p.first,p.second,ball.tick);
+                Dictionary event=presentation_events_[presentation_events_.size()-1];
+                event["tree_id"]=static_cast<int64_t>(contact.tree_id);
+                event["contact_part"]=contact.canopy?"canopy":"trunk";
+                event["collision_authority"]="owner-authorized C++ tree volumes";
+            }
+            if(contact.lip) queue_presentation_event("cup_lip",p.first,p.second,ball.tick);
+        }
+        const auto p=world_position(ball.x_raw,ball.y_raw,hole.green_mode());
+        if(!before_world_oob && hole.pending_world_oob_event())
+            queue_presentation_event("world_oob",p.first,p.second,ball.tick);
+        if(!before_cup && hole.pending_cup_capture_event())
+            queue_presentation_event("cup_capture",p.first,p.second,ball.tick);
+        last_error_="";
+    }
     catch(const std::exception& e) {last_error_=String(e.what());}
 }
 bool PixteeRoundBridge::step_ticks(int count) {
     if(!round_ || count<0 || count>4096) return false;
     try {
-        for(int i=0;i<count;++i) round_->step_tick();
+        for(int i=0;i<count;++i) {
+            step_tick();
+            if(!last_error_.is_empty()) return false;
+        }
         last_error_="";
         return true;
     } catch(const std::exception& e) {
         last_error_=String(e.what());
         return false;
     }
+}
+String PixteeRoundBridge::save_native_session() {
+    if(!round_)return "";
+    try {last_error_="";return String(round_->serialize_native_session().c_str());}
+    catch(const std::exception& e){last_error_=String(e.what());return "";}
+}
+bool PixteeRoundBridge::restore_native_session(const String& payload) {
+    if(!round_)return false;
+    try {round_->restore_native_session(payload.utf8().get_data());presentation_events_.clear();presentation_serial_=0;last_error_="";return true;}
+    catch(const std::exception& e){last_error_=String(e.what());return false;}
 }
 String PixteeRoundBridge::save_stable_replay() {
     if(!round_) return "";
@@ -647,6 +762,9 @@ Dictionary PixteeRoundBridge::snapshot() const {
         d["original_welly_rejected"]=round_->original_welly_rejected();
         const auto& meter=round_->original_welly_state();
         d["welly_phase"]=static_cast<int>(meter.stage);
+        d["welly_power_captured"]=meter.capture_flag!=0;
+        // The recovered falling callback decrements BEFORE accepting a press.
+        d["welly_press_accuracy"]=meter.stage==2 ? static_cast<int>(meter.counter)-1 : 63;
         d["welly_counter"]=static_cast<int>(meter.counter);
         d["welly_saved_power"]=static_cast<int>(meter.captured_power);
         d["welly_angle"]=static_cast<int>(meter.angle);
@@ -714,12 +832,21 @@ Dictionary PixteeRoundBridge::snapshot() const {
             const bool original_world_oob= h.last_hazard_kind()==
                 sensigolf::ClassicNamedHazard::OutsideWorld &&
                 h.phase()==sensigolf::HoleSessionPhase::HazardStopped;
+            const auto bird=h.authored_bird();
+            d["bird_active"]=bird.active;d["bird_id"]=static_cast<int64_t>(bird.id);
+            d["bird_x_raw"]=bird.point.x;d["bird_y_raw"]=bird.point.y;d["bird_z_raw"]=bird.point.z;
+            d["bird_hit"]=h.authored_bird_hit();d["bird_hit_age"]=static_cast<int64_t>(h.bird_hit_age());
+            d["authored_clock"]=static_cast<int64_t>(h.authored_clock());
             d["terrain_available"]=!original_world_oob;
             if(!original_world_oob) {
             const auto surface=h.current_surface();
             d["terrain_descriptor"]=static_cast<int>(surface.descriptor_index);
             d["surface_code"]=static_cast<int>(surface.landing_code);
             d["lie_profile"]=static_cast<int>(surface.profile_slot);
+            const auto window=sensigolf::recovered::original_accuracy_window(round_->club_index(),surface.profile_slot);
+            d["welly_window_low"]=window.lower;
+            d["welly_window_high"]=window.upper;
+            d["welly_window_center"]=window.center;
             d["slope_direction"]=static_cast<int>(surface.slope_direction);
             d["slope_magnitude"]=static_cast<int>(surface.slope_magnitude);
             } // only if a valid original world MAPI position exists

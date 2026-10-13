@@ -1,0 +1,20 @@
+{
+  "source": "Owner supplied recordings 2026-10-13",
+  "files": [
+    {
+      "sha256": "a74b46fdca55c2d97ec8fd2de7e217a368a0a6100810bc8d0348de118bede4e4",
+      "bytes": 7374,
+      "file": "Putter hitting sound.mp3"
+    },
+    {
+      "sha256": "f68d86b80e97bd736df1ce4c64fc196b6620d7ba3443bdcb9aa175e3d4c4d043",
+      "bytes": 4030,
+      "file": "Golf ball large bounce.mp3"
+    },
+    {
+      "sha256": "469a4c35d2064266514ad19d90166ba9ea17cf3f4c23a82d2441c4e2b126903e",
+      "bytes": 4030,
+      "file": "Golf ball small bounce.mp3"
+    }
+  ]
+}

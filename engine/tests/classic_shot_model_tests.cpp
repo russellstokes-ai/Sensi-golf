@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "sensigolf/classic_shot_model.hpp"
+#include "sensigolf/recovered_ground.hpp"
 
 using namespace sensigolf;
 
@@ -57,6 +58,24 @@ int main() {
     assert(model.state().phase == ShotPhase::GroundRoll);
     run_until_complete(model);
     assert(model.state().z_raw == 0);
+
+    // Original putter drag/slope follows the scene mode, not the descriptor.
+    for(const bool green_mode:{false,true}) {
+        for(const std::uint16_t code:{std::uint16_t(1),std::uint16_t(2)}) {
+            model.reset();model.set_surface_context({code,256,1});
+            ShotInput putt{};putt.club_index=12;putt.lie_index=code==1?6:5;
+            putt.power_tick=30;putt.accuracy_tick=63;
+            model.begin_shot(putt);
+            model.set_original_interaction_context(nullptr,green_mode,0,0);
+            recovered::LaunchInput launch{};launch.club_index=12;
+            launch.lie_index=putt.lie_index;launch.captured_power=30;launch.accuracy_tick=63;
+            auto expected=recovered::launch_normal_shot(launch);
+            if(green_mode)recovered::step_green_putt(expected,256,1);
+            else recovered::step_non_green_putt(expected);
+            model.step();
+            assert(model.state().x_raw==expected.x && model.state().y_raw==expected.y);
+        }
+    }
 
     // Original club-12 SKIRT/code-2 path uses full drag with green
     // mode clear. Exact v1.014 oracle: profile slot 5, power 10 -> tick 7,

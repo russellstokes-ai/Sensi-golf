@@ -1,0 +1,274 @@
+{
+  "schema": "pixtee.incremental-work-evidence.v1",
+  "base_pr": "https://github.com/russellstokes-ai/Sensi-golf/pull/14",
+  "base_head_verified": "3f109ceb6d045a0f428de05dd6ff2094eab28e0d",
+  "branch": "feat/pixtee-lakewood-playable-work-2026-10-12",
+  "owner_current_scope": "One fully playable commercial-quality hole; add all 13 supplied AI golfer names and personalities.",
+  "source_zip_hashes_verified": {
+    "lakewood": "82c0df6831241e31ad0c83a4302df145349afb9b63503487a914b964d05c7ff3",
+    "production_standards": "1544ac4782b64d2a2b968a581f31b9cf7b37b6e0cf4583dd665e21d1d81ffe17",
+    "complete_handoff": "84819ac44966b6b44f7aa14a274bd19081b87bc07b9a575a9bf5513291e7f6ef"
+  },
+  "verified_local_results": [
+    "Windows MSVC Debug: all 25 CTest regressions PASS",
+    "Approved Lakewood: 496128 native pixel-position lookups match 124032 original 2x2 cells",
+    "Godot 4.5: all 445 approved objects loaded; actual SPT tee at 256,850 and cup at 364,168",
+    "Godot scene: native tee-to-score in four strokes, native score commit, 14 unique native events",
+    "OOB event regression: observed duplicate event before fix; exactly one after fix through native recovery wait",
+    "Godot existing EngineBindingCI and CommercialPresentationSmokeCI PASS",
+    "Python tools suite: 9 tests, 1 skipped; root suite: 61 tests PASS",
+    "Offscreen NVIDIA OpenGL rendering: portrait title and tee screenshots inspected",
+    "ADB device inventory: no Android devices or emulators connected",
+    "Android ARM64 GDExtension Debug build completed with installed NDK 27.1.12297006",
+    "Reviewed pause->restart FX and scored-hole Escape lifecycle; red/green regression fixes verified"
+  ],
+  "native_test_shots": [
+    {
+      "club": 0,
+      "power": 105,
+      "accuracy": 63,
+      "aim": 1946
+    },
+    {
+      "club": 4,
+      "power": 95,
+      "accuracy": 63,
+      "aim": 1913
+    },
+    {
+      "club": 12,
+      "power": 75,
+      "accuracy": 63,
+      "aim": 2087
+    },
+    {
+      "club": 12,
+      "power": 20,
+      "accuracy": 63,
+      "aim": 248
+    }
+  ],
+  "release_gates_passed": 0,
+  "commercial_release_ready": false,
+  "remaining_required_work": [
+    "Source-compatible trunk/canopy/height collisions for all authored trees",
+    "Verified native MAPS detail-window mapping and original-format authored slope field",
+    "Faithful original meter presentation zones and input timing acceptance",
+    "Complete original/licensed music, SFX and ambience; supplied handoff contains zero audio files",
+    "Approved full swing/putt/celebration and introductory cinematic integration",
+    "Mid-shot process-death persistence, native role/flag/tree/event replay state",
+    "Android APK/AAB packaging, release signing and physical normal/Fold folded/unfolded QA",
+    "Performance presets, audio controls, full sensory QA and independent release signoff"
+  ],
+  "frozen_originals_modified": false,
+  "canonical_or_archive_branches_modified": false,
+  "player_journey_increment": {
+    "tested_source_head": "6bc6e183a32a18d92b4d0ba3625eac84d5047f4a",
+    "workflow": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38292927200",
+    "implemented": [
+      "validated cosmetic name and approved Classic outfit ID",
+      "two-slot SHA256 save journal with torn-write recovery",
+      "persistent Music/SFX/Ambience/UI bus levels and reduced motion",
+      "pause Apply/Cancel without native state changes",
+      "paused gameplay input guards",
+      "source-native phase3 hazard recovery acknowledgement",
+      "supplied normal/selected/pressed/disabled button artwork"
+    ],
+    "commercial_gates_promoted": 0,
+    "wearable_layer_status": "OPEN: supplied thumbnails do not prove wearable pose coverage",
+    "audio_assets_status": "OPEN: bus controls and event routing do not supply missing recordings",
+    "apk_created": false,
+    "local_runtime_verification": "blocked by managed sandbox; tested in GitHub Linux Godot4.5 CI",
+    "local_git_network": "blocked; remote commits created through GitHub connector; working tree matches changed source files but local HEAD remains previous fetched checkpoint"
+  },
+  "menu_journey_increment": {
+    "tested_source_head": "618d51bd97dd511e98844803561e64b7273ec57a",
+    "workflow": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38301228517",
+    "implemented": [
+      "native live/final scorecard and committed results",
+      "persistent best/average/last statistics with attempt deduplication",
+      "safe help/settings/player/results navigation",
+      "restart/leave confirmation",
+      "scrollable portrait and wide menus",
+      "low/standard/high cosmetic presets and 30/60/90/120 FPS limits",
+      "reduced flashes and reduced motion",
+      "skippable approved-logo opening; cancellation before play",
+      "cosmetic water time freezes with pause",
+      "schema1 profile migration and JSON numeric validation",
+      "score saving recovers after failed attempt allocation"
+    ],
+    "tests": "25 native tests, 9 tools (1 skipped), 61 root, all Godot journey checks and actual software-rendered menu captures PASS",
+    "visual_artifact": {
+      "id": 11770214869,
+      "run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38301228517",
+      "sha256": "cb094086090b774a684c8f7172c0d51ca028e77891111c30464861036da4d01a",
+      "screenshots": 6,
+      "manual_visual_review": "pending; browser artifact transfer did not complete"
+    },
+    "native_process_death_resume": "OPEN: stable replay rejects pending shots and verified flag interactions; no unsafe fallback implemented",
+    "audio_owner": "user",
+    "music_scope": [
+      "title screen",
+      "pause menu"
+    ],
+    "sound_files_added": false,
+    "apk_created": false,
+    "commercial_gates_promoted": 0
+  },
+  "tree_green_increment_2026_10_13": {
+    "tested_code_head": "394a62e98220f3cd97c9f7470b027d211d1b8dea",
+    "restoration_branch": "restore/pixtee-tree-green-394a62e-2026-10-13",
+    "native_scene_run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38372068348",
+    "native_scene_job": 115211230110,
+    "tests": {
+      "native": 26,
+      "tools": 11,
+      "root": 61,
+      "godot_scene_and_journeys": "PASS",
+      "menu_renders": "PASS; manual review pending"
+    },
+    "real_tree_contact": {
+      "club": 7,
+      "power": 105,
+      "accuracy": 63,
+      "aim": 1152,
+      "tree_id": 16,
+      "part": "canopy",
+      "confirmed_native": true
+    },
+    "tree_authority": "Owner-authorized authored C++ volumes; not recovered original detector parity",
+    "review_fixes": [
+      "Earliest trunk/canopy intersection across trees; stable ID/part ties",
+      "Every intersecting tick prevents penetration; PRNG/events remain deduped"
+    ],
+    "windows_regressions": "PASS: contact ordering, 64 grazing seeds with contact coverage, non-putter green session admission",
+    "source_green_proof": {
+      "run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38368664196",
+      "traces": 24,
+      "tolerance": 0,
+      "scope": "Non-putter clubs 0..11, powers30/105, GREEN H4 descriptor31/profile6, controlled surface green-mode0"
+    },
+    "green_changes": [
+      "Source-verified non-putter GREEN H4 admitted by native session",
+      "MAPS compiler preserves water/sand priority over overlapping green polygons"
+    ],
+    "green_remaining": [
+      "Authored slope field",
+      "Live MAPS activation and native scene-transition/cup integration",
+      "Real Lakewood arrow field and full green play verification"
+    ],
+    "app_icon": {
+      "path": "pixtee-godot/branding/pixtee-app-icon.png",
+      "sha256": "ea107ea7e3fefcb3c60c8089f67e3fbea6578344c0812c666f74a5833b0e8bd9",
+      "original_bytes_equal": true,
+      "configured": true
+    },
+    "apk_policy": {
+      "packaging_disabled": true,
+      "unrequested_legacy_artifact_removed": true,
+      "legacy_run_artifacts_empty": 38315147064,
+      "release_apk_created": false
+    },
+    "commercial_gates_promoted": 0,
+    "commercial_release_ready": false
+  },
+  "live_green_increment_2026_10_13": {
+    "tested_code_head": "e6dffda9e0a48cb1378dbbf57c09f5ff95a68396",
+    "restoration_branch": "restore/pixtee-live-green-e6dffda-2026-10-13",
+    "native_scene_run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38379270293",
+    "native_scene_job": 115235327451,
+    "source_putter_mode_run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38374271650",
+    "source_putter_mode_traces": 12,
+    "source_tolerance": 0,
+    "native_tests": 27,
+    "tools_tests": 12,
+    "root_tests": 61,
+    "scene_result": "PASS: actual445 objects, native3-shot completion,9 unique events, trees/OOB, player/menu journeys",
+    "green_bundle": "pixtee-godot/courses/lakewood-hole-1/native-green-v1/manifest.json",
+    "authored_field": "pixtee-godot/courses/lakewood-hole-1/authored-green-slopes.json",
+    "authored_field_sha256": "4024419797f05c7052cf085ce16a2e9782d36cc468b9ad97ad75c1250faf44e1",
+    "native_mapping": "PASS:13312 native detail cells, original bank prefix and course tile indices,304/120 origin,120/96 native cup, source entry/exit and cup-to-score",
+    "native_arrows": "PASS:all256 source direction/strength combinations plus real Lakewood field; clipped to source admission bounds where slope applies; field reads do not advance gameplay",
+    "score_sign": "PASS: native par-minus-strokes retained; birdie and over-par journal/display translation and restore verified",
+    "native_test_inputs": [
+      [
+        0,
+        105,
+        1946
+      ],
+      [
+        1,
+        95,
+        1942
+      ],
+      [
+        12,
+        105,
+        2121
+      ]
+    ],
+    "visual_artifact": {
+      "id": 11802059381,
+      "sha256": "91935c4df05077e53cb3c562e2006029dc86a4c3ad29f6caafd7ec60a15eed38",
+      "screenshots": 8,
+      "manual_review": "pending"
+    },
+    "windows_test_package": {
+      "filename": "Pixtee-Lakewood-Native-Green-Windows-2026-10-13-r2.zip",
+      "sha256": "70f4b35fe2534284b533f82266973fafa4527a78ae87364495193b2ca04437aa",
+      "bytes": 101932804,
+      "native_extension_sha256": "2d9d0f979fb16830d4ba204f8fa2f236bedaf4037826b282b3a296e6a31dc364",
+      "extension_compile": "PASS",
+      "runtime_manual_play": "pending",
+      "first_launch_asset_import": true
+    },
+    "native_lip_out_complete_player_context": "OPEN; source helper tests do not establish full player-context integration",
+    "commercial_gates_promoted": 0,
+    "commercial_release_ready": false,
+    "apk_created": false
+  },
+  "owner_audio_increment_2026_10_13": {
+    "source_head": "826f768b37ea1df6c140ebcd33c9c0cfd2fdc3e5",
+    "source_zip_sha256": "2c1331b09ec0df2ca3dbbad514fb1da7ecb9294c8ae3827a528087511b5342f1",
+    "original_zip_and_recordings_unchanged": true,
+    "recordings": 20,
+    "manifest": "pixtee-godot/audio/owner-pack-v1/manifest.json",
+    "native_scene_run": 38386496817,
+    "native_scene_job": 115259479829,
+    "verification": {
+      "native_tests": 27,
+      "tools_python_tests": 13,
+      "root_python_tests": 61,
+      "godot_audio_context_decode_dedupe_mute": "PASS",
+      "native_three_shot_completion": "PASS",
+      "player_and_menu_journeys": "PASS",
+      "portrait_and_wide_renders": "PASS",
+      "hands_on_listening": "PENDING",
+      "windows_runtime_manual_play": "PENDING"
+    },
+    "owner_audio_scope": {
+      "base_pack_now": true,
+      "additional_applause_reward_gameplay_sounds": "later",
+      "music": [
+        "title",
+        "pause"
+      ],
+      "gameplay_music": false,
+      "nature_base_volume": 0.75,
+      "nature_schedule": "random individual full clips, then 8-20 seconds quiet; cosmetic RNG only"
+    },
+    "native_bird_collision": "OPEN; recording retained, no fabricated proximity contact",
+    "native_flag_audio": "verified_flag_contact routed to supplied recording",
+    "windows_test_package": {
+      "filename": "Pixtee-Lakewood-Owner-Audio-Windows-2026-10-13-r3.zip",
+      "sha256": "fe96c16f0856ce345dffb74f0bdfe1112efd303bc0e7d11fdbc7f43b91056c88",
+      "bytes": 109918774,
+      "files": 335
+    },
+    "independent_code_review": "review_native_increment: score-transition fix verified; no remaining important audio issue",
+    "restoration_branch": "restore/pixtee-owner-audio-826f768-2026-10-13",
+    "commercial_gates_promoted": 0,
+    "commercial_ready": false,
+    "apk_created": false
+  }
+}

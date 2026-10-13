@@ -60,6 +60,7 @@ void ClassicHoleSession::reset(
     safe_anchor_y_raw_ = 0;
     safe_anchor_valid_ = false;
     flag_object_verified_ = false;
+    authored_birds_enabled_=false;bird_hit_=false;authored_clock_=0;bird_hit_tick_=0;bird_hit_position_={};
     animation_assets_verified_ = false;
     animation_assets_ = {};
     recovered::original_animation_reset_all(animation_slots_);
@@ -130,8 +131,10 @@ bool ClassicHoleSession::surface_supported_for_active_shot(
         return false;
     }
 
-    // GREEN H4 uses putter-specific green drag/slope semantics.
-    return surface.landing_code != 1;
+    // Original non-putter GREEN H4 uses the ordinary native gravity/bounce
+    // path. The separate club-12 branch owns green drag and slope. Verified
+    // against all 12 non-putter clubs at two powers, descriptor/profile 31/6.
+    return true;
 }
 
 void ClassicHoleSession::set_original_animation_assets(
@@ -191,6 +194,12 @@ void ClassicHoleSession::set_verified_flag_object(bool present) {
 }
 bool ClassicHoleSession::flag_object_verified() const noexcept {
     return flag_object_verified_;
+}
+void ClassicHoleSession::set_authored_tree_objects(const std::vector<AuthoredTreeVolume>& trees) {
+    if(phase_!=HoleSessionPhase::ReadyForShot || strokes_!=0 || !prng_)
+        throw std::logic_error("authored trees require idle loaded hole and native PRNG");
+    validate_authored_trees(trees);
+    authored_trees_=trees;
 }
 
 void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
@@ -357,7 +366,28 @@ bool ClassicHoleSession::apply_original_post_stop_recovery() {
     return true;
 }
 
+AuthoredBirdSample ClassicHoleSession::authored_bird() const noexcept {
+    if(!authored_birds_enabled_)return {};
+    if(bird_hit_) {
+        auto sample=bird_hit_position_;
+        const auto age=bird_hit_age();
+        sample.active=age<140;
+        sample.point.x+=static_cast<std::int32_t>(age*65536/3);
+        sample.point.y+=static_cast<std::int32_t>(age*65536/12);
+        sample.point.z=std::max(3*65536,sample.point.z-static_cast<int>(age*65536/20));
+        return sample;
+    }
+    return authored_bird_sample(authored_clock_);
+}
 void ClassicHoleSession::step() {
+    const auto before_bird=authored_bird_sample(authored_clock_);
+    ++authored_clock_;
+    const auto after_bird=authored_bird_sample(authored_clock_);
+    if(after_bird.active && after_bird.id!=bird_hit_position_.id)bird_hit_=false;
+    const bool was_bird_hit=bird_hit_;
+    shot_.set_authored_bird_context(authored_birds_enabled_?before_bird:AuthoredBirdSample{},
+        authored_birds_enabled_?after_bird:AuthoredBirdSample{},&bird_hit_);
+
     if (phase_ == HoleSessionPhase::SpecialGreenStopped) {
         if (!special_green_continuation_ready_) {
             // Original v1.014 0x40A7E0: 16-bit signed DEC/JNS.
@@ -488,6 +518,10 @@ void ClassicHoleSession::step() {
     }
 
     shot_.update_surface_context_for_tick(to_context(surface));
+    const auto tree_origin=course_.green_region();
+    shot_.set_authored_tree_context(&authored_trees_,
+        tree_origin?static_cast<std::int32_t>(tree_origin->origin_x)*65536:0,
+        tree_origin?static_cast<std::int32_t>(tree_origin->origin_y)*65536:0,green_mode_);
     const auto flag=course_.hole_position();
     shot_.set_original_interaction_context(
         prng_, green_mode_, static_cast<std::int16_t>(flag.x),
@@ -499,6 +533,7 @@ void ClassicHoleSession::step() {
             mode_hole_position().x,mode_hole_position().y,green_mode_)==0,
         original_player_mode_5a_.value_or(4));
     shot_.step();
+    if(!was_bird_hit && bird_hit_) {bird_hit_tick_=authored_clock_;bird_hit_position_=after_bird;}
 
     // The original transition dispatcher can switch coordinate spaces as the
     // ball crosses the green window. Re-evaluate after movement so a shot that

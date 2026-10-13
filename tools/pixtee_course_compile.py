@@ -98,12 +98,18 @@ def compile_maps_window(layout, origin, slope_cells, descriptor_bank=b'', select
     cup = next(p for p in layout['placements'] if p['type'] == 'flag')
     for (wx,wy),on_green in zip(mapping['sample_world'],mapping['sample_green_mask']):
         at = (int(wx),int(wy))
+        surfaces = layout['surfaces']
+        # Approved course.js gives hazards priority even when polygons overlap.
+        # Detail lookup must preserve that order, including inside the green.
+        hazards = [(6,surfaces['water']),(6,surfaces['river'])]
+        hazards += [(5,p) for p in surfaces['bunkers']]
+        hazard = next((d for d,p in hazards if p and inside(p,wx,wy)),None)
+        if hazard is not None:
+            samples.append(hazard)
+            continue
         if not on_green:
             # Preserve original visual surface priority at this finer resolution.
-            surfaces = layout['surfaces']
-            polygons = [(6,surfaces['water']),(6,surfaces['river'])]
-            polygons += [(5,p) for p in surfaces['bunkers']]
-            polygons += [(1,surfaces['tee']),(1,surfaces['fairway'])]
+            polygons = [(1,surfaces['tee']),(1,surfaces['fairway'])]
             samples.append(next((d for d,p in polygons if p and inside(p,wx,wy)),3))
             continue
         if at not in slope_cells:

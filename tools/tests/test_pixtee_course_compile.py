@@ -5,6 +5,26 @@ import unittest
 MODULE = Path(__file__).parents[1] / 'pixtee_course_compile.py'
 
 class CourseCompileTests(unittest.TestCase):
+    def test_detail_window_preserves_hazard_priority_over_green(self):
+        spec = importlib.util.spec_from_file_location('compiler', MODULE)
+        compiler = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(compiler)
+        layout = {'world':[544,912], 'surfaces':{
+            'green':[[310,112],[408,112],[408,222],[310,222]],
+            'water':[[310,120],[320,120],[320,128],[310,128]],
+            'river':[], 'bunkers':[], 'tee':[], 'fairway':[]},
+            'placements':[{'type':'flag','x':364,'y':168}]}
+        mapping = compiler.green_detail_mapping(layout,(304,120))
+        field = {(int(x),int(y)):(3,2) for x,y in mapping['sample_world']
+                 if compiler.inside(layout['surfaces']['green'],x,y)
+                 and not compiler.inside(layout['surfaces']['water'],x,y)}
+        detail = compiler.compile_maps_window(layout,(304,120),field)
+        import struct
+        # World (312.5,120.5) is visibly water despite green polygon overlap.
+        tile = struct.unpack_from('>H',detail['MAPS.bin'],0x60+2)[0]
+        descriptor = struct.unpack_from('>H',detail['MAPI-descriptors.bin'],tile*8)[0]
+        self.assertEqual(descriptor,6)
+
     def test_green_detail_uses_native_window_without_resizing_green(self):
         spec = importlib.util.spec_from_file_location('compiler', MODULE)
         compiler = importlib.util.module_from_spec(spec)

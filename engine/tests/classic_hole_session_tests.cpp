@@ -228,6 +228,18 @@ int main() {
     run_active(putt_session);
     assert(putt_session.phase() == HoleSessionPhase::ReadyForShot);
 
+    // Original GREEN H4 also accepts every non-putter club. Native oracle
+    // matrix proves its gravity/bounce/roll, not putter slope integration.
+    for (std::uint16_t club_index=0; club_index<12; ++club_index) {
+        ClassicHoleSession green_chip(green,0,0);
+        auto chip=putter_request();
+        chip.club_index=club_index;
+        green_chip.begin_shot(chip);
+        run_active(green_chip);
+        assert(green_chip.phase()==HoleSessionPhase::ReadyForShot);
+        assert(green_chip.strokes()==1);
+    }
+
     // A normal resting putt at recovered distance zero also scores without
     // subtracting the transient extra code-8 putter terminal counters.
     const auto putt_rest_x = static_cast<std::uint16_t>(

@@ -65,6 +65,11 @@ public:
 
     void begin_shot(const ClassicShotRequest& request);
     void step();
+    void set_authored_birds_enabled(bool enabled) { authored_birds_enabled_=enabled; }
+    AuthoredBirdSample authored_bird() const noexcept;
+    bool authored_bird_hit() const noexcept { return bird_hit_; }
+    std::uint64_t authored_clock() const noexcept { return authored_clock_; }
+    std::uint64_t bird_hit_age() const noexcept { return bird_hit_?authored_clock_-bird_hit_tick_:0; }
     void acknowledge_hazard_recovery();
     void acknowledge_special_green_stop();
     // Flagpole presence must be supplied by the actual authored course
@@ -126,6 +131,9 @@ public:
     const recovered::OriginalPrng16& prng_state() const;
 
 private:
+    bool authored_birds_enabled_=false,bird_hit_=false;
+    std::uint64_t authored_clock_=0,bird_hit_tick_=0;
+    AuthoredBirdSample bird_hit_position_{};
     std::vector<AuthoredTreeVolume> authored_trees_;
     bool surface_supported_for_active_shot(
         const ResolvedCourseSurface& surface) const noexcept;

@@ -18,4 +18,6 @@ struct AuthoredTreeContact {
 void validate_authored_trees(const std::vector<AuthoredTreeVolume>& trees);
 AuthoredTreeContact authored_tree_contact(const std::vector<AuthoredTreeVolume>& trees,
     AuthoredTreePoint from,AuthoredTreePoint to);
+bool authored_airborne_contact(AuthoredTreePoint centre, std::int32_t radius,
+    AuthoredTreePoint from, AuthoredTreePoint to);
 }

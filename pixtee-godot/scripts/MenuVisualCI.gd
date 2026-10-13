@@ -21,8 +21,10 @@ func _run() -> void:
 	assert(scene.profile.load_profile("user://tests/visual-"+str(Time.get_ticks_usec())))
 	scene.show_title()
 	await capture(scene,"title-portrait")
+	print("TITLE_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	scene.show_player()
 	await capture(scene,"player-portrait")
+	print("PLAYER_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	scene.cancel_player_edit()
 	scene.show_settings()
 	await capture(scene,"settings-portrait")
@@ -45,7 +47,7 @@ func _run() -> void:
 	scene.start_hole()
 	scene.paused = true
 	scene.world.set_process(false)
-	scene.fx.set_process(false)
+	scene.fx.set_effects_running(false)
 	for shot in [[0,105,1946],[1,95,1942]]:
 		scene.core.set_club_index(shot[0])
 		scene.core.set_aim_raw(shot[2])

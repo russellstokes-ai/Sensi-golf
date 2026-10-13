@@ -28,7 +28,7 @@ const NATIVE_EVENT_TO_CUE := {
 	"authored_bird_contact": "bird_impact",
 	"authored_rock_contact": "rock_impact",
 	"verified_flag_contact": "flag_hit",
-	"cup_lip": "cup_rattle",
+	"cup_lip": "small_bounce",
 	"cup_capture": "cup_capture",
 	"world_oob": "oob_penalty",
 	"mapped_oob": "oob_penalty"

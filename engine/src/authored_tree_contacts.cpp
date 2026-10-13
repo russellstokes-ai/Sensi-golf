@@ -84,4 +84,10 @@ AuthoredTreeContact authored_tree_contact(const std::vector<AuthoredTreeVolume>&
     }
     return best;
 }
+bool authored_airborne_contact(AuthoredTreePoint centre,std::int32_t radius,
+                              AuthoredTreePoint from,AuthoredTreePoint to) {
+    if(radius<=0 || radius>16*65536) throw std::invalid_argument("invalid airborne radius");
+    AuthoredTreeVolume volume{};volume.x=centre.x;volume.y=centre.y;
+    return cylinder(from,to,volume,radius,centre.z-radius,centre.z+radius).has_value();
+}
 }

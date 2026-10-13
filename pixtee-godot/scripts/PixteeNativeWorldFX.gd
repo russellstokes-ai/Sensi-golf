@@ -10,6 +10,8 @@ const MAX_LIVE_FLECKS := 128
 const MAX_RIPPLES := 16
 const MAX_REMEMBERED_NATIVE_EVENTS := 4096
 const EVENT_PRESETS := {
+	"cup_lip": {"count":3,"color":Color(0.95,0.90,0.63),"life":0.3},
+	"authored_bird_contact": {"count":8,"color":Color(0.75,0.57,0.32),"life":0.85},
     "authored_tree_contact": {"count": 6, "color": Color(0.47,0.66,0.35), "life": 0.55},
 	"fairway_contact": {"count": 5, "color": Color(0.76,0.80,0.42), "life": 0.40},
 	"rough_contact": {"count": 7, "color": Color(0.51,0.68,0.32), "life": 0.55},
@@ -81,6 +83,7 @@ func submit_confirmed_native_event(event: Dictionary) -> bool:
 	if not is_finite(pos.x) or not is_finite(pos.y):
 		return false
 
+	if event_type == "authored_bird_contact": pos.y -= maxf(0.0,float(event.get("world_z",0.0)))
 	var preset: Dictionary = EVENT_PRESETS[event_type]
 	var count: int = int(preset["count"])
 	if visual_quality == 0 or reduced_motion:
@@ -107,6 +110,7 @@ func submit_confirmed_native_event(event: Dictionary) -> bool:
 		if _ripples.size() < MAX_RIPPLES:
 			_ripples.append({"position":pos, "age":0.0, "duration":0.8})
 
+	_spawn_godot_burst(pos,preset)
 	_seen_events[event_id] = true
 	_event_order.append(event_id)
 	if _event_order.size() > MAX_REMEMBERED_NATIVE_EVENTS:
@@ -116,6 +120,8 @@ func submit_confirmed_native_event(event: Dictionary) -> bool:
 	return true
 
 func _process(delta: float) -> void:
+	if reduced_motion or visual_quality == 0:
+		for child in get_children(): child.queue_free()
 	# Presentation only; no calls into original 936/65536 second physics.
 	var dt := minf(maxf(delta, 0.0), 0.1)
 	for index in range(_particles.size()-1, -1, -1):
@@ -159,6 +165,7 @@ func _draw() -> void:
 			Color(0.69,0.90,0.95,alpha),1.0,false)
 
 func on_confirmed_restart_or_replay_seek() -> void:
+	for child in get_children(): child.queue_free()
 	_particles.clear()
 	_ripples.clear()
 	_seen_events.clear()
@@ -166,3 +173,38 @@ func on_confirmed_restart_or_replay_seek() -> void:
 	_ball_snapshot_verified = false
 	_last_submitted_native_tick = -1
 	queue_redraw()
+
+func set_effects_running(running: bool) -> void:
+	set_process(running)
+	for child in get_children():
+		if child is CPUParticles2D: child.speed_scale = 1.0 if running else 0.0
+
+func _spawn_godot_burst(at: Vector2,preset: Dictionary) -> void:
+	if reduced_motion or visual_quality == 0 or get_child_count() >= 12: return
+	var burst := CPUParticles2D.new()
+	burst.position = at
+	burst.one_shot = true
+	burst.explosiveness = 1.0
+	burst.amount = int(preset.count)
+	burst.lifetime = float(preset.life)
+	burst.direction = Vector2(0,-1)
+	burst.spread = 65.0
+	burst.gravity = Vector2(0,30)
+	burst.initial_velocity_min = 8.0
+	burst.initial_velocity_max = 22.0
+	burst.scale_amount_min = 0.25
+	burst.scale_amount_max = 0.75
+	burst.color = preset.color
+	var texture := GradientTexture2D.new()
+	texture.width = 4
+	texture.height = 4
+	texture.fill = GradientTexture2D.FILL_RADIAL
+	texture.fill_from = Vector2(0.5,0.5)
+	texture.fill_to = Vector2(1.0,0.5)
+	var gradient := Gradient.new()
+	gradient.colors = PackedColorArray([Color.WHITE,Color(1,1,1,0)])
+	texture.gradient = gradient
+	burst.texture = texture
+	add_child(burst)
+	burst.finished.connect(burst.queue_free)
+	burst.emitting = true

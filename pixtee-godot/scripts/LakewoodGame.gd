@@ -29,6 +29,7 @@ var audio: PixteeCommercialAudio
 var player_name: LineEdit
 var player_draft: Dictionary = {}
 var player_error: Label
+var player_preview: TextureRect
 var menu_screen := "title"
 var return_screen := "title"
 var menu_scroll: ScrollContainer
@@ -36,9 +37,18 @@ var attempt_id := 0
 var last_result: Dictionary = {}
 var result_saved := false
 var intro_tween: Tween
+var session_store := preload("res://scripts/PixteeSessionStore.gd").new()
+var course_hash := ""
+var recovery_error := ""
 
 func _ready() -> void:
 	profile.load_profile()
+	var hash_context := HashingContext.new()
+	hash_context.start(HashingContext.HASH_SHA256)
+	for resource in ["MAPM.bin","SPT.bin","MAPI-descriptors.bin","MAPI-selectors.bin","MAPS.bin"]:
+		hash_context.update(FileAccess.get_file_as_bytes(NATIVE_COURSE+resource))
+	course_hash = hash_context.finish().hex_encode()
+	session_store.load_current(course_hash)
 	audio = PixteeCommercialAudio.new()
 	add_child(audio)
 	for failure in audio.load_owner_pack(): push_error(failure)
@@ -66,6 +76,14 @@ func _ready() -> void:
 	make_hud()
 	get_viewport().size_changed.connect(update_ui_layout)
 	update_ui_layout()
+	var attract := preload("res://scripts/PixteeMenuAttract.gd").new()
+	attract.game = self
+	add_child(attract)
+	var autosave := Timer.new()
+	autosave.wait_time = 1.0
+	autosave.autostart = true
+	add_child(autosave)
+	autosave.timeout.connect(save_session_checkpoint)
 	show_intro()
 
 func update_ui_layout() -> void:
@@ -110,13 +128,13 @@ func button(text: String, action: Callable, dimensions := Vector2(288,51)) -> Bu
 	result.pressed.connect(action)
 	return result
 
-func clear_menu() -> void:
+func clear_menu(background_alpha := 0.92) -> void:
 	for child in menu.get_children():
 		menu.remove_child(child)
 		child.queue_free()
 	menu.show()
 	var shade := ColorRect.new()
-	shade.color = Color(0.025,0.085,0.065,0.92)
+	shade.color = Color(0.025,0.085,0.065,background_alpha)
 	menu.add_child(shade)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var margin := MarginContainer.new()
@@ -147,17 +165,18 @@ func show_title() -> void:
 	stop_intro()
 	menu_screen = "title"
 	hud.hide()
-	clear_menu()
+	clear_menu(0.10)
+	world.set_process(true)
 	panel.add_child(image_control("logo",Vector2(288,180)))
 	panel.add_child(text_line("LAKEWOOD · WILLOW CREEK\nHole 1 · Par 4"))
 	add_music_toggle()
+	if not session_store.load_current(course_hash).is_empty(): panel.add_child(button("Continue",resume_saved_game))
 	panel.add_child(button("Play",start_hole))
 	panel.add_child(button("Player",show_player))
 	panel.add_child(button("Golfers",show_golfers))
 	panel.add_child(button("Statistics",show_statistics))
 	panel.add_child(button("Settings",show_settings))
 	panel.add_child(button("How to play",show_help))
-	camera.position = Vector2(256,700)
 
 func stop_intro() -> void:
 	if intro_tween != null and intro_tween.is_valid(): intro_tween.kill()
@@ -255,6 +274,7 @@ func apply_saved_settings() -> void:
 	Engine.max_fps = int(settings.frame_limit)
 	for child in world.get_children():
 		if child is Polygon2D: child.material.set_shader_parameter("quality_enabled",0.0 if reduced_motion or int(settings.graphics_quality) == 0 else 1.0)
+	world.set_outfit(profile.snapshot().outfit_id)
 	world.queue_redraw()
 	for channel in ["Music","SFX","Ambience","UI"]:
 		audio.set_channel_level(channel,float(settings[channel]))
@@ -277,7 +297,9 @@ func show_player() -> void:
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	preview.custom_minimum_size = Vector2(180,180)
 	panel.add_child(preview)
-	panel.add_child(text_line("Classic Lakewood kit"))
+	player_preview = preview
+	preview.material = PixteeOutfit.material(player_draft.outfit_id)
+	add_outfit_controls()
 	player_name = LineEdit.new()
 	player_name.text = str(player_draft.display_name)
 	player_name.max_length = 32
@@ -293,6 +315,7 @@ func apply_player_edit() -> bool:
 	if not profile.apply_edit(player_draft):
 		player_error.text = "Enter a name; check save storage."
 		return false
+	world.set_outfit(profile.snapshot().outfit_id)
 	player_draft.clear()
 	back_menu()
 	return true
@@ -339,42 +362,18 @@ func make_hud() -> void:
 	meter.pressed.connect(on_shoot)
 	bottom.add_child(meter)
 
-func start_hole() -> void:
+func start_hole(resuming := false) -> void:
 	stop_intro()
 	menu_screen = "game"
-	core = PixteeRoundBridge.new()
-	var order := PackedInt32Array()
-	order.resize(18)
-	order.fill(1)
-	var pars := PackedInt32Array()
-	pars.resize(100)
-	pars[1] = 4
-	if not core.begin_round(order,pars,0x1234,0xabcd):
-		push_error(core.last_error())
-		return
-	if not core.register_course_resource(1,FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPM.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"SPT.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPI-descriptors.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPI-selectors.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPS.bin")):
-		push_error(core.last_error())
-		return
-	if not core.load_next_hole():
-		push_error(core.last_error())
-		return
-	core.set_aim_raw(2048)
-	core.set_verified_flag_object(true) # Exact approved manifest flag at native SPT cup.
-	var tree_data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(COURSE+"authored-tree-volumes.json"))
-	var volumes := PackedInt32Array()
-	for tree in tree_data.trees:
-		volumes.append(int(tree.id))
-		for field in ["x","y","trunk_radius","trunk_height","canopy_radius","canopy_bottom","canopy_top"]:
-			volumes.append(int(round(float(tree[field])*65536.0)))
-	if not core.set_authored_tree_objects(volumes):
-		push_error(core.last_error())
-		return
+	core = create_course_core(0)
+	if core == null: return
+	world.set_outfit(profile.snapshot().outfit_id)
 	var arrow_cells: Array[Dictionary] = []
 	for cell in core.verified_native_green_arrow_cells(16): arrow_cells.append(cell)
 	if not arrows.load_native_maps_arrow_cells(arrow_cells) or arrows.arrow_count()==0:
 		push_error("Native Lakewood slope field unavailable")
 		return
-	attempt_id = profile.begin_attempt()
+	attempt_id = int(profile.snapshot().statistics.round_sequence) if resuming else profile.begin_attempt()
 	last_result.clear()
 	result_saved = false
 	player_draft.clear()
@@ -383,13 +382,14 @@ func start_hole() -> void:
 	accumulator = 0
 	pending_press = false
 	world.set_process(true)
-	fx.set_process(true)
+	fx.set_effects_running(true)
 	fx.on_confirmed_restart_or_replay_seek()
 	audio.reset_event_cursor_on_confirmed_new_round()
 	audio.set_context("course")
 	menu.hide()
 	hud.show()
 	update_view(core.snapshot())
+	if not resuming: save_session_checkpoint()
 
 func on_shoot() -> void:
 	if not playing or paused or core == null: return
@@ -465,10 +465,11 @@ func update_view(s: Dictionary) -> void:
 	meter.accept_snapshot(s)
 
 func pause_game() -> void:
+	save_session_checkpoint()
 	paused = true
 	accumulator = 0
 	world.set_process(false)
-	fx.set_process(false)
+	fx.set_effects_running(false)
 	hud.hide()
 	show_pause()
 
@@ -492,7 +493,7 @@ func resume_game() -> void:
 	menu_screen = "game"
 	paused = false
 	world.set_process(true)
-	fx.set_process(true)
+	fx.set_effects_running(true)
 	menu.hide()
 	hud.show()
 
@@ -504,7 +505,7 @@ func show_score(_s: Dictionary) -> void:
 		push_error(core.last_error())
 		return
 	world.set_process(false)
-	fx.set_process(false)
+	fx.set_effects_running(false)
 	hud.hide()
 	last_result = core.snapshot().duplicate(true)
 	result_saved = save_result()
@@ -603,6 +604,7 @@ func confirm_leave(restart: bool) -> void:
 	panel.add_child(button("Cancel",back_menu))
 
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST: save_session_checkpoint()
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and playing and not paused:
 		pause_game()
 	if audio != null:
@@ -627,3 +629,72 @@ func add_music_toggle() -> void:
 	toggle.toggled.connect(func(enabled: bool):
 		if profile.set_setting("Music",0.8 if enabled else 0.0): apply_saved_settings())
 	panel.add_child(toggle)
+
+func add_outfit_controls() -> void:
+	var kit: Array = Array(PixteeOutfit.indices(player_draft.outfit_id))
+	for part in range(3):
+		var row := HBoxContainer.new()
+		panel.add_child(row)
+		row.add_child(text_line(["Shirt","Trousers","Cap"][part]))
+		var choice := OptionButton.new()
+		choice.custom_minimum_size = Vector2(210,44)
+		for title in [PixteeOutfit.SHIRTS,PixteeOutfit.TROUSERS,PixteeOutfit.CAPS][part]: choice.add_item(title)
+		choice.select(kit[part])
+		row.add_child(choice)
+		choice.item_selected.connect(func(index: int):
+			kit[part] = index
+			player_draft.outfit_id = "kit:%d:%d:%d" % [kit[0],kit[1],kit[2]]
+			player_preview.material = PixteeOutfit.material(player_draft.outfit_id))
+
+func create_course_core(source_mode: int) -> PixteeRoundBridge:
+	var native = PixteeRoundBridge.new()
+	var order := PackedInt32Array()
+	order.resize(18)
+	order.fill(1)
+	var pars := PackedInt32Array()
+	pars.resize(100)
+	pars[1] = 4
+	if not native.begin_round(order,pars,0x1234,0xabcd):
+		push_error(native.last_error())
+		return null
+	if not native.register_course_resource(1,FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPM.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"SPT.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPI-descriptors.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPI-selectors.bin"),FileAccess.get_file_as_bytes(NATIVE_COURSE+"MAPS.bin")):
+		push_error(native.last_error())
+		return null
+	if not native.load_next_hole():
+		push_error(native.last_error())
+		return null
+	native.set_aim_raw(2048)
+	native.set_verified_flag_object(true) # Exact approved manifest flag at native SPT cup.
+	var tree_data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(COURSE+"authored-tree-volumes.json"))
+	var volumes := PackedInt32Array()
+	for tree in tree_data.trees:
+		volumes.append(int(tree.id))
+		for field in ["x","y","trunk_radius","trunk_height","canopy_radius","canopy_bottom","canopy_top"]:
+			volumes.append(int(round(float(tree[field])*65536.0)))
+	if not native.set_authored_tree_objects(volumes):
+		push_error(native.last_error())
+		return null
+	if not native.set_original_player_mode_5a(source_mode): return null
+	if not native.set_authored_birds_enabled(true): return null
+	return native
+
+func save_session_checkpoint() -> void:
+	if not playing or core == null or attempt_id<1: return
+	var native := core.save_native_session()
+	if not session_store.save(native,course_hash,attempt_id,pending_press): recovery_error = "Game could not be saved. Check free storage."
+
+func resume_saved_game() -> void:
+	var record := session_store.load_current(course_hash)
+	if record.is_empty(): return
+	start_hole(true)
+	if core == null or not core.restore_native_session(record.native):
+		playing = false
+		hud.hide()
+		show_title()
+		panel.add_child(text_line("Saved game could not be verified."))
+		return
+	attempt_id = int(record.attempt)
+	pending_press = bool(record.pending_press)
+	fx.on_confirmed_restart_or_replay_seek()
+	update_view(core.snapshot())
+	pause_game()

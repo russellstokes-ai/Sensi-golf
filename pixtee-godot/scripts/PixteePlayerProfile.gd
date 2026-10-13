@@ -20,7 +20,7 @@ func _valid(data: Dictionary) -> bool:
 	if name.strip_edges() != name or name.is_empty() or name.length() > 32: return false
 	for character in name:
 		if character.unicode_at(0) < 32: return false
-	if data.outfit_id != "lakewood-classic": return false
+	if not PixteeOutfit.is_valid(data.outfit_id): return false
 	var settings: Dictionary = data.settings
 	if settings.size() != DEFAULTS.settings.size(): return false
 	for key in DEFAULTS.settings:
@@ -148,4 +148,3 @@ func record_committed_result(attempt: int, native: Dictionary) -> bool:
 	stats.best = int(strokes) if stats.best == 0 else mini(int(stats.best),int(strokes))
 	stats.last = {"strokes":int(strokes),"par":int(native.cumulative_par),"relative":-int(native.relative_to_par)}
 	return _save(candidate)
-

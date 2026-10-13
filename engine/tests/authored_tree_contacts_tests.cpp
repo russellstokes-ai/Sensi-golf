@@ -3,9 +3,21 @@
 #endif
 #include <cassert>
 #include "sensigolf/authored_tree_contacts.hpp"
+#include "sensigolf/authored_bird.hpp"
 #include "sensigolf/classic_shot_model.hpp"
 using namespace sensigolf;
 int main() {
+    const auto bird=sensigolf::authored_bird_sample(1000);
+    assert(bird.active && bird.id==1);
+    auto from=bird.point,to=bird.point;
+    from.x-=5*65536;to.x+=5*65536;
+    assert(sensigolf::authored_bird_contact(bird,bird,from,to));
+    from.z=to.z=0;
+    assert(!sensigolf::authored_bird_contact(bird,bird,from,to));
+    from.z=to.z=20*65536;
+    assert(!sensigolf::authored_bird_contact(bird,bird,from,to));
+    assert(!sensigolf::authored_bird_sample(100).active);
+
     constexpr int q=65536;
     AuthoredTreeVolume tree{1,0,10*q,2*q,10*q,12*q,10*q,40*q};
     const std::vector<AuthoredTreeVolume> trees{tree};

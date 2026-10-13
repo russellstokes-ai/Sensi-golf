@@ -40,6 +40,7 @@ public:
     void nudge_aim_raw(std::int32_t delta);
     void set_club(std::uint16_t index);
     void set_verified_flag_object(bool present);
+    void set_authored_birds_enabled(bool enabled);
     void set_authored_tree_objects(const std::vector<sensigolf::AuthoredTreeVolume>& trees);
     void set_original_player_mode_5a(std::uint16_t source_mode);
     void cycle_club(int delta);
@@ -55,6 +56,9 @@ public:
     void acknowledge_special_green();
     void commit_scored_hole();
     std::string serialize_stable_replay() const;
+    std::string serialize_native_session() const;
+    void restore_native_session(const std::string& checkpoint);
+    std::string native_fingerprint() const;
     void restore_replay(const std::string& checkpoint);
     const sensigolf::ClassicRoundState& round_state() const noexcept;
     std::optional<sensigolf::ClassicHolePlanEntry> resource_request() const;
@@ -71,6 +75,11 @@ public:
     bool replay_supported() const noexcept;
 
 private:
+    struct Command {char op;std::vector<std::int64_t> args;std::uint32_t repeat=1;};
+    void record_command(char op,std::vector<std::int64_t> args={});
+    std::vector<Command> commands_;
+    std::array<std::uint8_t,100> pars_{};
+    bool recording_=true;
     void record_charged_no_flight(const sensigolf::ClassicShotRequest& request);
     void maybe_record_stable_shot();
     sensigolf::ClassicHolePlan plan_;

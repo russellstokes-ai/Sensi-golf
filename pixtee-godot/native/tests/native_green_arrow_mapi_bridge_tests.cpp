@@ -81,6 +81,31 @@ int main(int argc,char** argv) {
         auto session=preview();session.register_course(1,real);session.load_next_hole();
         const auto arrows=session.verified_native_green_arrows(16);
         assert(!arrows.empty());
+        session.set_original_player_mode_5a(0);
+        session.set_verified_flag_object(true);
+        session.set_authored_birds_enabled(true);
+        session.set_authored_tree_objects({{1,404*65536,88*65536,2*65536,15*65536,20*65536,11*65536,44*65536}});
+        session.start_original_welly();
+        for(int i=0;i<30;++i) {session.tick_original_welly(false);session.step_tick();}
+        auto resumed=preview();resumed.register_course(1,real);
+        resumed.restore_native_session(session.serialize_native_session());
+        assert(resumed.native_fingerprint()==session.native_fingerprint());
+        while(session.original_welly_state().stage==1) {
+            const bool press=session.original_welly_state().counter==50;
+            session.tick_original_welly(press);resumed.tick_original_welly(press);
+        }
+        while(session.original_welly_state().counter>64) {
+            session.tick_original_welly(false);resumed.tick_original_welly(false);
+        }
+        session.tick_original_welly(true);resumed.tick_original_welly(true);
+        for(int i=0;i<10;++i)session.step_tick();
+        resumed.restore_native_session(session.serialize_native_session());
+        for(int i=0;i<100;++i) {session.step_tick();resumed.step_tick();assert(resumed.native_fingerprint()==session.native_fingerprint());}
+        const auto good=resumed.native_fingerprint();
+        bool rejected=false;
+        try {resumed.restore_native_session(session.serialize_native_session()+"corrupt");}catch(const std::invalid_argument&){rejected=true;}
+        assert(rejected && resumed.native_fingerprint()==good);
+
         const auto origin=real.green_region();assert(origin);
         for(const auto& arrow:arrows) {
             assert(origin->contains_course(arrow.world_x,arrow.world_y));

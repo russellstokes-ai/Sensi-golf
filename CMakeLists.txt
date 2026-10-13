@@ -12,6 +12,7 @@ if(NOT ANDROID)
     add_executable(pixtee_native_green_arrow_tests
         pixtee-godot/native/tests/native_green_arrow_mapi_bridge_tests.cpp
         pixtee-godot/native/src/pixtee_round_runtime.cpp
+        pixtee-godot/native/src/pixtee_native_session.cpp
         pixtee-godot/native/src/pixtee_course_adapter.cpp
         pixtee-godot/native/src/recovered_welly_tick.cpp)
     target_include_directories(pixtee_native_green_arrow_tests PRIVATE pixtee-godot/native/src)

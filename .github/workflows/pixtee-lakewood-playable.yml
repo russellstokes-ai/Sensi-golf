@@ -85,6 +85,7 @@ jobs:
           verify_godot --headless --path pixtee-godot --script res://scripts/PlayerReportedRenderingCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/WhackMeterCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/MobileHUDCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/CommercialJourneyCI.gd
           verify_godot --headless --verbose --path pixtee-godot --script res://scripts/OwnerAudioCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/LakewoodSceneCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/TreeContactsCI.gd

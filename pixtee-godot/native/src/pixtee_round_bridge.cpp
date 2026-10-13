@@ -87,6 +87,9 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("cycle_club","delta"),&PixteeRoundBridge::cycle_club);
     ClassDB::bind_method(D_METHOD("set_verified_flag_object","present"),
                          &PixteeRoundBridge::set_verified_flag_object);
+    ClassDB::bind_method(D_METHOD("save_native_session"),&PixteeRoundBridge::save_native_session);
+    ClassDB::bind_method(D_METHOD("restore_native_session","payload"),&PixteeRoundBridge::restore_native_session);
+    ClassDB::bind_method(D_METHOD("set_authored_birds_enabled","enabled"),&PixteeRoundBridge::set_authored_birds_enabled);
     ClassDB::bind_method(D_METHOD("set_original_player_mode_5a","mode"),
                          &PixteeRoundBridge::set_original_player_mode_5a);
     ClassDB::bind_method(D_METHOD("meter_click_raw","sample"),&PixteeRoundBridge::meter_click_raw);
@@ -524,6 +527,7 @@ bool PixteeRoundBridge::METHOD { \
     try {CODE;last_error_="";return true;} \
     catch(const std::exception& e) {last_error_=String(e.what());return false;} \
 }
+PIXTEE_WRAP_BOOL(set_authored_birds_enabled(bool enabled),round_->set_authored_birds_enabled(enabled))
 PIXTEE_WRAP_BOOL(load_next_hole(),round_->load_next_hole())
 PIXTEE_WRAP_BOOL(start_original_welly(),round_->start_original_welly())
 PIXTEE_WRAP_BOOL(set_aim_raw(int h),round_->set_aim_raw(static_cast<std::uint16_t>(h)))
@@ -598,6 +602,7 @@ void PixteeRoundBridge::step_tick() {
         const auto before_phase=round_->hole().phase();
         const auto before_tick=round_->hole().ball_state().tick;
         const auto before_vz=round_->hole().ball_state().vz_raw;
+        const auto before_z=round_->hole().ball_state().z_raw;
         const bool before_cup=round_->hole().pending_cup_capture_event().has_value();
         const bool before_world_oob=round_->hole().pending_world_oob_event().has_value();
         round_->step_tick();
@@ -637,6 +642,12 @@ void PixteeRoundBridge::step_tick() {
                 }
                 if(type) queue_presentation_event(type,p.first,p.second,ball.tick);
             }
+            if(contact.bird_id) {
+                queue_presentation_event("authored_bird_contact",p.first,p.second,ball.tick);
+                Dictionary event=presentation_events_[presentation_events_.size()-1];
+                event["bird_id"]=static_cast<int64_t>(contact.bird_id);
+                event["world_z"]=static_cast<double>(before_z)/65536.;
+            }
             if(contact.flag) queue_presentation_event("verified_flag_contact",p.first,p.second,ball.tick);
             if(contact.tree_id) {
                 queue_presentation_event("authored_tree_contact",p.first,p.second,ball.tick);
@@ -669,6 +680,16 @@ bool PixteeRoundBridge::step_ticks(int count) {
         last_error_=String(e.what());
         return false;
     }
+}
+String PixteeRoundBridge::save_native_session() {
+    if(!round_)return "";
+    try {last_error_="";return String(round_->serialize_native_session().c_str());}
+    catch(const std::exception& e){last_error_=String(e.what());return "";}
+}
+bool PixteeRoundBridge::restore_native_session(const String& payload) {
+    if(!round_)return false;
+    try {round_->restore_native_session(payload.utf8().get_data());presentation_events_.clear();presentation_serial_=0;last_error_="";return true;}
+    catch(const std::exception& e){last_error_=String(e.what());return false;}
 }
 String PixteeRoundBridge::save_stable_replay() {
     if(!round_) return "";
@@ -811,6 +832,11 @@ Dictionary PixteeRoundBridge::snapshot() const {
             const bool original_world_oob= h.last_hazard_kind()==
                 sensigolf::ClassicNamedHazard::OutsideWorld &&
                 h.phase()==sensigolf::HoleSessionPhase::HazardStopped;
+            const auto bird=h.authored_bird();
+            d["bird_active"]=bird.active;d["bird_id"]=static_cast<int64_t>(bird.id);
+            d["bird_x_raw"]=bird.point.x;d["bird_y_raw"]=bird.point.y;d["bird_z_raw"]=bird.point.z;
+            d["bird_hit"]=h.authored_bird_hit();d["bird_hit_age"]=static_cast<int64_t>(h.bird_hit_age());
+            d["authored_clock"]=static_cast<int64_t>(h.authored_clock());
             d["terrain_available"]=!original_world_oob;
             if(!original_world_oob) {
             const auto surface=h.current_surface();

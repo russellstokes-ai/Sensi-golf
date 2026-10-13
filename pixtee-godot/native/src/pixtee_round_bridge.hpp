@@ -71,6 +71,7 @@ public:
     bool nudge_aim_raw(int delta);
     bool set_club_index(int index);
     bool set_verified_flag_object(bool present);
+    bool set_authored_birds_enabled(bool enabled);
     bool set_authored_tree_objects(const PackedInt32Array& raw_volumes);
     bool set_original_player_mode_5a(int mode);
     bool cycle_club(int delta);
@@ -85,6 +86,8 @@ public:
     void step_tick();
     Array drain_presentation_events();
     String save_stable_replay();
+    String save_native_session();
+    bool restore_native_session(const String& payload);
     bool restore_replay(const String& payload);
     Dictionary snapshot() const;
     Array verified_native_green_arrow_cells(int green_detail_stride = 8) const;

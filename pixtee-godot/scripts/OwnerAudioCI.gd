@@ -12,8 +12,8 @@ func check(condition: bool, message: String) -> bool:
 func _run() -> void:
 	var audio := PixteeCommercialAudio.new()
 	root.add_child(audio)
-	if not check(audio.load_owner_pack().is_empty(), "All 20 MP3s must decode"): return
-	if not check(audio._catalog.size() == 20, "All supplied recordings must be indexed"): return
+	if not check(audio.load_owner_pack().is_empty(), "All 23 MP3s must decode"): return
+	if not check(audio._catalog.size() == 23, "All supplied recordings must be indexed"): return
 	if not check(not audio.is_fully_populated(), "Pack ingestion must not certify commercial completeness"): return
 	audio.set_context("menu")
 	var music: AudioStreamPlayer = audio._players["Music"]
@@ -74,5 +74,5 @@ func _run() -> void:
 	audio.stop_all_for_application_pause()
 	audio.free()
 	await create_timer(0.5).timeout # Allow multiple 4096-frame Dummy mixer cycles and main-thread retirement.
-	print("Owner audio PASS: 20 recordings decoded; context, loops, native routing, dedupe, mute and bounded voices")
+	print("Owner audio PASS: 23 recordings decoded; context, loops, native routing, dedupe, mute and bounded voices")
 	quit(0)

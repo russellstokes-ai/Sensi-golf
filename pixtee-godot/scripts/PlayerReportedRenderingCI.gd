@@ -17,6 +17,18 @@ func _run() -> void:
 		var first: Rect2 = world.bird_frame_rect(species,0,Vector2.ZERO)
 		for frame in range(8):
 			assert(world.bird_frame_rect(species,frame,Vector2.ZERO)==first, "Bird animation canvas and scale must stay fixed")
+	var atmosphere: Node2D
+	for child in world.get_children():
+		if child.get_script() == load("res://scripts/PixteeCourseAtmosphere.gd"): atmosphere = child
+	assert(atmosphere != null, "Course atmosphere must be attached")
+	world.set_process(false)
+	var frozen: float = atmosphere.elapsed
+	atmosphere._process(0.1)
+	assert(atmosphere.elapsed == frozen, "Pause freezes atmosphere")
+	world.set_process(true)
+	world.reduced_motion = true
+	atmosphere._process(0.1)
+	assert(atmosphere.elapsed == frozen, "Reduced motion freezes atmosphere")
 	world.free()
 	print("PLAYER_RENDERING_PASS: golfer anchored during flight; all 32 bird frames use fixed canvas scale")
 	quit(0)

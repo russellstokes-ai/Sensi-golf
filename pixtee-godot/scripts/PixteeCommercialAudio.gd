@@ -18,6 +18,7 @@ const REQUIRED_TRACKS := [
 const NATIVE_EVENT_TO_CUE := {
 	"club_swing": "club_whoosh",
 	"club_contact": "club_strike",
+	"ball_bounce": "small_bounce",
 	"fairway_contact": "fairway_hit",
 	"rough_contact": "rough_hit",
 	"bunker_contact": "bunker_sand",
@@ -122,6 +123,13 @@ func load_owner_pack() -> PackedStringArray:
 			# Both recordings are labelled ball-into-hole by the owner.
 			# Keep the immutable intake manifest; do not call variant 2 a lip-out.
 			loaded["cup_capture_variant" if cue == "cup_rattle" else cue] = stream
+	for cue in {"putter_strike":"Putter hitting sound.mp3", "large_bounce":"Golf ball large bounce.mp3", "small_bounce":"Golf ball small bounce.mp3"}:
+		var filenames := {"putter_strike":"Putter hitting sound.mp3", "large_bounce":"Golf ball large bounce.mp3", "small_bounce":"Golf ball small bounce.mp3"}
+		var recording: Variant = load("res://audio/owner-supplement-v1/"+str(filenames[cue]))
+		if not recording is AudioStream or recording.get_length() <= 0:
+			failures.append(str(cue)+": recording could not be decoded")
+		else:
+			loaded[cue] = recording
 	if failures.is_empty():
 		_catalog = loaded
 		_ready_for_commercial_audio = false
@@ -235,8 +243,12 @@ func consume_confirmed_native_event(event: Dictionary) -> bool:
 	if _event_dedup.has(event_id):
 		return false
 	var cue: String = NATIVE_EVENT_TO_CUE[event_type]
+	if event_type == "ball_bounce":
+		cue = "large_bounce" if int(event.get("rebound_vz_raw",0)) >= 65536 else "small_bounce"
 	if event_type == "club_contact" and int(event.get("launch_surface_code",-1)) in [5,6]:
 		cue = "rough_club_strike"
+	if event_type == "club_contact" and int(event.get("launch_club_index",-1)) == 12:
+		cue = "putter_strike"
 	if cue == "cup_capture" and _catalog.has("cup_capture_variant") and _ambience_rng.randi_range(0,1) == 1:
 		cue = "cup_capture_variant"
 	if not _catalog.has(cue): return false

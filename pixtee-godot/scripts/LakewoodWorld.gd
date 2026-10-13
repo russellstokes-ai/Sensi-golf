@@ -44,6 +44,9 @@ func _ready() -> void:
 		var material := ShaderMaterial.new()
 		material.shader = load("res://shaders/pixtee_subtle_water.gdshader")
 		material.set_shader_parameter("presentation_time",time)
+		material.set_shader_parameter("repeat_surface",true)
+		material.set_shader_parameter("flow_direction",Vector2(0.3,1.0) if key == "river" else Vector2(1.0,0.2))
+		material.set_shader_parameter("flow_texels_per_second",2.0 if key == "river" else 0.35)
 		water.material = material
 		add_child(water)
 	# Ground stays beneath water and objects; scale is uniform 4x export -> 1x world.
@@ -53,6 +56,10 @@ func _ready() -> void:
 	ground.scale = Vector2(0.25,0.25)
 	ground.z_index = -2
 	add_child(ground)
+	var atmosphere := preload("res://scripts/PixteeCourseAtmosphere.gd").new()
+	atmosphere.world = self
+	atmosphere.z_index = 1
+	add_child(atmosphere)
 
 func accept_snapshot(state: Dictionary) -> void:
 	native_state = state
@@ -83,6 +90,17 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	if assets.is_empty(): return
+	# Grounded silhouettes retain each approved sprite's proportions and alpha.
+	# Draw every shadow before any object so foliage cannot shade foreground art.
+	for object in placements:
+		if object.type not in ["tree","golfer","photographer"]: continue
+		var anchor := Vector2(object.x,object.y)
+		if object.type == "golfer" and golfer_position_initialized: anchor = golfer_world
+		if not view_rect.grow(70).has_point(anchor): continue
+		var art: Dictionary = assets[object.id]
+		var region: Array = art.rect
+		var dimensions := Vector2(region[2],region[3]) * (float(object.h)/float(region[3]))
+		draw_texture_rect_region(textures[art.image],Rect2(anchor-Vector2(dimensions.x*0.5,dimensions.y)+Vector2(4,5),dimensions),Rect2(region[0],region[1],region[2],region[3]),Color(0.06,0.10,0.13,0.20))
 	for o in placements:
 		var pos := Vector2(o.x,o.y)
 		if o.type == "golfer":

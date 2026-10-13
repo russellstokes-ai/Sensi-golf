@@ -423,6 +423,7 @@ func advance_native_tick() -> void:
 		if event.get("event_type","") == "club_contact":
 			# Launch lie comes directly from the preceding native snapshot.
 			event["launch_surface_code"] = native_before.get("surface_code",-1)
+			event["launch_club_index"] = native_before.get("club_index",-1)
 		fx.submit_confirmed_native_event(event)
 		audio.consume_confirmed_native_event(event)
 	# The recovered core alone completes the original 100-tick recovery.

@@ -31,6 +31,16 @@ func _run() -> void:
 	audio._ambience_timer.stop()
 	audio._next_course_ambience()
 	var event := {"confirmed_native":true,"event_id":"tree:1","event_type":"authored_tree_contact"}
+	for example in [{"event_type":"club_contact","launch_club_index":12,"cue":"putter_strike"},{"event_type":"ball_bounce","rebound_vz_raw":65536,"cue":"large_bounce"},{"event_type":"ball_bounce","rebound_vz_raw":100,"cue":"small_bounce"}]:
+		var packet: Dictionary = example.duplicate()
+		packet["confirmed_native"] = true
+		packet["event_id"] = "supplement:"+str(example.cue)
+		if not check(audio.consume_confirmed_native_event(packet),"Owner supplement routed"): return
+		var matched := false
+		for voice in audio._sfx_pool:
+			if voice.playing and voice.stream == audio._catalog[example.cue]: matched = true
+		if not check(matched,"Correct supplied recording selected"): return
+		if not check(not audio.consume_confirmed_native_event(packet),"Supplement deduplicated"): return
 	if not check(audio.consume_confirmed_native_event(event), "Real authored tree contact audible"): return
 	if not check(not audio.consume_confirmed_native_event(event), "No repeated collision sound"): return
 	event = {"confirmed_native":true,"event_id":"flag:1","event_type":"verified_flag_contact"}

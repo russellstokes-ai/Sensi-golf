@@ -596,6 +596,7 @@ void PixteeRoundBridge::step_tick() {
         if(!round_->has_hole()) {round_->step_tick();return;}
         const auto before_phase=round_->hole().phase();
         const auto before_tick=round_->hole().ball_state().tick;
+        const auto before_vz=round_->hole().ball_state().vz_raw;
         const bool before_cup=round_->hole().pending_cup_capture_event().has_value();
         const bool before_world_oob=round_->hole().pending_world_oob_event().has_value();
         round_->step_tick();
@@ -615,6 +616,12 @@ void PixteeRoundBridge::step_tick() {
             const auto p=world_position(contact.x_raw,contact.y_raw,contact.green_mode);
             if(before_tick==0) queue_presentation_event("club_contact",p.first,p.second,ball.tick);
             if(contact.impact || contact.hazard) {
+                // Report actual native rebounds, never proximity or a visual arc.
+                if(contact.impact && !contact.hazard && before_vz<0 && ball.vz_raw>0) {
+                    queue_presentation_event("ball_bounce",p.first,p.second,ball.tick);
+                    Dictionary rebound=presentation_events_[presentation_events_.size()-1];
+                    rebound["rebound_vz_raw"]=static_cast<int64_t>(ball.vz_raw);
+                }
                 const char* type=nullptr;
                 switch(contact.landing_code) {
                 case 2:case 3:case 4:type="fairway_contact";break;

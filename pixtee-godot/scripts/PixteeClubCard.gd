@@ -38,7 +38,9 @@ func _tap(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		if state.get("can_shoot",false):
 			list.select(int(state.get("club_index",0)))
-			picker.popup_centered(Vector2i(300,360))
+			var factor := get_global_transform().get_scale().x
+			picker.content_scale_factor = factor
+			picker.popup_centered(Vector2i(roundi(300*factor),roundi(360*factor)))
 		accept_event()
 
 func _draw() -> void:

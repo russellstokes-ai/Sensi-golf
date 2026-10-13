@@ -13,6 +13,7 @@ var native_state: Dictionary = {}
 var ball_world := Vector2(256,850)
 var golfer_world := Vector2(249,853)
 var golfer_position_initialized := false
+var golfer_facing_left := false
 var view_rect := Rect2(0,0,544,912)
 
 func _ready() -> void:
@@ -71,6 +72,7 @@ func accept_snapshot(state: Dictionary) -> void:
 	if not golfer_position_initialized or int(state.get("hole_phase",-1)) == 0:
 		golfer_world = ball_world + Vector2(-7,3)
 		golfer_position_initialized = true
+		golfer_facing_left = sin(float(state.get("aim_raw",0))*TAU/4096.0) < 0.0
 	queue_redraw()
 
 func bird_frame_rect(species: String, frame: int, centre: Vector2) -> Rect2:
@@ -127,7 +129,8 @@ func _draw() -> void:
 		var angle := 0.0
 		if o.type in ["tree","grass","flowers","reeds"] and not reduced_motion and visual_quality > 0:
 			angle = sin(time*0.7+o.phase)*0.009
-		draw_set_transform(pos,angle,Vector2(-1 if o.get("flipX",false) else 1,1))
+		var flipped: bool = golfer_facing_left if o.type == "golfer" else o.get("flipX",false)
+		draw_set_transform(pos,angle,Vector2(-1 if flipped else 1,1))
 		draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y),size),Rect2(rect[0],rect[1],rect[2],rect[3]))
 		draw_set_transform(Vector2.ZERO)
 	# Side-on birds use the supplied flight frames. Cosmetic time and path only;

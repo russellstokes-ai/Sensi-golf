@@ -13,7 +13,9 @@ var arrows: PixteeVerifiedGreenArrows
 var menu: Control
 var hud: Control
 var status: Label
-var club: Label
+var club_card: Control
+var minimap: Control
+var aim_touch: Control
 var meter: Control
 var playing := false
 var paused := false
@@ -59,6 +61,7 @@ func _ready() -> void:
 	hud = Control.new()
 	hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(hud)
+	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.hide()
 	make_hud()
 	get_viewport().size_changed.connect(update_ui_layout)
@@ -315,16 +318,24 @@ func make_hud() -> void:
 	var bottom := VBoxContainer.new()
 	hud.add_child(bottom)
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -145
-	club = text_line("Driver")
-	bottom.add_child(club)
-	var controls := HBoxContainer.new()
-	controls.alignment = BoxContainer.ALIGNMENT_CENTER
-	bottom.add_child(controls)
-	controls.add_child(button("− Club",func(): change_club(-1),Vector2(82,40)))
-	controls.add_child(button("◀",func(): change_aim(-32),Vector2(70,40)))
-	controls.add_child(button("▶",func(): change_aim(32),Vector2(70,40)))
-	controls.add_child(button("+ Club",func(): change_club(1),Vector2(82,40)))
+	bottom.offset_top = -64
+	club_card = preload("res://scripts/PixteeClubCard.gd").new()
+	hud.add_child(club_card)
+	club_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	club_card.offset_left = -172
+	club_card.offset_right = -8
+	club_card.offset_top = 54
+	club_card.offset_bottom = 180
+	club_card.club_selected.connect(select_club)
+	minimap = preload("res://scripts/PixteeMiniMap.gd").new()
+	minimap.world = world
+	hud.add_child(minimap)
+	minimap.position = Vector2(8,54)
+	aim_touch = preload("res://scripts/PixteeAimTouch.gd").new()
+	aim_touch.game = self
+	hud.add_child(aim_touch)
+	aim_touch.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	aim_touch.aim_changed.connect(change_aim)
 	meter = preload("res://scripts/PixteeWhackMeter.gd").new()
 	meter.pressed.connect(on_shoot)
 	bottom.add_child(meter)
@@ -390,11 +401,15 @@ func on_shoot() -> void:
 	elif s.get("can_shoot",false):
 		core.start_original_welly()
 
-func change_club(direction: int) -> void:
-	if playing and not paused and core != null: core.cycle_club(direction)
+func select_club(index: int) -> void:
+	if playing and not paused and core != null and core.snapshot().get("can_shoot",false):
+		core.set_club_index(index)
+		update_view(core.snapshot())
 
 func change_aim(amount: int) -> void:
-	if playing and not paused and core != null: core.nudge_aim_raw(amount)
+	if playing and not paused and core != null and core.snapshot().get("can_shoot",false):
+		core.nudge_aim_raw(amount)
+		update_view(core.snapshot())
 
 func _process(delta: float) -> void:
 	if not playing or paused or core == null: return
@@ -435,7 +450,7 @@ func update_view(s: Dictionary) -> void:
 	# Both camera axes share the same scale; native coordinates never change.
 	camera.zoom = Vector2.ONE*maxf(1.0,minf(screen.x,screen.y)/240.0)
 	# Reserve actual HUD space. The world is cropped, never squeezed to fit.
-	var half_view := Vector2(screen.x,maxf(120,screen.y-209*ui_scale)) / camera.zoom / 2.0
+	var half_view := Vector2(screen.x,maxf(120,screen.y-128*ui_scale)) / camera.zoom / 2.0
 	camera.offset.y = 56.0*ui_scale/camera.zoom.y
 	var at: Vector2 = world.ball_world
 	camera.position.x = 272 if half_view.x >= 272 else clampf(at.x,half_view.x,544-half_view.x)
@@ -443,7 +458,10 @@ func update_view(s: Dictionary) -> void:
 	var rendered_half := screen/camera.zoom/2.0
 	world.view_rect = Rect2(camera.position+camera.offset-rendered_half,rendered_half*2)
 	status.text = "H1 · Par 4 · Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
-	club.text = CLUBS[int(s.get("club_index",0))]
+	club_card.accept_snapshot(s)
+	minimap.queue_redraw()
+	camera.force_update_scroll()
+	aim_touch.refresh(s)
 	meter.reduced_motion = reduced_motion
 	meter.accept_snapshot(s)
 

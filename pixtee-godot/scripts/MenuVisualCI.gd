@@ -33,6 +33,7 @@ func _run() -> void:
 	await capture(scene,"whack-meter-portrait",false)
 	var meter_image := root.get_texture().get_image().get_region(Rect2i(0,root.size.y-240,root.size.x,240))
 	print("WHACK_METER_PNG:"+Marshalls.raw_to_base64(meter_image.save_png_to_buffer()))
+	print("MOBILE_HUD_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	scene.pause_game()
 	scene.show_scorecard()
 	await capture(scene,"scorecard-portrait")

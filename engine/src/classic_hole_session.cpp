@@ -130,8 +130,10 @@ bool ClassicHoleSession::surface_supported_for_active_shot(
         return false;
     }
 
-    // GREEN H4 uses putter-specific green drag/slope semantics.
-    return surface.landing_code != 1;
+    // Original non-putter GREEN H4 uses the ordinary native gravity/bounce
+    // path. The separate club-12 branch owns green drag and slope. Verified
+    // against all 12 non-putter clubs at two powers, descriptor/profile 31/6.
+    return true;
 }
 
 void ClassicHoleSession::set_original_animation_assets(

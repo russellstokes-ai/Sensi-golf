@@ -1,6 +1,7 @@
 #include "sensigolf/authored_tree_contacts.hpp"
 #include <algorithm>
 #include <cstdlib>
+#include <optional>
 #include <set>
 #include <stdexcept>
 namespace sensigolf {
@@ -17,19 +18,26 @@ void validate_authored_trees(const std::vector<AuthoredTreeVolume>& trees) {
     }
 }
 namespace {
-bool cylinder(AuthoredTreePoint a,AuthoredTreePoint b,const AuthoredTreeVolume& tree,
+std::int64_t floor_div(std::int64_t n,std::int64_t d) {
+    if(d<0) {n=-n;d=-d;}
+    return n/d-(n%d<0?1:0);
+}
+std::int64_t ceil_div(std::int64_t n,std::int64_t d) {
+    if(d<0) {n=-n;d=-d;}
+    return n/d+(n%d>0?1:0);
+}
+std::optional<std::int64_t> cylinder(AuthoredTreePoint a,AuthoredTreePoint b,const AuthoredTreeVolume& tree,
               std::int32_t radius,std::int32_t bottom,std::int32_t top) {
     // Clip the swept segment to the volume's vertical interval, then check the
     // closest horizontal point. Q16 t avoids floating-point platform variance.
     std::int64_t lo=0,hi=65536;
     const std::int64_t dz=std::int64_t(b.z)-a.z;
-    if(dz==0) {if(a.z<bottom || a.z>top)return false;}
+    if(dz==0) {if(a.z<bottom || a.z>top)return std::nullopt;}
     else {
-        auto first=(std::int64_t(bottom)-a.z)*65536/dz;
-        auto last=(std::int64_t(top)-a.z)*65536/dz;
-        if(first>last)std::swap(first,last);
+        const auto first=ceil_div((std::int64_t(dz>0?bottom:top)-a.z)*65536,dz);
+        const auto last=floor_div((std::int64_t(dz>0?top:bottom)-a.z)*65536,dz);
         lo=std::max(lo,first);hi=std::min(hi,last);
-        if(lo>hi)return false;
+        if(lo>hi)return std::nullopt;
     }
     const std::int64_t dx=std::int64_t(b.x)-a.x,dy=std::int64_t(b.y)-a.y;
     // The real native tick cannot cross 64 world units per axis. Bound products
@@ -43,21 +51,37 @@ bool cylinder(AuthoredTreePoint a,AuthoredTreePoint b,const AuthoredTreeVolume& 
         if(dot>=denominator)t=hi;
         else if(dot>0)t=std::clamp(dot*65536/denominator,lo,hi);
     }
-    const auto x=std::int64_t(a.x)+dx*t/65536-tree.x;
-    const auto y=std::int64_t(a.y)+dy*t/65536-tree.y;
-    return x*x+y*y<=std::int64_t(radius)*radius;
+    const auto within=[&](std::int64_t at) {
+        const auto x=std::int64_t(a.x)+dx*at/65536-tree.x;
+        const auto y=std::int64_t(a.y)+dy*at/65536-tree.y;
+        return x*x+y*y<=std::int64_t(radius)*radius;
+    };
+    if(!within(t))return std::nullopt;
+    // Distance decreases up to the closest point. Find first entry using
+    // fixed-point bisection, retaining identical integer results on each host.
+    while(lo<t) {
+        const auto mid=lo+(t-lo)/2;
+        if(within(mid))t=mid;else lo=mid+1;
+    }
+    return lo;
 }
 }
 AuthoredTreeContact authored_tree_contact(const std::vector<AuthoredTreeVolume>& trees,
                                          AuthoredTreePoint a,AuthoredTreePoint b) {
     for(const auto p:{a,b})if(std::abs(std::int64_t(p.x))>4096*65536 || std::abs(std::int64_t(p.y))>4096*65536)
         throw std::out_of_range("tree contact point outside supported world bounds");
+    AuthoredTreeContact best{};
+    std::int64_t first=65537;
     for(const auto& tree:trees) {
-        if(cylinder(a,b,tree,tree.trunk_radius,0,tree.trunk_height))
-            return {tree.id,AuthoredTreeContactKind::Trunk};
-        if(cylinder(a,b,tree,tree.canopy_radius,tree.canopy_bottom,tree.canopy_top))
-            return {tree.id,AuthoredTreeContactKind::Canopy};
+        const auto consider=[&](std::optional<std::int64_t> entry,AuthoredTreeContactKind kind) {
+            if(entry && (*entry<first || (*entry==first && tree.id<best.tree_id))) {
+                first=*entry;best={tree.id,kind};
+            }
+        };
+        // Stable tie: lower tree ID, then trunk before canopy.
+        consider(cylinder(a,b,tree,tree.trunk_radius,0,tree.trunk_height),AuthoredTreeContactKind::Trunk);
+        consider(cylinder(a,b,tree,tree.canopy_radius,tree.canopy_bottom,tree.canopy_top),AuthoredTreeContactKind::Canopy);
     }
-    return {};
+    return best;
 }
 }

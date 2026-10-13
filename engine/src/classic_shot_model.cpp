@@ -264,12 +264,14 @@ void ClassicShotModel::step() {
                 flight_.vertical_force=rebound.vertical_force;
                 flight_.horizontal_force=rebound.horizontal_force;
             }
-            // Roll back this tick's horizontal penetration; the existing
-            // native integrator advances the deflected ball on the next tick.
-            flight_.x=previous_flight.x;flight_.y=previous_flight.y;
             presentation_contact_.tree_id=contact.tree_id;
             presentation_contact_.canopy=contact.kind==AuthoredTreeContactKind::Canopy;
-            presentation_contact_.x_raw=flight_.x;presentation_contact_.y_raw=flight_.y;
+            presentation_contact_.x_raw=previous_flight.x;presentation_contact_.y_raw=previous_flight.y;
+        }
+        // Dedupe only PRNG/event emission. Every intersecting tick still
+        // prevents penetration, even if a grazing deflection hits again.
+        if(contact.tree_id) {
+            flight_.x=previous_flight.x;flight_.y=previous_flight.y;
         }
         last_tree_id_=contact.tree_id;
     }

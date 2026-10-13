@@ -67,7 +67,9 @@
       "requirements": "Flag objects, SPT cup, lip-outs, distance/height, code8/9/10 and actual putt/hole capture",
       "proof_required": "Round scored only for real valid capture or correctly recognised zero-distance rest, not proximity/GUI; 16x16 green direction and magnitude parity",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -156,7 +158,9 @@
       "requirements": "All 16 original slope directions and 16 magnitude levels as readable green arrow markers oriented to real recovered putting force",
       "proof_required": "Arrow vectors from engine's slope_direction raw 0..4095 (multiples of256) and slope_magnitude0..15; test all 256 combinations and sample actual MAPS cells, green only",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -228,7 +232,9 @@
       "requirements": "Tee/green labels, hazard dialogs, penalty information, putt prompts, cup animations, 3-hole summary, hole transitions",
       "proof_required": "End-to-end gameplay videos, consistent stroke counts, never block input following finished native event",
       "status": "OPEN",
-      "evidence_links": [],
+      "evidence_links": [
+        "spec/pixtee/PIXTEE_ONE_HOLE_WORK_EVIDENCE_2026-10-12.json"
+      ],
       "reviewer": null
     },
     {
@@ -306,7 +312,7 @@
   ],
   "core_m1_gate_reference": "spec/pixtee/MILESTONE_ONE_ENGINE_DATA_INVENTORY_2026-10-12.json",
   "video_and_media_source_status": "NO VERIFIED ORIGINAL OR LICENSED INTRO / MUSIC / COMPLETE SFX LIBRARY YET",
-  "green_arrow_status": "SOURCE 16x16 ARROW SUPPORT VERIFIED; GREEN H4 non-putter admission source-proven; Lakewood live MAPS/slope/arrow activation remains OPEN",
+  "green_arrow_status": "LIVE LAKEWOOD NATIVE MAPS/ARROWS INTEGRATED AND GODOT-TESTED; source scene-mode routing proven; full player/visual/device QA remains OPEN",
   "tree_collision_status": "OWNER-AUTHORIZED AUTHORED C++ TRUNK/CANOPY IMPLEMENTED; genuine Lakewood native canopy contact, earliest-contact and nonpenetration regressions PASS; full geometry/player QA remains OPEN",
   "godot_playable_three_holes": false,
   "copyright_clearance": false,

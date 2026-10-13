@@ -171,5 +171,60 @@
     },
     "commercial_gates_promoted": 0,
     "commercial_release_ready": false
+  },
+  "live_green_increment_2026_10_13": {
+    "tested_code_head": "e6dffda9e0a48cb1378dbbf57c09f5ff95a68396",
+    "restoration_branch": "restore/pixtee-live-green-e6dffda-2026-10-13",
+    "native_scene_run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38379270293",
+    "native_scene_job": 115235327451,
+    "source_putter_mode_run": "https://github.com/russellstokes-ai/Sensi-golf/actions/runs/38374271650",
+    "source_putter_mode_traces": 12,
+    "source_tolerance": 0,
+    "native_tests": 27,
+    "tools_tests": 12,
+    "root_tests": 61,
+    "scene_result": "PASS: actual445 objects, native3-shot completion,9 unique events, trees/OOB, player/menu journeys",
+    "green_bundle": "pixtee-godot/courses/lakewood-hole-1/native-green-v1/manifest.json",
+    "authored_field": "pixtee-godot/courses/lakewood-hole-1/authored-green-slopes.json",
+    "authored_field_sha256": "4024419797f05c7052cf085ce16a2e9782d36cc468b9ad97ad75c1250faf44e1",
+    "native_mapping": "PASS:13312 native detail cells, original bank prefix and course tile indices,304/120 origin,120/96 native cup, source entry/exit and cup-to-score",
+    "native_arrows": "PASS:all256 source direction/strength combinations plus real Lakewood field; clipped to source admission bounds where slope applies; field reads do not advance gameplay",
+    "score_sign": "PASS: native par-minus-strokes retained; birdie and over-par journal/display translation and restore verified",
+    "native_test_inputs": [
+      [
+        0,
+        105,
+        1946
+      ],
+      [
+        1,
+        95,
+        1942
+      ],
+      [
+        12,
+        105,
+        2121
+      ]
+    ],
+    "visual_artifact": {
+      "id": 11802059381,
+      "sha256": "91935c4df05077e53cb3c562e2006029dc86a4c3ad29f6caafd7ec60a15eed38",
+      "screenshots": 8,
+      "manual_review": "pending"
+    },
+    "windows_test_package": {
+      "filename": "Pixtee-Lakewood-Native-Green-Windows-2026-10-13-r2.zip",
+      "sha256": "70f4b35fe2534284b533f82266973fafa4527a78ae87364495193b2ca04437aa",
+      "bytes": 101932804,
+      "native_extension_sha256": "2d9d0f979fb16830d4ba204f8fa2f236bedaf4037826b282b3a296e6a31dc364",
+      "extension_compile": "PASS",
+      "runtime_manual_play": "pending",
+      "first_launch_asset_import": true
+    },
+    "native_lip_out_complete_player_context": "OPEN; source helper tests do not establish full player-context integration",
+    "commercial_gates_promoted": 0,
+    "commercial_release_ready": false,
+    "apk_created": false
   }
 }

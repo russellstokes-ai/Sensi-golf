@@ -414,11 +414,15 @@ func _process(delta: float) -> void:
 
 func advance_native_tick() -> void:
 	if paused or core == null: return
-	if core.snapshot().get("original_welly_active",false):
+	var native_before: Dictionary = core.snapshot()
+	if native_before.get("original_welly_active",false):
 		core.tick_original_welly(pending_press)
 		pending_press = false
 	core.step_tick()
 	for event in core.drain_presentation_events():
+		if event.get("event_type","") == "club_contact":
+			# Launch lie comes directly from the preceding native snapshot.
+			event["launch_surface_code"] = native_before.get("surface_code",-1)
 		fx.submit_confirmed_native_event(event)
 		audio.consume_confirmed_native_event(event)
 	# The recovered core alone completes the original 100-tick recovery.

@@ -35,6 +35,12 @@ func _run() -> void:
 	if not check(not audio.consume_confirmed_native_event(event), "No repeated collision sound"): return
 	event = {"confirmed_native":true,"event_id":"flag:1","event_type":"verified_flag_contact"}
 	if not check(audio.consume_confirmed_native_event(event), "Native flag contact audible"): return
+	event = {"confirmed_native":true,"event_id":"rough:1","event_type":"club_contact","launch_surface_code":5}
+	if not check(audio.consume_confirmed_native_event(event), "Native rough launch audible"): return
+	var rough_playing := false
+	for voice in audio._sfx_pool:
+		if voice.stream == audio._catalog["rough_club_strike"]: rough_playing = voice.playing
+	if not check(rough_playing, "Native rough lie selects the supplied rough strike"): return
 	event = {"confirmed_native":false,"event_id":"bird:1","event_type":"authored_bird_contact"}
 	if not check(not audio.consume_confirmed_native_event(event), "Cosmetic birds cannot invent hits"): return
 	audio.set_context("menu")
@@ -49,7 +55,7 @@ func _run() -> void:
 	audio.set_context("results")
 	var cup_finished_across_score := false
 	for voice in audio._sfx_pool:
-		if voice.stream == audio._catalog["cup_capture"]:
+		if voice.stream in [audio._catalog["cup_capture"],audio._catalog["cup_capture_variant"]]:
 			cup_finished_across_score = voice.playing and not voice.stream_paused
 	if not check(cup_finished_across_score and not music.playing, "Score must let the cup sound finish without extra music"): return
 	if not check(audio.set_channel_level("SFX",0.0) and AudioServer.is_bus_mute(AudioServer.get_bus_index("SFX")), "Independent mute"): return

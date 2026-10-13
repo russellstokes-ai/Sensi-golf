@@ -119,7 +119,9 @@ func load_owner_pack() -> PackedStringArray:
 		if not stream is AudioStream or stream.get_length() <= 0:
 			failures.append(str(cue)+": recording could not be decoded")
 		else:
-			loaded[cue] = stream
+			# Both recordings are labelled ball-into-hole by the owner.
+			# Keep the immutable intake manifest; do not call variant 2 a lip-out.
+			loaded["cup_capture_variant" if cue == "cup_rattle" else cue] = stream
 	if failures.is_empty():
 		_catalog = loaded
 		_ready_for_commercial_audio = false
@@ -233,6 +235,10 @@ func consume_confirmed_native_event(event: Dictionary) -> bool:
 	if _event_dedup.has(event_id):
 		return false
 	var cue: String = NATIVE_EVENT_TO_CUE[event_type]
+	if event_type == "club_contact" and int(event.get("launch_surface_code",-1)) in [5,6]:
+		cue = "rough_club_strike"
+	if cue == "cup_capture" and _catalog.has("cup_capture_variant") and _ambience_rng.randi_range(0,1) == 1:
+		cue = "cup_capture_variant"
 	if not _catalog.has(cue): return false
 	var player: AudioStreamPlayer = null
 	for available in _sfx_pool:

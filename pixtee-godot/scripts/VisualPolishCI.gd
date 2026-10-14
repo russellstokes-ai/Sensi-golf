@@ -19,6 +19,7 @@ func _run() -> void:
 	var world = load("res://scripts/LakewoodWorld.gd").new()
 	root.add_child(world)
 	world.accept_snapshot({"ball_x_raw":256*65536,"ball_y_raw":850*65536,"green_mode":false,"hole_phase":0,"aim_raw":2048})
+	assert(world.ball_presentation != null and world.shadows != null)
 	assert(world.placements.size() == 445)
 	assert(world.object_nodes.size() == 444)
 	assert(world.player_rig.z_index == roundi(world.golfer_world.y))

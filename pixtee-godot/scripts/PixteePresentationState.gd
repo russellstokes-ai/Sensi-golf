@@ -18,7 +18,9 @@ func advance(delta: float) -> void:
 	if not paused and not reduced_motion: time_seconds += clampf(delta,0.0,0.1)
 	if wind_mph > 0.0: visual_breeze = clampf(wind_mph/15.0,0.0,1.0)
 func breeze_at(at: Vector2, amplitude: float) -> float:
-	if paused or reduced_motion or quality == 0: return 0.0
-	var phase := at.x*0.043+at.y*0.025
-	var gust := 0.7+0.3*sin(time_seconds*0.85)
-	return sin(time_seconds*1.05+phase)*gust*amplitude*visual_breeze
+	if reduced_motion or quality == 0: return 0.0
+	# Pause freezes the shared clock, rather than snapping foliage to rest.
+	var phase := at.dot(wind_toward)*0.009
+	var gust := 0.75+0.25*sin(time_seconds*0.21)
+	var wave := 0.25+0.75*sin(time_seconds*0.43+phase)
+	return wave*gust*amplitude*visual_breeze*wind_toward.x

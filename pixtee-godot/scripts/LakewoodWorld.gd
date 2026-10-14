@@ -227,7 +227,9 @@ func update_player_sprite() -> void:
 		player_rig.z_index = roundi(golfer_world.y)
 	if player_sprite == null: return
 	var female: bool = PixteeOutfit.female(outfit_id)
-	var heading := posmod(int(native_state.get("aim_raw",2048))+2048,4096)
+	# Atlas starts at north-facing (back view). A right-handed golfer stands
+	# left of the travel line and faces the ball, one quarter-turn clockwise.
+	var heading := posmod(int(native_state.get("aim_raw",2048))+3072,4096)
 	var direction := posmod(roundi(float(heading)/512.0),8)
 	var touch := int(native_state.get("touch_meter_phase",0))
 	var frame := 0
@@ -262,7 +264,9 @@ func update_player_sprite() -> void:
 	player_upper.texture = player_sprite.texture
 	player_upper.region_rect = player_sprite.region_rect
 	player_upper.scale = player_sprite.scale
-	player_upper.position = player_sprite.position+Vector2(0,sin(time*2.0)*0.45 if frame == 0 and not reduced_motion else 0.0)
+	# These are complementary masks of a complete pose, not joint-overlap art.
+	# Translating either mask exposes a transparent waist seam.
+	player_upper.position = player_sprite.position
 	if player_upper.material == null: player_upper.material = player_sprite.material.duplicate()
 	for property in ["face_style","beard_style","hairstyle_style","face_region","skin_colour","hair_colour","skin_enabled","hair_enabled","shirt_colour","trouser_colour","cap_colour","shirt_enabled","trouser_enabled","cap_enabled","atlas_grid","use_atlas_rect","atlas_origin","atlas_extent"]:
 		player_upper.material.set_shader_parameter(property,player_sprite.material.get_shader_parameter(property))

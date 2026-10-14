@@ -40,22 +40,24 @@ func _draw() -> void:
 	var dimensions := region.size*(float(spec.h)/float(art.rect[3]))
 	var flip := -1.0 if spec.get("flipX",false) else 1.0
 	var split := 0.0
-	var breath := 0.0
 	var angle := 0.0
 	if spec.type in ["person","photographer"]:
 		split = 0.58
-		breath = 0.0 if world.reduced_motion else sin(world.time*1.7+float(spec.phase))*0.24
 	elif spec.type == "tree":
 		split = 0.76
-		angle = world.presentation.breeze_at(position,deg_to_rad(1.5))
+		angle = world.presentation.breeze_at(position,deg_to_rad(0.75))
 	elif spec.type in ["grass","flowers","reeds"]:
-		angle = world.presentation.breeze_at(position,deg_to_rad(3.0))
+		angle = world.presentation.breeze_at(position,deg_to_rad(1.1))
 	if split > 0.0:
 		draw_set_transform(Vector2.ZERO,0,Vector2(flip,1))
 		var lower_height := dimensions.y*(1.0-split)
 		draw_texture_rect_region(texture,Rect2(Vector2(-dimensions.x/2,-lower_height),Vector2(dimensions.x,lower_height)),Rect2(region.position+Vector2(0,region.size.y*split),region.size*Vector2(1,1-split)))
-		draw_set_transform(Vector2(0,-lower_height+breath),angle,Vector2(flip,1))
-		draw_texture_rect_region(texture,Rect2(Vector2(-dimensions.x/2,-dimensions.y*split),Vector2(dimensions.x,dimensions.y*split)),Rect2(region.position,region.size*Vector2(1,split)))
+		draw_set_transform(Vector2(0,-lower_height),angle,Vector2(flip,1))
+		# A shared strip of the original trunk keeps the canopy joint covered.
+		# Human masks remain aligned exactly; genuine source frames supply motion.
+		var overlap := minf(1.0,lower_height*0.35) if spec.type == "tree" else 0.0
+		var source_overlap := overlap*region.size.y/dimensions.y
+		draw_texture_rect_region(texture,Rect2(Vector2(-dimensions.x/2,-dimensions.y*split),Vector2(dimensions.x,dimensions.y*split+overlap)),Rect2(region.position,Vector2(region.size.x,region.size.y*split+source_overlap)))
 	else:
 		draw_set_transform(Vector2.ZERO,angle,Vector2(flip,1))
 		draw_texture_rect_region(texture,Rect2(Vector2(-dimensions.x/2,-dimensions.y),dimensions),region)

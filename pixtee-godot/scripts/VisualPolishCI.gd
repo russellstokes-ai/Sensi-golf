@@ -20,6 +20,12 @@ func _run() -> void:
 	root.add_child(world)
 	world.accept_snapshot({"ball_x_raw":256*65536,"ball_y_raw":850*65536,"green_mode":false,"hole_phase":0,"aim_raw":2048})
 	assert(world.ball_presentation != null and world.shadows != null)
+	# Northward shot: golfer stands west of the ball and faces east toward it.
+	var expected_stance: Array = world.character_atlas.male_cute[2].rect
+	assert(world.player_sprite.region_rect == Rect2(expected_stance[0],expected_stance[1],expected_stance[2],expected_stance[3]),"Right-handed stance faces the ball, perpendicular to travel")
+	world.time = 0.8
+	world.update_player_sprite()
+	assert(world.player_upper.position == world.player_sprite.position,"Torso joint must never separate during breathing")
 	var climber: Node = world.living_world.climbing_squirrel
 	assert(climber != null and climber.layers.size() == 3)
 	assert(climber.metadata.frames == 6)

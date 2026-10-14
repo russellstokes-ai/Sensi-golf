@@ -11,7 +11,7 @@ func _run() -> void:
 	assert(scene.club_card.state.wind_speed_mph_x10 == 60)
 	assert(scene.club_card.wind_direction().x > 0 and scene.club_card.wind_direction().y < 0)
 	scene.pause_game()
-	var paused := scene.core.save_native_session()
+	var paused: String = scene.core.save_native_session()
 	assert(scene.profile.set_setting("wind_speed_mph_x10",120))
 	scene.apply_saved_settings()
 	scene._process(0.2)

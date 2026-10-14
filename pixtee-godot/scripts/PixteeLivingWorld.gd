@@ -11,6 +11,7 @@ var appearance_seed := 3419
 var climbing_squirrel: Node2D
 var dragonfly_origin := Vector2.ZERO
 var dragonfly_heading := 2
+var pond_frog: Node2D
 func _ready() -> void:
 	weather = PixteeWeatherDirector.new()
 	add_child(weather)
@@ -60,6 +61,9 @@ func _ready() -> void:
 	climbing_squirrel.world = world
 	add_child(climbing_squirrel)
 	dragonfly_origin = actors[3].position
+	pond_frog = preload("res://scripts/PixteePondFrog.gd").new()
+	pond_frog.world = world
+	add_child(pond_frog)
 func _process(_delta: float) -> void:
 	var frozen: bool = not world.is_processing() or world.reduced_motion
 	if frozen and world.visual_quality == 0:
@@ -93,6 +97,7 @@ func _process(_delta: float) -> void:
 		actor.z_index = roundi(actor.position.y+actor._layers[0].texture.get_height()*actor.scale.y)
 		actor.pause_presentation(frozen)
 		if not actor in [sightings[0].actor,sightings[1].actor]: actor.visible = world.visual_quality > 0
+		if actor == actors[2]: actor.visible = false
 
 func _hash01(number: int, salt: int) -> float:
 	# Presentation variation only; never consumes or changes native gameplay RNG.

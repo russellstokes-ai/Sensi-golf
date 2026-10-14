@@ -24,6 +24,8 @@ func _run() -> void:
 	assert(climber != null and climber.layers.size() == 3)
 	assert(climber.metadata.frames == 6)
 	assert(climber.metadata.pixel_scale > 0.02)
+	assert(world.living_world.pond_frog.layers.size() == 3)
+	assert(world.living_world.pond_frog.frames.size() == 6)
 	climber.show_pose(5)
 	assert(climber.frame == 5)
 	for layer in climber.layers:

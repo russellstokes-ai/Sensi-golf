@@ -57,16 +57,25 @@ func _process(delta: float) -> void:
 		duck.speed = move_toward(float(duck.speed),0.48 if duck.scared > 0.0 else 0.09,step*0.16)
 		duck.phase += float(duck.speed)*step
 		var velocity := Vector2(-12.0*sin(duck.phase),10.0*cos(duck.phase))
-		var pose := posmod(roundi(atan2(velocity.x,-velocity.y)*8.0/TAU),8)
+		var heading := fposmod(atan2(velocity.x,-velocity.y),TAU)
+		var pose := int(duck.pose)
+		# A small angular dead band prevents back-and-forth pose flicker at boundaries.
+		if absf(wrapf(heading-float(pose)*TAU/8.0,-PI,PI)) > TAU/16.0+0.06:
+			pose = posmod(roundi(heading*8.0/TAU),8)
 		if pose != int(duck.pose):
 			duck.previous_pose = duck.pose
 			duck.pose = pose
 			duck.fade = 0.0
 		duck.fade = minf(1.0,float(duck.fade)+step/0.18)
 		var at: Vector2 = duck.origin+Vector2(cos(duck.phase)*12.0,sin(duck.phase)*10.0)
-		if Geometry2D.is_point_in_polygon(at,pond): duck.at = at
+		if _body_inside_pond(at): duck.at = at
 	_update_sprites()
 	queue_redraw()
+func _body_inside_pond(at: Vector2) -> bool:
+	# Check the complete footprint rather than allowing the sprite's centre onto land.
+	for offset in [Vector2.ZERO,Vector2(4,0),Vector2(-4,0),Vector2(0,4),Vector2(0,-4)]:
+		if not Geometry2D.is_point_in_polygon(at+offset,pond): return false
+	return true
 func _update_sprites() -> void:
 	for duck in ducks:
 		_update_pose(duck,duck.body,duck.head,int(duck.pose),1.0 if world.reduced_motion else float(duck.fade))

@@ -21,7 +21,8 @@ func _draw() -> void:
 			# A single occasional leaf per tree; staggered, bounded, no emitters accumulate.
 			var cycle := fposmod(elapsed + float(item.phase)*17.0, 29.0)
 			if cycle < 5.5:
-				var at := base + Vector2(sin(cycle*2.4+float(item.phase))*3.0+cycle*1.7, -float(item.h)*0.7+cycle*float(item.h)*0.12)
+				var drift: Vector2 = world.presentation.wind_toward*cycle*(0.7+world.presentation.visual_breeze*2.0)
+				var at := base + drift + Vector2(sin(cycle*2.4+float(item.phase))*3.0, -float(item.h)*0.7+cycle*float(item.h)*0.12)
 				var alpha := minf(1.0,(5.5-cycle)*2.0)
 				draw_set_transform(at,sin(cycle*2.0)*0.6)
 				draw_colored_polygon(PackedVector2Array([Vector2(-2,0),Vector2(0,-1),Vector2(2,0),Vector2(0,1)]),Color(0.62,0.65,0.22,alpha))

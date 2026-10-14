@@ -174,7 +174,7 @@ func show_title() -> void:
 	clear_menu(0.10)
 	world.set_process(true)
 	panel.add_child(image_control("logo",Vector2(288,180)))
-	panel.add_child(text_line("LAKEWOOD · WILLOW CREEK\nHole 1 · Par 4"))
+	panel.add_child(text_line("LAKEWOOD Â· WILLOW CREEK\nHole 1 Â· Par 4"))
 	add_music_toggle()
 	var checkpoint: Dictionary = session_store.load_current(course_hash)
 	if not checkpoint.is_empty() and int(checkpoint.attempt)>int(profile.snapshot().statistics.last_recorded): panel.add_child(button("Continue",resume_saved_game))
@@ -261,7 +261,7 @@ func show_settings() -> void:
 	weather_choice.item_selected.connect(func(index: int):
 		if profile.set_setting("weather_preset",presets[index]): apply_saved_settings())
 	panel.add_child(weather_choice)
-	panel.add_child(text_line("Wind � next round"))
+	panel.add_child(text_line("Wind · next round"))
 	var wind_speed := OptionButton.new()
 	var speeds := [0,40,60,80,120,150]
 	for speed in speeds: wind_speed.add_item("Calm" if speed == 0 else str(speed/10)+" mph")
@@ -378,10 +378,10 @@ func make_hud() -> void:
 	backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(top)
 	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	status = text_line("Willow Creek · Par 4")
+	status = text_line("Willow Creek Â· Par 4")
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(status)
-	top.add_child(button("Ⅱ",pause_game,Vector2(52,51)))
+	top.add_child(button("â…¡",pause_game,Vector2(52,51)))
 	var bottom := VBoxContainer.new()
 	hud.add_child(bottom)
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -510,6 +510,9 @@ func advance_native_tick() -> void:
 
 func update_view(s: Dictionary, hold_golfer := false) -> void:
 	world.accept_snapshot(s,hold_golfer)
+	arrows.visible = bool(s.get("can_shoot",false)) and int(s.get("club_index",0)) == 12
+	arrows.ball_focus = world.ball_world
+	arrows.queue_redraw()
 	fx.accept_native_ball_snapshot(s)
 	var screen := get_viewport().get_visible_rect().size
 	# Keep a close world crop on high-density phones and unfolded windows.
@@ -524,7 +527,7 @@ func update_view(s: Dictionary, hold_golfer := false) -> void:
 		camera.position.y = 456 if half_view.y >= 456 else clampf(at.y-60,half_view.y,912-half_view.y)
 	var rendered_half := screen/camera.zoom/2.0
 	world.view_rect = Rect2(camera.position+camera.offset-rendered_half,rendered_half*2)
-	status.text = "H1 · Par 4 · Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
+	status.text = "H1 Â· Par 4 Â· Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
 	club_card.accept_snapshot(s)
 	minimap.reduced_motion = reduced_motion
 	minimap.queue_redraw()
@@ -595,7 +598,7 @@ func show_results() -> void:
 	menu_screen = "results"
 	clear_menu()
 	panel.add_child(image_control("trophy",Vector2(150,150)))
-	panel.add_child(text_line("WILLOW CREEK\n%d strokes · Par %d" % [last_result.get("total_strokes",0),last_result.get("cumulative_par",4)]))
+	panel.add_child(text_line("WILLOW CREEK\n%d strokes Â· Par %d" % [last_result.get("total_strokes",0),last_result.get("cumulative_par",4)]))
 	panel.add_child(text_line(relative_score(-int(last_result.get("relative_to_par",0)))))
 	if not result_saved:
 		panel.add_child(text_line("Score complete. Statistics could not be saved."))
@@ -631,7 +634,7 @@ func show_help() -> void:
 	open_auxiliary("help")
 	clear_menu()
 	panel.add_child(text_line("HOW TO PLAY"))
-	panel.add_child(paragraph("Choose a club with − Club and + Club. Use the arrows to aim."))
+	panel.add_child(paragraph("Choose a club with âˆ’ Club and + Club. Use the arrows to aim."))
 	panel.add_child(paragraph("Tap the bottom bar to start, tap to select power, then tap to set accuracy."))
 	panel.add_child(paragraph("Watch the ball land before taking the next shot. Water and out-of-bounds penalties recover automatically."))
 	panel.add_child(paragraph("Pause freezes the shot. Player and settings edits keep your ball and score unchanged. Escape opens pause; settings include reduced motion and flashes."))
@@ -641,12 +644,12 @@ func show_scorecard() -> void:
 	open_auxiliary("scorecard")
 	clear_menu()
 	panel.add_child(text_line("SCORECARD"))
-	panel.add_child(text_line("Willow Creek · Hole 1 · Par 4"))
+	panel.add_child(text_line("Willow Creek Â· Hole 1 Â· Par 4"))
 	var s: Dictionary = core.snapshot() if core != null else {}
 	if s.get("has_hole",false):
-		panel.add_child(text_line("Strokes: %d · In play" % s.get("strokes",0)))
+		panel.add_child(text_line("Strokes: %d Â· In play" % s.get("strokes",0)))
 	elif not last_result.is_empty():
-		panel.add_child(text_line("Strokes: %d · %s" % [last_result.total_strokes,relative_score(-int(last_result.relative_to_par))]))
+		panel.add_child(text_line("Strokes: %d Â· %s" % [last_result.total_strokes,relative_score(-int(last_result.relative_to_par))]))
 	else:
 		panel.add_child(text_line("No round started"))
 	panel.add_child(button("Back",back_menu))
@@ -662,7 +665,7 @@ func show_statistics() -> void:
 		panel.add_child(text_line("Best: %d strokes\nAverage: %.1f strokes" % [stats.best,float(stats.strokes)/float(stats.played)]))
 		if stats.best_calm>0: panel.add_child(text_line("Best calm round: %d" % stats.best_calm))
 		if stats.best_wind>0: panel.add_child(text_line("Best wind round: %d" % stats.best_wind))
-		panel.add_child(text_line("Last round: %d · %s" % [stats.last.strokes,relative_score(int(stats.last.relative))]))
+		panel.add_child(text_line("Last round: %d Â· %s" % [stats.last.strokes,relative_score(int(stats.last.relative))]))
 	else: panel.add_child(text_line("Complete a round to record your first score."))
 	panel.add_child(button("Back",back_menu))
 

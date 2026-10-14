@@ -57,6 +57,8 @@ int main() {
             if(landed)assert(soft.state().z_raw==0 && soft.state().vz_raw==0);
         }
         assert(landed && !soft.shot_active());
+        soft.begin_shot(straight);soft.step();assert(soft.state().z_raw>0);
+        run_until_complete(soft);
     }
     // A flat putt uses the recovered club-12 green path.
     model.reset();

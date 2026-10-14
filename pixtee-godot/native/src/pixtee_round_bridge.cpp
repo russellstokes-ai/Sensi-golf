@@ -660,7 +660,7 @@ void PixteeRoundBridge::step_tick() {
             }
             if(contact.flag) queue_presentation_event("verified_flag_contact",p.first,p.second,ball.tick);
             if(contact.tree_id) {
-                queue_presentation_event("authored_tree_contact",p.first,p.second,ball.tick);
+                queue_presentation_event(contact.tree_id>=100 && contact.tree_id<104 ? "authored_board_contact" : "authored_tree_contact",p.first,p.second,ball.tick);
                 Dictionary event=presentation_events_[presentation_events_.size()-1];
                 event["tree_id"]=static_cast<int64_t>(contact.tree_id);
                 event["contact_part"]=contact.canopy?"canopy":"trunk";

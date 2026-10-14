@@ -720,11 +720,11 @@ func resume_saved_game() -> void:
 
 func refresh_player_preview() -> void:
 	var female: bool = PixteeOutfit.female(player_draft.outfit_id)
-	var texture: Texture2D = load("res://characters/female-directions-swing-v1.png") if female else load("res://characters/male-directions-swing-v1.png")
+	var texture: Texture2D = load("res://characters/female-cute-v2.png") if female else load("res://characters/male-cute-v2.png")
 	var atlas := AtlasTexture.new()
 	atlas.atlas = texture
 	var grid := Vector2(8,8)
-	var metadata: Dictionary = world.character_atlas.female[0] if female else world.character_atlas.male_directional[0]
+	var metadata: Dictionary = world.character_atlas.female_cute[0] if female else world.character_atlas.male_cute[0]
 	var region: Array = metadata.rect
 	atlas.region = Rect2(region[0],region[1],region[2],region[3])
 	player_preview.texture = atlas

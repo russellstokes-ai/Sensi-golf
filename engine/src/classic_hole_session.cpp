@@ -51,6 +51,7 @@ void ClassicHoleSession::reset(
     std::int32_t start_x_raw,
     std::int32_t start_y_raw) {
     shot_.reset();
+    soft_ground_enabled_=false;
     phase_ = HoleSessionPhase::ReadyForShot;
     strokes_ = 0;
     ball_x_raw_ = start_x_raw;

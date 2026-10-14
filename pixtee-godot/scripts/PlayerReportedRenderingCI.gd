@@ -6,13 +6,18 @@ func _initialize() -> void:
 func _run() -> void:
 	var world = load("res://scripts/LakewoodWorld.gd").new()
 	root.add_child(world)
-	world.accept_snapshot({"ball_x_raw":256*65536,"ball_y_raw":850*65536,"green_mode":false,"hole_phase":0})
+	world.accept_snapshot({"ball_x_raw":256*65536,"ball_y_raw":850*65536,"green_mode":false,"hole_phase":0,"aim_raw":2048})
 	var tee: Vector2 = world.golfer_world
 	world.accept_snapshot({"ball_x_raw":300*65536,"ball_y_raw":500*65536,"green_mode":false,"hole_phase":1})
 	assert(world.golfer_world == tee, "Golfer must remain at tee during flight")
 	assert(world.ball_world == Vector2(300,500))
-	world.accept_snapshot({"ball_x_raw":300*65536,"ball_y_raw":500*65536,"green_mode":false,"hole_phase":0})
+	world.accept_snapshot({"ball_x_raw":300*65536,"ball_y_raw":500*65536,"green_mode":false,"hole_phase":0,"aim_raw":2048})
 	assert(world.golfer_world == Vector2(293,503), "Ready state places golfer at new lie")
+	for heading in [0,512,1024,1536,2048,2560,3072,3584]:
+		world.accept_snapshot({"ball_x_raw":300*65536,"ball_y_raw":500*65536,"hole_phase":0,"aim_raw":heading})
+		var direction := Vector2(sin(float(heading)*TAU/4096.0),cos(float(heading)*TAU/4096.0))
+		assert(world.golfer_world.is_equal_approx(Vector2(300,500)-direction.rotated(PI/2.0)*7-direction*3),"Right-handed stance orbits the ball")
+		assert(not world.player_sprite.flip_h,"Changing aim must never mirror the whole golfer")
 	for species in ["bird","gull","blackbird","kingfisher"]:
 		var first: Rect2 = world.bird_frame_rect(species,0,Vector2.ZERO)
 		for frame in range(8):

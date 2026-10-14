@@ -64,8 +64,8 @@ func _ready() -> void:
 	ground.z_index = -2
 	add_child(ground)
 	character_atlas = JSON.parse_string(FileAccess.get_file_as_string("res://characters/atlas-v1.json"))
-	textures.female = load("res://characters/female-directions-swing-v1.png")
-	textures.male = load("res://characters/male-directions-swing-v1.png")
+	textures.female = load("res://characters/female-cute-v2.png")
+	textures.male = load("res://characters/male-cute-v2.png")
 	textures.male_idle = load("res://characters/male-directions-v1.png")
 	player_sprite = Sprite2D.new()
 	player_sprite.texture = textures.golfer
@@ -94,7 +94,9 @@ func accept_snapshot(state: Dictionary) -> void:
 	# Keep the golfer at the lie while the ball travels. Only an actual native
 	# ready-for-shot state moves the golfer to the next lie/recovery position.
 	if not golfer_position_initialized or int(state.get("hole_phase",-1)) == 0:
-		golfer_world = ball_world + Vector2(-7,3)
+		var heading := float(state.get("aim_raw",2016))*TAU/4096.0
+		var direction := Vector2(sin(heading),cos(heading))
+		golfer_world = ball_world-direction.rotated(PI/2.0)*7.0-direction*3.0
 		golfer_position_initialized = true
 		golfer_facing_left = sin(float(state.get("aim_raw",0))*TAU/4096.0) < 0.0
 	update_player_sprite()
@@ -121,10 +123,13 @@ func _draw() -> void:
 	# Grounded silhouettes retain each approved sprite's proportions and alpha.
 	# Draw every shadow before any object so foliage cannot shade foreground art.
 	for object in placements:
-		if object.type not in ["tree","photographer","crowd"]: continue
+		if object.type not in ["tree","photographer","person"]: continue
 		var anchor := Vector2(object.x,object.y)
 		if object.type == "golfer" and golfer_position_initialized: anchor = golfer_world
 		if not view_rect.grow(70).has_point(anchor): continue
+		if object.type in ["person","photographer"]:
+			draw_ellipse(anchor+Vector2(0,0.5),Vector2(2.8,1.1),Color(0.025,0.08,0.06,0.24))
+			continue
 		var art: Dictionary = assets[object.id]
 		var region: Array = art.rect
 		var dimensions := Vector2(region[2],region[3]) * (float(object.h)/float(region[3]))
@@ -159,7 +164,13 @@ func _draw() -> void:
 			angle = sin(time*0.7+o.phase)*0.016
 		var flipped: bool = golfer_facing_left if o.type == "golfer" else o.get("flipX",false)
 		draw_set_transform(pos,angle,Vector2(-1 if flipped else 1,1))
-		draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y),size),Rect2(rect[0],rect[1],rect[2],rect[3]))
+		if o.type == "person":
+			var split := 0.58
+			var breath := 0.0 if reduced_motion else sin(time*1.7+float(o.phase))*0.32
+			draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y*(1-split)),Vector2(size.x,size.y*(1-split))),Rect2(rect[0],float(rect[1])+float(rect[3])*split,rect[2],float(rect[3])*(1-split)))
+			draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y+breath),Vector2(size.x,size.y*split)),Rect2(rect[0],rect[1],rect[2],float(rect[3])*split))
+		else:
+			draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y),size),Rect2(rect[0],rect[1],rect[2],rect[3]))
 		draw_set_transform(Vector2.ZERO)
 	# Collidable birds are displayed from the native clock and altitude.
 	if native_state.get("bird_active",false):
@@ -206,13 +217,13 @@ func update_player_sprite() -> void:
 	var grid := Vector2(8,8)
 	if female:
 		player_sprite.texture = textures.female
-		metadata = character_atlas.female[frame*8+direction]
+		metadata = character_atlas.female_cute[frame*8+direction]
 	else:
 		player_sprite.texture = textures.male
-		metadata = character_atlas.male_directional[frame*8+direction]
+		metadata = character_atlas.male_cute[frame*8+direction]
 	var rect: Array = metadata.rect
 	player_sprite.region_rect = Rect2(rect[0],rect[1],rect[2],rect[3])
-	var base: Dictionary = character_atlas.female[direction] if female else character_atlas.male_directional[direction]
+	var base: Dictionary = character_atlas.female_cute[direction] if female else character_atlas.male_cute[direction]
 	var factor := 21.0/float(base.height)
 	player_sprite.scale = Vector2.ONE*factor
 	player_sprite.flip_h = false
@@ -226,7 +237,7 @@ func update_player_sprite() -> void:
 	player_upper.texture = player_sprite.texture
 	player_upper.region_rect = player_sprite.region_rect
 	player_upper.scale = player_sprite.scale
-	player_upper.position = player_sprite.position+Vector2(0,sin(time*2.0)*0.22 if frame == 0 and not reduced_motion else 0.0)
+	player_upper.position = player_sprite.position+Vector2(0,sin(time*2.0)*0.45 if frame == 0 and not reduced_motion else 0.0)
 	if player_upper.material == null: player_upper.material = player_sprite.material.duplicate()
 	for property in ["shirt_colour","trouser_colour","cap_colour","shirt_enabled","trouser_enabled","cap_enabled","atlas_grid","use_atlas_rect","atlas_origin","atlas_extent"]:
 		player_upper.material.set_shader_parameter(property,player_sprite.material.get_shader_parameter(property))

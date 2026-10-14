@@ -23,7 +23,7 @@ func _run() -> void:
 	assert(captured.touch_meter_position == power_at,"Second tap reverses immediately without jumping")
 	scene.meter.accept_snapshot(captured)
 	assert(scene.meter.can_tap(),"Return accepts third tap immediately")
-	var saved := scene.core.save_native_session()
+	var saved: String = scene.core.save_native_session()
 	var copy: PixteeRoundBridge = scene.create_course_core(0)
 	assert(copy.restore_native_session(saved))
 	assert(copy.snapshot() == scene.core.snapshot(),"Touch meter resumes exactly")

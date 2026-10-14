@@ -101,6 +101,7 @@ void ClassicShotModel::set_ball_origin(
 }
 
 void ClassicShotModel::begin_shot(const ShotInput& input) {
+    soft_ground_rolling_=false;
     presentation_contact_ = {};
     if (active_) {
         throw std::logic_error("shot already active");
@@ -270,7 +271,11 @@ void ClassicShotModel::step() {
         const auto contact=authored_tree_contact(*authored_trees_,point(previous_flight),point(flight_));
         if(contact.tree_id && contact.tree_id!=last_tree_id_) {
             if(!interaction_prng_)throw std::logic_error("authored tree impact requires native PRNG");
-            recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
+            if(contact.tree_id>=100 && contact.tree_id<104) {
+                // Authored Lakewood sponsor boards: solid face, deterministic rebound.
+                flight_.direction=static_cast<std::uint16_t>((previous_flight.direction+2048u)&4095u);
+                flight_.horizontal_force=std::max(0,flight_.horizontal_force/2);
+            }else recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
             if(contact.kind==AuthoredTreeContactKind::Canopy) {
                 const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
                 flight_.vertical_force=rebound.vertical_force;

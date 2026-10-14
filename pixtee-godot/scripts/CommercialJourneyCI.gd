@@ -47,7 +47,7 @@ func _run() -> void:
 			scene.playing = false
 			child._process(0.02)
 			var saw_strokes := [false,false]
-			for tick in range(1300):
+			for tick in range(3000):
 				child._tick(0)
 				child._tick(1)
 				for actor in range(2):
@@ -80,6 +80,26 @@ func _run() -> void:
 				if hit or int(native.snapshot().hole_phase) != 1: break
 			if hit: break
 	assert(hit, "Real authored native bird hit must be reachable and recoverable")
+	var board_hit := false
+	for club in [7,9,11,0]:
+		if board_hit: break
+		for power in [35,50,65,80,100]:
+			var native: PixteeRoundBridge = scene.create_course_core(0)
+			native.set_club_index(club)
+			native.set_aim_raw(2322)
+			native.meter_click_raw(0)
+			native.meter_click_raw(power)
+			native.meter_click_raw(63)
+			for tick in range(700):
+				native.step_tick()
+				for event in native.drain_presentation_events():
+					if event.event_type == "authored_board_contact":
+						board_hit = true
+						assert(scene.audio.consume_confirmed_native_event(event))
+						break
+				if board_hit or int(native.snapshot().hole_phase) != 1: break
+			if board_hit: break
+	assert(board_hit,"Actual native sign hit is reachable")
 	scene.session_store.clear()
 	assert(scene.session_store.load_current(scene.course_hash).is_empty())
 	scene.free()

@@ -44,7 +44,9 @@ func _process(delta: float) -> void:
 	if native == null: return
 	var snapshot := native.snapshot()
 	game.world.accept_snapshot(snapshot)
-	game.world.golfer_world = golfers[focus].anchor+Vector2(-7,3)
+	var heading := float(snapshot.get("aim_raw",2048))*TAU/4096.0
+	var direction := Vector2(sin(heading),cos(heading))
+	game.world.golfer_world = golfers[focus].anchor-direction.rotated(PI/2.0)*7.0-direction*3.0
 	game.world.update_player_sprite()
 	game.fx.accept_native_ball_snapshot(snapshot)
 	game.world.set_outfit("kit:1:1:0" if focus == 0 else "kit:2:2:2")
@@ -92,13 +94,16 @@ func _tick(index: int) -> void:
 		var shot: Array = SHOTS[mini(int(golfer.shot),2)]
 		native.set_club_index(shot[0])
 		native.set_aim_raw(shot[2])
-		native.meter_click_raw(0)
-		native.meter_click_raw(shot[1])
-		native.meter_click_raw(63)
-		golfer.shot += 1
+		native.start_touch_meter()
 		native.step_tick()
 		golfer.delay = 0
 	else:
+		if snapshot.get("touch_meter_active",false):
+			var shot: Array = SHOTS[mini(int(golfer.shot),2)]
+			var press: bool = int(snapshot.touch_meter_phase) == 1 and int(snapshot.touch_meter_position)>=160+int(shot[1])*10
+			if int(snapshot.touch_meter_phase) == 2:
+				press = abs(int(snapshot.touch_meter_position)-160)<=int(snapshot.touch_meter_red_half)
+			if native.tick_touch_meter(press): golfer.shot += 1
 		native.step_tick()
 		if int(native.snapshot().get("hole_phase",0)) == 3: native.acknowledge_hazard()
 	for event in native.drain_presentation_events():

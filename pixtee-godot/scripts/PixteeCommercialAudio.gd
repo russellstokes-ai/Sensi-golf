@@ -25,6 +25,7 @@ const NATIVE_EVENT_TO_CUE := {
 	"water_contact": "water_splash",
 	"verified_tree_contact": "tree_impact",
 	"authored_tree_contact": "tree_impact",
+	"authored_board_contact": "tree_impact",
 	"authored_bird_contact": "bird_impact",
 	"authored_rock_contact": "rock_impact",
 	"verified_flag_contact": "flag_hit",
@@ -271,6 +272,8 @@ func consume_confirmed_native_event(event: Dictionary) -> bool:
 	if _event_dedup.has(event_id):
 		return false
 	var cue: String = NATIVE_EVENT_TO_CUE[event_type]
+	if event_type == "fairway_contact" and event.has("native_tick") and _last_contact_type == "ball_bounce" and tick == _last_contact_tick:
+		return false
 	if event_type == "club_contact":
 		_last_contact_tick = -1000
 		_last_contact_type = ""

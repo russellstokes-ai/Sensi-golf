@@ -109,3 +109,4 @@ func _tick(index: int) -> void:
 	for event in native.drain_presentation_events():
 		event.event_id = "attract:%d:%d:" % [index,int(golfer.generation)]+str(event.event_id)
 		game.fx.submit_confirmed_native_event(event)
+		game.world.pond_ducks.accept_native_event(event)

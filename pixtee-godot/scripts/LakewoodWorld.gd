@@ -21,6 +21,7 @@ var swing_time := 0.0
 var previous_shot_tick := -1
 var outfit_id := "lakewood-classic"
 var appearance := {"skin":0,"hair":0}
+var pond_ducks: Node2D
 var view_rect := Rect2(0,0,544,912)
 
 func _ready() -> void:
@@ -82,6 +83,10 @@ func _ready() -> void:
 	atmosphere.world = self
 	atmosphere.z_index = 1
 	add_child(atmosphere)
+	pond_ducks = preload("res://scripts/PixteePondDucks.gd").new()
+	pond_ducks.world = self
+	pond_ducks.z_index = 2
+	add_child(pond_ducks)
 	var living := preload("res://scripts/PixteeLivingWorld.gd").new()
 	living.world = self
 	living.z_index = 1

@@ -453,6 +453,7 @@ func advance_native_tick() -> void:
 			event["launch_club_index"] = native_before.get("club_index",-1)
 		fx.submit_confirmed_native_event(event)
 		audio.consume_confirmed_native_event(event)
+		world.pond_ducks.accept_native_event(event)
 	# The recovered core alone completes the original 100-tick recovery.
 	if int(core.snapshot().get("hole_phase",-1)) == 3:
 		core.acknowledge_hazard()

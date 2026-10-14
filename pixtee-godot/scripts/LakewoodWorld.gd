@@ -20,6 +20,7 @@ var character_atlas: Dictionary = {}
 var swing_time := 0.0
 var previous_shot_tick := -1
 var outfit_id := "lakewood-classic"
+var appearance := {"skin":0,"hair":0}
 var view_rect := Rect2(0,0,544,912)
 
 func _ready() -> void:
@@ -198,7 +199,13 @@ func _draw() -> void:
 func set_outfit(id: String) -> void:
 	if not PixteeOutfit.is_valid(id) or id == outfit_id: return
 	outfit_id = id
-	if player_sprite != null: player_sprite.material = PixteeOutfit.material(id)
+	if player_sprite != null: player_sprite.material = PixteeOutfit.material(id,appearance)
+	update_player_sprite()
+
+func set_appearance(value: Dictionary) -> void:
+	if not PixteeOutfit.valid_appearance(value): return
+	appearance = value.duplicate(true)
+	if player_sprite != null: player_sprite.material = PixteeOutfit.material(outfit_id,appearance)
 	update_player_sprite()
 
 func update_player_sprite() -> void:
@@ -239,7 +246,7 @@ func update_player_sprite() -> void:
 	player_upper.scale = player_sprite.scale
 	player_upper.position = player_sprite.position+Vector2(0,sin(time*2.0)*0.45 if frame == 0 and not reduced_motion else 0.0)
 	if player_upper.material == null: player_upper.material = player_sprite.material.duplicate()
-	for property in ["shirt_colour","trouser_colour","cap_colour","shirt_enabled","trouser_enabled","cap_enabled","atlas_grid","use_atlas_rect","atlas_origin","atlas_extent"]:
+	for property in ["skin_colour","hair_colour","skin_enabled","hair_enabled","shirt_colour","trouser_colour","cap_colour","shirt_enabled","trouser_enabled","cap_enabled","atlas_grid","use_atlas_rect","atlas_origin","atlas_extent"]:
 		player_upper.material.set_shader_parameter(property,player_sprite.material.get_shader_parameter(property))
 	player_upper.material.set_shader_parameter("layer_part",2)
 

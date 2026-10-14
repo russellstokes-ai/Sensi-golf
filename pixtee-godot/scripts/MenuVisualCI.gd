@@ -27,7 +27,7 @@ func _run() -> void:
 	sprite.region_enabled = true
 	sprite.region_rect = Rect2(0,0,362,181)
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	sprite.material = PixteeOutfit.material("kit:3:2:1")
+	sprite.material = PixteeOutfit.material("kit:3:2:1",{"skin":4,"hair":5})
 	sprite.material.set_shader_parameter("atlas_grid",Vector2(6,4))
 	palette_view.add_child(sprite)
 	await process_frame
@@ -61,12 +61,13 @@ func _run() -> void:
 		if child is HBoxContainer:
 			for choice in child.get_children():
 				if choice is OptionButton: selectors.append(choice)
-	assert(selectors.size()==4)
-	var selections := [1,3,2,1]
-	for i in range(4):
+	assert(selectors.size()==6)
+	var selections := [1,3,2,1,4,5]
+	for i in range(6):
 		selectors[i].select(selections[i])
 		selectors[i].item_selected.emit(selections[i])
 	assert(scene.player_draft.outfit_id == "female:kit:3:2:1","Real selectors must produce one stable combined outfit")
+	assert(scene.player_draft.appearance == {"skin":4,"hair":5})
 	await capture(scene,"player-portrait")
 	print("PLAYER_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	scene.cancel_player_edit()

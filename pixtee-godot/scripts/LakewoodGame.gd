@@ -275,6 +275,7 @@ func apply_saved_settings() -> void:
 	for child in world.get_children():
 		if child is Polygon2D: child.material.set_shader_parameter("quality_enabled",0.0 if reduced_motion or int(settings.graphics_quality) == 0 else 1.0)
 	world.set_outfit(profile.snapshot().outfit_id)
+	world.set_appearance(profile.snapshot().appearance)
 	world.queue_redraw()
 	for channel in ["Music","SFX","Ambience","UI"]:
 		audio.set_channel_level(channel,float(settings[channel]))
@@ -298,7 +299,7 @@ func show_player() -> void:
 	preview.custom_minimum_size = Vector2(180,180)
 	panel.add_child(preview)
 	player_preview = preview
-	preview.material = PixteeOutfit.material(player_draft.outfit_id)
+	preview.material = PixteeOutfit.material(player_draft.outfit_id,player_draft.appearance)
 	var gender := OptionButton.new()
 	gender.add_item("Male golfer")
 	gender.add_item("Female golfer")
@@ -309,6 +310,7 @@ func show_player() -> void:
 		refresh_player_preview())
 	panel.add_child(gender)
 	add_outfit_controls()
+	add_appearance_controls()
 	refresh_player_preview()
 	player_name = LineEdit.new()
 	player_name.text = str(player_draft.display_name)
@@ -326,6 +328,7 @@ func apply_player_edit() -> bool:
 		player_error.text = "Enter a name; check save storage."
 		return false
 	world.set_outfit(profile.snapshot().outfit_id)
+	world.set_appearance(profile.snapshot().appearance)
 	player_draft.clear()
 	back_menu()
 	return true
@@ -378,6 +381,7 @@ func start_hole(resuming := false) -> void:
 	core = create_course_core(0)
 	if core == null: return
 	world.set_outfit(profile.snapshot().outfit_id)
+	world.set_appearance(profile.snapshot().appearance)
 	var arrow_cells: Array[Dictionary] = []
 	for cell in core.verified_native_green_arrow_cells(16): arrow_cells.append(cell)
 	if not arrows.load_native_maps_arrow_cells(arrow_cells) or arrows.arrow_count()==0:
@@ -732,7 +736,22 @@ func refresh_player_preview() -> void:
 	var region: Array = metadata.rect
 	atlas.region = Rect2(region[0],region[1],region[2],region[3])
 	player_preview.texture = atlas
-	player_preview.material = PixteeOutfit.material(player_draft.outfit_id)
+	player_preview.material = PixteeOutfit.material(player_draft.outfit_id,player_draft.appearance)
 	player_preview.material.set_shader_parameter("use_atlas_rect",true)
 	player_preview.material.set_shader_parameter("atlas_origin",atlas.region.position/texture.get_size())
 	player_preview.material.set_shader_parameter("atlas_extent",atlas.region.size/texture.get_size())
+
+func add_appearance_controls() -> void:
+	for part in range(2):
+		var key: String = ["skin","hair"][part]
+		var row := HBoxContainer.new()
+		panel.add_child(row)
+		row.add_child(text_line(["Skin","Hair colour"][part]))
+		var choice := OptionButton.new()
+		choice.custom_minimum_size = Vector2(210,44)
+		for title in [PixteeOutfit.SKINS,PixteeOutfit.HAIR][part]: choice.add_item(title)
+		choice.select(int(player_draft.appearance[key]))
+		row.add_child(choice)
+		choice.item_selected.connect(func(index: int):
+			player_draft.appearance[key] = index
+			refresh_player_preview())

@@ -34,6 +34,7 @@ var _ball_world: Vector2 = Vector2.ZERO
 var _ball_z: float = 0.0
 var _ball_snapshot_verified: bool = false
 var _last_submitted_native_tick: int = -1
+var _particle_textures: Dictionary = {}
 
 func accept_native_ball_snapshot(snapshot: Dictionary) -> bool:
 	## Native bridge provides original fixed-point state directly.
@@ -105,13 +106,14 @@ func submit_confirmed_native_event(event: Dictionary) -> bool:
 			"velocity": Vector2(cos(theta), sin(theta)) * strength,
 			"age": 0.0,
 			"duration": duration,
-			"color": preset["color"]
+			"color": preset["color"],
+			"type": event_type
 		})
 	if event_type == "water_contact" and not reduced_motion:
 		if _ripples.size() < MAX_RIPPLES:
 			_ripples.append({"position":pos, "age":0.0, "duration":0.8})
 
-	_spawn_godot_burst(pos,preset)
+	_spawn_godot_burst(pos,preset,event_type)
 	_seen_events[event_id] = true
 	_event_order.append(event_id)
 	if _event_order.size() > MAX_REMEMBERED_NATIVE_EVENTS:
@@ -131,7 +133,11 @@ func _process(delta: float) -> void:
 		if fleck["age"] >= fleck["duration"]:
 			_particles.remove_at(index)
 		else:
-			fleck["position"] = fleck["position"] + fleck["velocity"] * dt
+			if not reduced_motion:
+				var velocity: Vector2 = fleck["velocity"]
+				velocity.y += dt*12.0
+				fleck["velocity"] = velocity
+				fleck["position"] = fleck["position"] + velocity * dt
 			_particles[index] = fleck
 	for index in range(_ripples.size()-1, -1, -1):
 		var ripple: Dictionary = _ripples[index]
@@ -150,7 +156,16 @@ func _draw() -> void:
 		var colour: Color = fleck["color"]
 		colour.a *= fraction
 		var at: Vector2 = fleck["position"]
-		draw_rect(Rect2(at.round(), Vector2.ONE), colour, true)
+		var kind: String = str(fleck.get("type",""))
+		if kind in ["authored_tree_contact","verified_tree_contact","authored_bird_contact"]:
+			draw_set_transform(at,float(fleck.age)*2.0)
+			draw_colored_polygon(PackedVector2Array([Vector2(-1.8,0),Vector2(-0.4,-0.8),Vector2(2,0),Vector2(0,0.9)]),colour)
+			draw_line(Vector2(-1,0),Vector2(1.5,0),colour.darkened(0.22),0.4,true)
+			draw_set_transform(Vector2.ZERO)
+		elif kind in ["fairway_contact","rough_contact"]:
+			draw_line(at,at+Vector2(0.6,-1.7),colour,0.7,true)
+		else:
+			draw_circle(at,0.7,colour,true,-1,true)
 	for ripple in _ripples:
 		var fraction: float = float(ripple["age"]) / float(ripple["duration"])
 		var alpha := (1.0 - fraction) * 0.55
@@ -174,7 +189,7 @@ func set_effects_running(running: bool) -> void:
 	for child in get_children():
 		if child is CPUParticles2D: child.speed_scale = 1.0 if running else 0.0
 
-func _spawn_godot_burst(at: Vector2,preset: Dictionary) -> void:
+func _spawn_godot_burst(at: Vector2,preset: Dictionary,kind: String) -> void:
 	if reduced_motion or visual_quality == 0 or get_child_count() >= 12: return
 	var burst := CPUParticles2D.new()
 	burst.position = at
@@ -190,16 +205,19 @@ func _spawn_godot_burst(at: Vector2,preset: Dictionary) -> void:
 	burst.scale_amount_min = 0.25
 	burst.scale_amount_max = 0.75
 	burst.color = preset.color
-	var texture := GradientTexture2D.new()
-	texture.width = 4
-	texture.height = 4
-	texture.fill = GradientTexture2D.FILL_RADIAL
-	texture.fill_from = Vector2(0.5,0.5)
-	texture.fill_to = Vector2(1.0,0.5)
-	var gradient := Gradient.new()
-	gradient.colors = PackedColorArray([Color.WHITE,Color(1,1,1,0)])
-	texture.gradient = gradient
-	burst.texture = texture
+	if not _particle_textures.has(kind):
+		var mask := Image.create(8,8,false,Image.FORMAT_RGBA8)
+		mask.fill(Color.TRANSPARENT)
+		for y in range(8):
+			for x in range(8):
+				var p := Vector2(x-3.5,y-3.5)
+				var inside := p.length()<2.3
+				if kind in ["authored_tree_contact","verified_tree_contact","authored_bird_contact"]: inside = absf(p.x)/3.5+absf(p.y)/1.8<1.0
+				elif kind in ["fairway_contact","rough_contact"]: inside = absf(p.x-p.y*0.25)<0.8 and absf(p.y)<3.0
+				if inside: mask.set_pixel(x,y,Color.WHITE)
+		_particle_textures[kind] = ImageTexture.create_from_image(mask)
+	burst.texture = _particle_textures[kind]
+	burst.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	add_child(burst)
 	burst.finished.connect(burst.queue_free)
 	burst.emitting = true

@@ -49,6 +49,14 @@ func _run() -> void:
 	actor.position = Vector2(1.25,2.75)
 	actor._process(0.02)
 	assert(actor.position == Vector2(1.25,2.75),"Animation must not quantize logical motion")
+	var flyer: Node = world.living_world.actors[3]
+	flyer.pause_presentation(false)
+	flyer._process(0.05)
+	var wing_clock: float = flyer._time
+	var wing_layer: Node = flyer._layers[1]
+	assert(flyer.set_animation("dragonfly_heading_07",3))
+	assert(flyer._layers[1] == wing_layer,"Turning must retain the layered rig")
+	assert(flyer._time == wing_clock,"Turning must retain the wing phase")
 	world.free()
 	print("VISUAL_POLISH_PASS: shared freeze, foot-depth sorting, immutable native state and fractional animation")
 	quit(0)

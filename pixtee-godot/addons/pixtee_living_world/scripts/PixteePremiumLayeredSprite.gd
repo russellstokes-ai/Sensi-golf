@@ -17,7 +17,6 @@ var _time: float = 0.0
 var _running: bool = true
 var _loop: bool = true
 static var _manifest_cache: Dictionary = {}
-static var _animation_cache: Dictionary = {}
 
 func _ready() -> void:
     texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST

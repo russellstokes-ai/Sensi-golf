@@ -121,6 +121,12 @@ func _run() -> void:
 	scene.update_ui_layout()
 	await capture(scene,"green-portrait",false)
 	print("GREEN_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
+	scene.core.set_club_index(12)
+	scene.sync_attended_flag_for_native(scene.core)
+	scene.world.accept_snapshot(scene.core.snapshot())
+	scene.world.get_node("Caddy")._process(0.1)
+	await capture(scene,"putting-caddy",false)
+	print("CADDY_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	root.size = Vector2i(1200,1000)
 	await process_frame
 	scene.update_ui_layout()

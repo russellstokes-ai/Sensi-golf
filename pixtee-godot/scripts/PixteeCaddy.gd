@@ -8,7 +8,7 @@ var flag_alpha := 0.0
 func _ready() -> void:
 	var course: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://courses/lakewood-hole-1/course-layout.json"))
 	for point in course.surfaces.green: green.append(Vector2(point[0],point[1]))
-	for candidate in [Vector2(418,190),Vector2(300,210),Vector2(298,125),Vector2(360,234)]:
+	for candidate in [Vector2(360,234),Vector2(300,210),Vector2(298,125),Vector2(418,190)]:
 		if not Geometry2D.is_point_in_polygon(candidate,green) and candidate.distance_to(cup)>28.0:
 			foot = candidate
 			break

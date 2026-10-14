@@ -71,6 +71,7 @@ func conditions() -> Dictionary:
 	return snapshot
 
 func _process(delta: float) -> void:
+	if reduced_motion: return
 	if _duration <= 0.0 or _elapsed >= _duration:
 		return
 	_elapsed = minf(_duration, _elapsed + clampf(delta, 0.0, 0.1))

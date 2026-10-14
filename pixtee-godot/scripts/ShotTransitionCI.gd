@@ -25,5 +25,15 @@ func _run() -> void:
 	assert(profile.load_profile("user://tests/weather-"+str(Time.get_ticks_usec())))
 	assert(profile.set_setting("weather_preset","rain"))
 	assert(not profile.set_setting("weather_preset","invalid"))
+	var director := PixteeWeatherDirector.new()
+	root.add_child(director)
+	director.set_preset("rain",2.0)
+	director.reduced_motion = true
+	var before := director.conditions()
+	director._process(0.1)
+	assert(director.conditions() == before)
+	director.reduced_motion = false
+	director._process(0.1)
+	assert(director.conditions() != before)
 	print("SHOT_TRANSITION_PASS: stopped view held one second, one hidden swap, pause/cancel safe; weather saved and validated")
 	quit(0)

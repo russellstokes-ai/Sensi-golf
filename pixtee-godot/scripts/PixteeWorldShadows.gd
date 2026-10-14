@@ -28,7 +28,7 @@ func _cast_person(at: Vector2, height: float) -> void:
 	var toward: Vector2 = world.presentation.sun_direction
 	var width := Vector2(toward.y,-toward.x)*2.0
 	var end := at+toward*height*0.65
-	draw_colored_polygon(PackedVector2Array([at-width,at+width,end+width*0.45,end-width*0.45]),Color(0.025,0.06,0.038,0.18*sun))
+	draw_colored_polygon(PackedVector2Array([at-width,at+width,end+width*0.45,end-width*0.45]),Color(0.025,0.06,0.038,0.32*sun))
 	_ellipse(end,Vector2(1.5,1.2),0.12*sun)
 func _draw() -> void:
 	if world == null: return
@@ -48,7 +48,7 @@ func _draw() -> void:
 			for i in range(profile.size()-1,-1,-1):
 				var entry: Vector3 = profile[i]
 				contour.append(at+side*float(spec.w)*entry.y+toward*float(spec.h)*0.5*entry.z)
-			draw_colored_polygon(contour,Color(0.02,0.055,0.037,0.15*sun))
+			draw_colored_polygon(contour,Color(0.02,0.055,0.037,0.28*sun))
 		elif spec.type in ["person","photographer"]:
 			_ellipse(at+Vector2(0,0.4),Vector2(2.6,1.0),0.23)
 			_cast_person(at,float(spec.h))

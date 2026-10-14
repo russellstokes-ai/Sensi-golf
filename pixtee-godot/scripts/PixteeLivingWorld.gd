@@ -9,6 +9,8 @@ var seen: Dictionary = {}
 var atmosphere: ColorRect
 var appearance_seed := 3419
 var climbing_squirrel: Node2D
+var dragonfly_origin := Vector2.ZERO
+var dragonfly_heading := 2
 func _ready() -> void:
 	weather = PixteeWeatherDirector.new()
 	add_child(weather)
@@ -57,6 +59,7 @@ func _ready() -> void:
 	climbing_squirrel = preload("res://scripts/PixteeSquirrelClimb.gd").new()
 	climbing_squirrel.world = world
 	add_child(climbing_squirrel)
+	dragonfly_origin = actors[3].position
 func _process(_delta: float) -> void:
 	var frozen: bool = not world.is_processing() or world.reduced_motion
 	if frozen and world.visual_quality == 0:
@@ -64,6 +67,7 @@ func _process(_delta: float) -> void:
 	if not frozen:
 		ecology_time = world.time
 		_update_sightings(minf(_delta,0.1))
+		_update_dragonfly()
 	if world.native_state.get("physics_authority","") == "Recovered Sensible Golf ClassicGameSession":
 		weather.set_native_wind_visuals(world.presentation.wind_toward,clampf(world.presentation.wind_mph/15.0,0.0,1.0),true)
 	var conditions := weather.conditions()
@@ -93,6 +97,18 @@ func _process(_delta: float) -> void:
 func _hash01(number: int, salt: int) -> float:
 	# Presentation variation only; never consumes or changes native gameplay RNG.
 	return fposmod(sin(float(number*71+salt*131+appearance_seed))*43758.5453,1.0)
+func _update_dragonfly() -> void:
+	var actor: PixteePremiumLayeredSprite = actors[3]
+	# Small pond-edge patrol with slow hover holds and occasional faster darts.
+	var t := ecology_time
+	var phase := t*0.13+sin(t*0.21)*0.28
+	var offset := Vector2(cos(phase)*13.0,sin(phase)*6.0)
+	var tangent := Vector2(-sin(phase)*13.0,cos(phase)*6.0)
+	var heading := fposmod(atan2(tangent.x,-tangent.y),TAU)
+	if absf(wrapf(heading-float(dragonfly_heading)*TAU/8.0,-PI,PI))>TAU/16.0+0.05:
+		dragonfly_heading = posmod(roundi(heading*8.0/TAU),8)
+		actor.set_animation("dragonfly_heading_%02d"%dragonfly_heading,3)
+	actor.position = dragonfly_origin+offset+Vector2(0,sin(t*2.3)*0.45)
 func _update_sightings(delta: float) -> void:
 	for i in sightings.size():
 		var sighting: Dictionary = sightings[i]

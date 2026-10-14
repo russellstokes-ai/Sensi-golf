@@ -95,11 +95,14 @@ func marker_fraction() -> float:
 
 func _draw() -> void:
 	var width := size.x
-	draw_rect(Rect2(Vector2.ZERO,size),Color("10261f"))
-	draw_rect(Rect2(1,1,width-2,size.y-2),Color("a88a45"),false,2)
+	PixteeUIStyle.frame(self,Rect2(Vector2.ZERO,size),state.get("can_shoot",false))
 	var rail := Rect2(12,17,width-24,26)
 	draw_rect(rail.grow(3),Color("060e16"))
-	draw_rect(rail,Color("344752"))
+	# Decoration only: native position and all red/yellow hit-zone bounds stay exact.
+	for band in range(24):
+		var blend := float(band)/23.0
+		var colour := Color("10304b").lerp(Color("397652"),blend)
+		draw_rect(Rect2(rail.position+Vector2(rail.size.x*band/24.0,0),Vector2(rail.size.x/24.0+0.1,rail.size.y)),colour)
 	draw_line(Vector2(13,18),Vector2(width-13,18),Color("68818a"),1)
 	var cell := (width-24)/71.0
 	if touch_mode:

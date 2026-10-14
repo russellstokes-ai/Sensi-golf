@@ -15,6 +15,9 @@ var _frames: int = 0
 var _fps: float = 6.0
 var _time: float = 0.0
 var _running: bool = true
+var _loop: bool = true
+static var _manifest_cache: Dictionary = {}
+static var _animation_cache: Dictionary = {}
 
 func _ready() -> void:
     texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -22,10 +25,15 @@ func _ready() -> void:
         set_animation(animation_id)
 
 func set_animation(next_id: String, minimum_layers: int = 1) -> bool:
+    if next_id == animation_id and not _layers.is_empty():
+        return _layers.size() >= minimum_layers
     if not FileAccess.file_exists(MANIFEST):
         push_error("Pixtee premium animation manifest unavailable")
         return false
-    var decoded: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
+    if _manifest_cache.is_empty():
+        var source: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
+        if source is Dictionary: _manifest_cache = source
+    var decoded: Variant = _manifest_cache
     if not (decoded is Dictionary) or not decoded.has(next_id):
         push_error("No authored Pixtee animation: " + next_id)
         return false
@@ -55,6 +63,19 @@ func set_animation(next_id: String, minimum_layers: int = 1) -> bool:
         new_layers.append({"name": layer_name, "textures": textures})
     if new_layers.is_empty():
         return false
+    # Heading changes retain the same layered rig and wing phase; no frame-zero jump.
+    var compatible := _layers.size() == new_layers.size() and _frames == frame_len
+    if compatible:
+        for i in new_layers.size():
+            if str(_layers[i].name) != str(new_layers[i].name): compatible = false
+    if compatible:
+        animation_id = next_id
+        _fps = float(entry["fps"])
+        _loop = bool(entry.get("loop",true))
+        _sequences.clear()
+        for data in new_layers: _sequences.append(data.textures)
+        _show_frame(int(floor(_time*_fps))%_frames)
+        return true
     for child in _layers:
         remove_child(child)
         child.queue_free()
@@ -63,6 +84,7 @@ func set_animation(next_id: String, minimum_layers: int = 1) -> bool:
     animation_id = next_id
     _frames = frame_len
     _fps = float(entry["fps"])
+    _loop = bool(entry.get("loop",true))
     _time = 0.0
     for data in new_layers:
         var sprite := Sprite2D.new()
@@ -79,7 +101,8 @@ func _process(delta: float) -> void:
     if not _running or _frames <= 0:
         return
     _time += minf(maxf(0.0, delta), 0.1) * maxf(0.0, playback_speed)
-    _show_frame(int(floor(_time * _fps)) % _frames)
+    var frame := int(floor(_time * _fps))
+    _show_frame(frame % _frames if _loop else mini(frame,_frames-1))
     # Logical position retains its fractional path; rendering owns snapping.
 
 func _show_frame(frame: int) -> void:

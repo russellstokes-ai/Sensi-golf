@@ -174,7 +174,6 @@ func show_title() -> void:
 	if not checkpoint.is_empty() and int(checkpoint.attempt)>int(profile.snapshot().statistics.last_recorded): panel.add_child(button("Continue",resume_saved_game))
 	panel.add_child(button("Play",start_hole))
 	panel.add_child(button("Player",show_player))
-	panel.add_child(button("Golfers",show_golfers))
 	panel.add_child(button("Statistics",show_statistics))
 	panel.add_child(button("Settings",show_settings))
 	panel.add_child(button("How to play",show_help))
@@ -193,7 +192,6 @@ func show_intro() -> void:
 	var logo := image_control("logo",Vector2(288,180))
 	logo.modulate.a = 0.0
 	panel.add_child(logo)
-	panel.add_child(button("Skip",show_title))
 	intro_tween = create_tween()
 	intro_tween.tween_property(logo,"modulate:a",1.0,0.7).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	intro_tween.tween_interval(1.2)
@@ -300,7 +298,17 @@ func show_player() -> void:
 	panel.add_child(preview)
 	player_preview = preview
 	preview.material = PixteeOutfit.material(player_draft.outfit_id)
+	var gender := OptionButton.new()
+	gender.add_item("Male golfer")
+	gender.add_item("Female golfer")
+	gender.select(1 if PixteeOutfit.female(player_draft.outfit_id) else 0)
+	gender.custom_minimum_size = Vector2(288,44)
+	gender.item_selected.connect(func(index: int):
+		player_draft.outfit_id = ("female:" if index == 1 else "")+str(player_draft.outfit_id).trim_prefix("female:")
+		refresh_player_preview())
+	panel.add_child(gender)
 	add_outfit_controls()
+	refresh_player_preview()
 	player_name = LineEdit.new()
 	player_name.text = str(player_draft.display_name)
 	player_name.max_length = 32
@@ -395,11 +403,10 @@ func start_hole(resuming := false) -> void:
 func on_shoot() -> void:
 	if not playing or paused or core == null: return
 	var s: Dictionary = core.snapshot()
-	if s.get("original_welly_active",false):
-		if s.get("welly_power_captured",false) and int(s.get("welly_phase",0)) == 1: return
+	if s.get("touch_meter_active",false):
 		pending_press = true
 	elif s.get("can_shoot",false):
-		core.start_original_welly()
+		core.start_touch_meter()
 
 func select_club(index: int) -> void:
 	if playing and not paused and core != null and core.snapshot().get("can_shoot",false):
@@ -427,8 +434,8 @@ func _process(delta: float) -> void:
 func advance_native_tick() -> void:
 	if paused or core == null: return
 	var native_before: Dictionary = core.snapshot()
-	if native_before.get("original_welly_active",false):
-		core.tick_original_welly(pending_press)
+	if native_before.get("touch_meter_active",false):
+		core.tick_touch_meter(pending_press)
 		pending_press = false
 	core.step_tick()
 	for event in core.drain_presentation_events():
@@ -452,13 +459,14 @@ func update_view(s: Dictionary) -> void:
 	# Reserve actual HUD space. The world is cropped, never squeezed to fit.
 	var half_view := Vector2(screen.x,maxf(120,screen.y-128*ui_scale)) / camera.zoom / 2.0
 	camera.offset.y = 56.0*ui_scale/camera.zoom.y
-	var at: Vector2 = world.ball_world
+	var at: Vector2 = world.golfer_world if int(s.get("hole_phase",0)) in [2,3] else world.ball_world
 	camera.position.x = 272 if half_view.x >= 272 else clampf(at.x,half_view.x,544-half_view.x)
 	camera.position.y = 456 if half_view.y >= 456 else clampf(at.y-60,half_view.y,912-half_view.y)
 	var rendered_half := screen/camera.zoom/2.0
 	world.view_rect = Rect2(camera.position+camera.offset-rendered_half,rendered_half*2)
 	status.text = "H1 · Par 4 · Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
 	club_card.accept_snapshot(s)
+	minimap.reduced_motion = reduced_motion
 	minimap.queue_redraw()
 	camera.force_update_scroll()
 	aim_touch.refresh(s)
@@ -646,8 +654,8 @@ func add_outfit_controls() -> void:
 		row.add_child(choice)
 		choice.item_selected.connect(func(index: int):
 			kit[part] = index
-			player_draft.outfit_id = "kit:%d:%d:%d" % [kit[0],kit[1],kit[2]]
-			player_preview.material = PixteeOutfit.material(player_draft.outfit_id))
+			player_draft.outfit_id = ("female:" if PixteeOutfit.female(player_draft.outfit_id) else "")+"kit:%d:%d:%d" % [kit[0],kit[1],kit[2]]
+			refresh_player_preview())
 
 func create_course_core(source_mode: int) -> PixteeRoundBridge:
 	var native = PixteeRoundBridge.new()
@@ -666,7 +674,7 @@ func create_course_core(source_mode: int) -> PixteeRoundBridge:
 	if not native.load_next_hole():
 		push_error(native.last_error())
 		return null
-	native.set_aim_raw(2048)
+	native.set_aim_raw(2016 if source_mode == 0 else 2048)
 	native.set_verified_flag_object(true) # Exact approved manifest flag at native SPT cup.
 	var tree_data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(COURSE+"authored-tree-volumes.json"))
 	var volumes := PackedInt32Array()
@@ -674,11 +682,19 @@ func create_course_core(source_mode: int) -> PixteeRoundBridge:
 		volumes.append(int(tree.id))
 		for field in ["x","y","trunk_radius","trunk_height","canopy_radius","canopy_bottom","canopy_top"]:
 			volumes.append(int(round(float(tree[field])*65536.0)))
+	for i in world.boards.size():
+		var board: Dictionary = world.boards[i]
+		volumes.append(100+i)
+		var radius := maxf(1.0,float(board.w)*0.45)
+		var height := maxf(1.0,float(board.h))
+		for value in [board.x,board.y,radius,height,radius,0.0,height]:
+			volumes.append(roundi(float(value)*65536.0))
 	if not native.set_authored_tree_objects(volumes):
 		push_error(native.last_error())
 		return null
 	if not native.set_original_player_mode_5a(source_mode): return null
 	if not native.set_authored_birds_enabled(true): return null
+	if not native.set_soft_ground_enabled(true): return null
 	return native
 
 func save_session_checkpoint() -> void:
@@ -701,3 +717,18 @@ func resume_saved_game() -> void:
 	fx.on_confirmed_restart_or_replay_seek()
 	update_view(core.snapshot())
 	pause_game()
+
+func refresh_player_preview() -> void:
+	var female: bool = PixteeOutfit.female(player_draft.outfit_id)
+	var texture: Texture2D = load("res://characters/female-directions-swing-v1.png") if female else load("res://characters/male-directions-swing-v1.png")
+	var atlas := AtlasTexture.new()
+	atlas.atlas = texture
+	var grid := Vector2(8,8)
+	var metadata: Dictionary = world.character_atlas.female[0] if female else world.character_atlas.male_directional[0]
+	var region: Array = metadata.rect
+	atlas.region = Rect2(region[0],region[1],region[2],region[3])
+	player_preview.texture = atlas
+	player_preview.material = PixteeOutfit.material(player_draft.outfit_id)
+	player_preview.material.set_shader_parameter("use_atlas_rect",true)
+	player_preview.material.set_shader_parameter("atlas_origin",atlas.region.position/texture.get_size())
+	player_preview.material.set_shader_parameter("atlas_extent",atlas.region.size/texture.get_size())

@@ -65,6 +65,7 @@ public:
 
     void begin_shot(const ClassicShotRequest& request);
     void step();
+    void set_soft_ground_enabled(bool enabled) {soft_ground_enabled_=enabled;}
     void set_authored_birds_enabled(bool enabled) { authored_birds_enabled_=enabled; }
     AuthoredBirdSample authored_bird() const noexcept;
     bool authored_bird_hit() const noexcept { return bird_hit_; }
@@ -145,6 +146,7 @@ private:
     ClassicCoursePoint mode_hole_position() const;
 
     const ClassicCourseResources& course_;
+    bool soft_ground_enabled_=false;
     ClassicShotModel shot_;
     HoleSessionPhase phase_ = HoleSessionPhase::ReadyForShot;
     std::uint32_t strokes_ = 0;

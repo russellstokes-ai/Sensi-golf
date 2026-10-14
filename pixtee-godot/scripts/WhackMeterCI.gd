@@ -14,19 +14,22 @@ func _run() -> void:
 	tap.button_index = MOUSE_BUTTON_LEFT
 	tap.pressed = true
 	scene.meter._input_meter(tap)
-	for tick in range(30): scene.core.tick_original_welly(false)
-	scene.core.tick_original_welly(true)
+	for tick in range(100): scene.core.tick_touch_meter(false)
+	var power_at: int = scene.core.snapshot().touch_meter_position
+	scene.on_shoot()
+	scene.advance_native_tick()
 	var captured: Dictionary = scene.core.snapshot()
-	assert(captured.welly_power_captured and captured.welly_saved_power == 30)
+	assert(captured.touch_meter_phase == 2 and captured.touch_meter_power == 45)
+	assert(captured.touch_meter_position == power_at,"Second tap reverses immediately without jumping")
 	scene.meter.accept_snapshot(captured)
-	assert(not scene.meter.can_tap(), "No extra press during captured rising phase")
-	while scene.core.snapshot().welly_phase == 1: scene.core.tick_original_welly(false)
-	while scene.core.snapshot().welly_counter > 64: scene.core.tick_original_welly(false)
-	var ready: Dictionary = scene.core.snapshot()
-	assert(ready.welly_press_accuracy == 63, "Marker must account for native decrement before acceptance")
-	scene.meter.accept_snapshot(ready)
-	assert(scene.meter.can_tap(), "Return accepts the third bar tap")
-	assert(scene.core.tick_original_welly(true))
+	assert(scene.meter.can_tap(),"Return accepts third tap immediately")
+	var saved := scene.core.save_native_session()
+	var copy: PixteeRoundBridge = scene.create_course_core(0)
+	assert(copy.restore_native_session(saved))
+	assert(copy.snapshot() == scene.core.snapshot(),"Touch meter resumes exactly")
+	while scene.core.snapshot().touch_meter_position > 160:
+		scene.core.tick_touch_meter(false)
+	assert(scene.core.tick_touch_meter(true))
 	assert(scene.core.snapshot().strokes == 1)
 	# Resizing retains a fixed linear axis and every native window cell.
 	for width in [320.0,720.0,1200.0]:

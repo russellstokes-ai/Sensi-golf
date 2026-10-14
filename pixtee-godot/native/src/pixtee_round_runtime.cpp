@@ -4,6 +4,7 @@
 #include <utility>
 #include <sstream>
 #include <limits>
+#include "sensigolf/recovered_flight.hpp"
 
 namespace pixtee {
 using namespace sensigolf;
@@ -37,14 +38,15 @@ void PixteeRoundRuntime::load_next_hole() {
     original_welly_first_press_=false;
     original_welly_rejected_=false;
     original_welly_.reset();
+    touch_meter_={};
     record_command('L');
 }
 void PixteeRoundRuntime::set_aim_raw(std::uint16_t raw) {
-    if(original_welly_active_) throw std::logic_error("aim locked during original Welly");
+    if(original_welly_active_ || touch_meter_.stage!=0) throw std::logic_error("aim locked during original Welly");
     controls_.set_aim_raw(raw);record_command('A',{raw});
 }
 void PixteeRoundRuntime::nudge_aim_raw(std::int32_t delta) {
-    if(original_welly_active_) throw std::logic_error("aim locked during original Welly");
+    if(original_welly_active_ || touch_meter_.stage!=0) throw std::logic_error("aim locked during original Welly");
     controls_.nudge_aim(delta);record_command('N',{delta});
 }
 void PixteeRoundRuntime::set_original_player_mode_5a(std::uint16_t source_mode) {
@@ -77,21 +79,26 @@ void PixteeRoundRuntime::set_authored_tree_objects(const std::vector<sensigolf::
     record_command('T',std::move(args));
     if(!trees.empty())replay_supported_=false;
 }
+void PixteeRoundRuntime::set_soft_ground_enabled(bool enabled) {
+    if(!has_hole())throw std::logic_error("soft ground requires a loaded hole");
+    game_->active_hole().set_soft_ground_enabled(enabled);record_command('Q',{enabled?1:0});
+    if(enabled)replay_supported_=false; // Stable legacy journal lacks authoring flags; full native session records Q.
+}
 void PixteeRoundRuntime::set_authored_birds_enabled(bool enabled) {
     game_->active_hole().set_authored_birds_enabled(enabled);record_command('B',{enabled?1:0});
     replay_supported_=false;
 }
 void PixteeRoundRuntime::set_club(std::uint16_t index) {
-    if(original_welly_active_) throw std::logic_error("club locked during original Welly");
+    if(original_welly_active_ || touch_meter_.stage!=0) throw std::logic_error("club locked during original Welly");
     controls_.set_club(index);record_command('C',{index});
 }
 void PixteeRoundRuntime::cycle_club(int delta) {
-    if(original_welly_active_) throw std::logic_error("club locked during original Welly");
+    if(original_welly_active_ || touch_meter_.stage!=0) throw std::logic_error("club locked during original Welly");
     controls_.cycle_club(delta);record_command('Y',{delta});
 }
 void PixteeRoundRuntime::meter_click_raw(std::uint16_t sample) {
     if(!game_->has_active_hole()) throw std::logic_error("no active native hole");
-    if(original_welly_active_) throw std::logic_error("cannot mix original meter with manual samples");
+    if(original_welly_active_ || touch_meter_.stage!=0) throw std::logic_error("cannot mix original meter with manual samples");
     controls_.meter_click(sample);record_command('I',{sample}); // Recovered atomic three-press sequence.
     if(controls_.stage()!=ClassicMeterStage::ShotQueued) return;
     const auto shot=*controls_.queued_shot();
@@ -107,8 +114,29 @@ void PixteeRoundRuntime::meter_click_raw(std::uint16_t sample) {
     pending_=shot;
 }
 
+void PixteeRoundRuntime::start_touch_meter() {
+    if(original_welly_active_ || touch_meter_.stage || !has_hole() ||
+       !controls_.enabled() || controls_.stage()!=ClassicMeterStage::Idle)
+        throw std::logic_error("touch meter requires an idle playable hole");
+    const auto window=recovered::original_accuracy_window(club_index(),hole().current_surface().profile_slot);
+    touch_meter_.start(window.lower,window.upper);record_command('U');
+}
+bool PixteeRoundRuntime::tick_touch_meter(bool pressed) {
+    if(!touch_meter_.stage)throw std::logic_error("touch meter not started");
+    const auto accuracy=touch_meter_.sample();
+    const bool complete=touch_meter_.step(pressed);
+    record_command('V',{pressed?1:0});
+    if(!complete)return false;
+    // Suppress nested journal entries: replay V dispatches exactly these same inputs.
+    const bool recording=recording_;recording_=false;
+    try {
+        meter_click_raw(0);meter_click_raw(static_cast<std::uint16_t>(touch_meter_.power));
+        meter_click_raw(static_cast<std::uint16_t>(accuracy));
+    }catch(...) {recording_=recording;throw;}
+    recording_=recording;return true;
+}
 void PixteeRoundRuntime::start_original_welly() {
-    if(original_welly_active_ || !game_->has_active_hole() ||
+    if(original_welly_active_ || touch_meter_.stage!=0 || !game_->has_active_hole() ||
        !controls_.enabled() || controls_.stage()!=ClassicMeterStage::Idle)
         throw std::logic_error("original Welly needs an idle playable hole");
     original_welly_.start_from_original_ui_entry();
@@ -178,6 +206,7 @@ PixteeRoundRuntime::original_welly_state() const noexcept {
 
 void PixteeRoundRuntime::cancel_meter() noexcept {
     original_welly_active_=false;
+    touch_meter_.stage=0;
     controls_.cancel_meter();record_command('K');
 }
 
@@ -270,6 +299,7 @@ void PixteeRoundRuntime::restore_replay(const std::string& checkpoint) {
     original_welly_first_press_=false;
     original_welly_rejected_=false;
     original_welly_.reset();
+    touch_meter_={};
     if(game_->has_active_hole())
         controls_.sync_hole(game_->active_hole());
 }

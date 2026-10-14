@@ -39,6 +39,8 @@ var _players: Dictionary = {}
 var _sfx_pool: Array[AudioStreamPlayer] = []
 var _event_dedup: Dictionary = {}
 var _event_order: Array[String] = []
+var _last_contact_tick := -1000
+var _last_contact_type := ""
 var _ready_for_commercial_audio := false
 var _ambience_timer: Timer
 var _ambience_rng := RandomNumberGenerator.new()
@@ -263,9 +265,15 @@ func consume_confirmed_native_event(event: Dictionary) -> bool:
 	var event_type: String = str(event.get("event_type", ""))
 	if event_id.is_empty() or not NATIVE_EVENT_TO_CUE.has(event_type):
 		return false
+	var tick := int(event.get("native_tick",-1000))
+	if event.has("native_tick") and event_type in ["fairway_contact","rough_contact","ball_bounce"] and _last_contact_type == event_type and tick >= _last_contact_tick and tick-_last_contact_tick < 8:
+		return false
 	if _event_dedup.has(event_id):
 		return false
 	var cue: String = NATIVE_EVENT_TO_CUE[event_type]
+	if event_type == "club_contact":
+		_last_contact_tick = -1000
+		_last_contact_type = ""
 	if event_type == "ball_bounce":
 		cue = "large_bounce" if int(event.get("rebound_vz_raw",0)) >= 65536 else "small_bounce"
 	if event_type == "club_contact" and int(event.get("launch_surface_code",-1)) in [5,6]:
@@ -288,6 +296,8 @@ func consume_confirmed_native_event(event: Dictionary) -> bool:
 	player.stream = _catalog[cue]
 	player.stream_paused = false
 	player.play()
+	_last_contact_tick = tick
+	_last_contact_type = event_type
 	_event_dedup[event_id] = true
 	_event_order.append(event_id)
 	if _event_order.size() > 4096:
@@ -300,6 +310,8 @@ func reset_event_cursor_on_confirmed_new_round() -> void:
 	_players["Ambience"].stop()
 	_ambience_timer.stop()
 	_context = ""
+	_last_contact_tick = -1000
+	_last_contact_type = ""
 	_event_dedup.clear()
 	_event_order.clear()
 

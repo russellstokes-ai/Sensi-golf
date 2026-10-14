@@ -12,6 +12,7 @@
 #include "sensigolf/classic_replay_journal.hpp"
 #include "sensigolf/recovered_prng.hpp"
 #include "recovered_welly_tick.hpp"
+#include "pixtee_touch_meter.hpp"
 
 namespace pixtee {
 // Presentation-only sampled SOURCE MAPS slope, never fabricated by art code.
@@ -40,11 +41,15 @@ public:
     void nudge_aim_raw(std::int32_t delta);
     void set_club(std::uint16_t index);
     void set_verified_flag_object(bool present);
+    void set_soft_ground_enabled(bool enabled);
     void set_authored_birds_enabled(bool enabled);
     void set_authored_tree_objects(const std::vector<sensigolf::AuthoredTreeVolume>& trees);
     void set_original_player_mode_5a(std::uint16_t source_mode);
     void cycle_club(int delta);
     void meter_click_raw(std::uint16_t sample);
+    void start_touch_meter();
+    bool tick_touch_meter(bool pressed);
+    const TouchMeter& touch_meter() const noexcept {return touch_meter_;}
     void start_original_welly();
     bool tick_original_welly(bool pressed);
     bool original_welly_active() const noexcept;
@@ -87,6 +92,7 @@ private:
     std::unique_ptr<sensigolf::ClassicGameSession> game_;
     std::map<std::uint8_t,sensigolf::ClassicCourseResources> courses_;
     sensigolf::ClassicMobileControls controls_;
+    TouchMeter touch_meter_{};
     OriginalWellyTick original_welly_{};
     bool original_welly_active_=false;
     bool original_welly_first_press_=false;

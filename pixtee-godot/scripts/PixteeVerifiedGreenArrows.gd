@@ -79,20 +79,22 @@ func _draw() -> void:
 	# Never render an arrow under an inherited anisotropic transform.
 	if absf(scaled.x - scaled.y) > 0.0001:
 		return
-	for arrow in _arrows:
+	for index in range(_arrows.size()):
+		var arrow: Dictionary = _arrows[index]
+		if int(arrow.position.x)%16 != 0 or int(arrow.position.y)%16 != 0: continue
 		var center: Vector2 = arrow["position"]
 		var vec: Vector2 = native_slope_vector(int(arrow["direction_raw"]))
 		var strength: int = int(arrow["magnitude"])
-		var length: float = 3.0 + float(strength) * 0.40
+		var length: float = 2.2 + float(strength) * 0.18
 		var tail: Vector2 = (center - vec * length * 0.5).round()
 		var tip: Vector2 = (center + vec * length * 0.5).round()
-		var barb_left: Vector2 = (tip - vec.rotated(PI / 4.0) * 3.0).round()
-		var barb_right: Vector2 = (tip - vec.rotated(-PI / 4.0) * 3.0).round()
+		var barb_left: Vector2 = (tip - vec.rotated(PI / 4.0) * 1.5).round()
+		var barb_right: Vector2 = (tip - vec.rotated(-PI / 4.0) * 1.5).round()
 		# Pixel legibility on green using 1px shadow (no atlas asset altered).
 		var shadow := Vector2(1,1)
-		draw_line(tail + shadow, tip + shadow, arrow_outline_colour, 1.0, false)
-		draw_line(tip + shadow, barb_left + shadow, arrow_outline_colour, 1.0, false)
-		draw_line(tip + shadow, barb_right + shadow, arrow_outline_colour, 1.0, false)
-		draw_line(tail, tip, arrow_colour, 1.0, false)
-		draw_line(tip, barb_left, arrow_colour, 1.0, false)
-		draw_line(tip, barb_right, arrow_colour, 1.0, false)
+		pass # Low contrast green engraving; no black arrow grid.
+		
+		
+		draw_line(tail, tip, Color(0.78,0.90,0.52,0.40), 0.7, true)
+		draw_line(tip, barb_left, Color(0.78,0.90,0.52,0.40), 0.7, true)
+		draw_line(tip, barb_right, Color(0.78,0.90,0.52,0.40), 0.7, true)

@@ -220,6 +220,7 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
 
     last_hazard_kind_ = ClassicNamedHazard::None;
     shot_.reset();
+    shot_.set_soft_ground_enabled(soft_ground_enabled_);
     shot_.set_ball_origin(ball_x_raw_, ball_y_raw_);
     shot_.set_surface_context(to_context(surface));
 

@@ -42,6 +42,7 @@ struct ClassicPresentationContact {
 
 class ClassicShotModel final : public IClassicModel {
 public:
+    void set_soft_ground_enabled(bool enabled) noexcept {soft_ground_enabled_=enabled;}
     void set_authored_bird_context(AuthoredBirdSample before,AuthoredBirdSample after,bool* hit) noexcept {
         bird_before_=before;bird_after_=after;bird_hit_=hit;
     }
@@ -125,6 +126,8 @@ private:
     std::uint16_t active_club_ = 0;
     ClassicShotOutcome outcome_ = ClassicShotOutcome::None;
     bool active_ = false;
+    bool soft_ground_enabled_=false;
+    bool soft_ground_rolling_=false;
     recovered::OriginalPrng16* interaction_prng_ = nullptr;
     bool interaction_green_mode_ = false;
     std::int16_t flag_x_ = 0;

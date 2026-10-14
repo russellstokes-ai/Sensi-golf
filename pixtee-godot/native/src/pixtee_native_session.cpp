@@ -6,7 +6,7 @@
 namespace pixtee {
 void PixteeRoundRuntime::record_command(char op,std::vector<std::int64_t> args) {
     if(!recording_)return;
-    if(!commands_.empty() && commands_.back().op==op && commands_.back().args==args && (op=='S'||op=='P')) {
+    if(!commands_.empty() && commands_.back().op==op && commands_.back().args==args && (op=='S'||op=='P'||op=='V')) {
         ++commands_.back().repeat;return;
     }
     commands_.push_back({op,std::move(args),1});
@@ -37,6 +37,7 @@ std::string PixteeRoundRuntime::native_fingerprint() const {
     number(out,controls_.aim_raw());number(out,controls_.club_index());number(out,static_cast<int>(controls_.stage()));
     const auto& m=original_welly_.state();
     number(out,original_welly_active_);number(out,m.stage);number(out,m.counter);number(out,m.angle);number(out,m.accumulator);number(out,m.capture_flag);number(out,m.captured_power);number(out,m.accuracy_counter);
+    if(touch_meter_.stage || touch_meter_.ticks) {number(out,touch_meter_.stage);number(out,touch_meter_.position);number(out,touch_meter_.power);number(out,touch_meter_.ticks);number(out,touch_meter_.red_half);number(out,touch_meter_.yellow);}
     if(has_hole()) {
         const auto& h=hole();const auto& b=h.ball_state();
         number(out,b.x_raw);number(out,b.y_raw);number(out,b.z_raw);number(out,b.vx_raw);number(out,b.vy_raw);number(out,b.vz_raw);number(out,b.tick);number(out,static_cast<int>(h.phase()));number(out,h.strokes());number(out,h.green_mode());number(out,h.authored_clock());number(out,h.authored_bird_hit());number(out,h.bird_hit_age());
@@ -79,7 +80,10 @@ void PixteeRoundRuntime::restore_native_session(const std::string& checkpoint) {
             case 'Y':require(1);candidate.cycle_club(static_cast<int>(c.args[0]));break;
             case 'M':require(1);candidate.set_original_player_mode_5a(static_cast<std::uint16_t>(c.args[0]));break;
             case 'F':require(1);candidate.set_verified_flag_object(c.args[0]!=0);break;
+            case 'Q':require(1);candidate.set_soft_ground_enabled(c.args[0]!=0);break;
             case 'B':require(1);candidate.set_authored_birds_enabled(c.args[0]!=0);break;
+            case 'U':require(0);candidate.start_touch_meter();break;
+            case 'V':require(1);candidate.tick_touch_meter(c.args[0]!=0);break;
             case 'W':require(0);candidate.start_original_welly();break;
             case 'P':require(1);candidate.tick_original_welly(c.args[0]!=0);break;
             case 'I':require(1);candidate.meter_click_raw(static_cast<std::uint16_t>(c.args[0]));break;

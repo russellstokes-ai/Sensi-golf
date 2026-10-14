@@ -7,7 +7,11 @@ const SHIRT_COLOURS := [Color("ed2716"),Color("35994c"),Color("3374e5"),Color("a
 const TROUSER_COLOURS := [Color("2467c3"),Color("4f5662"),Color("d6c6a1"),Color("35794a")]
 const CAP_COLOURS := [Color("f0f8ff"),Color("e94835"),Color("425b91"),Color("e6bd44")]
 
+static func female(id: String) -> bool:
+	return id.begins_with("female:")
+
 static func indices(id: String) -> PackedInt32Array:
+	if female(id): id = id.trim_prefix("female:")
 	if id == "lakewood-classic": return PackedInt32Array([0,0,0])
 	var parts := id.split(":")
 	if parts.size() != 4 or parts[0] != "kit": return PackedInt32Array()
@@ -26,6 +30,7 @@ static func material(id: String) -> ShaderMaterial:
 	if kit.size() != 3: kit = PackedInt32Array([0,0,0])
 	var result := ShaderMaterial.new()
 	result.shader = load("res://shaders/pixtee_golfer_palette.gdshader")
+	result.set_shader_parameter("atlas_grid",Vector2(8,8))
 	result.set_shader_parameter("shirt_colour",SHIRT_COLOURS[kit[0]])
 	result.set_shader_parameter("trouser_colour",TROUSER_COLOURS[kit[1]])
 	result.set_shader_parameter("cap_colour",CAP_COLOURS[kit[2]])

@@ -28,6 +28,7 @@ func _run() -> void:
 	sprite.region_rect = Rect2(0,0,362,181)
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sprite.material = PixteeOutfit.material("kit:3:2:1")
+	sprite.material.set_shader_parameter("atlas_grid",Vector2(6,4))
 	palette_view.add_child(sprite)
 	await process_frame
 	await RenderingServer.frame_post_draw
@@ -54,6 +55,8 @@ func _run() -> void:
 	await capture(scene,"title-portrait")
 	print("TITLE_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	scene.show_player()
+	scene.player_draft.outfit_id = "female:kit:3:2:1"
+	scene.refresh_player_preview()
 	await capture(scene,"player-portrait")
 	print("PLAYER_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	scene.cancel_player_edit()
@@ -67,6 +70,11 @@ func _run() -> void:
 	var meter_image := root.get_texture().get_image().get_region(Rect2i(0,root.size.y-240,root.size.x,240))
 	print("WHACK_METER_PNG:"+Marshalls.raw_to_base64(meter_image.save_png_to_buffer()))
 	print("MOBILE_HUD_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
+	scene.camera.position = Vector2(408,400)
+	scene.camera.offset = Vector2.ZERO
+	scene.camera.force_update_scroll()
+	await capture(scene,"river-review",false)
+	print("RIVER_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	scene.pause_game()
 	scene.show_scorecard()
 	await capture(scene,"scorecard-portrait")

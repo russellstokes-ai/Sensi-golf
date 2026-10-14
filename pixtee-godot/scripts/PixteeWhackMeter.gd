@@ -3,6 +3,7 @@ extends Control
 ## Native readings only; tweens/shader animate decoration, never timing or input.
 signal pressed
 var state: Dictionary = {}
+var touch_mode := false
 var reduced_motion := false
 var clock := 0.0
 var transition := 0.0
@@ -26,6 +27,7 @@ func _ready() -> void:
 
 func can_tap() -> bool:
 	if state.get("can_shoot",false): return true
+	if touch_mode: return state.get("touch_meter_active",false)
 	return state.get("original_welly_active",false) and not (state.get("welly_power_captured",false) and int(state.get("welly_phase",0)) == 1)
 
 func _input_meter(event: InputEvent) -> void:
@@ -34,8 +36,15 @@ func _input_meter(event: InputEvent) -> void:
 		accept_event()
 
 func accept_snapshot(snapshot: Dictionary) -> void:
-	var changed: bool = state.get("original_welly_active",false) != snapshot.get("original_welly_active",false) or state.get("welly_power_captured",false) != snapshot.get("welly_power_captured",false) or state.get("welly_phase",0) != snapshot.get("welly_phase",0)
-	state = snapshot
+	var previous: Dictionary = state
+	touch_mode = snapshot.has("touch_meter_position") and not snapshot.get("original_welly_active",false)
+	state = snapshot.duplicate()
+	if touch_mode:
+		state.original_welly_active = snapshot.get("touch_meter_active",false)
+		state.welly_phase = snapshot.get("touch_meter_phase",0)
+		state.welly_power_captured = state.welly_phase == 2
+		state.welly_saved_power = snapshot.get("touch_meter_power",0)
+	var changed: bool = previous.get("original_welly_active",false) != state.get("original_welly_active",false) or previous.get("welly_power_captured",false) != state.get("welly_power_captured",false) or previous.get("welly_phase",0) != state.get("welly_phase",0)
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if can_tap() else Control.CURSOR_ARROW
 	if changed:
 		trail.clear()
@@ -45,7 +54,7 @@ func accept_snapshot(snapshot: Dictionary) -> void:
 		if not reduced_motion:
 			tween = create_tween()
 			tween.tween_property(self,"transition",0.0,0.32).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	var reading := int(state.get("welly_counter",0)) if int(state.get("welly_phase",0)) == 1 else int(state.get("welly_press_accuracy",0))
+	var reading := int(state.get("touch_meter_position",160)) if touch_mode else int(state.get("welly_counter",0)) if int(state.get("welly_phase",0)) == 1 else int(state.get("welly_press_accuracy",0))
 	if reading != previous_reading and state.get("original_welly_active",false) and not reduced_motion:
 		trail.append(marker_fraction())
 		if trail.size() > 5: trail.pop_front()
@@ -79,6 +88,7 @@ func accuracy_x(reading: float, width: float) -> float:
 	return 12.0+(reading+0.5)/71.0*(width-24.0)
 
 func marker_fraction() -> float:
+	if touch_mode: return float(state.get("touch_meter_position",160))/1210.0
 	if int(state.get("welly_phase",0)) == 1:
 		return clampf(float(state.get("welly_counter",0))/105.0,0,1)
 	return (clampf(float(state.get("welly_press_accuracy",0)),0,70)+0.5)/71.0
@@ -92,7 +102,18 @@ func _draw() -> void:
 	draw_rect(rail,Color("344752"))
 	draw_line(Vector2(13,18),Vector2(width-13,18),Color("68818a"),1)
 	var cell := (width-24)/71.0
-	if state.has("welly_window_low"):
+	if touch_mode:
+		var center := 12.0+160.0/1210.0*(width-24.0)
+		var red := float(state.get("touch_meter_red_half",48))/1210.0*(width-24.0)
+		var yellow := float(state.get("touch_meter_yellow",64))/1210.0*(width-24.0)
+		draw_rect(Rect2(center-red-yellow,18,2*(red+yellow),24),Color("ffeb23"))
+		draw_rect(Rect2(center-red,18,2*red,24),Color("ff2525"))
+		var font := ThemeDB.fallback_font
+		for percent in [0,25,50,75,100]:
+			var x := 12.0+(160.0+float(percent)*10.5)/1210.0*(width-24.0)
+			draw_line(Vector2(x,45),Vector2(x,49),Color("b5c8b7"),1)
+			draw_string(font,Vector2(x-8,60),str(percent),HORIZONTAL_ALIGNMENT_LEFT,24,10,Color("d8dfc3"))
+	elif state.has("welly_window_low"):
 		var low := int(state.welly_window_low)
 		var high := int(state.welly_window_high)
 		var centre := int(state.welly_window_center)
@@ -111,6 +132,6 @@ func _draw() -> void:
 		for dot in [Vector2(2,0),Vector2(0,3),Vector2(-3,1)]:
 			draw_circle(at+dot,0.8,Color("95b3be"),true,-1,true)
 	if state.get("welly_power_captured",false):
-		var saved := clampf(float(state.get("welly_saved_power",0))/105.0,0,1)
+		var saved := (160.0+float(state.get("welly_saved_power",0))*10.0)/1210.0 if touch_mode else clampf(float(state.get("welly_saved_power",0))/105.0,0,1)
 		var x := 12+saved*(width-24)
 		draw_colored_polygon(PackedVector2Array([Vector2(x-3,9),Vector2(x+3,9),Vector2(x,14)]),Color("fff1a8"))

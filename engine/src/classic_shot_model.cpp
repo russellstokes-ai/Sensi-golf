@@ -41,6 +41,7 @@ void ClassicShotModel::reset() {
     active_club_ = 0;
     outcome_ = ClassicShotOutcome::None;
     active_ = false;
+    soft_ground_enabled_=false;soft_ground_rolling_=false;
     interaction_prng_ = nullptr;
     interaction_green_mode_ = false;
     flag_x_ = 0;
@@ -187,6 +188,7 @@ void ClassicShotModel::step() {
         presentation_contact_.flag=true;
     }
 
+    const auto incoming_horizontal=flight_.horizontal_force;
     recovered::GroundStepResult result{};
     if (active_club_ == 12) {
         recovered::PutterTerminalState terminal{};
@@ -217,12 +219,22 @@ void ClassicShotModel::step() {
             throw std::logic_error(
                 "club-12 surface is not yet product-integrated");
         }
+    } else if(soft_ground_enabled_ && soft_ground_rolling_ && surface_.landing_code>=1 && surface_.landing_code<=7) {
+        result=recovered::step_non_green_putt(flight_);
+        flight_.vertical_force=0;
     } else {
         result = recovered::step_controlled_surface(
             flight_,
             surface_.landing_code);
     }
 
+    // Opt-in Pixtee authoring response, not recovered source parity: rough and
+    // sand absorb the first impact; subsequent movement uses the native ground path.
+    if(soft_ground_enabled_ && result.contacted_ground && surface_.landing_code>=5 && surface_.landing_code<=7) {
+        if(!soft_ground_rolling_)flight_.horizontal_force=std::max(0,incoming_horizontal/(surface_.landing_code==7?4:2));
+        soft_ground_rolling_=true;flight_.height=0;flight_.vertical_force=0;
+        result.resting=flight_.horizontal_force==0;
+    }
     // A source-ground branch reached from airborne height is an impact;
     // subsequent rolling contacts are not repeated particle/audio impacts.
     presentation_contact_.impact=result.contacted_ground && incoming_height>0;

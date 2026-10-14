@@ -89,11 +89,14 @@ void PixteeRoundBridge::_bind_methods() {
                          &PixteeRoundBridge::set_verified_flag_object);
     ClassDB::bind_method(D_METHOD("save_native_session"),&PixteeRoundBridge::save_native_session);
     ClassDB::bind_method(D_METHOD("restore_native_session","payload"),&PixteeRoundBridge::restore_native_session);
+    ClassDB::bind_method(D_METHOD("set_soft_ground_enabled","enabled"),&PixteeRoundBridge::set_soft_ground_enabled);
     ClassDB::bind_method(D_METHOD("set_authored_birds_enabled","enabled"),&PixteeRoundBridge::set_authored_birds_enabled);
     ClassDB::bind_method(D_METHOD("set_original_player_mode_5a","mode"),
                          &PixteeRoundBridge::set_original_player_mode_5a);
     ClassDB::bind_method(D_METHOD("meter_click_raw","sample"),&PixteeRoundBridge::meter_click_raw);
     ClassDB::bind_method(D_METHOD("cancel_meter"),&PixteeRoundBridge::cancel_meter);
+    ClassDB::bind_method(D_METHOD("start_touch_meter"),&PixteeRoundBridge::start_touch_meter);
+    ClassDB::bind_method(D_METHOD("tick_touch_meter","pressed"),&PixteeRoundBridge::tick_touch_meter);
     ClassDB::bind_method(D_METHOD("start_original_welly"),&PixteeRoundBridge::start_original_welly);
     ClassDB::bind_method(D_METHOD("tick_original_welly","pressed"),&PixteeRoundBridge::tick_original_welly);
     ClassDB::bind_method(D_METHOD("acknowledge_hazard"),&PixteeRoundBridge::acknowledge_hazard);
@@ -529,6 +532,8 @@ bool PixteeRoundBridge::METHOD { \
 }
 PIXTEE_WRAP_BOOL(set_authored_birds_enabled(bool enabled),round_->set_authored_birds_enabled(enabled))
 PIXTEE_WRAP_BOOL(load_next_hole(),round_->load_next_hole())
+PIXTEE_WRAP_BOOL(set_soft_ground_enabled(bool enabled),round_->set_soft_ground_enabled(enabled))
+PIXTEE_WRAP_BOOL(start_touch_meter(),round_->start_touch_meter())
 PIXTEE_WRAP_BOOL(start_original_welly(),round_->start_original_welly())
 PIXTEE_WRAP_BOOL(set_aim_raw(int h),round_->set_aim_raw(static_cast<std::uint16_t>(h)))
 PIXTEE_WRAP_BOOL(nudge_aim_raw(int d),round_->nudge_aim_raw(d))
@@ -555,6 +560,11 @@ PIXTEE_WRAP_BOOL(acknowledge_hazard(),round_->acknowledge_hazard())
 PIXTEE_WRAP_BOOL(acknowledge_special_green(),round_->acknowledge_special_green())
 PIXTEE_WRAP_BOOL(commit_scored_hole(),round_->commit_scored_hole())
 #undef PIXTEE_WRAP_BOOL
+bool PixteeRoundBridge::tick_touch_meter(bool pressed) {
+    if(!round_)return false;
+    try {const auto accepted=round_->tick_touch_meter(pressed);last_error_="";return accepted;}
+    catch(const std::exception& e){last_error_=String(e.what());return false;}
+}
 bool PixteeRoundBridge::tick_original_welly(bool pressed) {
     if(!round_) {last_error_="Native round not initialized";return false;}
     try {
@@ -623,7 +633,7 @@ void PixteeRoundBridge::step_tick() {
             if(before_tick==0) queue_presentation_event("club_contact",p.first,p.second,ball.tick);
             if(contact.impact || contact.hazard) {
                 // Report actual native rebounds, never proximity or a visual arc.
-                if(contact.impact && !contact.hazard && before_vz<0 && ball.vz_raw>0) {
+                if(contact.impact && !contact.hazard && before_vz<0 && ball.vz_raw>0 && contact.landing_code!=5 && contact.landing_code!=6 && contact.landing_code!=7) {
                     queue_presentation_event("ball_bounce",p.first,p.second,ball.tick);
                     Dictionary rebound=presentation_events_[presentation_events_.size()-1];
                     rebound["rebound_vz_raw"]=static_cast<int64_t>(ball.vz_raw);
@@ -757,7 +767,11 @@ Dictionary PixteeRoundBridge::snapshot() const {
         d["saved_shots"]=static_cast<int64_t>(round_->saved_shots());
         d["replay_supported"]=round_->replay_supported();
         d["meter_stage"]=static_cast<int>(round_->meter_stage());
-        d["can_shoot"]=round_->controls_enabled() && !round_->original_welly_active();
+        d["can_shoot"]=round_->controls_enabled() && !round_->original_welly_active() && !round_->touch_meter().stage;
+        const auto& touch=round_->touch_meter();
+        d["touch_meter_active"]=touch.stage!=0;d["touch_meter_phase"]=touch.stage;
+        d["touch_meter_position"]=touch.position;d["touch_meter_power"]=touch.power;
+        d["touch_meter_red_half"]=touch.red_half;d["touch_meter_yellow"]=touch.yellow;
         d["original_welly_active"]=round_->original_welly_active();
         d["original_welly_rejected"]=round_->original_welly_rejected();
         const auto& meter=round_->original_welly_state();

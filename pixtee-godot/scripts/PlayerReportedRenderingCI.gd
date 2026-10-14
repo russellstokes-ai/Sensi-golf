@@ -50,6 +50,28 @@ func _run() -> void:
 		var clock: float = actor._time
 		actor._process(0.1)
 		assert(actor._time == clock)
+	var ducks: Node
+	for child in world.get_children():
+		if child.get_script() == load("res://scripts/PixteePondDucks.gd"): ducks = child
+	assert(ducks != null and ducks.ducks.size() == 2)
+	for duck in ducks.ducks:
+		assert(Geometry2D.is_point_in_polygon(duck.at,ducks.pond))
+		assert(duck.body.material.get_shader_parameter("part") == 1)
+		assert(duck.head.material.get_shader_parameter("part") == 2)
+		assert(is_equal_approx(duck.body.scale.x,duck.body.scale.y))
+	var impact := {"confirmed_native":true,"event_id":"pond:1","event_type":"water_contact","world_x":ducks.ducks[0].at.x,"world_y":ducks.ducks[0].at.y}
+	assert(ducks.accept_native_event(impact))
+	assert(not ducks.accept_native_event(impact))
+	assert(ducks.ducks[0].scared > 0.0)
+	assert(not ducks.accept_native_event({"event_id":"fake","event_type":"water_contact","world_x":450,"world_y":480}))
+	world.reduced_motion = false
+	for tick in range(2000):
+		ducks._process(0.02)
+		for duck in ducks.ducks: assert(Geometry2D.is_point_in_polygon(duck.at,ducks.pond))
+	world.set_process(false)
+	var duck_at: Vector2 = ducks.ducks[0].at
+	ducks._process(0.1)
+	assert(ducks.ducks[0].at == duck_at)
 	world.free()
 	print("PLAYER_RENDERING_PASS: golfer anchored during flight; all 32 bird frames use fixed canvas scale")
 	quit(0)

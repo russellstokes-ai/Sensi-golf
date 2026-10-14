@@ -70,6 +70,8 @@ func _read_slot(index: int) -> Dictionary:
 		record.state.statistics = DEFAULTS.statistics.duplicate(true)
 	if int(record.schema) < 3: record.state.appearance = DEFAULTS.appearance.duplicate(true)
 	if not _valid(record.state): return {}
+	# JSON numbers decode as floats; expose stable integer palette selections.
+	for key in ["skin","hair"]: record.state.appearance[key] = int(record.state.appearance[key])
 	var generation = record.get("generation",0)
 	if not (generation is int or generation is float) or generation < 1 or generation != floor(generation): return {}
 	return record

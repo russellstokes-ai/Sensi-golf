@@ -6,6 +6,12 @@ var assets: Dictionary = {}
 var textures: Dictionary = {}
 var boards: Array = []
 var time := 0.0
+var presentation := PixteePresentationState.new()
+var object_nodes: Array[Node2D] = []
+var player_rig: Node2D
+var shadows: Node2D
+var ball_presentation: Node2D
+var water_nodes: Array[Polygon2D] = []
 var reduced_motion := false
 var reduced_flashes := false
 var visual_quality := 1
@@ -51,21 +57,48 @@ func _ready() -> void:
 		water.texture_scale = Vector2(1.0,1.0)
 		water.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 		water.modulate.a = 0.14
-		water.z_index = -1
+		water.z_index = -90
 		var material := ShaderMaterial.new()
 		material.shader = load("res://shaders/pixtee_subtle_water.gdshader")
 		material.set_shader_parameter("presentation_time",time)
 		material.set_shader_parameter("repeat_surface",true)
 		material.set_shader_parameter("flow_direction",Vector2(0.3,1.0) if key == "river" else Vector2(1.0,0.2))
 		material.set_shader_parameter("flow_texels_per_second",2.0 if key == "river" else 0.35)
+		material.set_shader_parameter("use_flow_map",true)
+		material.set_shader_parameter("bank_mask",load("res://courses/lakewood-hole-1/visual-fx/water-bank-distance.png"))
+		var flow_line := PackedVector2Array()
+		for point in layout.surfaces.flowLine: flow_line.append(Vector2(point[0],point[1]))
+		var vertex_colors := PackedColorArray()
+		for vertex in polygon:
+			var toward := Vector2(1.0,0.2).normalized()
+			if key == "river":
+				var closest := INF
+				for i in range(flow_line.size()-1):
+					var nearest := Geometry2D.get_closest_point_to_segment(vertex,flow_line[i],flow_line[i+1])
+					var distance := vertex.distance_squared_to(nearest)
+					if distance<closest:
+						closest = distance
+						toward = (flow_line[i+1]-flow_line[i]).normalized()
+			vertex_colors.append(Color(toward.x*0.5+0.5,toward.y*0.5+0.5,1.0,1.0))
+		water.vertex_colors = vertex_colors
+		var glints := PackedVector2Array()
+		var random := RandomNumberGenerator.new()
+		random.seed = 8931 if key == "river" else 4912
+		for attempt in range(2000):
+			var at := Vector2(random.randf_range(0,544),random.randf_range(0,912))
+			if Geometry2D.is_point_in_polygon(at,polygon): glints.append(at)
+			if glints.size() == 14: break
+		material.set_shader_parameter("spark_positions",glints)
+		material.set_shader_parameter("spark_count",4)
 		water.material = material
 		add_child(water)
+		water_nodes.append(water)
 	# Ground stays beneath water and objects; scale is uniform 4x export -> 1x world.
 	var ground := Sprite2D.new()
 	ground.texture = textures.ground
 	ground.centered = false
 	ground.scale = Vector2(0.25,0.25)
-	ground.z_index = -2
+	ground.z_index = -100
 	add_child(ground)
 	face_regions = JSON.parse_string(FileAccess.get_file_as_string("res://characters/face-regions-v1.json"))
 	character_atlas = JSON.parse_string(FileAccess.get_file_as_string("res://characters/atlas-v1.json"))
@@ -77,33 +110,48 @@ func _ready() -> void:
 	player_sprite.centered = false
 	player_sprite.region_enabled = true
 	player_sprite.material = PixteeOutfit.material(outfit_id)
-	add_child(player_sprite)
+	player_rig = Node2D.new()
+	add_child(player_rig)
+	player_rig.add_child(player_sprite)
 	player_upper = Sprite2D.new()
 	player_upper.centered = false
 	player_upper.region_enabled = true
-	add_child(player_upper)
+	player_rig.add_child(player_upper)
 	var atmosphere := preload("res://scripts/PixteeCourseAtmosphere.gd").new()
 	atmosphere.world = self
-	atmosphere.z_index = 1
+	atmosphere.z_index = 2100
 	add_child(atmosphere)
 	pond_ducks = preload("res://scripts/PixteePondDucks.gd").new()
 	pond_ducks.world = self
-	pond_ducks.z_index = 2
+	pond_ducks.z_index = 0
 	add_child(pond_ducks)
 	var birds := preload("res://scripts/PixteeLayeredBirds.gd").new()
 	birds.world = self
-	birds.z_index = 3
+	birds.z_index = 1800
 	add_child(birds)
 	var caddy := preload("res://scripts/PixteeCaddy.gd").new()
 	caddy.name = "Caddy"
 	caddy.world = self
-	caddy.z_index = 1
+	caddy.z_index = roundi(caddy.foot.y)
 	add_child(caddy)
 	var living := preload("res://scripts/PixteeLivingWorld.gd").new()
 	living_world = living
 	living.world = self
-	living.z_index = 1
+	living.z_index = 0
 	add_child(living)
+	for placement in placements:
+		if placement.type == "golfer": continue
+		var object := preload("res://scripts/PixteeCourseObject.gd").new()
+		object.configure(self,placement)
+		add_child(object)
+		object_nodes.append(object)
+	shadows = preload("res://scripts/PixteeWorldShadows.gd").new()
+	shadows.world = self
+	add_child(shadows)
+	ball_presentation = preload("res://scripts/PixteeBallPresentation.gd").new()
+	ball_presentation.world = self
+	ball_presentation.z_index = 1800
+	add_child(ball_presentation)
 
 func accept_snapshot(state: Dictionary, hold_golfer := false) -> void:
 	native_state = state
@@ -130,103 +178,33 @@ func bird_frame_rect(species: String, frame: int, centre: Vector2) -> Rect2:
 	return Rect2(centre-canvas*0.5,canvas)
 
 func _process(delta: float) -> void:
-	if not reduced_motion:
-		time += minf(delta,0.1)
-		for child in get_children():
-			if child is Polygon2D: child.material.set_shader_parameter("presentation_time",time)
-		update_player_sprite()
-		queue_redraw()
+	presentation.paused = not is_processing()
+	presentation.reduced_motion = reduced_motion
+	presentation.reduced_flashes = reduced_flashes
+	presentation.quality = visual_quality
+	presentation.view_rect = view_rect
+	presentation.advance(delta)
+	time = presentation.time_seconds
+	if not is_processing(): return
+	update_player_sprite()
+	for object in object_nodes:
+		object.visible = view_rect.grow(80).has_point(object.position)
+		if object.visible: object.queue_redraw()
+	shadows.queue_redraw()
+	ball_presentation.queue_redraw()
+	for water in water_nodes:
+		water.material.set_shader_parameter("presentation_time",time)
+		water.material.set_shader_parameter("sun_strength",presentation.sun_strength)
+		water.material.set_shader_parameter("quality_enabled",1.0 if visual_quality>0 else 0.0)
+		water.material.set_shader_parameter("spark_count",1 if visual_quality==0 else 4 if visual_quality==1 else 7)
 
 func _draw() -> void:
-	if assets.is_empty(): return
-	# Grounded silhouettes retain each approved sprite's proportions and alpha.
-	# Draw every shadow before any object so foliage cannot shade foreground art.
-	for object in placements:
-		if object.type not in ["tree","photographer","person"]: continue
-		var anchor := Vector2(object.x,object.y)
-		if object.type == "golfer" and golfer_position_initialized: anchor = golfer_world
-		if not view_rect.grow(70).has_point(anchor): continue
-		if object.type in ["person","photographer"]:
-			draw_ellipse(anchor+Vector2(0,0.5),Vector2(2.8,1.1),Color(0.025,0.08,0.06,0.24))
-			continue
-		var art: Dictionary = assets[object.id]
-		var region: Array = art.rect
-		var dimensions := Vector2(region[2],region[3]) * (float(object.h)/float(region[3]))
-		draw_texture_rect_region(textures[art.image],Rect2(anchor-Vector2(dimensions.x*0.5,dimensions.y)+Vector2(4,5),dimensions),Rect2(region[0],region[1],region[2],region[3]),Color(0.06,0.10,0.13,0.20))
-	# A grounded contact shadow follows the feet, never a detached upright copy.
-	draw_ellipse(golfer_world+Vector2(0,1),Vector2(5,1.7),Color(0.025,0.08,0.06,0.30))
-	for o in placements:
-		var pos := Vector2(o.x,o.y)
-		if o.type == "golfer": continue
-		if not view_rect.grow(60).has_point(pos): continue
-		if o.type == "board":
-			draw_ellipse(pos+Vector2(1,1),Vector2(float(o.w)*0.45,2.2),Color(0.03,0.08,0.06,0.20))
-			for i in boards.size():
-				var b: Dictionary = boards[i]
-				if b.x == o.x and b.y == o.y:
-					draw_texture_rect(textures["board-%d" % i],Rect2(pos-Vector2(b.w/2.0,o.h+3),Vector2(b.w,b.h)),false)
-			continue
-		if o.type == "flag":
-			if native_state.get("flag_removed_for_putting",false):
-				draw_ellipse(pos,Vector2(1.2,0.7),Color(0.04,0.08,0.035))
-				continue
-			draw_line(pos,pos-Vector2(0,o.h),Color("ebe6cd"),0.7)
-			var flutter := 0.0 if reduced_motion else sin(time*6.5)*0.6
-			draw_colored_polygon(PackedVector2Array([pos-Vector2(0,o.h),pos+Vector2(8,-o.h+3+flutter),pos+Vector2(0,-o.h+7)]),Color("df3527"))
-			continue
-		var a: Dictionary = assets[o.id]
-		var rect: Array = a.rect
-		if a.has("frames") and not reduced_motion and not (o.type == "photographer" and reduced_flashes):
-			var rate := 0.26 if o.type != "photographer" else 0.18
-			rect = a.frames[int(time/rate+o.phase) % a.frames.size()]
-		# Every frame keeps its own aspect ratio; there is no nonuniform sprite scale.
-		var size := Vector2(float(rect[2]),float(rect[3])) * (float(o.h)/float(a.rect[3]))
-		var angle := 0.0
-		if o.type in ["tree","grass","flowers","reeds"] and not reduced_motion and visual_quality > 0:
-			angle = sin(time*0.7+o.phase)*0.016
-		var flipped: bool = golfer_facing_left if o.type == "golfer" else o.get("flipX",false)
-		draw_set_transform(pos,angle,Vector2(-1 if flipped else 1,1))
-		if o.type in ["person","photographer"]:
-			var split := 0.58
-			var breath := 0.0 if reduced_motion else sin(time*1.7+float(o.phase))*0.32
-			draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y*(1-split)),Vector2(size.x,size.y*(1-split))),Rect2(rect[0],float(rect[1])+float(rect[3])*split,rect[2],float(rect[3])*(1-split)))
-			draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y+breath),Vector2(size.x,size.y*split)),Rect2(rect[0],rect[1],rect[2],float(rect[3])*split))
-		else:
-			draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y),size),Rect2(rect[0],rect[1],rect[2],rect[3]))
-		draw_set_transform(Vector2.ZERO)
-	# Collidable birds are displayed from the native clock and altitude.
-	if native_state.get("bird_active",false):
-		var species: String = ["bird","gull","blackbird","kingfisher"][(int(native_state.get("bird_id",1))-1)%4]
-		for member in range(int(native_state.get("bird_group_size",1))):
-			var hit: bool = native_state.get("bird_hit",false) and member == int(native_state.get("bird_hit_member",0))
-			if hit and not native_state.get("bird_hit_visible",true): continue
-			if not hit and not native_state.get("bird_flock_active",true): continue
-			var frame := 4 if reduced_motion else (int(native_state.get("authored_clock",0)/13)+member*2)%8
-			var art: Dictionary = assets[species+str(frame)]
-			var ground_at := Vector2(float(native_state.get("bird_flock_x_raw",native_state.bird_x_raw)),float(native_state.get("bird_flock_y_raw",native_state.bird_y_raw)))/65536.0
-			var altitude := float(native_state.get("bird_flock_z_raw",native_state.bird_z_raw))/65536.0
-			if member > 0:
-				ground_at += Vector2(-member*12,8 if member == 1 else -8)
-				altitude += 1 if member == 1 else -1
-			if hit:
-				ground_at = Vector2(float(native_state.bird_x_raw),float(native_state.bird_y_raw))/65536.0
-				altitude = float(native_state.bird_z_raw)/65536.0
-			var at := ground_at-Vector2(0,altitude)
-			draw_circle(ground_at,2,Color(0.03,0.08,0.06,0.18),true,-1,true)
-			draw_set_transform(at,0.35 if hit and not reduced_motion else 0.0)
-			# Body and wing layers are rendered by PixteeLayeredBirds.
-			draw_set_transform(Vector2.ZERO)
-	if not native_state.is_empty():
-		var z := maxf(0,float(native_state.get("ball_z_raw",0))/65536.0)
-		var ball_texture: Texture2D = textures.ball
-		var ball_size := ball_texture.get_size() * (3.0/ball_texture.get_height())
-		draw_texture_rect(textures.ball,Rect2((ball_world-Vector2(1.5,z+1.5)).round(),ball_size),false)
-		if native_state.get("can_shoot",false):
-			var heading := float(native_state.get("aim_raw",0))*TAU/4096.0
-			var direction := Vector2(sin(heading),cos(heading))
-			var length := aim_length(native_state)
-			for i in range(1,9):
-				draw_circle((ball_world+direction*length*float(i)/8.0).round(),0.65,Color(1,1,0.8,0.55))
+	pass
+
+func draw_ellipse_on(target: CanvasItem, at: Vector2, radius: Vector2, colour: Color) -> void:
+	var points := PackedVector2Array()
+	for i in range(24): points.append(at+Vector2(cos(i*TAU/24.0),sin(i*TAU/24.0))*radius)
+	target.draw_colored_polygon(points,colour)
 
 func set_outfit(id: String) -> void:
 	if not PixteeOutfit.is_valid(id) or id == outfit_id: return
@@ -241,6 +219,9 @@ func set_appearance(value: Dictionary) -> void:
 	update_player_sprite()
 
 func update_player_sprite() -> void:
+	if player_rig != null:
+		player_rig.position = golfer_world
+		player_rig.z_index = roundi(golfer_world.y)
 	if player_sprite == null: return
 	var female: bool = PixteeOutfit.female(outfit_id)
 	var heading := posmod(int(native_state.get("aim_raw",2048))+2048,4096)
@@ -267,7 +248,7 @@ func update_player_sprite() -> void:
 	player_sprite.scale = Vector2.ONE*factor
 	player_sprite.flip_h = false
 	var anchor: Array = metadata.anchor
-	player_sprite.position = (golfer_world-Vector2(anchor[0],anchor[1])*factor).round()
+	player_sprite.position = -Vector2(anchor[0],anchor[1])*factor
 	player_sprite.material.set_shader_parameter("atlas_grid",grid)
 	player_sprite.material.set_shader_parameter("use_atlas_rect",true)
 	player_sprite.material.set_shader_parameter("atlas_origin",Vector2(rect[0],rect[1])/player_sprite.texture.get_size())

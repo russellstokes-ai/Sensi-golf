@@ -80,8 +80,7 @@ func _process(delta: float) -> void:
         return
     _time += minf(maxf(0.0, delta), 0.1) * maxf(0.0, playback_speed)
     _show_frame(int(floor(_time * _fps)) % _frames)
-    if pixel_snap:
-        position = position.round()
+    # Logical position retains its fractional path; rendering owns snapping.
 
 func _show_frame(frame: int) -> void:
     for i in range(_layers.size()):

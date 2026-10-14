@@ -144,12 +144,6 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 func _draw() -> void:
-	# Render a separate soft ground shadow from actual native ball altitude.
-	# Approved ball sprite remains the native camera/visual layer's responsibility.
-	if _ball_snapshot_verified:
-		var shadow_opacity := clampf(0.34 - _ball_z * 0.009, 0.09, 0.34)
-		draw_circle((_ball_world + Vector2(1.0, 1.0)).round(), 1.7,
-			Color(0.02, 0.06, 0.07, shadow_opacity), true, -1.0, false)
 	for fleck in _particles:
 		var duration: float = float(fleck["duration"])
 		var fraction := clampf(1.0 - float(fleck["age"]) / duration, 0.0, 1.0)

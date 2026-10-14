@@ -7,18 +7,12 @@ var elapsed := 0.0
 func _process(delta: float) -> void:
 	if world == null: return
 	if not world.is_processing(): return
-	if not world.reduced_motion: elapsed += minf(delta, 0.1)
+	elapsed = world.time
 	queue_redraw()
 
 func _draw() -> void:
 	if world == null or world.assets.is_empty(): return
-	# Broad, feathered cloud shadows drift at less than one world pixel/second.
-	if world.visual_quality > 0:
-		for cloud in range(3):
-			var centre := Vector2(fposmod(elapsed * 0.65 + cloud * 247.0, 1000.0)-220.0, 190.0+cloud*295.0)
-			for lobe in range(4):
-				for edge in range(5):
-					draw_circle(centre+Vector2(lobe*42.0, sin(float(lobe)*2.0)*22.0), 68.0+edge*9.0, Color(0.10,0.16,0.23,0.009), true, -1.0, true)
+	# Cloud shade is now owned by the single world-space atmosphere shader.
 	if world.reduced_motion: return
 	for item in world.placements:
 		var base := Vector2(item.x,item.y)

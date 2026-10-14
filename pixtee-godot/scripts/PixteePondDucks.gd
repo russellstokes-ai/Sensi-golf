@@ -77,6 +77,8 @@ func _update_pose(duck: Dictionary, body: Sprite2D, head: Sprite2D, direction: i
 	var region := Rect2(source[0],source[1],source[2],source[3])
 	var at: Vector2 = duck.at-Vector2(region.size.x/2.0,region.size.y*0.55)*pixel_scale
 	for sprite in [body,head]:
+		sprite.z_as_relative = false
+		sprite.z_index = roundi(duck.at.y)
 		sprite.region_rect = region
 		sprite.position = at
 		sprite.visible = world.visual_quality > 0 and alpha > 0.0

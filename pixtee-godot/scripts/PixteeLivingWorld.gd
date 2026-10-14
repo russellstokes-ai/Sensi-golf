@@ -21,7 +21,7 @@ func _ready() -> void:
 	atmosphere = ColorRect.new()
 	atmosphere.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	atmosphere.size = Vector2(544,912)
-	atmosphere.z_index = 6
+	atmosphere.z_index = 2050
 	atmosphere.material = ShaderMaterial.new()
 	atmosphere.material.shader = load("res://shaders/pixtee_weather_atmosphere.gdshader")
 	add_child(atmosphere)
@@ -58,11 +58,16 @@ func _process(_delta: float) -> void:
 	if frozen and world.visual_quality == 0:
 		for sighting in sightings: sighting.actor.visible = false
 	if not frozen:
-		ecology_time += minf(_delta,0.1)
+		ecology_time = world.time
 		_update_sightings(minf(_delta,0.1))
 	var conditions := weather.conditions()
+	world.presentation.sun_strength = float(conditions.sun)
+	world.presentation.cloud_cover = float(conditions.cloud)
+	world.presentation.fog_density = float(conditions.fog)
+	if world.presentation.wind_mph == 0.0: world.presentation.visual_breeze = float(conditions.wind)
 	atmosphere.visible = world.visual_quality > 0
 	atmosphere.material.set_shader_parameter("visual_time",ecology_time)
+	atmosphere.material.set_shader_parameter("focus_points",Vector4(world.ball_world.x,world.ball_world.y,364,168))
 	atmosphere.material.set_shader_parameter("sun_strength",float(conditions.sun))
 	atmosphere.material.set_shader_parameter("fog_density",float(conditions.fog))
 	atmosphere.material.set_shader_parameter("cloud_cover",float(conditions.cloud))
@@ -73,6 +78,8 @@ func _process(_delta: float) -> void:
 	visuals.quality = world.visual_quality
 	visuals.set_view_rect(world.view_rect)
 	for actor in actors:
+		actor.z_as_relative = false
+		actor.z_index = roundi(actor.position.y+actor._layers[0].texture.get_height()*actor.scale.y)
 		actor.pause_presentation(frozen)
 		if not actor in [sightings[0].actor,sightings[1].actor]: actor.visible = world.visual_quality > 0
 

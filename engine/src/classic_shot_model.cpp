@@ -221,7 +221,9 @@ void ClassicShotModel::step() {
                 "club-12 surface is not yet product-integrated");
         }
     } else if(soft_ground_enabled_ && soft_ground_rolling_ && surface_.landing_code>=1 && surface_.landing_code<=7) {
-        result=recovered::step_non_green_putt(flight_);
+        result=interaction_green_mode_
+            ? recovered::step_green_putt(flight_,surface_.slope_direction,surface_.slope_magnitude)
+            : recovered::step_non_green_putt(flight_);
         flight_.vertical_force=0;
     } else {
         result = recovered::step_controlled_surface(
@@ -276,7 +278,7 @@ void ClassicShotModel::step() {
                 flight_.direction=static_cast<std::uint16_t>((previous_flight.direction+2048u)&4095u);
                 flight_.horizontal_force=std::max(0,flight_.horizontal_force/2);
             }else recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
-            if(contact.kind==AuthoredTreeContactKind::Canopy) {
+            if(contact.kind==AuthoredTreeContactKind::Canopy && !(contact.tree_id>=100 && contact.tree_id<104)) {
                 const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
                 flight_.vertical_force=rebound.vertical_force;
                 flight_.horizontal_force=rebound.horizontal_force;

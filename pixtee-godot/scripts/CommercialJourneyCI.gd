@@ -95,6 +95,7 @@ func _run() -> void:
 				for event in native.drain_presentation_events():
 					if event.event_type == "authored_board_contact":
 						board_hit = true
+						event.event_id = "board-test:"+str(event.event_id)
 						assert(scene.audio.consume_confirmed_native_event(event))
 						break
 				if board_hit or int(native.snapshot().hole_phase) != 1: break

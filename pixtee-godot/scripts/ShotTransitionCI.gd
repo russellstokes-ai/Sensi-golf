@@ -61,4 +61,5 @@ func _run() -> void:
 	director._process(0.1)
 	assert(director.conditions() != before)
 	print("SHOT_TRANSITION_PASS: stopped view held one second, one hidden swap, pause/cancel safe; weather saved and validated")
+	await create_timer(0.5).timeout # Retire native audio mixer voices after freeing the real game.
 	quit(0)

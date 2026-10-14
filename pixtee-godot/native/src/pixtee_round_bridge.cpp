@@ -656,6 +656,7 @@ void PixteeRoundBridge::step_tick() {
                 queue_presentation_event("authored_bird_contact",p.first,p.second,ball.tick);
                 Dictionary event=presentation_events_[presentation_events_.size()-1];
                 event["bird_id"]=static_cast<int64_t>(contact.bird_id);
+                event["bird_member"]=static_cast<int64_t>(contact.bird_member);
                 event["world_z"]=static_cast<double>(before_z)/65536.;
             }
             if(contact.flag) queue_presentation_event("verified_flag_contact",p.first,p.second,ball.tick);
@@ -849,6 +850,10 @@ Dictionary PixteeRoundBridge::snapshot() const {
             const auto bird=h.authored_bird();
             d["bird_active"]=bird.active;d["bird_id"]=static_cast<int64_t>(bird.id);
             d["bird_x_raw"]=bird.point.x;d["bird_y_raw"]=bird.point.y;d["bird_z_raw"]=bird.point.z;
+            const auto flock=sensigolf::authored_bird_sample(h.authored_clock());
+            d["bird_group_size"]=static_cast<int64_t>(sensigolf::authored_bird_group_size(bird.id));
+            d["bird_hit_member"]=static_cast<int64_t>(bird.member);
+            d["bird_flock_x_raw"]=flock.point.x;d["bird_flock_y_raw"]=flock.point.y;d["bird_flock_z_raw"]=flock.point.z;
             d["bird_hit"]=h.authored_bird_hit();d["bird_hit_age"]=static_cast<int64_t>(h.bird_hit_age());
             d["authored_clock"]=static_cast<int64_t>(h.authored_clock());
             d["terrain_available"]=!original_world_oob;

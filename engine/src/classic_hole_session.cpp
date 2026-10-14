@@ -535,7 +535,7 @@ void ClassicHoleSession::step() {
             mode_hole_position().x,mode_hole_position().y,green_mode_)==0,
         original_player_mode_5a_.value_or(4));
     shot_.step();
-    if(!was_bird_hit && bird_hit_) {bird_hit_tick_=authored_clock_;bird_hit_position_=after_bird;}
+    if(!was_bird_hit && bird_hit_) {bird_hit_tick_=authored_clock_;bird_hit_position_=authored_bird_member(after_bird,shot_.presentation_contact().bird_member);}
 
     // The original transition dispatcher can switch coordinate spaces as the
     // ball crosses the green window. Re-evaluate after movement so a shot that

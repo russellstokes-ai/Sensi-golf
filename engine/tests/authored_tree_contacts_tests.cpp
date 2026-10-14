@@ -18,6 +18,20 @@ int main() {
     assert(!sensigolf::authored_bird_contact(bird,bird,from,to));
     assert(!sensigolf::authored_bird_sample(100).active);
 
+    assert(authored_bird_group_size(1)==2);
+    assert(authored_bird_group_size(2)==3);
+    assert(authored_bird_group_size(3)==1 && authored_bird_group_size(4)==1);
+    for(unsigned member=0;member<3;++member) {
+        const auto gull=authored_bird_sample(6531);
+        const auto target=authored_bird_member(gull,member);
+        auto start=target.point,end=target.point;
+        start.x-=5*65536;end.x+=5*65536;
+        unsigned hit=99;
+        assert(authored_bird_contact(gull,gull,start,end,&hit));
+        assert(hit==member);
+        start.z=end.z=0;
+        assert(!authored_bird_contact(gull,gull,start,end));
+    }
     constexpr int q=65536;
     AuthoredTreeVolume tree{1,0,10*q,2*q,10*q,12*q,10*q,40*q};
     const std::vector<AuthoredTreeVolume> trees{tree};

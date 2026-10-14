@@ -45,7 +45,7 @@ func _ready() -> void:
 	profile.load_profile()
 	var hash_context := HashingContext.new()
 	hash_context.start(HashingContext.HASH_SHA256)
-	hash_context.update("pixtee-native-authoring-v2:touch-meter:boards:soft-ground".to_utf8_buffer())
+	hash_context.update("pixtee-native-authoring-v3:touch-meter:boards:soft-ground:bird-flocks".to_utf8_buffer())
 	for resource in ["MAPM.bin","SPT.bin","MAPI-descriptors.bin","MAPI-selectors.bin","MAPS.bin"]:
 		hash_context.update(FileAccess.get_file_as_bytes(NATIVE_COURSE+resource))
 	course_hash = hash_context.finish().hex_encode()

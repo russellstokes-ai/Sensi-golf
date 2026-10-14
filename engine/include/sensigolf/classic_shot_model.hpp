@@ -28,7 +28,7 @@ enum class ClassicShotOutcome : std::uint8_t {
 // Read-only presentation evidence captured at the actual recovered branch.
 // It never participates in physics, PRNG, scoring or collision decisions.
 struct ClassicPresentationContact {
-    std::uint32_t bird_id=0;
+    std::uint32_t bird_id=0,bird_member=0;
     std::uint32_t tree_id=0;
     bool canopy=false;
     bool impact = false;

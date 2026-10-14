@@ -310,13 +310,15 @@ void ClassicShotModel::step() {
             return AuthoredTreePoint{tree_green_?state.x/2+tree_origin_x_:state.x,
                 tree_green_?state.y/2+tree_origin_y_:state.y,state.height};
         };
-        if(authored_bird_contact(bird_before_,bird_after_,point(previous_flight),point(flight_))) {
+        unsigned hit_member=0;
+        if(authored_bird_contact(bird_before_,bird_after_,point(previous_flight),point(flight_),&hit_member)) {
             if(!interaction_prng_)throw std::logic_error("bird impact requires native PRNG");
             recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
             const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
             flight_.vertical_force=rebound.vertical_force;flight_.horizontal_force=rebound.horizontal_force;
             *bird_hit_=true;
             presentation_contact_.bird_id=bird_after_.id;
+            presentation_contact_.bird_member=hit_member;
             presentation_contact_.x_raw=previous_flight.x;presentation_contact_.y_raw=previous_flight.y;
         }
     }

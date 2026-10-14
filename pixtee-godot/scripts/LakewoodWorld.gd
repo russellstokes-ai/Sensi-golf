@@ -181,14 +181,23 @@ func _draw() -> void:
 	# Collidable birds are displayed from the native clock and altitude.
 	if native_state.get("bird_active",false):
 		var species: String = ["bird","gull","blackbird","kingfisher"][(int(native_state.get("bird_id",1))-1)%4]
-		var frame := 4 if reduced_motion else int(native_state.get("authored_clock",0)/13)%8
-		var art: Dictionary = assets[species+str(frame)]
-		var ground_at := Vector2(float(native_state.bird_x_raw),float(native_state.bird_y_raw))/65536.0
-		var at := ground_at-Vector2(0,float(native_state.bird_z_raw)/65536.0)
-		draw_circle(ground_at,2,Color(0.03,0.08,0.06,0.18),true,-1,true)
-		draw_set_transform(at,0.35 if native_state.get("bird_hit",false) and not reduced_motion else 0.0)
-		draw_texture_rect(textures[art.image],bird_frame_rect(species,frame,Vector2.ZERO),false)
-		draw_set_transform(Vector2.ZERO)
+		for member in range(int(native_state.get("bird_group_size",1))):
+			var hit: bool = native_state.get("bird_hit",false) and member == int(native_state.get("bird_hit_member",0))
+			var frame := 4 if reduced_motion else (int(native_state.get("authored_clock",0)/13)+member*2)%8
+			var art: Dictionary = assets[species+str(frame)]
+			var ground_at := Vector2(float(native_state.get("bird_flock_x_raw",native_state.bird_x_raw)),float(native_state.get("bird_flock_y_raw",native_state.bird_y_raw)))/65536.0
+			var altitude := float(native_state.get("bird_flock_z_raw",native_state.bird_z_raw))/65536.0
+			if member > 0:
+				ground_at += Vector2(-member*12,8 if member == 1 else -8)
+				altitude += 1 if member == 1 else -1
+			if hit:
+				ground_at = Vector2(float(native_state.bird_x_raw),float(native_state.bird_y_raw))/65536.0
+				altitude = float(native_state.bird_z_raw)/65536.0
+			var at := ground_at-Vector2(0,altitude)
+			draw_circle(ground_at,2,Color(0.03,0.08,0.06,0.18),true,-1,true)
+			draw_set_transform(at,0.35 if hit and not reduced_motion else 0.0)
+			draw_texture_rect(textures[art.image],bird_frame_rect(species,frame,Vector2.ZERO),false)
+			draw_set_transform(Vector2.ZERO)
 	if not native_state.is_empty():
 		var z := maxf(0,float(native_state.get("ball_z_raw",0))/65536.0)
 		var ball_texture: Texture2D = textures.ball

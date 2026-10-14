@@ -41,6 +41,7 @@ std::string PixteeRoundRuntime::native_fingerprint() const {
     if(has_hole()) {
         const auto& h=hole();const auto& b=h.ball_state();
         number(out,b.x_raw);number(out,b.y_raw);number(out,b.z_raw);number(out,b.vx_raw);number(out,b.vy_raw);number(out,b.vz_raw);number(out,b.tick);number(out,static_cast<int>(h.phase()));number(out,h.strokes());number(out,h.green_mode());number(out,h.authored_clock());number(out,h.authored_bird_hit());number(out,h.bird_hit_age());
+        if(h.authored_bird().member)number(out,h.authored_bird().member);
     }
     if(game_->has_prng_state()) {const auto& rng=game_->prng_state();number(out,rng.seed0);number(out,rng.seed1);}
     out.pop_back();return out;

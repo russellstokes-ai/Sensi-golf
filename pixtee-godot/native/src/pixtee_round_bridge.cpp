@@ -87,6 +87,7 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("cycle_club","delta"),&PixteeRoundBridge::cycle_club);
     ClassDB::bind_method(D_METHOD("set_verified_flag_object","present"),
                          &PixteeRoundBridge::set_verified_flag_object);
+    ClassDB::bind_method(D_METHOD("set_flag_removed_for_putting","removed"),&PixteeRoundBridge::set_flag_removed_for_putting);
     ClassDB::bind_method(D_METHOD("save_native_session"),&PixteeRoundBridge::save_native_session);
     ClassDB::bind_method(D_METHOD("restore_native_session","payload"),&PixteeRoundBridge::restore_native_session);
     ClassDB::bind_method(D_METHOD("set_soft_ground_enabled","enabled"),&PixteeRoundBridge::set_soft_ground_enabled);
@@ -539,6 +540,7 @@ PIXTEE_WRAP_BOOL(set_aim_raw(int h),round_->set_aim_raw(static_cast<std::uint16_
 PIXTEE_WRAP_BOOL(nudge_aim_raw(int d),round_->nudge_aim_raw(d))
 PIXTEE_WRAP_BOOL(set_club_index(int i),round_->set_club(static_cast<std::uint16_t>(i)))
 PIXTEE_WRAP_BOOL(set_verified_flag_object(bool present),round_->set_verified_flag_object(present))
+PIXTEE_WRAP_BOOL(set_flag_removed_for_putting(bool removed),round_->set_flag_removed_for_putting(removed))
 bool PixteeRoundBridge::set_original_player_mode_5a(int mode) {
     if(!round_) {last_error_="Native round is not initialized";return false;}
     if(mode<0 || mode>15) {
@@ -851,6 +853,7 @@ Dictionary PixteeRoundBridge::snapshot() const {
             const auto flock=sensigolf::authored_bird_sample(h.authored_clock());
             d["bird_active"]=bird.active || (bird.id!=0 && flock.active);d["bird_id"]=static_cast<int64_t>(bird.id);
             d["bird_x_raw"]=bird.point.x;d["bird_y_raw"]=bird.point.y;d["bird_z_raw"]=bird.point.z;
+            d["flag_removed_for_putting"]=h.flag_removed_for_putting();
             d["bird_hit_visible"]=bird.active && h.authored_bird_hit();
             d["bird_flock_active"]=bird.id!=0 && flock.active;
             d["bird_group_size"]=static_cast<int64_t>(sensigolf::authored_bird_group_size(bird.id));

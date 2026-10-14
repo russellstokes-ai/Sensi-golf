@@ -59,6 +59,13 @@ void PixteeRoundRuntime::set_original_player_mode_5a(std::uint16_t source_mode) 
     replay_supported_=false;
 }
 
+void PixteeRoundRuntime::set_flag_removed_for_putting(bool removed) {
+    if(!game_->has_active_hole() || touch_meter_.stage || original_welly_active())
+        throw std::logic_error("flag attendance requires ready input");
+    game_->active_hole().set_flag_removed_for_putting(removed);
+    replay_supported_=false;
+    record_command('J',{removed?1:0});
+}
 void PixteeRoundRuntime::set_verified_flag_object(bool present) {
     if(!game_->has_active_hole())
         throw std::logic_error("no loaded hole for verified flag object");

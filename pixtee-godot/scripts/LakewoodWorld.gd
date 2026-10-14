@@ -23,6 +23,7 @@ var outfit_id := "lakewood-classic"
 var appearance := {"skin":0,"hair":0,"face":0,"beard":0,"hairstyle":0}
 var face_regions: Dictionary = {}
 var pond_ducks: Node2D
+var living_world: Node2D
 var view_rect := Rect2(0,0,544,912)
 
 func _ready() -> void:
@@ -93,19 +94,25 @@ func _ready() -> void:
 	birds.world = self
 	birds.z_index = 3
 	add_child(birds)
+	var caddy := preload("res://scripts/PixteeCaddy.gd").new()
+	caddy.name = "Caddy"
+	caddy.world = self
+	caddy.z_index = 1
+	add_child(caddy)
 	var living := preload("res://scripts/PixteeLivingWorld.gd").new()
+	living_world = living
 	living.world = self
 	living.z_index = 1
 	add_child(living)
 
-func accept_snapshot(state: Dictionary) -> void:
+func accept_snapshot(state: Dictionary, hold_golfer := false) -> void:
 	native_state = state
 	ball_world = Vector2(float(state.get("ball_x_raw",0)),float(state.get("ball_y_raw",0))) / 65536.0
 	if state.get("green_mode",false):
 		ball_world = ball_world * 0.5 + Vector2(state.green_origin_x,state.green_origin_y)
 	# Keep the golfer at the lie while the ball travels. Only an actual native
 	# ready-for-shot state moves the golfer to the next lie/recovery position.
-	if not golfer_position_initialized or int(state.get("hole_phase",-1)) == 0:
+	if not golfer_position_initialized or (int(state.get("hole_phase",-1)) == 0 and not hold_golfer):
 		var heading := float(state.get("aim_raw",2016))*TAU/4096.0
 		var direction := Vector2(sin(heading),cos(heading))
 		golfer_world = ball_world-direction.rotated(PI/2.0)*7.0-direction*3.0
@@ -160,6 +167,9 @@ func _draw() -> void:
 					draw_texture_rect(textures["board-%d" % i],Rect2(pos-Vector2(b.w/2.0,o.h+3),Vector2(b.w,b.h)),false)
 			continue
 		if o.type == "flag":
+			if native_state.get("flag_removed_for_putting",false):
+				draw_ellipse(pos,Vector2(1.2,0.7),Color(0.04,0.08,0.035))
+				continue
 			draw_line(pos,pos-Vector2(0,o.h),Color("ebe6cd"),0.7)
 			var flutter := 0.0 if reduced_motion else sin(time*6.5)*0.6
 			draw_colored_polygon(PackedVector2Array([pos-Vector2(0,o.h),pos+Vector2(8,-o.h+3+flutter),pos+Vector2(0,-o.h+7)]),Color("df3527"))

@@ -17,6 +17,8 @@ var reduced_flashes: bool = false
 var visual_time: float = 0.0
 var paused: bool = false
 var weather_enabled: bool = true
+var enable_sun_dapple := true
+var enable_mist := true
 var enable_cloud_shadows: bool = false  # Lakewood already owns its cloud-shadow layer.
 var _visual_seed: int = 72241
 
@@ -48,8 +50,8 @@ func _draw() -> void:
 	if quality > 0:
 		if enable_cloud_shadows:
 			_draw_cloud_shadows(cloud)
-		_draw_sun_dapple(sun, cloud)
-		_draw_mist(fog)
+		if enable_sun_dapple: _draw_sun_dapple(sun, cloud)
+		if enable_mist: _draw_mist(fog)
 	if not reduced_motion:
 		_draw_wind_trails(wind, rain)
 		_draw_rain(rain)

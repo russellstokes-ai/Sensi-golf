@@ -70,6 +70,26 @@ func _run() -> void:
 	for tick in range(2000):
 		ducks._process(0.02)
 		for duck in ducks.ducks: assert(Geometry2D.is_point_in_polygon(duck.at,ducks.pond))
+	assert(ducks.rects.size() == 16)
+	for direction in range(8):
+		ducks.ducks[0].pose = direction
+		ducks.ducks[0].fade = 1.0
+		ducks._update_sprites()
+		assert(ducks.ducks[0].body.scale == Vector2.ONE*ducks.pixel_scale)
+		assert(not ducks.ducks[0].old_body.visible)
+	var caddy: Node = world.get_node("Caddy")
+	assert(not Geometry2D.is_point_in_polygon(caddy.foot,caddy.green))
+	assert(caddy.foot.distance_to(caddy.cup)>28.0)
+	world.native_state.flag_removed_for_putting = true
+	caddy._process(0.1)
+	caddy._process(0.1)
+	assert(caddy.flag_alpha == 1.0)
+	world.native_state.flag_removed_for_putting = false
+	caddy._process(0.1)
+	caddy._process(0.1)
+	assert(caddy.flag_alpha == 0.0)
+	world.accept_snapshot({"ball_x_raw":330*65536,"ball_y_raw":470*65536,"hole_phase":0},true)
+	assert(world.golfer_world != world.ball_world,"Held presentation must not relocate golfer")
 	world.set_process(false)
 	var duck_at: Vector2 = ducks.ducks[0].at
 	ducks._process(0.1)

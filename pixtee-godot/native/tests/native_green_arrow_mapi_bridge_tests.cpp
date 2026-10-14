@@ -121,6 +121,13 @@ int main(int argc,char** argv) {
         assert(!arrows.empty());
         session.set_original_player_mode_5a(0);
         session.set_verified_flag_object(true);
+        session.set_flag_removed_for_putting(true);
+        assert(session.hole().flag_removed_for_putting());
+        auto flag_copy=preview();flag_copy.register_course(1,real);
+        flag_copy.restore_native_session(session.serialize_native_session());
+        assert(flag_copy.native_fingerprint()==session.native_fingerprint());
+        session.set_flag_removed_for_putting(false);
+        assert(!session.hole().flag_removed_for_putting());
         session.set_authored_birds_enabled(true);
         session.set_authored_tree_objects({{1,404*65536,88*65536,2*65536,15*65536,20*65536,11*65536,44*65536}});
         auto touch_session=preview();touch_session.register_course(1,real);touch_session.load_next_hole();touch_session.set_aim_raw(1946);

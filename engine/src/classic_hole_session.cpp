@@ -61,6 +61,7 @@ void ClassicHoleSession::reset(
     safe_anchor_y_raw_ = 0;
     safe_anchor_valid_ = false;
     flag_object_verified_ = false;
+    flag_removed_for_putting_ = false;
     authored_birds_enabled_=false;bird_hit_=false;authored_clock_=0;bird_hit_tick_=0;bird_hit_position_={};
     animation_assets_verified_ = false;
     animation_assets_ = {};
@@ -192,6 +193,11 @@ void ClassicHoleSession::set_verified_flag_object(bool present) {
         throw std::logic_error(
             "authentic flag deflection requires original PRNG state");
     flag_object_verified_=present;
+}
+void ClassicHoleSession::set_flag_removed_for_putting(bool removed) {
+    if(phase_!=HoleSessionPhase::ReadyForShot)
+        throw std::logic_error("flag attendance changes require a stopped ball");
+    flag_removed_for_putting_=removed;
 }
 bool ClassicHoleSession::flag_object_verified() const noexcept {
     return flag_object_verified_;
@@ -527,7 +533,7 @@ void ClassicHoleSession::step() {
     const auto flag=course_.hole_position();
     shot_.set_original_interaction_context(
         prng_, green_mode_, static_cast<std::int16_t>(flag.x),
-        static_cast<std::int16_t>(flag.y),flag_object_verified_,
+        static_cast<std::int16_t>(flag.y),flag_object_verified_ && !flag_removed_for_putting_,
         original_player_mode_5a_.has_value() &&
         recovered::distance_to_hole(
             static_cast<std::int32_t>(state.x_raw),

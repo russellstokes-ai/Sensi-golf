@@ -94,6 +94,7 @@ func _tick(index: int) -> void:
 		var shot: Array = SHOTS[mini(int(golfer.shot),2)]
 		native.set_club_index(shot[0])
 		native.set_aim_raw(shot[2])
+		game.sync_attended_flag_for_native(native)
 		native.start_touch_meter()
 		native.step_tick()
 		golfer.delay = 0
@@ -110,3 +111,4 @@ func _tick(index: int) -> void:
 		event.event_id = "attract:%d:%d:" % [index,int(golfer.generation)]+str(event.event_id)
 		game.fx.submit_confirmed_native_event(event)
 		game.world.pond_ducks.accept_native_event(event)
+		game.world.living_world.accept_native_event(event)

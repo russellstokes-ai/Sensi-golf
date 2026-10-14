@@ -71,6 +71,7 @@ public:
     bool nudge_aim_raw(int delta);
     bool set_club_index(int index);
     bool set_verified_flag_object(bool present);
+    bool set_flag_removed_for_putting(bool removed);
     bool set_soft_ground_enabled(bool enabled);
     bool set_authored_birds_enabled(bool enabled);
     bool set_authored_tree_objects(const PackedInt32Array& raw_volumes);

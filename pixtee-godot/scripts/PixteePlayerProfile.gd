@@ -2,7 +2,7 @@ extends RefCounted
 
 # Cosmetic preferences and a record of committed native scores only.
 # This journal cannot restore or choose a native shot outcome.
-const DEFAULTS := {"display_name":"Player", "outfit_id":"lakewood-classic", "appearance":{"skin":0,"hair":0,"face":0,"beard":0,"hairstyle":0}, "settings":{"reduced_motion":false,"reduced_flashes":false,"graphics_quality":1,"frame_limit":60,"Music":0.8,"SFX":1.0,"Ambience":1.0,"UI":0.8},"statistics":{"round_sequence":0,"last_recorded":0,"played":0,"strokes":0,"best":0,"last":{}}}
+const DEFAULTS := {"display_name":"Player", "outfit_id":"lakewood-classic", "appearance":{"skin":0,"hair":0,"face":0,"beard":0,"hairstyle":0}, "settings":{"reduced_motion":false,"reduced_flashes":false,"graphics_quality":1,"frame_limit":60,"weather_preset":"morning_mist","Music":0.8,"SFX":1.0,"Ambience":1.0,"UI":0.8},"statistics":{"round_sequence":0,"last_recorded":0,"played":0,"strokes":0,"best":0,"last":{}}}
 var _state: Dictionary = DEFAULTS.duplicate(true)
 var _base := "user://pixtee/player"
 var _generation := 0
@@ -28,6 +28,8 @@ func _valid(data: Dictionary) -> bool:
 		if not settings.has(key): return false
 		if key in ["reduced_motion","reduced_flashes"]:
 			if not settings[key] is bool: return false
+		elif key == "weather_preset":
+			if not settings[key] is String or not PixteeWeatherDirector.PRESETS.has(settings[key]): return false
 		elif key == "graphics_quality":
 			if not _integer(settings[key],0,2): return false
 		elif key == "frame_limit":
@@ -60,7 +62,7 @@ func _read_slot(index: int) -> Dictionary:
 	if payload.sha256_text() != envelope.get("sha256",""): return {}
 	if parser.parse(payload) != OK: return {}
 	var record = parser.data
-	if not record is Dictionary or not _integer(record.get("schema"),1,4) or not record.get("state") is Dictionary: return {}
+	if not record is Dictionary or not _integer(record.get("schema"),1,5) or not record.get("state") is Dictionary: return {}
 	if record.schema == 1:
 		# Upgrade the prior cosmetic-only journal without discarding saved names.
 		if not record.state.get("settings") is Dictionary: return {}
@@ -68,6 +70,11 @@ func _read_slot(index: int) -> Dictionary:
 		settings.merge(record.state.settings,true)
 		record.state.settings = settings
 		record.state.statistics = DEFAULTS.statistics.duplicate(true)
+	if int(record.schema) < 5:
+		if not record.state.get("settings") is Dictionary: return {}
+		var merged_settings: Dictionary = DEFAULTS.settings.duplicate(true)
+		merged_settings.merge(record.state.settings,true)
+		record.state.settings = merged_settings
 	if int(record.schema) < 3: record.state.appearance = DEFAULTS.appearance.duplicate(true)
 	if int(record.schema) == 3:
 		if not record.state.get("appearance") is Dictionary: return {}
@@ -103,7 +110,7 @@ func _save(candidate: Dictionary) -> bool:
 	if DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_base.get_base_dir())) != OK: return false
 	var next := 0 if _slot != 0 else 1
 	var generation := _generation+1
-	var payload := JSON.stringify({"schema":4,"generation":generation,"state":candidate})
+	var payload := JSON.stringify({"schema":5,"generation":generation,"state":candidate})
 	var file := FileAccess.open(_base+"."+str(next)+".json",FileAccess.WRITE)
 	if file == null: return false
 	file.store_string(JSON.stringify({"payload":payload,"sha256":payload.sha256_text()}))

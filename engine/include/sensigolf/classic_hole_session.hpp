@@ -79,6 +79,8 @@ public:
     // flag deflection is enabled in the existing native shot loop.
     void set_verified_flag_object(bool present);
     bool flag_object_verified() const noexcept;
+    void set_flag_removed_for_putting(bool removed);
+    bool flag_removed_for_putting() const noexcept { return flag_removed_for_putting_; }
     void set_authored_tree_objects(const std::vector<AuthoredTreeVolume>& trees);
     // Host's independently licensed animation manifest supplies 16 stable
     // logical asset keys. The source original event allocator stores a
@@ -169,6 +171,7 @@ private:
     bool round_complete_ = false;
     bool green_mode_ = false;
     bool flag_object_verified_ = false;
+    bool flag_removed_for_putting_ = false;
     bool animation_assets_verified_ = false;
     recovered::OriginalAnimationAssetTable animation_assets_{};
     recovered::OriginalAnimationSlots animation_slots_{};

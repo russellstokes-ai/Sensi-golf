@@ -41,6 +41,7 @@ public:
     void nudge_aim_raw(std::int32_t delta);
     void set_club(std::uint16_t index);
     void set_verified_flag_object(bool present);
+    void set_flag_removed_for_putting(bool removed);
     void set_soft_ground_enabled(bool enabled);
     void set_authored_birds_enabled(bool enabled);
     void set_authored_tree_objects(const std::vector<sensigolf::AuthoredTreeVolume>& trees);

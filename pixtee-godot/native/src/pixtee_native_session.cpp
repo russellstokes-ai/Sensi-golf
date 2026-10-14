@@ -42,6 +42,7 @@ std::string PixteeRoundRuntime::native_fingerprint() const {
         const auto& h=hole();const auto& b=h.ball_state();
         number(out,b.x_raw);number(out,b.y_raw);number(out,b.z_raw);number(out,b.vx_raw);number(out,b.vy_raw);number(out,b.vz_raw);number(out,b.tick);number(out,static_cast<int>(h.phase()));number(out,h.strokes());number(out,h.green_mode());number(out,h.authored_clock());number(out,h.authored_bird_hit());number(out,h.bird_hit_age());
         if(h.authored_bird().member)number(out,h.authored_bird().member);
+        if(h.flag_removed_for_putting()) {number(out,-5207620);number(out,1);}
     }
     if(game_->has_prng_state()) {const auto& rng=game_->prng_state();number(out,rng.seed0);number(out,rng.seed1);}
     out.pop_back();return out;
@@ -81,6 +82,7 @@ void PixteeRoundRuntime::restore_native_session(const std::string& checkpoint) {
             case 'Y':require(1);candidate.cycle_club(static_cast<int>(c.args[0]));break;
             case 'M':require(1);candidate.set_original_player_mode_5a(static_cast<std::uint16_t>(c.args[0]));break;
             case 'F':require(1);candidate.set_verified_flag_object(c.args[0]!=0);break;
+            case 'J':require(1);candidate.set_flag_removed_for_putting(c.args[0]!=0);break;
             case 'Q':require(1);candidate.set_soft_ground_enabled(c.args[0]!=0);break;
             case 'B':require(1);candidate.set_authored_birds_enabled(c.args[0]!=0);break;
             case 'U':require(0);candidate.start_touch_meter();break;

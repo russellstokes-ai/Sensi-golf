@@ -25,7 +25,7 @@ static func indices(id: String) -> PackedInt32Array:
 static func is_valid(id: String) -> bool:
 	return indices(id).size() == 3
 
-static func material(id: String, appearance: Dictionary = {"skin":0,"hair":0}) -> ShaderMaterial:
+static func material(id: String, appearance: Dictionary = {"skin":0,"hair":0,"face":0,"beard":0,"hairstyle":0}) -> ShaderMaterial:
 	var kit := indices(id)
 	if kit.size() != 3: kit = PackedInt32Array([0,0,0])
 	var result := ShaderMaterial.new()
@@ -41,16 +41,23 @@ static func material(id: String, appearance: Dictionary = {"skin":0,"hair":0}) -
 		result.set_shader_parameter("skin_enabled",appearance.skin != 0)
 		result.set_shader_parameter("hair_enabled",appearance.hair != 0)
 		result.set_shader_parameter("skin_colour",SKIN_COLOURS[int(appearance.skin)])
-		result.set_shader_parameter("hair_colour",HAIR_COLOURS[int(appearance.hair)])
+		result.set_shader_parameter("hair_colour",(Color("252027") if appearance.hair == 0 and not female(id) else HAIR_COLOURS[int(appearance.hair)]))
+		for key in ["face","beard","hairstyle"]: result.set_shader_parameter(key+"_style",int(appearance[key]))
 	return result
 
 const SKINS := ["Original","Fair","Warm","Tan","Brown","Deep"]
 const HAIR := ["Original","Black","Chestnut","Blonde","Auburn","Silver"]
 const SKIN_COLOURS := [Color("e6a66c"),Color("f4ccac"),Color("deb18b"),Color("c99061"),Color("95633e"),Color("613c2b")]
 const HAIR_COLOURS := [Color("75400d"),Color("252027"),Color("62402b"),Color("d3a44f"),Color("954129"),Color("bcbcc1")]
+const FACES := ["Natural","Freckles","Rosy cheeks"]
+const BEARDS := ["Clean shaven","Stubble","Short beard"]
+const HAIRSTYLES := ["Classic","Soft fringe"]
+const APPEARANCE_DEFAULTS := {"skin":0,"hair":0,"face":0,"beard":0,"hairstyle":0}
 static func valid_appearance(value: Variant) -> bool:
-	if not value is Dictionary or value.size() != 2: return false
-	for key in ["skin","hair"]:
-		var index = value.get(key)
-		if not (index is int or index is float) or not is_finite(float(index)) or index != floor(index) or index < 0 or index >= 6: return false
+	if not value is Dictionary or value.size() != 5: return false
+	var keys := ["skin","hair","face","beard","hairstyle"]
+	var limits := [6,6,3,3,2]
+	for i in keys.size():
+		var index = value.get(keys[i])
+		if not (index is int or index is float) or not is_finite(float(index)) or index != floor(index) or index < 0 or index >= limits[i]: return false
 	return true

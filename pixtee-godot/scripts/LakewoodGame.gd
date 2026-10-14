@@ -733,24 +733,26 @@ func refresh_player_preview() -> void:
 	var atlas := AtlasTexture.new()
 	atlas.atlas = texture
 	var grid := Vector2(8,8)
-	var metadata: Dictionary = world.character_atlas.female_cute[0] if female else world.character_atlas.male_cute[0]
+	var metadata: Dictionary = world.character_atlas.female_cute[4] if female else world.character_atlas.male_cute[4]
 	var region: Array = metadata.rect
 	atlas.region = Rect2(region[0],region[1],region[2],region[3])
 	player_preview.texture = atlas
 	player_preview.material = PixteeOutfit.material(player_draft.outfit_id,player_draft.appearance)
+	var face: Array = world.face_regions["female" if female else "male"][4]
+	player_preview.material.set_shader_parameter("face_region",Vector4(face[0],face[1],face[2],face[3]))
 	player_preview.material.set_shader_parameter("use_atlas_rect",true)
 	player_preview.material.set_shader_parameter("atlas_origin",atlas.region.position/texture.get_size())
 	player_preview.material.set_shader_parameter("atlas_extent",atlas.region.size/texture.get_size())
 
 func add_appearance_controls() -> void:
-	for part in range(2):
-		var key: String = ["skin","hair"][part]
+	for part in range(5):
+		var key: String = ["skin","hair","face","beard","hairstyle"][part]
 		var row := HBoxContainer.new()
 		panel.add_child(row)
-		row.add_child(text_line(["Skin","Hair colour"][part]))
+		row.add_child(text_line(["Skin","Hair colour","Face","Beard","Hairstyle"][part]))
 		var choice := OptionButton.new()
 		choice.custom_minimum_size = Vector2(210,44)
-		for title in [PixteeOutfit.SKINS,PixteeOutfit.HAIR][part]: choice.add_item(title)
+		for title in [PixteeOutfit.SKINS,PixteeOutfit.HAIR,PixteeOutfit.FACES,PixteeOutfit.BEARDS,PixteeOutfit.HAIRSTYLES][part]: choice.add_item(title)
 		choice.select(int(player_draft.appearance[key]))
 		row.add_child(choice)
 		choice.item_selected.connect(func(index: int):

@@ -20,7 +20,8 @@ var character_atlas: Dictionary = {}
 var swing_time := 0.0
 var previous_shot_tick := -1
 var outfit_id := "lakewood-classic"
-var appearance := {"skin":0,"hair":0}
+var appearance := {"skin":0,"hair":0,"face":0,"beard":0,"hairstyle":0}
+var face_regions: Dictionary = {}
 var pond_ducks: Node2D
 var view_rect := Rect2(0,0,544,912)
 
@@ -65,6 +66,7 @@ func _ready() -> void:
 	ground.scale = Vector2(0.25,0.25)
 	ground.z_index = -2
 	add_child(ground)
+	face_regions = JSON.parse_string(FileAccess.get_file_as_string("res://characters/face-regions-v1.json"))
 	character_atlas = JSON.parse_string(FileAccess.get_file_as_string("res://characters/atlas-v1.json"))
 	textures.female = load("res://characters/female-cute-v2.png")
 	textures.male = load("res://characters/male-cute-v2.png")
@@ -254,13 +256,15 @@ func update_player_sprite() -> void:
 	player_sprite.material.set_shader_parameter("use_atlas_rect",true)
 	player_sprite.material.set_shader_parameter("atlas_origin",Vector2(rect[0],rect[1])/player_sprite.texture.get_size())
 	player_sprite.material.set_shader_parameter("atlas_extent",Vector2(rect[2],rect[3])/player_sprite.texture.get_size())
+	var face: Array = face_regions["female" if female else "male"][frame*8+direction]
+	player_sprite.material.set_shader_parameter("face_region",Vector4(face[0],face[1],face[2],face[3]))
 	player_sprite.material.set_shader_parameter("layer_part",1)
 	player_upper.texture = player_sprite.texture
 	player_upper.region_rect = player_sprite.region_rect
 	player_upper.scale = player_sprite.scale
 	player_upper.position = player_sprite.position+Vector2(0,sin(time*2.0)*0.45 if frame == 0 and not reduced_motion else 0.0)
 	if player_upper.material == null: player_upper.material = player_sprite.material.duplicate()
-	for property in ["skin_colour","hair_colour","skin_enabled","hair_enabled","shirt_colour","trouser_colour","cap_colour","shirt_enabled","trouser_enabled","cap_enabled","atlas_grid","use_atlas_rect","atlas_origin","atlas_extent"]:
+	for property in ["face_style","beard_style","hairstyle_style","face_region","skin_colour","hair_colour","skin_enabled","hair_enabled","shirt_colour","trouser_colour","cap_colour","shirt_enabled","trouser_enabled","cap_enabled","atlas_grid","use_atlas_rect","atlas_origin","atlas_extent"]:
 		player_upper.material.set_shader_parameter(property,player_sprite.material.get_shader_parameter(property))
 	player_upper.material.set_shader_parameter("layer_part",2)
 

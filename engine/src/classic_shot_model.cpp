@@ -1,6 +1,7 @@
 #include "sensigolf/classic_shot_model.hpp"
 
 #include <cstdint>
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 
@@ -277,6 +278,16 @@ void ClassicShotModel::step() {
                 // Authored Lakewood sponsor boards: solid face, deterministic rebound.
                 flight_.direction=static_cast<std::uint16_t>((previous_flight.direction+2048u)&4095u);
                 flight_.horizontal_force=std::max(0,flight_.horizontal_force/2);
+                const auto board=std::find_if(authored_trees_->begin(),authored_trees_->end(),[&](const auto& object){return object.id==contact.tree_id;});
+                if(board!=authored_trees_->end() && previous_flight.height>=board->trunk_height && flight_.vertical_force<0) {
+                    // A descending ball can strike the top after its horizontal
+                    // force has already reached zero. Reflect its actual vertical
+                    // motion using the recovered rebound primitive.
+                    const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
+                    flight_.vertical_force=rebound.vertical_force;
+                    flight_.horizontal_force=rebound.horizontal_force;
+                    flight_.height=board->trunk_height;
+                }
             }else recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
             if(contact.kind==AuthoredTreeContactKind::Canopy && !(contact.tree_id>=100 && contact.tree_id<104)) {
                 const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);

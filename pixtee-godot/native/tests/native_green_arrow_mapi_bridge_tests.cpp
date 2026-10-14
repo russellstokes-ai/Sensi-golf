@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iterator>
 #include <string>
+#include <cstdio>
 #ifdef _WIN32
 #include <crtdbg.h>
 #include <cstdlib>
@@ -95,6 +96,26 @@ int main(int argc,char** argv) {
         };
         sensigolf::ClassicCourseResources real(read("MAPM.bin"),read("SPT.bin"),
             read("MAPI-descriptors.bin"),read("MAPI-selectors.bin"),read("MAPS.bin"));
+
+        bool board_seen=false;
+        for(int club:{7,9,11,0})for(int power:{35,50,65,80,100}) {
+            if(board_seen)break;
+            auto probe=preview();probe.register_course(1,real);probe.load_next_hole();
+            probe.set_original_player_mode_5a(0);probe.set_verified_flag_object(true);probe.set_soft_ground_enabled(true);
+            probe.set_authored_tree_objects({{1,26476544,5767168,131072,1703936,1179648,1048576,2949120},{2,16121856,7471104,131072,1769472,1179648,1048576,3014656},{3,6422528,8847360,131072,1835008,1310720,1114112,3211264},{4,30277632,11534336,131072,1835008,1310720,1114112,3211264},{5,12517376,17432576,131072,1572864,1114112,983040,2752512},{6,29229056,19398656,131072,1966080,1310720,1179648,3342336},{7,19333120,21495808,131072,1572864,1114112,983040,2752512},{8,5111808,22937600,131072,1638400,1114112,983040,2818048},{9,31195136,23527424,131072,1835008,786432,1114112,3145728},{10,10878976,26345472,131072,1638400,1114112,983040,2818048},{11,7798784,31588352,131072,1835008,1245184,1114112,3145728},{12,11403264,37879808,131072,2097152,1441792,1245184,3604480},{13,6750208,43581440,131072,1507328,655360,917504,2621440},{14,23265280,48889856,131072,2031616,1441792,1245184,3538944},{15,12320768,49479680,131072,1441792,983040,851968,2490368},{16,29425664,53477376,131072,1703936,1179648,983040,2883584},{17,27525120,56754176,131072,1572864,1114112,983040,2752512},{100,18677760,10485760,1120666,1835008,1120666,0,1835008},{101,30932992,13434880,1120666,1835008,1120666,0,1835008},{102,15859712,28639232,1238630,1966080,1238630,0,1966080},{103,12713984,46596096,1120666,1966080,1120666,0,1966080}});
+            probe.set_club(club);probe.set_aim_raw(2322);probe.meter_click_raw(0);probe.meter_click_raw(power);probe.meter_click_raw(63);
+            for(int tick=0;tick<700;++tick) {
+                const auto before=probe.hole().ball_state();probe.step_tick();const auto after=probe.hole().ball_state();
+                const auto contact=probe.hole().presentation_contact();
+                if(contact.tree_id>=100) {
+                    std::printf("BOARD_NATIVE_REBOUND_PASS club=%d power=%d id=%u tick=%d canopy=%d in=(%lld,%lld) out=(%lld,%lld) z=%lld dot=%g\n",club,power,contact.tree_id,tick,contact.canopy,(long long)before.vx_raw,(long long)before.vy_raw,(long long)after.vx_raw,(long long)after.vy_raw,(long long)after.z_raw,double(before.vx_raw)*after.vx_raw+double(before.vy_raw)*after.vy_raw);
+                    assert((before.vx_raw || before.vy_raw) ? (double(before.vx_raw)*after.vx_raw+double(before.vy_raw)*after.vy_raw<0) : after.vz_raw>0);
+                    board_seen=true;break;
+                }
+                if(probe.hole().phase()!=sensigolf::HoleSessionPhase::ShotActive)break;
+            }
+        }
+        assert(board_seen);
         auto session=preview();session.register_course(1,real);session.load_next_hole();
         const auto arrows=session.verified_native_green_arrows(16);
         assert(!arrows.empty());

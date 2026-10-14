@@ -99,7 +99,10 @@ func _run() -> void:
 						var after_contact: Dictionary = native.snapshot()
 						var incoming := Vector2(float(before_contact.ball_velocity_x),float(before_contact.ball_velocity_y))
 						var outgoing := Vector2(float(after_contact.ball_velocity_x),float(after_contact.ball_velocity_y))
-						assert(incoming.dot(outgoing)<0,"Native board hit reverses the ball, not merely emitting FX")
+						if incoming.length_squared()>1:
+							assert(incoming.dot(outgoing)<0,"Native side impact reverses actual horizontal motion")
+						else:
+							assert(float(after_contact.ball_velocity_z)>0,"A descending stationary ball rebounds off the board top")
 						event.event_id = "board-test:"+str(event.event_id)
 						assert(scene.audio.consume_confirmed_native_event(event))
 						break

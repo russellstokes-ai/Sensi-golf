@@ -55,8 +55,18 @@ func _run() -> void:
 	await capture(scene,"title-portrait")
 	print("TITLE_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	scene.show_player()
-	scene.player_draft.outfit_id = "female:kit:3:2:1"
-	scene.refresh_player_preview()
+	var selectors: Array[OptionButton] = []
+	for child in scene.panel.get_children():
+		if child is OptionButton: selectors.append(child)
+		if child is HBoxContainer:
+			for choice in child.get_children():
+				if choice is OptionButton: selectors.append(choice)
+	assert(selectors.size()==4)
+	var selections := [1,3,2,1]
+	for i in range(4):
+		selectors[i].select(selections[i])
+		selectors[i].item_selected.emit(selections[i])
+	assert(scene.player_draft.outfit_id == "female:kit:3:2:1","Real selectors must produce one stable combined outfit")
 	await capture(scene,"player-portrait")
 	print("PLAYER_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	scene.cancel_player_edit()
@@ -70,11 +80,14 @@ func _run() -> void:
 	var meter_image := root.get_texture().get_image().get_region(Rect2i(0,root.size.y-240,root.size.x,240))
 	print("WHACK_METER_PNG:"+Marshalls.raw_to_base64(meter_image.save_png_to_buffer()))
 	print("MOBILE_HUD_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
+	scene.set_process(false)
 	scene.camera.position = Vector2(408,400)
 	scene.camera.offset = Vector2.ZERO
+	scene.world.view_rect = Rect2(scene.camera.position-Vector2(120,253),Vector2(240,506))
 	scene.camera.force_update_scroll()
 	await capture(scene,"river-review",false)
 	print("RIVER_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
+	scene.set_process(true)
 	scene.pause_game()
 	scene.show_scorecard()
 	await capture(scene,"scorecard-portrait")
@@ -100,6 +113,7 @@ func _run() -> void:
 	await process_frame
 	scene.update_ui_layout()
 	await capture(scene,"green-portrait",false)
+	print("GREEN_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
 	root.size = Vector2i(1200,1000)
 	await process_frame
 	scene.update_ui_layout()

@@ -91,10 +91,15 @@ func _run() -> void:
 			native.meter_click_raw(power)
 			native.meter_click_raw(63)
 			for tick in range(700):
+				var before_contact: Dictionary = native.snapshot()
 				native.step_tick()
 				for event in native.drain_presentation_events():
 					if event.event_type == "authored_board_contact":
 						board_hit = true
+						var after_contact: Dictionary = native.snapshot()
+						var incoming := Vector2(float(before_contact.ball_velocity_x),float(before_contact.ball_velocity_y))
+						var outgoing := Vector2(float(after_contact.ball_velocity_x),float(after_contact.ball_velocity_y))
+						assert(incoming.dot(outgoing)<0,"Native board hit reverses the ball, not merely emitting FX")
 						event.event_id = "board-test:"+str(event.event_id)
 						assert(scene.audio.consume_confirmed_native_event(event))
 						break

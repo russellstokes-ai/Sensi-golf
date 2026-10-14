@@ -40,7 +40,7 @@ func _draw() -> void:
 	if state.get("green_mode",false):
 		x = x*0.5+float(state.get("green_origin_x",0))
 		y = y*0.5+float(state.get("green_origin_y",0))
-	var region := Rect2(Vector2(x*4-lie.size.x*2,y*4-84),lie.size*4)
+	var region := Rect2(Vector2(x*4-lie.size.x/2,y*4-21),lie.size)
 	draw_texture_rect_region(lie_art,lie,region)
 	draw_rect(Rect2(4,34,size.x-8,14),ground)
 	var diameter := 26.0

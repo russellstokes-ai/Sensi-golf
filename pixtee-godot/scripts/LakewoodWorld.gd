@@ -89,6 +89,10 @@ func _ready() -> void:
 	pond_ducks.world = self
 	pond_ducks.z_index = 2
 	add_child(pond_ducks)
+	var birds := preload("res://scripts/PixteeLayeredBirds.gd").new()
+	birds.world = self
+	birds.z_index = 3
+	add_child(birds)
 	var living := preload("res://scripts/PixteeLivingWorld.gd").new()
 	living.world = self
 	living.z_index = 1
@@ -185,6 +189,8 @@ func _draw() -> void:
 		var species: String = ["bird","gull","blackbird","kingfisher"][(int(native_state.get("bird_id",1))-1)%4]
 		for member in range(int(native_state.get("bird_group_size",1))):
 			var hit: bool = native_state.get("bird_hit",false) and member == int(native_state.get("bird_hit_member",0))
+			if hit and not native_state.get("bird_hit_visible",true): continue
+			if not hit and not native_state.get("bird_flock_active",true): continue
 			var frame := 4 if reduced_motion else (int(native_state.get("authored_clock",0)/13)+member*2)%8
 			var art: Dictionary = assets[species+str(frame)]
 			var ground_at := Vector2(float(native_state.get("bird_flock_x_raw",native_state.bird_x_raw)),float(native_state.get("bird_flock_y_raw",native_state.bird_y_raw)))/65536.0
@@ -198,7 +204,7 @@ func _draw() -> void:
 			var at := ground_at-Vector2(0,altitude)
 			draw_circle(ground_at,2,Color(0.03,0.08,0.06,0.18),true,-1,true)
 			draw_set_transform(at,0.35 if hit and not reduced_motion else 0.0)
-			draw_texture_rect(textures[art.image],bird_frame_rect(species,frame,Vector2.ZERO),false)
+			# Body and wing layers are rendered by PixteeLayeredBirds.
 			draw_set_transform(Vector2.ZERO)
 	if not native_state.is_empty():
 		var z := maxf(0,float(native_state.get("ball_z_raw",0))/65536.0)

@@ -75,6 +75,10 @@ func _run() -> void:
 						var copy: PixteeRoundBridge = scene.create_course_core(0)
 						assert(copy.restore_native_session(native.save_native_session()))
 						assert(copy.snapshot() == native.snapshot())
+						native.step_ticks(200)
+						copy.step_ticks(200)
+						assert(copy.snapshot() == native.snapshot())
+						assert(native.snapshot().bird_active and not native.snapshot().bird_hit_visible,"Untouched flock members keep flying after a hit")
 						hit = true
 						break
 				if hit or int(native.snapshot().hole_phase) != 1: break

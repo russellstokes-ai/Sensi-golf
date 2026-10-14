@@ -848,9 +848,11 @@ Dictionary PixteeRoundBridge::snapshot() const {
                 sensigolf::ClassicNamedHazard::OutsideWorld &&
                 h.phase()==sensigolf::HoleSessionPhase::HazardStopped;
             const auto bird=h.authored_bird();
-            d["bird_active"]=bird.active;d["bird_id"]=static_cast<int64_t>(bird.id);
-            d["bird_x_raw"]=bird.point.x;d["bird_y_raw"]=bird.point.y;d["bird_z_raw"]=bird.point.z;
             const auto flock=sensigolf::authored_bird_sample(h.authored_clock());
+            d["bird_active"]=bird.active || (bird.id!=0 && flock.active);d["bird_id"]=static_cast<int64_t>(bird.id);
+            d["bird_x_raw"]=bird.point.x;d["bird_y_raw"]=bird.point.y;d["bird_z_raw"]=bird.point.z;
+            d["bird_hit_visible"]=bird.active && h.authored_bird_hit();
+            d["bird_flock_active"]=bird.id!=0 && flock.active;
             d["bird_group_size"]=static_cast<int64_t>(sensigolf::authored_bird_group_size(bird.id));
             d["bird_hit_member"]=static_cast<int64_t>(bird.member);
             d["bird_flock_x_raw"]=flock.point.x;d["bird_flock_y_raw"]=flock.point.y;d["bird_flock_z_raw"]=flock.point.z;

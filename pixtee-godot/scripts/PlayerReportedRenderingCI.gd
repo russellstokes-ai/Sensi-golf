@@ -64,6 +64,8 @@ func _run() -> void:
 	assert(not ducks.accept_native_event(impact))
 	assert(ducks.ducks[0].scared > 0.0)
 	assert(not ducks.accept_native_event({"event_id":"fake","event_type":"water_contact","world_x":450,"world_y":480}))
+	ducks.reset_confirmed_event_cursor()
+	assert(ducks.accept_native_event(impact),"A fresh native session may reuse event serials")
 	world.reduced_motion = false
 	for tick in range(2000):
 		ducks._process(0.02)
@@ -72,6 +74,18 @@ func _run() -> void:
 	var duck_at: Vector2 = ducks.ducks[0].at
 	ducks._process(0.1)
 	assert(ducks.ducks[0].at == duck_at)
+	var birds: Node
+	for child in world.get_children():
+		if child.get_script() == load("res://scripts/PixteeLayeredBirds.gd"): birds = child
+	assert(birds != null and birds.birds.size() == 3)
+	for bird in birds.birds:
+		assert(bird.body.material.get_shader_parameter("part") == 1)
+		assert(bird.wings.material.get_shader_parameter("part") == 2)
+		assert(bird.body.scale == bird.wings.scale and is_equal_approx(bird.body.scale.x,bird.body.scale.y))
+	world.native_state = {"bird_active":true,"bird_id":2,"bird_group_size":3,"bird_hit":true,"bird_hit_member":0,"bird_hit_visible":true,"bird_flock_active":false,"bird_x_raw":450*65536,"bird_y_raw":480*65536,"bird_z_raw":8*65536,"bird_flock_x_raw":0,"bird_flock_y_raw":0,"bird_flock_z_raw":0}
+	birds._process(0.0)
+	assert(birds.birds[0].body.visible)
+	assert(not birds.birds[1].body.visible and not birds.birds[2].body.visible,"Exited flock members must never appear at zero coordinates after a late hit")
 	world.free()
 	print("PLAYER_RENDERING_PASS: golfer anchored during flight; all 32 bird frames use fixed canvas scale")
 	quit(0)

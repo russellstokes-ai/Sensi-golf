@@ -399,6 +399,7 @@ func start_hole(resuming := false) -> void:
 	fx.set_effects_running(true)
 	fx.on_confirmed_restart_or_replay_seek()
 	audio.reset_event_cursor_on_confirmed_new_round()
+	world.pond_ducks.reset_confirmed_event_cursor()
 	audio.set_context("course")
 	menu.hide()
 	hud.show()
@@ -724,6 +725,7 @@ func resume_saved_game() -> void:
 	attempt_id = int(record.attempt)
 	pending_press = bool(record.pending_press)
 	fx.on_confirmed_restart_or_replay_seek()
+	world.pond_ducks.reset_confirmed_event_cursor()
 	update_view(core.snapshot())
 	pause_game()
 

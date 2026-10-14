@@ -74,3 +74,7 @@ func _draw() -> void:
 		if not world.reduced_motion:
 			var trail := Vector2(sin(duck.phase),-cos(duck.phase))*3.0
 			draw_arc(at+trail,5.0,0.0,PI,16,Color(0.57,0.83,0.92,0.20),0.6,true)
+
+func reset_confirmed_event_cursor() -> void:
+	seen.clear()
+	for duck in ducks: duck.scared = 0.0

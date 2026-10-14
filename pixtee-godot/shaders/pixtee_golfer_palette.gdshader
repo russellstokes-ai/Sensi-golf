@@ -16,7 +16,7 @@ void fragment() {
     vec4 pixel = texture(TEXTURE,UV);
     vec2 cell = use_atlas_rect ? (UV-atlas_origin)/atlas_extent : fract(UV*atlas_grid);
     // Cosmetic palette masks retain the source alpha, shading and silhouette.
-    if (shirt_enabled && pixel.r>pixel.g*2.4 && pixel.r>pixel.b*2.0 && pixel.r>0.18)
+    if (shirt_enabled && pixel.r>pixel.g*3.5 && pixel.r>pixel.b*3.0 && pixel.r>0.25)
         pixel.rgb=shirt_colour.rgb*pixel.r;
     else if (trouser_enabled && cell.y>0.38 && pixel.b>pixel.r*1.5 && pixel.b>pixel.g*1.15)
         pixel.rgb=trouser_colour.rgb*pixel.b;

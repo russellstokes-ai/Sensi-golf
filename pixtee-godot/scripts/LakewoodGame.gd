@@ -45,6 +45,7 @@ func _ready() -> void:
 	profile.load_profile()
 	var hash_context := HashingContext.new()
 	hash_context.start(HashingContext.HASH_SHA256)
+	hash_context.update("pixtee-native-authoring-v2:touch-meter:boards:soft-ground".to_utf8_buffer())
 	for resource in ["MAPM.bin","SPT.bin","MAPI-descriptors.bin","MAPI-selectors.bin","MAPS.bin"]:
 		hash_context.update(FileAccess.get_file_as_bytes(NATIVE_COURSE+resource))
 	course_hash = hash_context.finish().hex_encode()
@@ -403,7 +404,7 @@ func start_hole(resuming := false) -> void:
 func on_shoot() -> void:
 	if not playing or paused or core == null: return
 	var s: Dictionary = core.snapshot()
-	if s.get("touch_meter_active",false):
+	if s.get("touch_meter_active",false) or s.get("original_welly_active",false):
 		pending_press = true
 	elif s.get("can_shoot",false):
 		core.start_touch_meter()
@@ -436,6 +437,9 @@ func advance_native_tick() -> void:
 	var native_before: Dictionary = core.snapshot()
 	if native_before.get("touch_meter_active",false):
 		core.tick_touch_meter(pending_press)
+		pending_press = false
+	elif native_before.get("original_welly_active",false):
+		core.tick_original_welly(pending_press)
 		pending_press = false
 	core.step_tick()
 	for event in core.drain_presentation_events():

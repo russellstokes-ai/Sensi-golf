@@ -21,7 +21,7 @@ func _ready() -> void:
     if preview_enabled:
         set_animation(animation_id)
 
-func set_animation(next_id: String) -> bool:
+func set_animation(next_id: String, minimum_layers: int = 1) -> bool:
     if not FileAccess.file_exists(MANIFEST):
         push_error("Pixtee premium animation manifest unavailable")
         return false
@@ -30,6 +30,8 @@ func set_animation(next_id: String) -> bool:
         push_error("No authored Pixtee animation: " + next_id)
         return false
     var entry: Dictionary = decoded[next_id]
+    if entry["layers"].size() < maxi(1,minimum_layers):
+        return false
     var new_layers: Array = []
     var frame_len := -1
     for layer_name in entry["layers"].keys():

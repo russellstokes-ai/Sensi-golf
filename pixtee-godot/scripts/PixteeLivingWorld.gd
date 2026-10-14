@@ -15,7 +15,7 @@ func _ready() -> void:
 		var actor := PixteePremiumLayeredSprite.new()
 		actor.preview_enabled = false
 		add_child(actor)
-		if not actor.set_animation(entry[0]): push_error("Living World actor failed: "+str(entry[0]))
+		if not actor.set_animation(entry[0],2): push_error("Living World actor failed: "+str(entry[0]))
 		var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(PixteePremiumLayeredSprite.MANIFEST))
 		var canvas: Array = manifest[entry[0]].canvas
 		var factor: float = float(entry[2])/float(canvas[1])

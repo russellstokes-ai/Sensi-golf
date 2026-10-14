@@ -34,6 +34,22 @@ func _run() -> void:
 	world.reduced_motion = true
 	atmosphere._process(0.1)
 	assert(atmosphere.elapsed == frozen, "Reduced motion freezes atmosphere")
+	var living: Node
+	for child in world.get_children():
+		if child.get_script() == load("res://scripts/PixteeLivingWorld.gd"): living = child
+	assert(living != null and living.actors.size() == 4)
+	for actor in living.actors:
+		assert(actor._layers.size() >= 2,"Every live animal needs independently authored layers")
+		assert(is_equal_approx(actor.scale.x,actor.scale.y))
+		var canvas: Vector2 = actor._layers[0].texture.get_size()
+		for layer in actor._layers: assert(layer.texture.get_size() == canvas)
+		var animation: String = actor.animation_id
+		assert(not actor.set_animation("rabbit_poses",2),"A whole-pose fallback must not replace a layered actor")
+		assert(actor.animation_id == animation)
+		actor.pause_presentation(true)
+		var clock: float = actor._time
+		actor._process(0.1)
+		assert(actor._time == clock)
 	world.free()
 	print("PLAYER_RENDERING_PASS: golfer anchored during flight; all 32 bird frames use fixed canvas scale")
 	quit(0)

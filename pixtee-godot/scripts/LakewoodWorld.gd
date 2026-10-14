@@ -165,7 +165,7 @@ func _draw() -> void:
 			angle = sin(time*0.7+o.phase)*0.016
 		var flipped: bool = golfer_facing_left if o.type == "golfer" else o.get("flipX",false)
 		draw_set_transform(pos,angle,Vector2(-1 if flipped else 1,1))
-		if o.type == "person":
+		if o.type in ["person","photographer"]:
 			var split := 0.58
 			var breath := 0.0 if reduced_motion else sin(time*1.7+float(o.phase))*0.32
 			draw_texture_rect_region(textures[a.image],Rect2(Vector2(-size.x/2,-size.y*(1-split)),Vector2(size.x,size.y*(1-split))),Rect2(rect[0],float(rect[1])+float(rect[3])*split,rect[2],float(rect[3])*(1-split)))

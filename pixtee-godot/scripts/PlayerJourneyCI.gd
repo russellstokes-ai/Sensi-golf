@@ -16,7 +16,7 @@ func _run() -> void:
 	draft.display_name = "Willow Player"
 	assert(profile.apply_edit(draft))
 	draft = profile.begin_edit()
-	draft.appearance = {"skin":4,"hair":3}
+	draft.appearance = {"skin":4,"hair":3,"face":2,"beard":2,"hairstyle":1}
 	assert(profile.apply_edit(draft))
 	var appearance_reload = Profile.new()
 	assert(appearance_reload.load_profile(storage))

@@ -350,8 +350,19 @@ func show_player() -> void:
 	panel.add_child(player_name)
 	player_error = text_line("")
 	panel.add_child(player_error)
-	panel.add_child(button("Apply",func(): apply_player_edit()))
-	panel.add_child(button("Cancel",cancel_player_edit))
+	# Keep commit/cancel reachable while the appearance list scrolls.
+	menu_scroll.get_parent().add_theme_constant_override("margin_bottom",134)
+	var footer := CenterContainer.new()
+	menu.add_child(footer)
+	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	footer.offset_top = -126
+	footer.offset_bottom = -12
+	var actions := VBoxContainer.new()
+	actions.name = "PlayerActions"
+	actions.add_theme_constant_override("separation",8)
+	footer.add_child(actions)
+	actions.add_child(button("Apply",func(): apply_player_edit()))
+	actions.add_child(button("Cancel",cancel_player_edit))
 
 func apply_player_edit() -> bool:
 	player_draft.display_name = player_name.text

@@ -1,0 +1,35 @@
+[gd_resource type="SpriteFrames" load_steps=13 format=3]
+
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_00.png" id="1"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_01.png" id="2"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_02.png" id="3"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_03.png" id="4"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_04.png" id="5"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_05.png" id="6"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_06.png" id="7"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_07.png" id="8"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_08.png" id="9"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_09.png" id="10"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_10.png" id="11"]
+[ext_resource type="Texture2D" path="res://addons/pixtee_living_world/assets/premium/waterfall/layers/foam_11.png" id="12"]
+
+[resource]
+animations = [{
+"frames": [
+{"duration": 1.0, "texture": ExtResource("1")},
+{"duration": 1.0, "texture": ExtResource("2")},
+{"duration": 1.0, "texture": ExtResource("3")},
+{"duration": 1.0, "texture": ExtResource("4")},
+{"duration": 1.0, "texture": ExtResource("5")},
+{"duration": 1.0, "texture": ExtResource("6")},
+{"duration": 1.0, "texture": ExtResource("7")},
+{"duration": 1.0, "texture": ExtResource("8")},
+{"duration": 1.0, "texture": ExtResource("9")},
+{"duration": 1.0, "texture": ExtResource("10")},
+{"duration": 1.0, "texture": ExtResource("11")},
+{"duration": 1.0, "texture": ExtResource("12")},
+],
+"loop": true,
+"name": &"default",
+"speed": 12
+}]

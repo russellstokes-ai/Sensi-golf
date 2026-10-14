@@ -458,7 +458,17 @@ int main() {
         assert(!with_flag.flag_object_verified());
         with_flag.set_verified_flag_object(true);
         assert(with_flag.flag_object_verified());
+        with_flag.set_flag_removed_for_putting(true);
+        assert(with_flag.flag_removed_for_putting());
+        assert(with_flag.flag_object_verified()); // Authored manifest remains immutable.
+        with_flag.set_flag_removed_for_putting(false);
+        assert(!with_flag.flag_removed_for_putting());
         with_flag.begin_shot(drive);
+        bool attendance_locked=false;
+        try{with_flag.set_flag_removed_for_putting(true);}
+        catch(const std::logic_error&){attendance_locked=true;}
+        assert(attendance_locked);
+
         bool locked=false;
         try{with_flag.set_verified_flag_object(false);}
         catch(const std::logic_error&){locked=true;}

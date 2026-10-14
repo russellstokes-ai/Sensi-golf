@@ -1,7 +1,24 @@
 #include <cassert>
 #include <cstdint>
 #include "recovered_welly_tick.hpp"
+#include "pixtee_touch_meter.hpp"
 int main(){
+    pixtee::TouchMeter touch;
+    touch.start(55,70);
+    for(int i=0;i<100;++i)touch.step(false);
+    const auto position=touch.position;
+    touch.step(true);
+    assert(touch.stage==2 && touch.power==45 && touch.position==position);
+    touch.step(false);assert(touch.position<position);
+    while(touch.position>160)touch.step(false);
+    assert(touch.sample()==63);
+    assert(touch.step(true) && touch.stage==0);
+    touch.start(55,70);const auto easy=touch.red_half;
+    touch.start(60,66);assert(touch.red_half<easy);
+    const auto rough=touch.red_half;
+    touch.start(61,65);assert(touch.red_half<rough);
+    touch.position=160-touch.red_half-2;assert(touch.sample()<63);
+    touch.position=160+touch.red_half+2;assert(touch.sample()>63);
     // Exact outcomes compared with Windows v1.014 machine code; see
     // original Welly oracle CI 38159584005 (1986/1986 samples).
     pixtee::OriginalWellyTick meter;

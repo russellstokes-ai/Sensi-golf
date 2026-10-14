@@ -40,11 +40,14 @@ var intro_tween: Tween
 var session_store := preload("res://scripts/PixteeSessionStore.gd").new()
 var course_hash := ""
 var recovery_error := ""
+var shot_transition: CanvasLayer
+var shot_was_active := false
 
 func _ready() -> void:
 	profile.load_profile()
 	var hash_context := HashingContext.new()
 	hash_context.start(HashingContext.HASH_SHA256)
+	hash_context.update("pixtee-native-authoring-v4:touch-meter:boards:soft-ground:bird-flocks:attended-flag".to_utf8_buffer())
 	for resource in ["MAPM.bin","SPT.bin","MAPI-descriptors.bin","MAPI-selectors.bin","MAPS.bin"]:
 		hash_context.update(FileAccess.get_file_as_bytes(NATIVE_COURSE+resource))
 	course_hash = hash_context.finish().hex_encode()
@@ -73,6 +76,8 @@ func _ready() -> void:
 	layer.add_child(hud)
 	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.hide()
+	shot_transition = preload("res://scripts/PixteeShotTransition.gd").new()
+	add_child(shot_transition)
 	make_hud()
 	get_viewport().size_changed.connect(update_ui_layout)
 	update_ui_layout()
@@ -174,7 +179,6 @@ func show_title() -> void:
 	if not checkpoint.is_empty() and int(checkpoint.attempt)>int(profile.snapshot().statistics.last_recorded): panel.add_child(button("Continue",resume_saved_game))
 	panel.add_child(button("Play",start_hole))
 	panel.add_child(button("Player",show_player))
-	panel.add_child(button("Golfers",show_golfers))
 	panel.add_child(button("Statistics",show_statistics))
 	panel.add_child(button("Settings",show_settings))
 	panel.add_child(button("How to play",show_help))
@@ -193,7 +197,6 @@ func show_intro() -> void:
 	var logo := image_control("logo",Vector2(288,180))
 	logo.modulate.a = 0.0
 	panel.add_child(logo)
-	panel.add_child(button("Skip",show_title))
 	intro_tween = create_tween()
 	intro_tween.tween_property(logo,"modulate:a",1.0,0.7).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	intro_tween.tween_interval(1.2)
@@ -248,6 +251,15 @@ func show_settings() -> void:
 	frames.item_selected.connect(func(index: int):
 		if profile.set_setting("frame_limit",frames.get_item_id(index)): apply_saved_settings())
 	panel.add_child(frames)
+	panel.add_child(text_line("Weather"))
+	var weather_choice := OptionButton.new()
+	var presets: Array = PixteeWeatherDirector.PRESETS.keys()
+	for preset in presets: weather_choice.add_item(str(preset).replace("_"," ").capitalize())
+	weather_choice.select(presets.find(profile.snapshot().settings.weather_preset))
+	weather_choice.custom_minimum_size.y = 44
+	weather_choice.item_selected.connect(func(index: int):
+		if profile.set_setting("weather_preset",presets[index]): apply_saved_settings())
+	panel.add_child(weather_choice)
 	for channel in ["Music","SFX","Ambience","UI"]:
 		panel.add_child(text_line(channel))
 		var slider := HSlider.new()
@@ -273,9 +285,12 @@ func apply_saved_settings() -> void:
 	world.visual_quality = int(settings.graphics_quality)
 	fx.visual_quality = int(settings.graphics_quality)
 	Engine.max_fps = int(settings.frame_limit)
+	if world.living_world.weather.preset_name != settings.weather_preset:
+		world.living_world.weather.set_preset(settings.weather_preset,0.0 if reduced_motion else 3.0)
 	for child in world.get_children():
 		if child is Polygon2D: child.material.set_shader_parameter("quality_enabled",0.0 if reduced_motion or int(settings.graphics_quality) == 0 else 1.0)
 	world.set_outfit(profile.snapshot().outfit_id)
+	world.set_appearance(profile.snapshot().appearance)
 	world.queue_redraw()
 	for channel in ["Music","SFX","Ambience","UI"]:
 		audio.set_channel_level(channel,float(settings[channel]))
@@ -299,8 +314,19 @@ func show_player() -> void:
 	preview.custom_minimum_size = Vector2(180,180)
 	panel.add_child(preview)
 	player_preview = preview
-	preview.material = PixteeOutfit.material(player_draft.outfit_id)
+	preview.material = PixteeOutfit.material(player_draft.outfit_id,player_draft.appearance)
+	var gender := OptionButton.new()
+	gender.add_item("Male golfer")
+	gender.add_item("Female golfer")
+	gender.select(1 if PixteeOutfit.female(player_draft.outfit_id) else 0)
+	gender.custom_minimum_size = Vector2(288,44)
+	gender.item_selected.connect(func(index: int):
+		player_draft.outfit_id = ("female:" if index == 1 else "")+str(player_draft.outfit_id).trim_prefix("female:")
+		refresh_player_preview())
+	panel.add_child(gender)
 	add_outfit_controls()
+	add_appearance_controls()
+	refresh_player_preview()
 	player_name = LineEdit.new()
 	player_name.text = str(player_draft.display_name)
 	player_name.max_length = 32
@@ -317,6 +343,7 @@ func apply_player_edit() -> bool:
 		player_error.text = "Enter a name; check save storage."
 		return false
 	world.set_outfit(profile.snapshot().outfit_id)
+	world.set_appearance(profile.snapshot().appearance)
 	player_draft.clear()
 	back_menu()
 	return true
@@ -364,11 +391,14 @@ func make_hud() -> void:
 	bottom.add_child(meter)
 
 func start_hole(resuming := false) -> void:
+	shot_transition.cancel_discard()
+	shot_was_active = false
 	stop_intro()
 	menu_screen = "game"
 	core = create_course_core(0)
 	if core == null: return
 	world.set_outfit(profile.snapshot().outfit_id)
+	world.set_appearance(profile.snapshot().appearance)
 	var arrow_cells: Array[Dictionary] = []
 	for cell in core.verified_native_green_arrow_cells(16): arrow_cells.append(cell)
 	if not arrows.load_native_maps_arrow_cells(arrow_cells) or arrows.arrow_count()==0:
@@ -386,6 +416,8 @@ func start_hole(resuming := false) -> void:
 	fx.set_effects_running(true)
 	fx.on_confirmed_restart_or_replay_seek()
 	audio.reset_event_cursor_on_confirmed_new_round()
+	world.pond_ducks.reset_confirmed_event_cursor()
+	world.living_world.reset_confirmed_event_cursor()
 	audio.set_context("course")
 	menu.hide()
 	hud.show()
@@ -393,26 +425,29 @@ func start_hole(resuming := false) -> void:
 	if not resuming: save_session_checkpoint()
 
 func on_shoot() -> void:
-	if not playing or paused or core == null: return
+	if not playing or paused or core == null or shot_transition.busy: return
 	var s: Dictionary = core.snapshot()
-	if s.get("original_welly_active",false):
-		if s.get("welly_power_captured",false) and int(s.get("welly_phase",0)) == 1: return
+	if s.get("touch_meter_active",false) or s.get("original_welly_active",false):
 		pending_press = true
 	elif s.get("can_shoot",false):
-		core.start_original_welly()
+		sync_attended_flag_for_native(core)
+		core.start_touch_meter()
 
 func select_club(index: int) -> void:
-	if playing and not paused and core != null and core.snapshot().get("can_shoot",false):
+	if playing and not paused and not shot_transition.busy and core != null and core.snapshot().get("can_shoot",false):
 		core.set_club_index(index)
+		sync_attended_flag_for_native(core)
 		update_view(core.snapshot())
 
 func change_aim(amount: int) -> void:
-	if playing and not paused and core != null and core.snapshot().get("can_shoot",false):
+	if playing and not paused and not shot_transition.busy and core != null and core.snapshot().get("can_shoot",false):
 		core.nudge_aim_raw(amount)
 		update_view(core.snapshot())
 
 func _process(delta: float) -> void:
-	if not playing or paused or core == null: return
+	if not playing or paused or core == null:
+		if not paused or not playing: shot_transition.advance(delta)
+		return
 	accumulator += minf(delta,0.25)
 	var ticks := 0
 	while accumulator >= TICK_SECONDS and ticks < 16:
@@ -420,17 +455,30 @@ func _process(delta: float) -> void:
 		accumulator -= TICK_SECONDS
 		ticks += 1
 	var s: Dictionary = core.snapshot()
-	if int(s.get("hole_phase",-1)) == 6:
+	var phase := int(s.get("hole_phase",-1))
+	if shot_was_active and phase in [0,6] and not shot_transition.busy:
+		shot_was_active = false
+		shot_transition.begin(func():
+			var current: Dictionary = core.snapshot()
+			update_view(current)
+			if int(current.get("hole_phase",-1)) == 6: show_score(current))
+	elif phase == 6 and not shot_transition.busy:
 		show_score(s)
-	update_view(s)
+	shot_transition.advance(delta)
+	update_view(s,shot_transition.busy and not shot_transition.swapped)
 
 func advance_native_tick() -> void:
 	if paused or core == null: return
+	sync_attended_flag_for_native(core)
 	var native_before: Dictionary = core.snapshot()
-	if native_before.get("original_welly_active",false):
+	if native_before.get("touch_meter_active",false):
+		core.tick_touch_meter(pending_press)
+		pending_press = false
+	elif native_before.get("original_welly_active",false):
 		core.tick_original_welly(pending_press)
 		pending_press = false
 	core.step_tick()
+	if int(core.snapshot().get("hole_phase",-1)) in [1,2,3]: shot_was_active = true
 	for event in core.drain_presentation_events():
 		if event.get("event_type","") == "club_contact":
 			# Launch lie comes directly from the preceding native snapshot.
@@ -438,12 +486,14 @@ func advance_native_tick() -> void:
 			event["launch_club_index"] = native_before.get("club_index",-1)
 		fx.submit_confirmed_native_event(event)
 		audio.consume_confirmed_native_event(event)
+		world.pond_ducks.accept_native_event(event)
+		world.living_world.accept_native_event(event)
 	# The recovered core alone completes the original 100-tick recovery.
 	if int(core.snapshot().get("hole_phase",-1)) == 3:
 		core.acknowledge_hazard()
 
-func update_view(s: Dictionary) -> void:
-	world.accept_snapshot(s)
+func update_view(s: Dictionary, hold_golfer := false) -> void:
+	world.accept_snapshot(s,hold_golfer)
 	fx.accept_native_ball_snapshot(s)
 	var screen := get_viewport().get_visible_rect().size
 	# Keep a close world crop on high-density phones and unfolded windows.
@@ -451,21 +501,27 @@ func update_view(s: Dictionary) -> void:
 	camera.zoom = Vector2.ONE*maxf(1.0,minf(screen.x,screen.y)/240.0)
 	# Reserve actual HUD space. The world is cropped, never squeezed to fit.
 	var half_view := Vector2(screen.x,maxf(120,screen.y-128*ui_scale)) / camera.zoom / 2.0
-	camera.offset.y = 56.0*ui_scale/camera.zoom.y
-	var at: Vector2 = world.ball_world
-	camera.position.x = 272 if half_view.x >= 272 else clampf(at.x,half_view.x,544-half_view.x)
-	camera.position.y = 456 if half_view.y >= 456 else clampf(at.y-60,half_view.y,912-half_view.y)
+	if not hold_golfer: camera.offset.y = 56.0*ui_scale/camera.zoom.y
+	var at: Vector2 = world.golfer_world if int(s.get("hole_phase",0)) in [2,3] else world.ball_world
+	if not hold_golfer:
+		camera.position.x = 272 if half_view.x >= 272 else clampf(at.x,half_view.x,544-half_view.x)
+		camera.position.y = 456 if half_view.y >= 456 else clampf(at.y-60,half_view.y,912-half_view.y)
 	var rendered_half := screen/camera.zoom/2.0
 	world.view_rect = Rect2(camera.position+camera.offset-rendered_half,rendered_half*2)
 	status.text = "H1 · Par 4 · Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
 	club_card.accept_snapshot(s)
+	minimap.reduced_motion = reduced_motion
 	minimap.queue_redraw()
 	camera.force_update_scroll()
-	aim_touch.refresh(s)
+	var presentation: Dictionary = s.duplicate()
+	if shot_transition != null and shot_transition.busy: presentation.can_shoot = false
+	aim_touch.refresh(presentation)
 	meter.reduced_motion = reduced_motion
-	meter.accept_snapshot(s)
+	meter.accept_snapshot(presentation)
 
 func pause_game() -> void:
+	shot_transition.finish_immediately()
+	if not playing: return
 	save_session_checkpoint()
 	paused = true
 	accumulator = 0
@@ -608,7 +664,7 @@ func confirm_leave(restart: bool) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST: save_session_checkpoint()
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and playing and not paused:
+	if what in [NOTIFICATION_APPLICATION_FOCUS_OUT,NOTIFICATION_APPLICATION_PAUSED] and playing and not paused:
 		pause_game()
 	if audio != null:
 		if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -646,8 +702,8 @@ func add_outfit_controls() -> void:
 		row.add_child(choice)
 		choice.item_selected.connect(func(index: int):
 			kit[part] = index
-			player_draft.outfit_id = "kit:%d:%d:%d" % [kit[0],kit[1],kit[2]]
-			player_preview.material = PixteeOutfit.material(player_draft.outfit_id))
+			player_draft.outfit_id = ("female:" if PixteeOutfit.female(player_draft.outfit_id) else "")+"kit:%d:%d:%d" % [kit[0],kit[1],kit[2]]
+			refresh_player_preview())
 
 func create_course_core(source_mode: int) -> PixteeRoundBridge:
 	var native = PixteeRoundBridge.new()
@@ -666,7 +722,7 @@ func create_course_core(source_mode: int) -> PixteeRoundBridge:
 	if not native.load_next_hole():
 		push_error(native.last_error())
 		return null
-	native.set_aim_raw(2048)
+	native.set_aim_raw(2016 if source_mode == 0 else 2048)
 	native.set_verified_flag_object(true) # Exact approved manifest flag at native SPT cup.
 	var tree_data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(COURSE+"authored-tree-volumes.json"))
 	var volumes := PackedInt32Array()
@@ -674,11 +730,19 @@ func create_course_core(source_mode: int) -> PixteeRoundBridge:
 		volumes.append(int(tree.id))
 		for field in ["x","y","trunk_radius","trunk_height","canopy_radius","canopy_bottom","canopy_top"]:
 			volumes.append(int(round(float(tree[field])*65536.0)))
+	for i in world.boards.size():
+		var board: Dictionary = world.boards[i]
+		volumes.append(100+i)
+		var radius := maxf(1.0,float(board.w)*0.45)
+		var height := maxf(1.0,float(board.h))
+		for value in [board.x,board.y,radius,height,radius,0.0,height]:
+			volumes.append(roundi(float(value)*65536.0))
 	if not native.set_authored_tree_objects(volumes):
 		push_error(native.last_error())
 		return null
 	if not native.set_original_player_mode_5a(source_mode): return null
 	if not native.set_authored_birds_enabled(true): return null
+	if not native.set_soft_ground_enabled(true): return null
 	return native
 
 func save_session_checkpoint() -> void:
@@ -699,5 +763,46 @@ func resume_saved_game() -> void:
 	attempt_id = int(record.attempt)
 	pending_press = bool(record.pending_press)
 	fx.on_confirmed_restart_or_replay_seek()
+	world.pond_ducks.reset_confirmed_event_cursor()
+	world.living_world.reset_confirmed_event_cursor()
 	update_view(core.snapshot())
 	pause_game()
+
+func refresh_player_preview() -> void:
+	var female: bool = PixteeOutfit.female(player_draft.outfit_id)
+	var texture: Texture2D = load("res://characters/female-cute-v2.png") if female else load("res://characters/male-cute-v2.png")
+	var atlas := AtlasTexture.new()
+	atlas.atlas = texture
+	var grid := Vector2(8,8)
+	var metadata: Dictionary = world.character_atlas.female_cute[4] if female else world.character_atlas.male_cute[4]
+	var region: Array = metadata.rect
+	atlas.region = Rect2(region[0],region[1],region[2],region[3])
+	player_preview.texture = atlas
+	player_preview.material = PixteeOutfit.material(player_draft.outfit_id,player_draft.appearance)
+	var face: Array = world.face_regions["female" if female else "male"][4]
+	player_preview.material.set_shader_parameter("face_region",Vector4(face[0],face[1],face[2],face[3]))
+	player_preview.material.set_shader_parameter("use_atlas_rect",true)
+	player_preview.material.set_shader_parameter("atlas_origin",atlas.region.position/texture.get_size())
+	player_preview.material.set_shader_parameter("atlas_extent",atlas.region.size/texture.get_size())
+
+func add_appearance_controls() -> void:
+	for part in range(5):
+		var key: String = ["skin","hair","face","beard","hairstyle"][part]
+		var row := HBoxContainer.new()
+		panel.add_child(row)
+		row.add_child(text_line(["Skin","Hair colour","Face","Beard","Hairstyle"][part]))
+		var choice := OptionButton.new()
+		choice.custom_minimum_size = Vector2(210,44)
+		for title in [PixteeOutfit.SKINS,PixteeOutfit.HAIR,PixteeOutfit.FACES,PixteeOutfit.BEARDS,PixteeOutfit.HAIRSTYLES][part]: choice.add_item(title)
+		choice.select(int(player_draft.appearance[key]))
+		row.add_child(choice)
+		choice.item_selected.connect(func(index: int):
+			player_draft.appearance[key] = index
+			refresh_player_preview())
+
+func sync_attended_flag_for_native(native: PixteeRoundBridge) -> void:
+	var state := native.snapshot()
+	if not state.get("can_shoot",false): return
+	var removed: bool = state.get("green_mode",false) and int(state.get("club_index",0)) == 12
+	if state.get("flag_removed_for_putting",false) != removed:
+		if not native.set_flag_removed_for_putting(removed): push_error(native.last_error())

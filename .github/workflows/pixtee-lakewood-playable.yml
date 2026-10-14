@@ -91,6 +91,7 @@ jobs:
           verify_godot --headless --path pixtee-godot --script res://scripts/TreeContactsCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/PlayerJourneyCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/MenuJourneyCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/ShotTransitionCI.gd
       - name: Render supplied menus in portrait and wide windows
         run: |
           set -o pipefail

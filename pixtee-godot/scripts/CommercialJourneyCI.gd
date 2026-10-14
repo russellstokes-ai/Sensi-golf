@@ -15,7 +15,7 @@ func _run() -> void:
 	scene.start_hole()
 	assert(scene.world.player_sprite.material.get_shader_parameter("shirt_enabled"))
 	scene.on_shoot()
-	for tick in range(30): scene.core.tick_original_welly(false)
+	for tick in range(30): scene.core.tick_touch_meter(false)
 	scene.save_session_checkpoint()
 	var before: Dictionary = scene.core.snapshot()
 	var save: Dictionary = scene.session_store.load_current(scene.course_hash)
@@ -24,8 +24,8 @@ func _run() -> void:
 	assert(restored.restore_native_session(save.native))
 	assert(restored.snapshot() == before, "Mid-meter native state including RNG/context resumes exactly")
 	for tick in range(15):
-		scene.core.tick_original_welly(false)
-		restored.tick_original_welly(false)
+		scene.core.tick_touch_meter(false)
+		restored.tick_touch_meter(false)
 	assert(restored.snapshot() == scene.core.snapshot())
 	var stable: Dictionary = restored.snapshot()
 	assert(not restored.restore_native_session(save.native+"bad"))
@@ -47,7 +47,7 @@ func _run() -> void:
 			scene.playing = false
 			child._process(0.02)
 			var saw_strokes := [false,false]
-			for tick in range(1300):
+			for tick in range(3000):
 				child._tick(0)
 				child._tick(1)
 				for actor in range(2):
@@ -75,11 +75,44 @@ func _run() -> void:
 						var copy: PixteeRoundBridge = scene.create_course_core(0)
 						assert(copy.restore_native_session(native.save_native_session()))
 						assert(copy.snapshot() == native.snapshot())
+						native.step_ticks(200)
+						copy.step_ticks(200)
+						assert(copy.snapshot() == native.snapshot())
+						assert(native.snapshot().bird_active and not native.snapshot().bird_hit_visible,"Untouched flock members keep flying after a hit")
 						hit = true
 						break
 				if hit or int(native.snapshot().hole_phase) != 1: break
 			if hit: break
 	assert(hit, "Real authored native bird hit must be reachable and recoverable")
+	var board_hit := false
+	for club in [7,9,11,0]:
+		if board_hit: break
+		for power in [35,50,65,80,100]:
+			var native: PixteeRoundBridge = scene.create_course_core(0)
+			native.set_club_index(club)
+			native.set_aim_raw(2322)
+			native.meter_click_raw(0)
+			native.meter_click_raw(power)
+			native.meter_click_raw(63)
+			for tick in range(700):
+				var before_contact: Dictionary = native.snapshot()
+				native.step_tick()
+				for event in native.drain_presentation_events():
+					if event.event_type == "authored_board_contact":
+						board_hit = true
+						var after_contact: Dictionary = native.snapshot()
+						var incoming := Vector2(float(before_contact.ball_velocity_x),float(before_contact.ball_velocity_y))
+						var outgoing := Vector2(float(after_contact.ball_velocity_x),float(after_contact.ball_velocity_y))
+						if incoming.length_squared()>1:
+							assert(incoming.dot(outgoing)<0,"Native side impact reverses actual horizontal motion")
+						else:
+							assert(float(after_contact.ball_velocity_z)>0,"A descending stationary ball rebounds off the board top")
+						event.event_id = "board-test:"+str(event.event_id)
+						assert(scene.audio.consume_confirmed_native_event(event))
+						break
+				if board_hit or int(native.snapshot().hole_phase) != 1: break
+			if board_hit: break
+	assert(board_hit,"Actual native sign hit is reachable")
 	scene.session_store.clear()
 	assert(scene.session_store.load_current(scene.course_hash).is_empty())
 	scene.free()

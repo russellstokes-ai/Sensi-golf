@@ -65,6 +65,7 @@ public:
 
     void begin_shot(const ClassicShotRequest& request);
     void step();
+    void set_soft_ground_enabled(bool enabled) {soft_ground_enabled_=enabled;}
     void set_authored_birds_enabled(bool enabled) { authored_birds_enabled_=enabled; }
     AuthoredBirdSample authored_bird() const noexcept;
     bool authored_bird_hit() const noexcept { return bird_hit_; }
@@ -78,6 +79,8 @@ public:
     // flag deflection is enabled in the existing native shot loop.
     void set_verified_flag_object(bool present);
     bool flag_object_verified() const noexcept;
+    void set_flag_removed_for_putting(bool removed);
+    bool flag_removed_for_putting() const noexcept { return flag_removed_for_putting_; }
     void set_authored_tree_objects(const std::vector<AuthoredTreeVolume>& trees);
     // Host's independently licensed animation manifest supplies 16 stable
     // logical asset keys. The source original event allocator stores a
@@ -145,6 +148,7 @@ private:
     ClassicCoursePoint mode_hole_position() const;
 
     const ClassicCourseResources& course_;
+    bool soft_ground_enabled_=false;
     ClassicShotModel shot_;
     HoleSessionPhase phase_ = HoleSessionPhase::ReadyForShot;
     std::uint32_t strokes_ = 0;
@@ -167,6 +171,7 @@ private:
     bool round_complete_ = false;
     bool green_mode_ = false;
     bool flag_object_verified_ = false;
+    bool flag_removed_for_putting_ = false;
     bool animation_assets_verified_ = false;
     recovered::OriginalAnimationAssetTable animation_assets_{};
     recovered::OriginalAnimationSlots animation_slots_{};

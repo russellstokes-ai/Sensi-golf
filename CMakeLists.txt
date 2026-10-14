@@ -9,6 +9,11 @@ enable_testing()
 add_subdirectory(engine)
 
 if(NOT ANDROID)
+    add_executable(pixtee_touch_meter_tests
+        pixtee-godot/native/tests/welly_recovered_native_smoke.cpp
+        pixtee-godot/native/src/recovered_welly_tick.cpp)
+    target_include_directories(pixtee_touch_meter_tests PRIVATE pixtee-godot/native/src)
+    add_test(NAME pixtee_touch_meter_tests COMMAND pixtee_touch_meter_tests)
     add_executable(pixtee_native_green_arrow_tests
         pixtee-godot/native/tests/native_green_arrow_mapi_bridge_tests.cpp
         pixtee-godot/native/src/pixtee_round_runtime.cpp

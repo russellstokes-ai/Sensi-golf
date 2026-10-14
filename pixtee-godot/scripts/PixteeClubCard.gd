@@ -6,41 +6,24 @@ var picker: PopupPanel
 var list: ItemList
 var ball: Texture2D
 var club_icon: Texture2D
+var lie_art: Texture2D
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	lie_art = load("res://courses/lakewood-hole-1/visual/ground.png")
 	ball = load("res://courses/lakewood-hole-1/visual/ball.png")
 	club_icon = load("res://ui/supplied/club.png")
-	picker = PopupPanel.new()
-	add_child(picker)
-	list = ItemList.new()
-	list.max_columns = 2
-	list.fixed_column_width = 136
-	list.add_theme_constant_override("v_separation",22)
-	list.add_theme_font_size_override("font_size",18)
-	list.custom_minimum_size = Vector2(288,350)
-	for name in CLUBS: list.add_item(name)
-	picker.add_child(list)
-	list.item_selected.connect(func(index: int):
-		if state.get("can_shoot",false): club_selected.emit(index)
-		picker.hide())
 	gui_input.connect(_tap)
-	visibility_changed.connect(func():
-		if not is_visible_in_tree(): picker.hide())
 
 func accept_snapshot(snapshot: Dictionary) -> void:
 	state = snapshot
-	if not state.get("can_shoot",false): picker.hide()
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if state.get("can_shoot",false) else Control.CURSOR_ARROW
 	queue_redraw()
 
 func _tap(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		if state.get("can_shoot",false):
-			list.select(int(state.get("club_index",0)))
-			var factor := get_global_transform().get_scale().x
-			picker.content_scale_factor = factor
-			picker.popup_centered(Vector2i(roundi(300*factor),roundi(360*factor)))
+			club_selected.emit((int(state.get("club_index",0))+1)%CLUBS.size())
 		accept_event()
 
 func _draw() -> void:
@@ -51,9 +34,16 @@ func _draw() -> void:
 	if surface == 7: ground = Color("d5b578")
 	elif surface in [5,6]: ground = Color("285725")
 	elif surface in [1,8,9,10]: ground = Color("71a938")
-	draw_rect(Rect2(4,4,size.x-8,42),Color("78bada"))
+	var lie := Rect2(4,4,size.x-8,42)
+	var x := float(state.get("ball_x_raw",256*65536))/65536.0
+	var y := float(state.get("ball_y_raw",850*65536))/65536.0
+	if state.get("green_mode",false):
+		x = x*0.5+float(state.get("green_origin_x",0))
+		y = y*0.5+float(state.get("green_origin_y",0))
+	var region := Rect2(Vector2(x*4-lie.size.x/2,y*4-21),lie.size)
+	draw_texture_rect_region(lie_art,lie,region)
 	draw_rect(Rect2(4,34,size.x-8,14),ground)
-	var diameter := 34.0
+	var diameter := 26.0
 	var dimensions := ball.get_size()*(diameter/ball.get_height())
 	draw_texture_rect(ball,Rect2(Vector2(size.x/2-dimensions.x/2,10),dimensions),false)
 	var font := ThemeDB.fallback_font

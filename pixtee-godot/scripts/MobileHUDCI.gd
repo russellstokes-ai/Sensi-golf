@@ -11,10 +11,9 @@ func _run() -> void:
 	tap.button_index = MOUSE_BUTTON_LEFT
 	tap.pressed = true
 	scene.club_card._tap(tap)
-	assert(scene.club_card.picker.visible)
-	scene.club_card.list.item_selected.emit(12)
+	assert(scene.core.snapshot().club_index == 1,"Card tap cycles club without popup")
+	for i in range(11): scene.club_card._tap(tap)
 	assert(scene.core.snapshot().club_index == 12)
-	assert(not scene.club_card.picker.visible)
 	scene.core.set_aim_raw(4090)
 	scene.update_view(scene.core.snapshot())
 	tap.position = scene.aim_touch.get_global_transform()*(scene.aim_touch.anchor+Vector2(43,0))
@@ -33,8 +32,10 @@ func _run() -> void:
 	scene.update_view(scene.core.snapshot())
 	assert(not scene.aim_touch.enabled, "No aim changes during meter")
 	assert(not scene.club_card.state.can_shoot)
+	var before_lock: int = scene.core.snapshot().club_index
+	scene.club_card._tap(tap)
+	assert(scene.core.snapshot().club_index == before_lock)
 	scene.pause_game()
-	assert(not scene.club_card.picker.visible)
 	scene.free()
 	await create_timer(0.5).timeout
 	print("MOBILE_HUD_PASS: integrated club picker, native aiming wrap, double-tap map, aspect ratio and shot/pause locks")

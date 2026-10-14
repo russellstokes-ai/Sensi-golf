@@ -45,6 +45,21 @@ int main() {
     assert(model.state().x_raw == 0);
     assert(model.state().y_raw == 26251460);
 
+    // Owner's Pixtee soft-ground mode: first contact removes upward bounce,
+    // then native ground drag rolls to rest. Original mode above is unchanged.
+    for(const std::uint16_t code:{std::uint16_t(5),std::uint16_t(6),std::uint16_t(7)}) {
+        ClassicShotModel soft;soft.reset();soft.set_surface_context({code,0,0});
+        soft.set_soft_ground_enabled(true);soft.begin_shot(straight);
+        bool landed=false;
+        for(int tick=0;tick<1024 && soft.shot_active();++tick) {
+            soft.step();
+            if(soft.presentation_contact().impact)landed=true;
+            if(landed)assert(soft.state().z_raw==0 && soft.state().vz_raw==0);
+        }
+        assert(landed && !soft.shot_active());
+        soft.begin_shot(straight);soft.step();assert(soft.state().z_raw>0);
+        run_until_complete(soft);
+    }
     // A flat putt uses the recovered club-12 green path.
     model.reset();
     model.set_surface_context({1, 0, 0});

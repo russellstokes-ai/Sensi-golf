@@ -2,20 +2,29 @@ extends Control
 var world: Node2D
 var expanded := false
 var last_tap_msec := -1000
+var map_tween: Tween
+var reduced_motion := false
 
 func _ready() -> void:
+	clip_contents = true
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	gui_input.connect(_tap)
 	_resize_map()
 
 func _resize_map() -> void:
-	var dimensions := Vector2(112,185) if expanded else Vector2(84,138)
+	var dimensions := Vector2(174,287) if expanded else Vector2(84,138)
 	set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	offset_left = -8-dimensions.x
 	offset_right = -8
 	offset_top = 54
-	offset_bottom = 54+dimensions.y
+	if map_tween != null and map_tween.is_valid(): map_tween.kill()
+	if reduced_motion or size.x < 1:
+		offset_left = -8-dimensions.x
+		offset_bottom = 54+dimensions.y
+	else:
+		map_tween = create_tween().set_parallel(true)
+		map_tween.tween_property(self,"offset_left",-8-dimensions.x,0.25).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		map_tween.tween_property(self,"offset_bottom",54+dimensions.y,0.25).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	queue_redraw()
 
 func _tap(event: InputEvent) -> void:

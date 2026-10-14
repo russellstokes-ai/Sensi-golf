@@ -1,6 +1,7 @@
 #include "sensigolf/classic_shot_model.hpp"
 
 #include <cstdint>
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 
@@ -41,6 +42,7 @@ void ClassicShotModel::reset() {
     active_club_ = 0;
     outcome_ = ClassicShotOutcome::None;
     active_ = false;
+    soft_ground_enabled_=false;soft_ground_rolling_=false;
     interaction_prng_ = nullptr;
     interaction_green_mode_ = false;
     flag_x_ = 0;
@@ -100,6 +102,7 @@ void ClassicShotModel::set_ball_origin(
 }
 
 void ClassicShotModel::begin_shot(const ShotInput& input) {
+    soft_ground_rolling_=false;
     presentation_contact_ = {};
     if (active_) {
         throw std::logic_error("shot already active");
@@ -187,6 +190,7 @@ void ClassicShotModel::step() {
         presentation_contact_.flag=true;
     }
 
+    const auto incoming_horizontal=flight_.horizontal_force;
     recovered::GroundStepResult result{};
     if (active_club_ == 12) {
         recovered::PutterTerminalState terminal{};
@@ -217,12 +221,24 @@ void ClassicShotModel::step() {
             throw std::logic_error(
                 "club-12 surface is not yet product-integrated");
         }
+    } else if(soft_ground_enabled_ && soft_ground_rolling_ && surface_.landing_code>=1 && surface_.landing_code<=7) {
+        result=interaction_green_mode_
+            ? recovered::step_green_putt(flight_,surface_.slope_direction,surface_.slope_magnitude)
+            : recovered::step_non_green_putt(flight_);
+        flight_.vertical_force=0;
     } else {
         result = recovered::step_controlled_surface(
             flight_,
             surface_.landing_code);
     }
 
+    // Opt-in Pixtee authoring response, not recovered source parity: rough and
+    // sand absorb the first impact; subsequent movement uses the native ground path.
+    if(soft_ground_enabled_ && result.contacted_ground && surface_.landing_code>=5 && surface_.landing_code<=7) {
+        if(!soft_ground_rolling_)flight_.horizontal_force=std::max(0,incoming_horizontal/(surface_.landing_code==7?4:2));
+        soft_ground_rolling_=true;flight_.height=0;flight_.vertical_force=0;
+        result.resting=flight_.horizontal_force==0;
+    }
     // A source-ground branch reached from airborne height is an impact;
     // subsequent rolling contacts are not repeated particle/audio impacts.
     presentation_contact_.impact=result.contacted_ground && incoming_height>0;
@@ -258,8 +274,22 @@ void ClassicShotModel::step() {
         const auto contact=authored_tree_contact(*authored_trees_,point(previous_flight),point(flight_));
         if(contact.tree_id && contact.tree_id!=last_tree_id_) {
             if(!interaction_prng_)throw std::logic_error("authored tree impact requires native PRNG");
-            recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
-            if(contact.kind==AuthoredTreeContactKind::Canopy) {
+            if(contact.tree_id>=100 && contact.tree_id<104) {
+                // Authored Lakewood sponsor boards: solid face, deterministic rebound.
+                flight_.direction=static_cast<std::uint16_t>((previous_flight.direction+2048u)&4095u);
+                flight_.horizontal_force=std::max(0,flight_.horizontal_force/2);
+                const auto board=std::find_if(authored_trees_->begin(),authored_trees_->end(),[&](const auto& object){return object.id==contact.tree_id;});
+                if(board!=authored_trees_->end() && previous_flight.height>=board->trunk_height && flight_.vertical_force<0) {
+                    // A descending ball can strike the top after its horizontal
+                    // force has already reached zero. Reflect its actual vertical
+                    // motion using the recovered rebound primitive.
+                    const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
+                    flight_.vertical_force=rebound.vertical_force;
+                    flight_.horizontal_force=rebound.horizontal_force;
+                    flight_.height=board->trunk_height;
+                }
+            }else recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
+            if(contact.kind==AuthoredTreeContactKind::Canopy && !(contact.tree_id>=100 && contact.tree_id<104)) {
                 const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
                 flight_.vertical_force=rebound.vertical_force;
                 flight_.horizontal_force=rebound.horizontal_force;
@@ -280,13 +310,15 @@ void ClassicShotModel::step() {
             return AuthoredTreePoint{tree_green_?state.x/2+tree_origin_x_:state.x,
                 tree_green_?state.y/2+tree_origin_y_:state.y,state.height};
         };
-        if(authored_bird_contact(bird_before_,bird_after_,point(previous_flight),point(flight_))) {
+        unsigned hit_member=0;
+        if(authored_bird_contact(bird_before_,bird_after_,point(previous_flight),point(flight_),&hit_member)) {
             if(!interaction_prng_)throw std::logic_error("bird impact requires native PRNG");
             recovered::apply_code9_low_height_deflection(flight_,*interaction_prng_);
             const auto rebound=recovered::original_terminal_rebound(flight_.vertical_force,flight_.horizontal_force);
             flight_.vertical_force=rebound.vertical_force;flight_.horizontal_force=rebound.horizontal_force;
             *bird_hit_=true;
             presentation_contact_.bird_id=bird_after_.id;
+            presentation_contact_.bird_member=hit_member;
             presentation_contact_.x_raw=previous_flight.x;presentation_contact_.y_raw=previous_flight.y;
         }
     }

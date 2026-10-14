@@ -10,6 +10,7 @@ const MAX_LIVE_FLECKS := 128
 const MAX_RIPPLES := 16
 const MAX_REMEMBERED_NATIVE_EVENTS := 4096
 const EVENT_PRESETS := {
+	"authored_board_contact": {"count":4,"color":Color(0.64,0.47,0.24),"life":0.35},
 	"cup_lip": {"count":3,"color":Color(0.95,0.90,0.63),"life":0.3},
 	"authored_bird_contact": {"count":8,"color":Color(0.75,0.57,0.32),"life":0.85},
     "authored_tree_contact": {"count": 6, "color": Color(0.47,0.66,0.35), "life": 0.55},

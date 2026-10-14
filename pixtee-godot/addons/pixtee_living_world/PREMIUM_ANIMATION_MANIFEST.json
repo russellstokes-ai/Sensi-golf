@@ -1,0 +1,784 @@
+{
+  "rabbit_poses": {
+    "layers": {
+      "body": [
+        "rabbit/poses/rabbit_00.png",
+        "rabbit/poses/rabbit_01.png",
+        "rabbit/poses/rabbit_02.png",
+        "rabbit/poses/rabbit_03.png",
+        "rabbit/poses/rabbit_04.png",
+        "rabbit/poses/rabbit_05.png"
+      ]
+    },
+    "frames": [
+      "idle",
+      "crouch",
+      "hop",
+      "land",
+      "alert",
+      "flee"
+    ],
+    "fps": 6,
+    "loop": false,
+    "canvas": [
+      420,
+      420
+    ],
+    "status": "art_master_approved"
+  },
+  "squirrel_poses": {
+    "layers": {
+      "body": [
+        "squirrel/poses/squirrel_00.png",
+        "squirrel/poses/squirrel_01.png",
+        "squirrel/poses/squirrel_02.png",
+        "squirrel/poses/squirrel_03.png",
+        "squirrel/poses/squirrel_04.png",
+        "squirrel/poses/squirrel_05.png"
+      ]
+    },
+    "frames": [
+      "idle",
+      "crouch",
+      "hop",
+      "land",
+      "alert",
+      "flee"
+    ],
+    "fps": 6,
+    "loop": false,
+    "canvas": [
+      420,
+      420
+    ],
+    "status": "art_master_approved"
+  },
+  "rabbit_layered_idle": {
+    "layers": {
+      "base": [
+        "rabbit/layered/rabbit_body.png",
+        "rabbit/layered/rabbit_body.png",
+        "rabbit/layered/rabbit_body.png",
+        "rabbit/layered/rabbit_body.png",
+        "rabbit/layered/rabbit_body.png",
+        "rabbit/layered/rabbit_body.png"
+      ],
+      "ears": [
+        "rabbit/layered/rabbit_ears_00.png",
+        "rabbit/layered/rabbit_ears_01.png",
+        "rabbit/layered/rabbit_ears_02.png",
+        "rabbit/layered/rabbit_ears_03.png",
+        "rabbit/layered/rabbit_ears_04.png",
+        "rabbit/layered/rabbit_ears_05.png"
+      ],
+      "shadow": [
+        "rabbit/layered/rabbit_shadow.png",
+        "rabbit/layered/rabbit_shadow.png",
+        "rabbit/layered/rabbit_shadow.png",
+        "rabbit/layered/rabbit_shadow.png",
+        "rabbit/layered/rabbit_shadow.png",
+        "rabbit/layered/rabbit_shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "fps": 5,
+    "loop": true,
+    "canvas": [
+      420,
+      420
+    ],
+    "status": "source_preserved_with_generated_motion"
+  },
+  "squirrel_layered_idle": {
+    "layers": {
+      "base": [
+        "squirrel/layered/squirrel_body.png",
+        "squirrel/layered/squirrel_body.png",
+        "squirrel/layered/squirrel_body.png",
+        "squirrel/layered/squirrel_body.png",
+        "squirrel/layered/squirrel_body.png",
+        "squirrel/layered/squirrel_body.png"
+      ],
+      "tail": [
+        "squirrel/layered/squirrel_tail_00.png",
+        "squirrel/layered/squirrel_tail_01.png",
+        "squirrel/layered/squirrel_tail_02.png",
+        "squirrel/layered/squirrel_tail_03.png",
+        "squirrel/layered/squirrel_tail_04.png",
+        "squirrel/layered/squirrel_tail_05.png"
+      ],
+      "shadow": [
+        "squirrel/layered/squirrel_shadow.png",
+        "squirrel/layered/squirrel_shadow.png",
+        "squirrel/layered/squirrel_shadow.png",
+        "squirrel/layered/squirrel_shadow.png",
+        "squirrel/layered/squirrel_shadow.png",
+        "squirrel/layered/squirrel_shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "fps": 5,
+    "loop": true,
+    "canvas": [
+      420,
+      420
+    ],
+    "status": "source_preserved_with_generated_motion"
+  },
+  "frog_breathe": {
+    "layers": {
+      "body": [
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png",
+        "frog/layers/frog_fixed_body.png"
+      ],
+      "rock": [
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png",
+        "frog/layers/frog_rock_ripple.png"
+      ],
+      "throat": [
+        "frog/layers/throat_00.png",
+        "frog/layers/throat_01.png",
+        "frog/layers/throat_02.png",
+        "frog/layers/throat_03.png",
+        "frog/layers/throat_04.png",
+        "frog/layers/throat_05.png",
+        "frog/layers/throat_06.png",
+        "frog/layers/throat_07.png",
+        "frog/layers/throat_08.png",
+        "frog/layers/throat_09.png",
+        "frog/layers/throat_10.png",
+        "frog/layers/throat_11.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "fps": 6,
+    "loop": true,
+    "canvas": [
+      58,
+      70
+    ],
+    "status": "layered_derived_art_requires_visual_approval"
+  },
+  "frog_hop": {
+    "layers": {
+      "whole_pose": [
+        "frog/hop/hop_00.png",
+        "frog/hop/hop_01.png",
+        "frog/hop/hop_02.png",
+        "frog/hop/hop_03.png",
+        "frog/hop/hop_04.png",
+        "frog/hop/hop_05.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "fps": 8,
+    "loop": false,
+    "canvas": [
+      78,
+      90
+    ],
+    "status": "derived_art_requires_visual_approval"
+  },
+  "dragonfly_heading_00": {
+    "layers": {
+      "body": [
+        "dragonfly/directions/heading_00/body_00.png",
+        "dragonfly/directions/heading_00/body_01.png",
+        "dragonfly/directions/heading_00/body_02.png",
+        "dragonfly/directions/heading_00/body_03.png"
+      ],
+      "wings": [
+        "dragonfly/directions/heading_00/wing_00.png",
+        "dragonfly/directions/heading_00/wing_01.png",
+        "dragonfly/directions/heading_00/wing_02.png",
+        "dragonfly/directions/heading_00/wing_03.png"
+      ],
+      "shadow": [
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "fps": 18,
+    "loop": true,
+    "canvas": [
+      96,
+      96
+    ],
+    "status": "eight_rotated_headings_not_hand_authored"
+  },
+  "dragonfly_heading_01": {
+    "layers": {
+      "body": [
+        "dragonfly/directions/heading_01/body_00.png",
+        "dragonfly/directions/heading_01/body_01.png",
+        "dragonfly/directions/heading_01/body_02.png",
+        "dragonfly/directions/heading_01/body_03.png"
+      ],
+      "wings": [
+        "dragonfly/directions/heading_01/wing_00.png",
+        "dragonfly/directions/heading_01/wing_01.png",
+        "dragonfly/directions/heading_01/wing_02.png",
+        "dragonfly/directions/heading_01/wing_03.png"
+      ],
+      "shadow": [
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "fps": 18,
+    "loop": true,
+    "canvas": [
+      96,
+      96
+    ],
+    "status": "eight_rotated_headings_not_hand_authored"
+  },
+  "dragonfly_heading_02": {
+    "layers": {
+      "body": [
+        "dragonfly/directions/heading_02/body_00.png",
+        "dragonfly/directions/heading_02/body_01.png",
+        "dragonfly/directions/heading_02/body_02.png",
+        "dragonfly/directions/heading_02/body_03.png"
+      ],
+      "wings": [
+        "dragonfly/directions/heading_02/wing_00.png",
+        "dragonfly/directions/heading_02/wing_01.png",
+        "dragonfly/directions/heading_02/wing_02.png",
+        "dragonfly/directions/heading_02/wing_03.png"
+      ],
+      "shadow": [
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "fps": 18,
+    "loop": true,
+    "canvas": [
+      96,
+      96
+    ],
+    "status": "eight_rotated_headings_not_hand_authored"
+  },
+  "dragonfly_heading_03": {
+    "layers": {
+      "body": [
+        "dragonfly/directions/heading_03/body_00.png",
+        "dragonfly/directions/heading_03/body_01.png",
+        "dragonfly/directions/heading_03/body_02.png",
+        "dragonfly/directions/heading_03/body_03.png"
+      ],
+      "wings": [
+        "dragonfly/directions/heading_03/wing_00.png",
+        "dragonfly/directions/heading_03/wing_01.png",
+        "dragonfly/directions/heading_03/wing_02.png",
+        "dragonfly/directions/heading_03/wing_03.png"
+      ],
+      "shadow": [
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "fps": 18,
+    "loop": true,
+    "canvas": [
+      96,
+      96
+    ],
+    "status": "eight_rotated_headings_not_hand_authored"
+  },
+  "dragonfly_heading_04": {
+    "layers": {
+      "body": [
+        "dragonfly/directions/heading_04/body_00.png",
+        "dragonfly/directions/heading_04/body_01.png",
+        "dragonfly/directions/heading_04/body_02.png",
+        "dragonfly/directions/heading_04/body_03.png"
+      ],
+      "wings": [
+        "dragonfly/directions/heading_04/wing_00.png",
+        "dragonfly/directions/heading_04/wing_01.png",
+        "dragonfly/directions/heading_04/wing_02.png",
+        "dragonfly/directions/heading_04/wing_03.png"
+      ],
+      "shadow": [
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "fps": 18,
+    "loop": true,
+    "canvas": [
+      96,
+      96
+    ],
+    "status": "eight_rotated_headings_not_hand_authored"
+  },
+  "dragonfly_heading_05": {
+    "layers": {
+      "body": [
+        "dragonfly/directions/heading_05/body_00.png",
+        "dragonfly/directions/heading_05/body_01.png",
+        "dragonfly/directions/heading_05/body_02.png",
+        "dragonfly/directions/heading_05/body_03.png"
+      ],
+      "wings": [
+        "dragonfly/directions/heading_05/wing_00.png",
+        "dragonfly/directions/heading_05/wing_01.png",
+        "dragonfly/directions/heading_05/wing_02.png",
+        "dragonfly/directions/heading_05/wing_03.png"
+      ],
+      "shadow": [
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "fps": 18,
+    "loop": true,
+    "canvas": [
+      96,
+      96
+    ],
+    "status": "eight_rotated_headings_not_hand_authored"
+  },
+  "dragonfly_heading_06": {
+    "layers": {
+      "body": [
+        "dragonfly/directions/heading_06/body_00.png",
+        "dragonfly/directions/heading_06/body_01.png",
+        "dragonfly/directions/heading_06/body_02.png",
+        "dragonfly/directions/heading_06/body_03.png"
+      ],
+      "wings": [
+        "dragonfly/directions/heading_06/wing_00.png",
+        "dragonfly/directions/heading_06/wing_01.png",
+        "dragonfly/directions/heading_06/wing_02.png",
+        "dragonfly/directions/heading_06/wing_03.png"
+      ],
+      "shadow": [
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "fps": 18,
+    "loop": true,
+    "canvas": [
+      96,
+      96
+    ],
+    "status": "eight_rotated_headings_not_hand_authored"
+  },
+  "dragonfly_heading_07": {
+    "layers": {
+      "body": [
+        "dragonfly/directions/heading_07/body_00.png",
+        "dragonfly/directions/heading_07/body_01.png",
+        "dragonfly/directions/heading_07/body_02.png",
+        "dragonfly/directions/heading_07/body_03.png"
+      ],
+      "wings": [
+        "dragonfly/directions/heading_07/wing_00.png",
+        "dragonfly/directions/heading_07/wing_01.png",
+        "dragonfly/directions/heading_07/wing_02.png",
+        "dragonfly/directions/heading_07/wing_03.png"
+      ],
+      "shadow": [
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png",
+        "dragonfly/directions/shadow.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "fps": 18,
+    "loop": true,
+    "canvas": [
+      96,
+      96
+    ],
+    "status": "eight_rotated_headings_not_hand_authored"
+  },
+  "caddy_stationary_breathe": {
+    "layers": {
+      "pole": [
+        "caddy/layers/pole.png",
+        "caddy/layers/pole.png",
+        "caddy/layers/pole.png",
+        "caddy/layers/pole.png",
+        "caddy/layers/pole.png",
+        "caddy/layers/pole.png",
+        "caddy/layers/pole.png",
+        "caddy/layers/pole.png"
+      ],
+      "lower_body": [
+        "caddy/layers/body.png",
+        "caddy/layers/body.png",
+        "caddy/layers/body.png",
+        "caddy/layers/body.png",
+        "caddy/layers/body.png",
+        "caddy/layers/body.png",
+        "caddy/layers/body.png",
+        "caddy/layers/body.png"
+      ],
+      "head_chest": [
+        "caddy/layers/head_chest_00.png",
+        "caddy/layers/head_chest_01.png",
+        "caddy/layers/head_chest_02.png",
+        "caddy/layers/head_chest_03.png",
+        "caddy/layers/head_chest_04.png",
+        "caddy/layers/head_chest_05.png",
+        "caddy/layers/head_chest_06.png",
+        "caddy/layers/head_chest_07.png"
+      ],
+      "flag_cloth": [
+        "caddy/layers/flag_00.png",
+        "caddy/layers/flag_01.png",
+        "caddy/layers/flag_02.png",
+        "caddy/layers/flag_03.png",
+        "caddy/layers/flag_04.png",
+        "caddy/layers/flag_05.png",
+        "caddy/layers/flag_06.png",
+        "caddy/layers/flag_07.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "fps": 5,
+    "loop": true,
+    "canvas": [
+      57,
+      104
+    ],
+    "status": "composited_illustrated_source_requires_grip_approval"
+  },
+  "waterfall_small_overhead": {
+    "layers": {
+      "underlay": [
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png",
+        "waterfall/layers/water_pool_underlay_STATIC.png"
+      ],
+      "fixed_rocks": [
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png",
+        "waterfall/layers/rocks_banks_STATIC.png"
+      ],
+      "water": [
+        "waterfall/layers/flow_00.png",
+        "waterfall/layers/flow_01.png",
+        "waterfall/layers/flow_02.png",
+        "waterfall/layers/flow_03.png",
+        "waterfall/layers/flow_04.png",
+        "waterfall/layers/flow_05.png",
+        "waterfall/layers/flow_06.png",
+        "waterfall/layers/flow_07.png",
+        "waterfall/layers/flow_08.png",
+        "waterfall/layers/flow_09.png",
+        "waterfall/layers/flow_10.png",
+        "waterfall/layers/flow_11.png"
+      ],
+      "foam": [
+        "waterfall/layers/foam_00.png",
+        "waterfall/layers/foam_01.png",
+        "waterfall/layers/foam_02.png",
+        "waterfall/layers/foam_03.png",
+        "waterfall/layers/foam_04.png",
+        "waterfall/layers/foam_05.png",
+        "waterfall/layers/foam_06.png",
+        "waterfall/layers/foam_07.png",
+        "waterfall/layers/foam_08.png",
+        "waterfall/layers/foam_09.png",
+        "waterfall/layers/foam_10.png",
+        "waterfall/layers/foam_11.png"
+      ],
+      "mist": [
+        "waterfall/layers/mist_00.png",
+        "waterfall/layers/mist_01.png",
+        "waterfall/layers/mist_02.png",
+        "waterfall/layers/mist_03.png",
+        "waterfall/layers/mist_04.png",
+        "waterfall/layers/mist_05.png",
+        "waterfall/layers/mist_06.png",
+        "waterfall/layers/mist_07.png",
+        "waterfall/layers/mist_08.png",
+        "waterfall/layers/mist_09.png",
+        "waterfall/layers/mist_10.png",
+        "waterfall/layers/mist_11.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "fps": 12,
+    "loop": true,
+    "canvas": [
+      94,
+      132
+    ],
+    "status": "pixel_stable_rocks_animated_water_preflight_only"
+  },
+  "river_overhead": {
+    "layers": {
+      "fixed_banks": [
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png",
+        "river/layers/static_banks.png"
+      ],
+      "water": [
+        "river/layers/water_00.png",
+        "river/layers/water_01.png",
+        "river/layers/water_02.png",
+        "river/layers/water_03.png",
+        "river/layers/water_04.png",
+        "river/layers/water_05.png",
+        "river/layers/water_06.png",
+        "river/layers/water_07.png",
+        "river/layers/water_08.png",
+        "river/layers/water_09.png",
+        "river/layers/water_10.png",
+        "river/layers/water_11.png",
+        "river/layers/water_12.png",
+        "river/layers/water_13.png",
+        "river/layers/water_14.png",
+        "river/layers/water_15.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "fps": 12,
+    "loop": true,
+    "canvas": [
+      62,
+      68
+    ],
+    "status": "shoreline_stable_tile_seam_unverified"
+  },
+  "river_tileable_flow": {
+    "layers": {
+      "water": [
+        "river/tileable_flow/flow_00.png",
+        "river/tileable_flow/flow_01.png",
+        "river/tileable_flow/flow_02.png",
+        "river/tileable_flow/flow_03.png",
+        "river/tileable_flow/flow_04.png",
+        "river/tileable_flow/flow_05.png",
+        "river/tileable_flow/flow_06.png",
+        "river/tileable_flow/flow_07.png",
+        "river/tileable_flow/flow_08.png",
+        "river/tileable_flow/flow_09.png",
+        "river/tileable_flow/flow_10.png",
+        "river/tileable_flow/flow_11.png",
+        "river/tileable_flow/flow_12.png",
+        "river/tileable_flow/flow_13.png",
+        "river/tileable_flow/flow_14.png",
+        "river/tileable_flow/flow_15.png"
+      ]
+    },
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "fps": 12,
+    "loop": true,
+    "canvas": [
+      64,
+      64
+    ],
+    "status": "exact_spatial_and_temporal_seam_tested"
+  }
+}

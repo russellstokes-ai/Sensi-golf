@@ -11,7 +11,7 @@ func _run() -> void:
 	var scene = load("res://scenes/Lakewood.tscn").instantiate()
 	root.add_child(scene)
 	await process_frame
-	scene.start_hole()
+	scene.start_hole(false,false)
 	await process_frame
 	var s: Dictionary = scene.core.snapshot()
 	if s.get("ball_x_raw") != 256 * 65536 or s.get("ball_y_raw") != 850 * 65536:
@@ -89,9 +89,9 @@ func _run() -> void:
 		return
 	print("LAKEWOOD_SCENE_PASS: 445 objects, native tee-to-score in 3 strokes, %d unique native events" % seen.size())
 	print("LAKEWOOD_GREEN_SCENE_PASS: actual MAPS, native-derived arrows, unchanged gameplay on field reads")
-	scene.start_hole()
+	scene.start_hole(false,false)
 	scene.pause_game()
-	scene.start_hole()
+	scene.start_hole(false,false)
 	if not scene.fx.is_processing():
 		push_error("Effects must resume after pause -> restart")
 		quit(1)

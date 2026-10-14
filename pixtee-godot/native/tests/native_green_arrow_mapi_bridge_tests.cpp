@@ -45,6 +45,26 @@ int main(int argc,char** argv) {
         recovery.restore_replay(stable_replay);
         assert(recovery.touch_meter().stage==0);
     }
+    {
+        const auto course=pixtee::make_lakewood_hole_1_with_slope(0,0);
+        auto wind=preview();wind.register_course(1,course);wind.load_next_hole();
+        wind.set_authored_wind(1024,80,true);
+        wind.set_aim_raw(2048);wind.meter_click_raw(0);wind.meter_click_raw(105);wind.meter_click_raw(63);
+        for(int i=0;i<12;++i)wind.step_tick();
+        auto calm=preview();calm.register_course(1,course);calm.load_next_hole();
+        calm.set_aim_raw(2048);calm.meter_click_raw(0);calm.meter_click_raw(105);calm.meter_click_raw(63);
+        for(int i=0;i<12;++i)calm.step_tick();
+        assert(wind.hole().ball_state().x_raw>calm.hole().ball_state().x_raw);
+        bool locked=false;try{wind.set_authored_wind(0,60,true);}catch(const std::logic_error&){locked=true;}assert(locked);
+        auto restored=preview();restored.register_course(1,course);
+        restored.restore_native_session(wind.serialize_native_session());
+        assert(restored.authored_wind().speed_mph_x10==80);
+        assert(restored.native_fingerprint()==wind.native_fingerprint());
+        for(int i=0;i<40;++i){wind.step_tick();restored.step_tick();assert(restored.native_fingerprint()==wind.native_fingerprint());}
+        auto invalid=preview();invalid.register_course(1,course);invalid.load_next_hole();
+        bool rejected=false;try{invalid.set_authored_wind(-1,60,true);}catch(const std::invalid_argument&){rejected=true;}assert(rejected);
+        rejected=false;try{invalid.set_authored_wind(1024,151,true);}catch(const std::invalid_argument&){rejected=true;}assert(rejected);
+    }
     auto empty=preview();
     assert(empty.verified_native_green_arrows().empty());
     for(std::uint8_t direction=0;direction<16;++direction) {

@@ -60,6 +60,8 @@ func _process(_delta: float) -> void:
 	if not frozen:
 		ecology_time = world.time
 		_update_sightings(minf(_delta,0.1))
+	if world.native_state.get("physics_authority","") == "Recovered Sensible Golf ClassicGameSession":
+		weather.set_native_wind_visuals(world.presentation.wind_toward,clampf(world.presentation.wind_mph/15.0,0.0,1.0),true)
 	var conditions := weather.conditions()
 	world.presentation.sun_strength = float(conditions.sun)
 	world.presentation.cloud_cover = float(conditions.cloud)

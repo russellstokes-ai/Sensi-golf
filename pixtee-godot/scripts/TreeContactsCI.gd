@@ -19,7 +19,7 @@ func _run() -> void:
 	# contact with the approved course's registered volumes; no visual hit guess.
 	for club_index in [12,7,0]:
 		for aim in range(0,4096,128):
-			scene.start_hole()
+			scene.start_hole(false,false)
 			scene.core.set_club_index(club_index)
 			scene.core.set_aim_raw(aim)
 			scene.core.meter_click_raw(0)

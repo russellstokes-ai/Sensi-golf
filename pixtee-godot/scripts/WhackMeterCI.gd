@@ -6,7 +6,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var scene = load("res://scenes/Lakewood.tscn").instantiate()
 	root.add_child(scene)
-	scene.start_hole()
+	scene.start_hole(false,false)
 	scene.set_process(false)
 	var before: Dictionary = scene.core.snapshot()
 	assert(before.welly_window_center == 63)

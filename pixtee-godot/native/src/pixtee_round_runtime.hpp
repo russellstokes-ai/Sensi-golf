@@ -37,6 +37,8 @@ public:
                          const sensigolf::ClassicCourseResources& course);
     bool course_registered(std::uint8_t resource_id) const noexcept;
     void load_next_hole();
+    void set_authored_wind(std::int32_t direction,std::int32_t speed_mph_x10,bool enabled);
+    const sensigolf::AuthoredWindState& authored_wind() const noexcept {return wind_;}
     void set_aim_raw(std::uint16_t raw);
     void nudge_aim_raw(std::int32_t delta);
     void set_club(std::uint16_t index);
@@ -81,6 +83,7 @@ public:
     bool replay_supported() const noexcept;
 
 private:
+    sensigolf::AuthoredWindState wind_{};
     struct Command {char op;std::vector<std::int64_t> args;std::uint32_t repeat=1;};
     void record_command(char op,std::vector<std::int64_t> args={});
     std::vector<Command> commands_;

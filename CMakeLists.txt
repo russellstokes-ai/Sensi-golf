@@ -9,6 +9,9 @@ enable_testing()
 add_subdirectory(engine)
 
 if(NOT ANDROID)
+    add_executable(pixtee_authored_wind_tests engine/tests/authored_wind_tests.cpp)
+    target_link_libraries(pixtee_authored_wind_tests PRIVATE sensigolf_core)
+    add_test(NAME pixtee_authored_wind_tests COMMAND pixtee_authored_wind_tests)
     add_executable(pixtee_touch_meter_tests
         pixtee-godot/native/tests/welly_recovered_native_smoke.cpp
         pixtee-godot/native/src/recovered_welly_tick.cpp)

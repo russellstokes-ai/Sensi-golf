@@ -155,6 +155,9 @@ func _ready() -> void:
 
 func accept_snapshot(state: Dictionary, hold_golfer := false) -> void:
 	native_state = state
+	presentation.wind_mph = float(state.get("wind_speed_mph_x10",0))/10.0 if state.get("wind_enabled",false) else 0.0
+	var wind_angle := float(state.get("wind_toward_raw",1536))*TAU/4096.0
+	presentation.wind_toward = Vector2(sin(wind_angle),cos(wind_angle))
 	ball_world = Vector2(float(state.get("ball_x_raw",0)),float(state.get("ball_y_raw",0))) / 65536.0
 	if state.get("green_mode",false):
 		ball_world = ball_world * 0.5 + Vector2(state.green_origin_x,state.green_origin_y)

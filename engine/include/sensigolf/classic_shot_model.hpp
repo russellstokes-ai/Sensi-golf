@@ -1,4 +1,5 @@
 #pragma once
+#include "sensigolf/authored_wind.hpp"
 #include "sensigolf/authored_tree_contacts.hpp"
 #include "sensigolf/authored_bird.hpp"
 
@@ -42,6 +43,9 @@ struct ClassicPresentationContact {
 
 class ClassicShotModel final : public IClassicModel {
 public:
+    void set_authored_wind(const AuthoredWindState& value) {validate_authored_wind(value);wind_=value;wind_accumulator_={};}
+    const AuthoredWindState& authored_wind() const noexcept {return wind_;}
+    const AuthoredWindAccumulator& wind_accumulator() const noexcept {return wind_accumulator_;}
     void set_soft_ground_enabled(bool enabled) noexcept {soft_ground_enabled_=enabled;}
     void set_authored_bird_context(AuthoredBirdSample before,AuthoredBirdSample after,bool* hit) noexcept {
         bird_before_=before;bird_after_=after;bird_hit_=hit;
@@ -110,6 +114,8 @@ public:
         std::int32_t origin_y_raw);
 
 private:
+    AuthoredWindState wind_{};
+    AuthoredWindAccumulator wind_accumulator_{};
     AuthoredBirdSample bird_before_{},bird_after_{};
     bool* bird_hit_=nullptr;
     void sync_public_state();

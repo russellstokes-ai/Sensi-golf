@@ -31,6 +31,7 @@ void PixteeRoundRuntime::load_next_hole() {
     const auto found=courses_.find(next->resource_id);
     if(found==courses_.end()) throw std::logic_error("authored course bundle not registered");
     game_->load_current_hole(next->resource_id,found->second);
+    game_->active_hole().set_authored_wind(wind_);
     controls_.reset();
     controls_.sync_hole(game_->active_hole());
     pending_.reset();
@@ -40,6 +41,15 @@ void PixteeRoundRuntime::load_next_hole() {
     original_welly_.reset();
     touch_meter_={};
     record_command('L');
+}
+void PixteeRoundRuntime::set_authored_wind(std::int32_t direction,std::int32_t speed,bool enabled) {
+    if(direction<0 || direction>4095 || speed<0 || speed>150)throw std::invalid_argument("wind parameters outside authored range");
+    if(!has_hole() || round_state().holes_completed || touch_meter_.stage || original_welly_active_ || controls_.stage()!=sensigolf::ClassicMeterStage::Idle)
+        throw std::logic_error("wind requires fresh ready round");
+    sensigolf::AuthoredWindState value{enabled && speed>0,static_cast<std::uint16_t>(direction),static_cast<std::uint16_t>(enabled?speed:0),96};
+    game_->active_hole().set_authored_wind(value);wind_=value;
+    record_command('D',{direction,speed,enabled?1:0});
+    if(value.enabled)replay_supported_=false;
 }
 void PixteeRoundRuntime::set_aim_raw(std::uint16_t raw) {
     if(original_welly_active_ || touch_meter_.stage!=0) throw std::logic_error("aim locked during original Welly");

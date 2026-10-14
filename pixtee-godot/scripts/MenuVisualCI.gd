@@ -51,6 +51,9 @@ func _run() -> void:
 	root.add_child(scene)
 	await process_frame
 	assert(scene.profile.load_profile("user://tests/visual-"+str(Time.get_ticks_usec())))
+	scene.profile.set_setting("graphics_quality",2)
+	scene.profile.set_setting("reduced_motion",false)
+	scene.apply_saved_settings()
 	scene.show_title()
 	await capture(scene,"title-portrait")
 	print("TITLE_REVIEW_PNG:"+Marshalls.raw_to_base64(root.get_texture().get_image().save_png_to_buffer()))
@@ -82,7 +85,7 @@ func _run() -> void:
 	scene.back_menu()
 	scene.show_help()
 	await capture(scene,"help-portrait")
-	scene.start_hole()
+	scene.start_hole(false,false)
 	await capture(scene,"whack-meter-portrait",false)
 	var meter_image := root.get_texture().get_image().get_region(Rect2i(0,root.size.y-240,root.size.x,240))
 	print("WHACK_METER_PNG:"+Marshalls.raw_to_base64(meter_image.save_png_to_buffer()))
@@ -103,7 +106,7 @@ func _run() -> void:
 	await process_frame
 	scene.update_ui_layout()
 	await capture(scene,"pause-wide")
-	scene.start_hole()
+	scene.start_hole(false,false)
 	scene.paused = true
 	scene.world.set_process(false)
 	scene.fx.set_effects_running(false)

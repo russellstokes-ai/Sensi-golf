@@ -7,3 +7,9 @@ A/B/C/D: in progress. W/E/F/G/H/I/J: pending.
 Ruling: implement one uniform render-band hierarchy using native world-foot Y as object depth, preserving source sprite geometry. Shadow projection is separate derived geometry, not deformation of visible artwork. No 3D/voxel renderer.
 
 Verification: VisualPolishCI asserts missing shared state/depth/fractional-motion contract before implementation. Existing native/Godot suite and actual GL captures remain required. Commercial-ready=false; APK disabled.
+
+A/B/C/D first implementation: 3fdb8d298547fd2b8e6990ddb2bd2c0d08c67c6c; scene/render run38606346476 SUCCESS, all28 native tests and VisualPolishCI passed. Actual river/caddy captures saved in work/*-quality-a.png. Visual tuning and motion acceptance still pending; do not mark reference quality achieved.
+
+W: native kernel calibrated at 96 units/tick/mph: 8mph crosswind drift0.080830 of calm airborne carry. Source exact zero-wind trace test passes. Runtime integration test exposed shot reset discarding wind configuration; fixed by retaining hole configuration and reapplying it on each source shot reset. Native session midflight replay test passes. Bridge/HUD/profile migration pending Godot suite.
+
+Ruling: local Godot process crashes in this sandbox; use actual Linux Godot4.5 GL CI for scene validation. Do not infer a game defect or desktop acceptance from that local launch limitation. Native C++ tests run locally.

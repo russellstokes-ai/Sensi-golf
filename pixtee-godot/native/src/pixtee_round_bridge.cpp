@@ -88,6 +88,7 @@ void PixteeRoundBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_verified_flag_object","present"),
                          &PixteeRoundBridge::set_verified_flag_object);
     ClassDB::bind_method(D_METHOD("set_flag_removed_for_putting","removed"),&PixteeRoundBridge::set_flag_removed_for_putting);
+    ClassDB::bind_method(D_METHOD("set_authored_wind","direction","speed_mph_x10","enabled"),&PixteeRoundBridge::set_authored_wind);
     ClassDB::bind_method(D_METHOD("save_native_session"),&PixteeRoundBridge::save_native_session);
     ClassDB::bind_method(D_METHOD("restore_native_session","payload"),&PixteeRoundBridge::restore_native_session);
     ClassDB::bind_method(D_METHOD("set_soft_ground_enabled","enabled"),&PixteeRoundBridge::set_soft_ground_enabled);
@@ -541,6 +542,7 @@ PIXTEE_WRAP_BOOL(nudge_aim_raw(int d),round_->nudge_aim_raw(d))
 PIXTEE_WRAP_BOOL(set_club_index(int i),round_->set_club(static_cast<std::uint16_t>(i)))
 PIXTEE_WRAP_BOOL(set_verified_flag_object(bool present),round_->set_verified_flag_object(present))
 PIXTEE_WRAP_BOOL(set_flag_removed_for_putting(bool removed),round_->set_flag_removed_for_putting(removed))
+PIXTEE_WRAP_BOOL(set_authored_wind(int direction,int speed_mph_x10,bool enabled),round_->set_authored_wind(direction,speed_mph_x10,enabled))
 bool PixteeRoundBridge::set_original_player_mode_5a(int mode) {
     if(!round_) {last_error_="Native round is not initialized";return false;}
     if(mode<0 || mode>15) {
@@ -791,6 +793,10 @@ Dictionary PixteeRoundBridge::snapshot() const {
         d["club_index"]=static_cast<int>(round_->club_index());
         d["aim_raw"]=static_cast<int>(round_->aim_raw());
         d["has_hole"]=round_->has_hole();
+        d["wind_enabled"]=round_->authored_wind().enabled;
+        d["wind_toward_raw"]=round_->authored_wind().toward_raw;
+        d["wind_speed_mph_x10"]=round_->authored_wind().speed_mph_x10;
+        d["wind_model_version"]=1;
         d["physics_authority"]="Recovered Sensible Golf ClassicGameSession";
         if(round_->has_hole()) {
             // Expose original MAPM green marker for 2x local-to-world visual

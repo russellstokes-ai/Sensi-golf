@@ -65,6 +65,9 @@ public:
 
     void begin_shot(const ClassicShotRequest& request);
     void step();
+    void set_authored_wind(const AuthoredWindState& value);
+    const AuthoredWindState& authored_wind() const noexcept {return wind_;}
+    const AuthoredWindAccumulator& wind_accumulator() const noexcept {return shot_.wind_accumulator();}
     void set_soft_ground_enabled(bool enabled) {soft_ground_enabled_=enabled;}
     void set_authored_birds_enabled(bool enabled) { authored_birds_enabled_=enabled; }
     AuthoredBirdSample authored_bird() const noexcept;
@@ -147,6 +150,7 @@ private:
     void update_green_mode_for_ball();
     ClassicCoursePoint mode_hole_position() const;
 
+    AuthoredWindState wind_{};
     const ClassicCourseResources& course_;
     bool soft_ground_enabled_=false;
     ClassicShotModel shot_;

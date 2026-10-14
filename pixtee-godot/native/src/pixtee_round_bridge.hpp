@@ -67,6 +67,7 @@ public:
         const PackedByteArray& mapi_selectors,
         const PackedByteArray& maps);
     bool load_next_hole();
+    bool set_authored_wind(int direction,int speed_mph_x10,bool enabled);
     bool set_aim_raw(int heading);
     bool nudge_aim_raw(int delta);
     bool set_club_index(int index);

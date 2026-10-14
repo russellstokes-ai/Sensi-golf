@@ -9,7 +9,7 @@ func _run() -> void:
 	for i in 5: await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://../../lakewood-menu.png")
-	scene.start_hole()
+	scene.start_hole(false,false)
 	for i in 5: await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://../../lakewood-tee.png")

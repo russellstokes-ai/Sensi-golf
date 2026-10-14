@@ -26,6 +26,10 @@ func _tap(event: InputEvent) -> void:
 			club_selected.emit((int(state.get("club_index",0))+1)%CLUBS.size())
 		accept_event()
 
+func wind_direction() -> Vector2:
+	var angle := float(state.get("wind_toward_raw",1536))*TAU/4096.0
+	return Vector2(sin(angle),cos(angle))
+
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size),Color("101f18"))
 	draw_rect(Rect2(1,1,size.x-2,size.y-2),Color("c89b4b"),false,2)
@@ -47,8 +51,19 @@ func _draw() -> void:
 	var dimensions := ball.get_size()*(diameter/ball.get_height())
 	draw_texture_rect(ball,Rect2(Vector2(size.x/2-dimensions.x/2,10),dimensions),false)
 	var font := ThemeDB.fallback_font
-	draw_string(font,Vector2(8,78),"%d" % int(state.get("distance_to_hole",0)),HORIZONTAL_ALIGNMENT_LEFT,size.x-65,28,Color("fff4cc"))
-	draw_string(font,Vector2(size.x-63,76),"To hole",HORIZONTAL_ALIGNMENT_LEFT,59,12,Color("d5ddc5"))
+	draw_string(font,Vector2(8,77),"%d" % int(state.get("distance_to_hole",0)),HORIZONTAL_ALIGNMENT_LEFT,size.x*0.58-10,28,Color("fff4cc"))
+	draw_string(font,Vector2(9,91),"To hole",HORIZONTAL_ALIGNMENT_LEFT,75,12,Color("d5ddc5"))
+	draw_line(Vector2(size.x*0.60,49),Vector2(size.x*0.60,92),Color("506b55"),0.7)
+	var centre := Vector2(size.x*0.80,65)
+	var wind := wind_direction()
+	if state.get("wind_enabled",false) and int(state.get("wind_speed_mph_x10",0))>0:
+		var side := Vector2(-wind.y,wind.x)
+		var needle := PackedVector2Array([centre+wind*10.0,centre-wind*5.0+side*4.2,centre-wind*2.8,centre-wind*5.0-side*4.2])
+		draw_colored_polygon(needle,Color("82d4f1"))
+		draw_line(centre+wind*9,centre-wind*3+side*3.2,Color("d9f5fc"),1,true)
+	else:
+		draw_circle(centre,2.0,Color("a5c3b0"),true,-1,true)
+	draw_string(font,Vector2(size.x*0.65,90),"%d mph" % roundi(float(state.get("wind_speed_mph_x10",0))/10.0),HORIZONTAL_ALIGNMENT_LEFT,size.x*0.35-3,12,Color("fff4cc"))
 	var icon_size := club_icon.get_size()*(26.0/club_icon.get_height())
 	draw_texture_rect(club_icon,Rect2(Vector2(9,93),icon_size),false)
 	draw_string(font,Vector2(43,112),CLUBS[int(state.get("club_index",0))],HORIZONTAL_ALIGNMENT_LEFT,size.x-47,17,Color("ffedb1"))

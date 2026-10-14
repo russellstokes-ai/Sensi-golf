@@ -8,6 +8,7 @@ var sightings: Array[Dictionary] = []
 var seen: Dictionary = {}
 var atmosphere: ColorRect
 var appearance_seed := 3419
+var climbing_squirrel: Node2D
 func _ready() -> void:
 	weather = PixteeWeatherDirector.new()
 	add_child(weather)
@@ -53,6 +54,9 @@ func _ready() -> void:
 			actor.visible = false
 			actor.modulate.a = 0.0
 			sightings.append({"actor":actor,"origin":actor.position,"tree":str(entry[0]).begins_with("squirrel"),"wait":0.0 if str(entry[0]).begins_with("rabbit") else 25.0,"age":0.0,"number":0,"duration":12.0,"flee":false})
+	climbing_squirrel = preload("res://scripts/PixteeSquirrelClimb.gd").new()
+	climbing_squirrel.world = world
+	add_child(climbing_squirrel)
 func _process(_delta: float) -> void:
 	var frozen: bool = not world.is_processing() or world.reduced_motion
 	if frozen and world.visual_quality == 0:
@@ -73,6 +77,7 @@ func _process(_delta: float) -> void:
 	atmosphere.material.set_shader_parameter("sun_strength",float(conditions.sun))
 	atmosphere.material.set_shader_parameter("fog_density",float(conditions.fog))
 	atmosphere.material.set_shader_parameter("cloud_cover",float(conditions.cloud))
+	atmosphere.material.set_shader_parameter("wind_direction",world.presentation.wind_toward)
 	weather.reduced_motion = frozen
 	visuals.paused = frozen
 	visuals.reduced_motion = world.reduced_motion
@@ -116,7 +121,7 @@ func _update_sightings(delta: float) -> void:
 			if layer.name == "shadow": continue
 			layer.position.y = 0.0 if sighting.tree else -absf(sin(age*5.5))*12.0*(ingress+egress)
 func accept_native_event(event: Dictionary) -> bool:
-	if event.get("confirmed_native",false) != true or not event.get("event_type","") in ["water_contact","fairway_contact","rough_contact","ball_bounce","tree_canopy_contact","tree_trunk_contact"]: return false
+	if event.get("confirmed_native",false) != true or not event.get("event_type","") in ["water_contact","fairway_contact","rough_contact","ball_bounce","authored_tree_contact"]: return false
 	var id := str(event.get("event_id",""))
 	if id.is_empty() or seen.has(id) or not event.has("world_x") or not event.has("world_y"): return false
 	var at := Vector2(float(event.world_x),float(event.world_y))

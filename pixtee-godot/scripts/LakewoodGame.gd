@@ -69,6 +69,7 @@ func _ready() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	menu = Control.new()
+	menu.theme = PixteeUIStyle.theme()
 	menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(menu)
 	hud = Control.new()
@@ -548,7 +549,7 @@ func pause_game() -> void:
 func show_pause() -> void:
 	audio.set_context("menu")
 	menu_screen = "pause"
-	clear_menu()
+	clear_menu(0.70)
 	panel.add_child(text_line("PAUSED"))
 	add_music_toggle()
 	panel.add_child(button("Resume",resume_game))

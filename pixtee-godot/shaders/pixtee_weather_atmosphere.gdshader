@@ -3,6 +3,7 @@ uniform float visual_time = 0.0;
 uniform float sun_strength = 0.65;
 uniform float fog_density = 0.0;
 uniform float cloud_cover = 0.4;
+uniform vec2 wind_direction = vec2(0.95,0.3);
 uniform vec4 focus_points = vec4(256.0,850.0,364.0,168.0);
 float hash_point(vec2 p) { return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p) {
@@ -12,7 +13,7 @@ float noise(vec2 p) {
 float field(vec2 p) { return noise(p)*0.62+noise(p*2.03+vec2(17,41))*0.27+noise(p*4.09+23.0)*0.11; }
 void fragment() {
  vec2 p=UV*vec2(544,912); float t=visual_time;
- float cloud=smoothstep(0.38,0.69,field((p-vec2(t*0.42,t*0.13))/175.0));
+ float cloud=smoothstep(0.38,0.69,field((p-wind_direction*t*0.44)/175.0));
  float shade=cloud*cloud_cover*0.15;
  float edge=smoothstep(55.0,160.0,abs(p.x-272.0));
  float mist=smoothstep(0.37,0.68,field((p-vec2(t*0.57,-t*0.12))/vec2(130,78)));

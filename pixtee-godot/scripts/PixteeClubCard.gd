@@ -31,8 +31,7 @@ func wind_direction() -> Vector2:
 	return Vector2(sin(angle),cos(angle))
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO,size),Color("101f18"))
-	draw_rect(Rect2(1,1,size.x-2,size.y-2),Color("c89b4b"),false,2)
+	PixteeUIStyle.frame(self,Rect2(Vector2.ZERO,size),true)
 	var surface := int(state.get("surface_code",3))
 	var ground := Color("457826")
 	if surface == 7: ground = Color("d5b578")

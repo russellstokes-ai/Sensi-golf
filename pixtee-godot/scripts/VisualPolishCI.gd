@@ -20,6 +20,14 @@ func _run() -> void:
 	root.add_child(world)
 	world.accept_snapshot({"ball_x_raw":256*65536,"ball_y_raw":850*65536,"green_mode":false,"hole_phase":0,"aim_raw":2048})
 	assert(world.ball_presentation != null and world.shadows != null)
+	var climber: Node = world.living_world.climbing_squirrel
+	assert(climber != null and climber.layers.size() == 3)
+	assert(climber.metadata.frames == 6)
+	assert(climber.metadata.pixel_scale > 0.02)
+	climber.show_pose(5)
+	assert(climber.frame == 5)
+	for layer in climber.layers:
+		assert(layer.region_rect.size == Vector2(362,724))
 	assert(world.placements.size() == 445)
 	assert(world.object_nodes.size() == 444)
 	assert(world.player_rig.z_index == roundi(world.golfer_world.y))

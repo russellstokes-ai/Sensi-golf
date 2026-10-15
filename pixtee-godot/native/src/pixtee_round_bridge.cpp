@@ -1,4 +1,5 @@
 #include "pixtee_round_bridge.hpp"
+#include "pixtee_club_display.hpp"
 #include "sensigolf/recovered_flight.hpp"
 #include "original_next_player.hpp"
 #include "original_cpu_difficulty.hpp"
@@ -791,6 +792,10 @@ Dictionary PixteeRoundBridge::snapshot() const {
         d["welly_accuracy_counter"]=static_cast<int>(meter.accuracy_counter);
         d["welly_step_setting"]=static_cast<int>(meter.step_setting);
         d["club_index"]=static_cast<int>(round_->club_index());
+        d["club_nominal_max"]=static_cast<int64_t>(pixtee::nominal_club_ranges().at(round_->club_index()));
+        d["club_max_basis"]="native calm flat-ground full-power range";
+        d["touch_meter_accuracy"]=touch.sample();
+        d["touch_meter_version"]=2;
         d["aim_raw"]=static_cast<int>(round_->aim_raw());
         d["has_hole"]=round_->has_hole();
         d["wind_enabled"]=round_->authored_wind().enabled;

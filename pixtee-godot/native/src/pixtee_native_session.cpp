@@ -53,7 +53,7 @@ std::string PixteeRoundRuntime::native_fingerprint() const {
 }
 std::string PixteeRoundRuntime::serialize_native_session() const {
     // Locale-free codec also avoids C++ iostream facet interactions with render drivers.
-    std::string out="PIXTEE_NATIVE_SESSION_1 ";number(out,initial_seed_.seed0);number(out,initial_seed_.seed1);out+='\n';
+    std::string out="PIXTEE_NATIVE_SESSION_2 ";number(out,initial_seed_.seed0);number(out,initial_seed_.seed1);out+='\n';
     for(auto n:plan_.order())number(out,n);out+='\n';
     for(auto n:pars_)number(out,n);out+='\n';
     number(out,commands_.size());out+='\n';
@@ -63,7 +63,7 @@ std::string PixteeRoundRuntime::serialize_native_session() const {
 void PixteeRoundRuntime::restore_native_session(const std::string& checkpoint) {
     if(checkpoint.size()>16*1024*1024)throw std::invalid_argument("session too large");
     Reader input{checkpoint};
-    if(input.word()!="PIXTEE_NATIVE_SESSION_1"||input.integer()!=initial_seed_.seed0||input.integer()!=initial_seed_.seed1)throw std::invalid_argument("native session header mismatch");
+    if(input.word()!="PIXTEE_NATIVE_SESSION_2"||input.integer()!=initial_seed_.seed0||input.integer()!=initial_seed_.seed1)throw std::invalid_argument("native session header mismatch");
     for(auto n:plan_.order()) {if(input.integer()!=n)throw std::invalid_argument("session course order mismatch");}
     for(auto n:pars_) {if(input.integer()!=n)throw std::invalid_argument("session pars mismatch");}
     const auto count=input.integer();if(count<0||count>1000000)throw std::invalid_argument("invalid session command count");

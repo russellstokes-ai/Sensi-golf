@@ -9,6 +9,7 @@ signal preset_changed(name: String)
 
 const PRESETS := {
 	"sunny":        {"sun": 0.90, "cloud": 0.12, "rain": 0.00, "fog": 0.00, "wind": 0.24},
+	"golden_hour": {"sun":0.72, "cloud":0.18, "rain":0.0, "fog":0.08, "wind":0.25},
 	"bright_sun":   {"sun": 1.00, "cloud": 0.02, "rain": 0.00, "fog": 0.00, "wind": 0.16},
 	"breezy":       {"sun": 0.75, "cloud": 0.23, "rain": 0.00, "fog": 0.00, "wind": 0.58},
 	"partly_cloudy": {"sun": 0.65, "cloud": 0.52, "rain": 0.00, "fog": 0.00, "wind": 0.32},

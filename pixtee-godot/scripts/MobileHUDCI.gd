@@ -5,7 +5,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var scene = load("res://scenes/Lakewood.tscn").instantiate()
 	root.add_child(scene)
-	scene.start_hole()
+	scene.start_hole(false,false)
 	scene.set_process(false)
 	var tap := InputEventMouseButton.new()
 	tap.button_index = MOUSE_BUTTON_LEFT

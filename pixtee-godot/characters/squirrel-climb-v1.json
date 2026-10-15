@@ -1,0 +1,95 @@
+{
+  "canvas": [
+    362,
+    724
+  ],
+  "frames": 6,
+  "fps": 6,
+  "rects": [
+    [
+      0,
+      0,
+      362,
+      724
+    ],
+    [
+      362,
+      0,
+      362,
+      724
+    ],
+    [
+      724,
+      0,
+      362,
+      724
+    ],
+    [
+      1086,
+      0,
+      362,
+      724
+    ],
+    [
+      1448,
+      0,
+      362,
+      724
+    ],
+    [
+      1810,
+      0,
+      362,
+      724
+    ]
+  ],
+  "anchor": [
+    253.4,
+    577
+  ],
+  "pixel_scale": 0.020581113801452784,
+  "source_reference": "addons/pixtee_living_world/assets/premium/squirrel/poses/squirrel_00.png",
+  "reference_sha256": "0283d793051b977302459c4c185423a31d3b58dbcbb5763dac33a95dfc315999",
+  "generated_source": "C:\\Users\\86185\\.codex\\generated_images\\01a130ea-4f4d-78e2-b3cc-cbb2bfa63bd1\\exec-1d8a7184-d2a2-4598-8eac-af2c643bc24e.png",
+  "method": "Built-in imagegen; six true alternating fore/hind grip poses derived from approved squirrel; PNG bytes unchanged; complementary body/limb/tail shader layers",
+  "sha256": "7219a90423c6a64e4a91dd863c7a781ed535f18f2575cdc96201d3ef72b8c839",
+  "opaque_bounds": [
+    [
+      16,
+      201,
+      332,
+      577
+    ],
+    [
+      18,
+      178,
+      356,
+      572
+    ],
+    [
+      25,
+      164,
+      352,
+      572
+    ],
+    [
+      9,
+      164,
+      335,
+      564
+    ],
+    [
+      8,
+      164,
+      345,
+      568
+    ],
+    [
+      13,
+      165,
+      345,
+      559
+    ]
+  ],
+  "bounds_alpha_threshold": 128
+}

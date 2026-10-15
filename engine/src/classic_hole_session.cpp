@@ -51,6 +51,7 @@ void ClassicHoleSession::reset(
     std::int32_t start_x_raw,
     std::int32_t start_y_raw) {
     shot_.reset();
+    shot_.set_authored_wind(wind_);
     soft_ground_enabled_=false;
     phase_ = HoleSessionPhase::ReadyForShot;
     strokes_ = 0;
@@ -185,6 +186,11 @@ bool ClassicHoleSession::original_lip_deflection_last_tick() const noexcept {
     return shot_.original_lip_deflection_last_tick();
 }
 
+void ClassicHoleSession::set_authored_wind(const AuthoredWindState& value) {
+    if(phase_!=HoleSessionPhase::ReadyForShot || strokes_!=0)throw std::logic_error("wind locked after first shot");
+    shot_.set_authored_wind(value);wind_=value;
+}
+
 void ClassicHoleSession::set_verified_flag_object(bool present) {
     if(phase_!=HoleSessionPhase::ReadyForShot || strokes_!=0)
         throw std::logic_error(
@@ -227,6 +233,7 @@ void ClassicHoleSession::begin_shot(const ClassicShotRequest& request) {
 
     last_hazard_kind_ = ClassicNamedHazard::None;
     shot_.reset();
+    shot_.set_authored_wind(wind_);
     shot_.set_soft_ground_enabled(soft_ground_enabled_);
     shot_.set_ball_origin(ball_x_raw_, ball_y_raw_);
     shot_.set_surface_context(to_context(surface));

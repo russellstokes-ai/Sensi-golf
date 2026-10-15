@@ -34,6 +34,7 @@ std::int32_t planar_component(
 } // namespace
 
 void ClassicShotModel::reset() {
+    wind_={};wind_accumulator_={};
     flight_ = {};
     public_ = {};
     surface_ = {};
@@ -120,6 +121,7 @@ void ClassicShotModel::begin_shot(const ShotInput& input) {
     launch.start_x = origin_x_;
     launch.start_y = origin_y_;
 
+    wind_accumulator_={};
     flight_ = recovered::launch_normal_shot(launch);
     active_club_ = input.club_index;
     outcome_ = ClassicShotOutcome::None;
@@ -190,6 +192,8 @@ void ClassicShotModel::step() {
         presentation_contact_.flag=true;
     }
 
+    if(presentation_contact_.flag || presentation_contact_.lip)wind_accumulator_={};
+    if(active_club_!=12 && !soft_ground_rolling_)apply_authored_wind(flight_,wind_,wind_accumulator_,interaction_green_mode_);
     const auto incoming_horizontal=flight_.horizontal_force;
     recovered::GroundStepResult result{};
     if (active_club_ == 12) {
@@ -241,6 +245,7 @@ void ClassicShotModel::step() {
     }
     // A source-ground branch reached from airborne height is an impact;
     // subsequent rolling contacts are not repeated particle/audio impacts.
+    if(result.contacted_ground)wind_accumulator_={};
     presentation_contact_.impact=result.contacted_ground && incoming_height>0;
     presentation_contact_.hazard=result.hazard_stop;
     if(result.contacted_ground) {
@@ -326,6 +331,7 @@ void ClassicShotModel::step() {
 }
 
 void ClassicShotModel::sync_public_state() {
+    if(presentation_contact_.tree_id || presentation_contact_.bird_id)wind_accumulator_={};
     public_.x_raw = flight_.x;
     public_.y_raw = flight_.y;
     public_.z_raw = flight_.height;

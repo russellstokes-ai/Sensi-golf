@@ -24,7 +24,7 @@ func _run() -> void:
 	var scene = load("res://scenes/Lakewood.tscn").instantiate()
 	root.add_child(scene)
 	scene.set_process(false)
-	scene.start_hole()
+	scene.start_hole(false,false)
 	var start: Vector2 = scene.world.golfer_world
 	for shot in [[0,105,1946],[1,95,1942],[12,105,2121]]:
 		scene.core.set_club_index(shot[0])

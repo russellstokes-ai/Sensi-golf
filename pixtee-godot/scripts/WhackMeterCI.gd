@@ -6,7 +6,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var scene = load("res://scenes/Lakewood.tscn").instantiate()
 	root.add_child(scene)
-	scene.start_hole()
+	scene.start_hole(false,false)
 	scene.set_process(false)
 	var before: Dictionary = scene.core.snapshot()
 	assert(before.welly_window_center == 63)
@@ -19,7 +19,7 @@ func _run() -> void:
 	scene.on_shoot()
 	scene.advance_native_tick()
 	var captured: Dictionary = scene.core.snapshot()
-	assert(captured.touch_meter_phase == 2 and captured.touch_meter_power == 45)
+	assert(captured.touch_meter_phase == 2 and captured.touch_meter_power == 60)
 	assert(captured.touch_meter_position == power_at,"Second tap reverses immediately without jumping")
 	scene.meter.accept_snapshot(captured)
 	assert(scene.meter.can_tap(),"Return accepts third tap immediately")
@@ -33,8 +33,8 @@ func _run() -> void:
 	assert(scene.core.snapshot().strokes == 1)
 	# Resizing retains a fixed linear axis and every native window cell.
 	for width in [320.0,720.0,1200.0]:
-		assert(scene.meter.accuracy_x(62,width) < scene.meter.accuracy_x(63,width))
-		assert(scene.meter.accuracy_x(63,width) < scene.meter.accuracy_x(64,width))
+		assert(scene.meter.accuracy_x(62,width) > scene.meter.accuracy_x(63,width))
+		assert(scene.meter.accuracy_x(63,width) > scene.meter.accuracy_x(64,width))
 	scene.free()
 	await create_timer(0.5).timeout
 	print("WHACK_METER_PASS: native capture, exact third-press reading, window metadata and responsive axis")

@@ -18,6 +18,8 @@ const MAX_AUTHORED_ARROW_CELLS := 2048
 
 var _arrows: Array[Dictionary] = []
 var _native_verified: bool = false
+var ball_focus := Vector2(-100,-100)
+var cup_focus := Vector2(364,168)
 
 static func native_slope_vector(raw_direction: int) -> Vector2:
 	# Recovered_ground.cpp uses trig_q14(dir) for X,
@@ -83,6 +85,7 @@ func _draw() -> void:
 		var arrow: Dictionary = _arrows[index]
 		if int(arrow.position.x)%16 != 0 or int(arrow.position.y)%16 != 0: continue
 		var center: Vector2 = arrow["position"]
+		if center.distance_to(ball_focus)<5.0 or center.distance_to(cup_focus)<6.0: continue
 		var vec: Vector2 = native_slope_vector(int(arrow["direction_raw"]))
 		var strength: int = int(arrow["magnitude"])
 		var length: float = 2.2 + float(strength) * 0.18

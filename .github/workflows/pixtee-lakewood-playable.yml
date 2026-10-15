@@ -80,9 +80,11 @@ jobs:
             if grep -E 'SCRIPT ERROR:|ERROR:' /tmp/pixtee-verification.log; then exit 1; fi
           }
           verify_godot --headless --editor --path pixtee-godot --import --quit
+          verify_godot --headless --path pixtee-godot --script res://scripts/VisualPolishCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/EngineBindingCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/CommercialPresentationSmokeCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/PlayerReportedRenderingCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/HUDLivingCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/WhackMeterCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/MobileHUDCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/CommercialJourneyCI.gd
@@ -92,14 +94,30 @@ jobs:
           verify_godot --headless --path pixtee-godot --script res://scripts/PlayerJourneyCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/MenuJourneyCI.gd
           verify_godot --headless --path pixtee-godot --script res://scripts/ShotTransitionCI.gd
+          verify_godot --headless --path pixtee-godot --script res://scripts/NativeWindCI.gd
       - name: Render supplied menus in portrait and wide windows
         run: |
           set -o pipefail
           timeout 120 xvfb-run -a /tmp/Godot_v4.5-stable_linux.x86_64 --audio-driver Dummy --rendering-method gl_compatibility --path pixtee-godot --script res://scripts/MenuVisualCI.gd 2>&1 | tee /tmp/pixtee-menu-visual.log
           if grep -E 'SCRIPT ERROR:|ERROR:' /tmp/pixtee-menu-visual.log; then exit 1; fi
+      - name: Render exact player joint and stance regression
+        run: |
+          set -o pipefail
+          timeout 120 xvfb-run -a /tmp/Godot_v4.5-stable_linux.x86_64 --audio-driver Dummy --rendering-method gl_compatibility --path pixtee-godot --script res://scripts/PlayerJointVisualCI.gd 2>&1 | tee /tmp/pixtee-player-joints.log
+          if grep -E 'SCRIPT ERROR:|ERROR:' /tmp/pixtee-player-joints.log; then exit 1; fi
+      - name: Render animated weather and native HUD controls
+        run: |
+          set -o pipefail
+          timeout 120 xvfb-run -a /tmp/Godot_v4.5-stable_linux.x86_64 --audio-driver Dummy --rendering-method gl_compatibility --path pixtee-godot --script res://scripts/HUDLivingVisualCI.gd 2>&1 | tee /tmp/pixtee-hud-visual.log
+          if grep -E 'SCRIPT ERROR:|ERROR:' /tmp/pixtee-hud-visual.log; then exit 1; fi
+      - name: Render integrated HUD pause and responsive layout
+        run: |
+          set -o pipefail
+          timeout 120 xvfb-run -a /tmp/Godot_v4.5-stable_linux.x86_64 --audio-driver Dummy --rendering-method gl_compatibility --path pixtee-godot --script res://scripts/HUDLivingGameVisualCI.gd 2>&1 | tee /tmp/pixtee-hud-game.log
+          if grep -E 'SCRIPT ERROR:|ERROR:' /tmp/pixtee-hud-game.log; then exit 1; fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pixtee-menu-visuals
-          path: pixtee-godot/review-captures/*.png
+          path: pixtee-godot/review-captures/**/*.png
           if-no-files-found: warn

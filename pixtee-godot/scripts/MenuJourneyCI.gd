@@ -14,7 +14,7 @@ func _run() -> void:
 	assert(scene.profile.load_profile("user://tests/menu-"+str(Time.get_ticks_usec())))
 	scene.show_intro()
 	assert(scene.menu_screen == "intro")
-	scene.start_hole()
+	scene.start_hole(false,false)
 	assert(scene.intro_tween == null and scene.menu_screen == "game")
 	scene.pause_game()
 	var before: Dictionary = scene.core.snapshot()
@@ -82,6 +82,13 @@ func _run() -> void:
 	await process_frame
 	assert(scene.panel.size.x <= scene.menu_scroll.size.x)
 	assert(scene.menu_scroll.get_v_scroll_bar().max_value >= scene.menu_scroll.size.y)
+	scene.show_player()
+	await process_frame
+	await process_frame
+	var actions: Control = scene.menu.find_child("PlayerActions",true,false)
+	assert(actions != null and actions.get_child_count() == 2)
+	assert(not scene.menu_scroll.is_ancestor_of(actions))
+	assert(actions.get_global_rect().end.y <= root.size.y)
 	print("MENU_JOURNEY_PASS: native score journal/dedupe, pause navigation, cosmetic presets, accessible scrolling, results lifecycle")
 	scene.free()
 	await create_timer(0.5).timeout # Retire audio mixer voices before quitting.

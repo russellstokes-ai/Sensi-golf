@@ -7,18 +7,12 @@ var elapsed := 0.0
 func _process(delta: float) -> void:
 	if world == null: return
 	if not world.is_processing(): return
-	if not world.reduced_motion: elapsed += minf(delta, 0.1)
+	elapsed = world.time
 	queue_redraw()
 
 func _draw() -> void:
 	if world == null or world.assets.is_empty(): return
-	# Broad, feathered cloud shadows drift at less than one world pixel/second.
-	if world.visual_quality > 0:
-		for cloud in range(3):
-			var centre := Vector2(fposmod(elapsed * 0.65 + cloud * 247.0, 1000.0)-220.0, 190.0+cloud*295.0)
-			for lobe in range(4):
-				for edge in range(5):
-					draw_circle(centre+Vector2(lobe*42.0, sin(float(lobe)*2.0)*22.0), 68.0+edge*9.0, Color(0.10,0.16,0.23,0.009), true, -1.0, true)
+	# Cloud shade is now owned by the single world-space atmosphere shader.
 	if world.reduced_motion: return
 	for item in world.placements:
 		var base := Vector2(item.x,item.y)
@@ -27,7 +21,8 @@ func _draw() -> void:
 			# A single occasional leaf per tree; staggered, bounded, no emitters accumulate.
 			var cycle := fposmod(elapsed + float(item.phase)*17.0, 29.0)
 			if cycle < 5.5:
-				var at := base + Vector2(sin(cycle*2.4+float(item.phase))*3.0+cycle*1.7, -float(item.h)*0.7+cycle*float(item.h)*0.12)
+				var drift: Vector2 = world.presentation.wind_toward*cycle*(0.7+world.presentation.visual_breeze*2.0)
+				var at := base + drift + Vector2(sin(cycle*2.4+float(item.phase))*3.0, -float(item.h)*0.7+cycle*float(item.h)*0.12)
 				var alpha := minf(1.0,(5.5-cycle)*2.0)
 				draw_set_transform(at,sin(cycle*2.0)*0.6)
 				draw_colored_polygon(PackedVector2Array([Vector2(-2,0),Vector2(0,-1),Vector2(2,0),Vector2(0,1)]),Color(0.62,0.65,0.22,alpha))

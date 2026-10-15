@@ -12,6 +12,7 @@ func _ready() -> void:
 		if not Geometry2D.is_point_in_polygon(candidate,green) and candidate.distance_to(cup)>28.0:
 			foot = candidate
 			break
+	z_index = roundi(foot.y)
 	actor = PixteePremiumLayeredSprite.new()
 	actor.preview_enabled = false
 	add_child(actor)
@@ -33,7 +34,4 @@ func _update_flag_layers() -> void:
 			layer.modulate.a = flag_alpha
 			layer.visible = flag_alpha>0.0
 func _draw() -> void:
-	draw_set_transform(foot)
-	draw_set_transform(foot,0.0,Vector2(3.3,1.1))
-	draw_circle(Vector2.ZERO,1.0,Color(0.025,0.08,0.06,0.26),true,-1,true)
-	draw_set_transform(Vector2.ZERO)
+	pass # One shared shadow renderer owns all human feet and cast shadows.

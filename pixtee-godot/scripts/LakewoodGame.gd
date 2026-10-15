@@ -47,7 +47,7 @@ func _ready() -> void:
 	profile.load_profile()
 	var hash_context := HashingContext.new()
 	hash_context.start(HashingContext.HASH_SHA256)
-	hash_context.update("pixtee-native-authoring-v4:touch-meter:boards:soft-ground:bird-flocks:attended-flag".to_utf8_buffer())
+	hash_context.update("pixtee-native-authoring-v5:touch-meter:boards:soft-ground:bird-flocks:attended-flag:authored-wind-v1:touch-meter-v2".to_utf8_buffer())
 	for resource in ["MAPM.bin","SPT.bin","MAPI-descriptors.bin","MAPI-selectors.bin","MAPS.bin"]:
 		hash_context.update(FileAccess.get_file_as_bytes(NATIVE_COURSE+resource))
 	course_hash = hash_context.finish().hex_encode()
@@ -69,6 +69,7 @@ func _ready() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	menu = Control.new()
+	menu.theme = PixteeUIStyle.theme()
 	menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(menu)
 	hud = Control.new()
@@ -260,6 +261,21 @@ func show_settings() -> void:
 	weather_choice.item_selected.connect(func(index: int):
 		if profile.set_setting("weather_preset",presets[index]): apply_saved_settings())
 	panel.add_child(weather_choice)
+	panel.add_child(text_line("Wind · next round"))
+	var wind_speed := OptionButton.new()
+	var speeds := [0,40,60,80,120,150]
+	for speed in speeds: wind_speed.add_item("Calm" if speed == 0 else str(speed/10)+" mph")
+	wind_speed.select(speeds.find(int(profile.snapshot().settings.wind_speed_mph_x10)))
+	wind_speed.custom_minimum_size.y = 44
+	wind_speed.item_selected.connect(func(index: int): profile.set_setting("wind_speed_mph_x10",speeds[index]))
+	panel.add_child(wind_speed)
+	var wind_direction := OptionButton.new()
+	var headings := [2048,1536,1024,512,0,3584,3072,2560]
+	for title in ["Toward north","Toward northeast","Toward east","Toward southeast","Toward south","Toward southwest","Toward west","Toward northwest"]: wind_direction.add_item(title)
+	wind_direction.select(headings.find(int(profile.snapshot().settings.wind_toward_raw)))
+	wind_direction.custom_minimum_size.y = 44
+	wind_direction.item_selected.connect(func(index: int): profile.set_setting("wind_toward_raw",headings[index]))
+	panel.add_child(wind_direction)
 	for channel in ["Music","SFX","Ambience","UI"]:
 		panel.add_child(text_line(channel))
 		var slider := HSlider.new()
@@ -334,8 +350,19 @@ func show_player() -> void:
 	panel.add_child(player_name)
 	player_error = text_line("")
 	panel.add_child(player_error)
-	panel.add_child(button("Apply",func(): apply_player_edit()))
-	panel.add_child(button("Cancel",cancel_player_edit))
+	# Keep commit/cancel reachable while the appearance list scrolls.
+	menu_scroll.get_parent().add_theme_constant_override("margin_bottom",134)
+	var footer := CenterContainer.new()
+	menu.add_child(footer)
+	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	footer.offset_top = -126
+	footer.offset_bottom = -12
+	var actions := VBoxContainer.new()
+	actions.name = "PlayerActions"
+	actions.add_theme_constant_override("separation",8)
+	footer.add_child(actions)
+	actions.add_child(button("Apply",func(): apply_player_edit()))
+	actions.add_child(button("Cancel",cancel_player_edit))
 
 func apply_player_edit() -> bool:
 	player_draft.display_name = player_name.text
@@ -374,10 +401,12 @@ func make_hud() -> void:
 	hud.add_child(club_card)
 	club_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	club_card.offset_left = 8
-	club_card.offset_right = 172
+	club_card.offset_right = 192
 	club_card.offset_top = 54
-	club_card.offset_bottom = 180
+	club_card.offset_bottom = 188
 	club_card.club_selected.connect(select_club)
+	club_card.weather_source = world.living_world.weather
+	club_card.time_source = world.presentation
 	minimap = preload("res://scripts/PixteeMiniMap.gd").new()
 	minimap.world = world
 	hud.add_child(minimap)
@@ -389,13 +418,15 @@ func make_hud() -> void:
 	meter = preload("res://scripts/PixteeWhackMeter.gd").new()
 	meter.pressed.connect(on_shoot)
 	bottom.add_child(meter)
+	meter.weather_source = world.living_world.weather
+	meter.time_source = world.presentation
 
-func start_hole(resuming := false) -> void:
+func start_hole(resuming := false, use_wind := true) -> void:
 	shot_transition.cancel_discard()
 	shot_was_active = false
 	stop_intro()
 	menu_screen = "game"
-	core = create_course_core(0)
+	core = create_course_core(0,use_wind)
 	if core == null: return
 	world.set_outfit(profile.snapshot().outfit_id)
 	world.set_appearance(profile.snapshot().appearance)
@@ -494,6 +525,9 @@ func advance_native_tick() -> void:
 
 func update_view(s: Dictionary, hold_golfer := false) -> void:
 	world.accept_snapshot(s,hold_golfer)
+	arrows.visible = bool(s.get("can_shoot",false)) and int(s.get("club_index",0)) == 12
+	arrows.ball_focus = world.ball_world
+	arrows.queue_redraw()
 	fx.accept_native_ball_snapshot(s)
 	var screen := get_viewport().get_visible_rect().size
 	# Keep a close world crop on high-density phones and unfolded windows.
@@ -509,12 +543,12 @@ func update_view(s: Dictionary, hold_golfer := false) -> void:
 	var rendered_half := screen/camera.zoom/2.0
 	world.view_rect = Rect2(camera.position+camera.offset-rendered_half,rendered_half*2)
 	status.text = "H1 · Par 4 · Stroke %d\n%d to cup" % [s.get("strokes",0),s.get("distance_to_hole",0)]
-	club_card.accept_snapshot(s)
 	minimap.reduced_motion = reduced_motion
 	minimap.queue_redraw()
 	camera.force_update_scroll()
 	var presentation: Dictionary = s.duplicate()
 	if shot_transition != null and shot_transition.busy: presentation.can_shoot = false
+	club_card.accept_snapshot(presentation)
 	aim_touch.refresh(presentation)
 	meter.reduced_motion = reduced_motion
 	meter.accept_snapshot(presentation)
@@ -533,7 +567,7 @@ func pause_game() -> void:
 func show_pause() -> void:
 	audio.set_context("menu")
 	menu_screen = "pause"
-	clear_menu()
+	clear_menu(0.70)
 	panel.add_child(text_line("PAUSED"))
 	add_music_toggle()
 	panel.add_child(button("Resume",resume_game))
@@ -644,6 +678,8 @@ func show_statistics() -> void:
 	panel.add_child(text_line("Completed rounds: %d" % stats.played))
 	if stats.played > 0:
 		panel.add_child(text_line("Best: %d strokes\nAverage: %.1f strokes" % [stats.best,float(stats.strokes)/float(stats.played)]))
+		if stats.best_calm>0: panel.add_child(text_line("Best calm round: %d" % stats.best_calm))
+		if stats.best_wind>0: panel.add_child(text_line("Best wind round: %d" % stats.best_wind))
 		panel.add_child(text_line("Last round: %d · %s" % [stats.last.strokes,relative_score(int(stats.last.relative))]))
 	else: panel.add_child(text_line("Complete a round to record your first score."))
 	panel.add_child(button("Back",back_menu))
@@ -705,7 +741,7 @@ func add_outfit_controls() -> void:
 			player_draft.outfit_id = ("female:" if PixteeOutfit.female(player_draft.outfit_id) else "")+"kit:%d:%d:%d" % [kit[0],kit[1],kit[2]]
 			refresh_player_preview())
 
-func create_course_core(source_mode: int) -> PixteeRoundBridge:
+func create_course_core(source_mode: int, use_wind := false) -> PixteeRoundBridge:
 	var native = PixteeRoundBridge.new()
 	var order := PackedInt32Array()
 	order.resize(18)
@@ -743,6 +779,9 @@ func create_course_core(source_mode: int) -> PixteeRoundBridge:
 	if not native.set_original_player_mode_5a(source_mode): return null
 	if not native.set_authored_birds_enabled(true): return null
 	if not native.set_soft_ground_enabled(true): return null
+	if use_wind:
+		var settings: Dictionary = profile.snapshot().settings
+		if not native.set_authored_wind(int(settings.wind_toward_raw),int(settings.wind_speed_mph_x10),int(settings.wind_speed_mph_x10)>0): return null
 	return native
 
 func save_session_checkpoint() -> void:

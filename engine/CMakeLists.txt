@@ -1,4 +1,6 @@
 add_library(sensigolf_core
+    src/authored_wind.cpp
+    src/recovered_math.cpp
     src/authored_tree_contacts.cpp
     src/trace.cpp
     src/classic_shot_model.cpp

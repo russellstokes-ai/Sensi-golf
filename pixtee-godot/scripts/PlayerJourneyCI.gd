@@ -64,7 +64,7 @@ func _run() -> void:
 	root.add_child(scene)
 	await process_frame
 	scene.profile = restored
-	scene.start_hole()
+	scene.start_hole(false,false)
 	scene.core.meter_click_raw(0)
 	scene.core.meter_click_raw(105)
 	scene.core.meter_click_raw(63)
@@ -90,7 +90,7 @@ func _run() -> void:
 	scene.resume_game()
 	assert(not scene.paused and scene.fx.is_processing())
 	# A real native penalty must recover through the live host and accept a shot.
-	scene.start_hole()
+	scene.start_hole(false,false)
 	scene.core.set_aim_raw(0)
 	scene.core.meter_click_raw(0)
 	scene.core.meter_click_raw(105)

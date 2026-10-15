@@ -16,6 +16,7 @@
 #endif
 
 #include "pixtee_round_runtime.hpp"
+#include "pixtee_club_display.hpp"
 #include "pixtee_course_adapter.hpp"
 
 namespace {
@@ -34,6 +35,57 @@ int main(int argc,char** argv) {
     _CrtSetReportFile(_CRT_ASSERT,_CRTDBG_FILE_STDERR);
     _set_abort_behavior(0,_WRITE_ABORT_MSG|_CALL_REPORTFAULT);
 #endif
+    // HUD V2 power audit: identical inputs through mobile adapter and direct
+    // recovered control produce identical ball states, for every sampled tick.
+    assert(pixtee::nominal_club_ranges()[0]==240);
+    for(int club: {0,6,11,12}) for(int percent: {0,25,50,75,100}) {
+        auto mobile=preview(); auto direct=preview();
+        const auto flat=pixtee::make_lakewood_hole_1_with_slope(0,0);
+        for(auto* game: {&mobile,&direct}) {
+            game->register_course(1,flat);game->load_next_hole();
+            game->set_club(club);game->set_aim_raw(2048);
+        }
+        mobile.start_touch_meter();
+        const int target=160+(1050*percent+50)/100;
+        while(mobile.touch_meter().stage==1 && mobile.touch_meter().position<target)mobile.tick_touch_meter(false);
+        if(mobile.touch_meter().stage==1)mobile.tick_touch_meter(true);
+        const int captured=mobile.touch_meter().power;
+        assert(std::abs(captured-105*percent/100)<=1);
+        while(mobile.touch_meter().position>160)mobile.tick_touch_meter(false);
+        assert(mobile.touch_meter().sample()==63);
+        mobile.tick_touch_meter(true);
+        direct.meter_click_raw(0);direct.meter_click_raw(captured);direct.meter_click_raw(63);
+        for(int i=0;i<256;++i) {
+            const auto& a=mobile.hole().ball_state();const auto& b=direct.hole().ball_state();
+            assert(a.x_raw==b.x_raw && a.y_raw==b.y_raw && a.z_raw==b.z_raw);
+            assert(a.vx_raw==b.vx_raw && a.vy_raw==b.vy_raw && a.vz_raw==b.vz_raw);
+            assert(mobile.hole().strokes()==direct.hole().strokes());
+            mobile.step_tick();direct.step_tick();
+        }
+        std::printf("HUD_POWER_AUDIT club=%d display=%d raw=%d native_equal=256_ticks\n",club,percent,captured);
+    }
+    for(int club: {0,6,11,12}) for(int lie=0;lie<10;++lie) for(int power: {0,26,52,78,105}) {
+        const auto window=sensigolf::recovered::original_accuracy_window(club,lie);
+        pixtee::TouchMeter mobile;mobile.start(window.lower,window.upper);
+        mobile.position=160+power*10;mobile.step(true);mobile.position=160;
+        sensigolf::recovered::LaunchInput input{};
+        input.club_index=club;input.lie_index=lie;input.captured_power=mobile.power;
+        input.accuracy_tick=mobile.sample();input.player_direction=2048;
+        const auto launch=sensigolf::recovered::launch_normal_shot(input);
+        const auto params=sensigolf::recovered::club_launch_parameters()[club];
+        assert(launch.adjusted_power==power);
+        assert(launch.horizontal_force==params.horizontal_base+params.power_scale*power);
+        assert(launch.vertical_force==params.vertical_base+params.power_scale*power);
+        mobile.position=160+mobile.red_half+mobile.yellow/2;
+        input.accuracy_tick=mobile.sample();
+        assert(input.accuracy_tick<63); // mirrored left yellow -> hook for right-handed golfer
+        assert(sensigolf::recovered::launch_normal_shot(input).direction>2048);
+        mobile.position=160-mobile.red_half-mobile.yellow/2;
+        input.accuracy_tick=mobile.sample();
+        assert(input.accuracy_tick>63);
+        assert(sensigolf::recovered::launch_normal_shot(input).direction<2048);
+    }
+    std::puts("HUD_NATIVE_AUDIT_PASS: 200 club/lie/power mappings, 20 full adapter paths, hook/slice and nominal Max");
     // The source-authored fine-map transfer is tested at ALL verified 16x16
     // slope direction and strength combinations. Godot must never guess
     // these values from a screenshot or one arrow sprite orientation.
@@ -44,6 +96,26 @@ int main(int argc,char** argv) {
         if(phase==2)recovery.tick_touch_meter(true);
         recovery.restore_replay(stable_replay);
         assert(recovery.touch_meter().stage==0);
+    }
+    {
+        const auto course=pixtee::make_lakewood_hole_1_with_slope(0,0);
+        auto wind=preview();wind.register_course(1,course);wind.load_next_hole();
+        wind.set_authored_wind(1024,80,true);
+        wind.set_aim_raw(2048);wind.meter_click_raw(0);wind.meter_click_raw(105);wind.meter_click_raw(63);
+        for(int i=0;i<12;++i)wind.step_tick();
+        auto calm=preview();calm.register_course(1,course);calm.load_next_hole();
+        calm.set_aim_raw(2048);calm.meter_click_raw(0);calm.meter_click_raw(105);calm.meter_click_raw(63);
+        for(int i=0;i<12;++i)calm.step_tick();
+        assert(wind.hole().ball_state().x_raw>calm.hole().ball_state().x_raw);
+        bool locked=false;try{wind.set_authored_wind(0,60,true);}catch(const std::logic_error&){locked=true;}assert(locked);
+        auto restored=preview();restored.register_course(1,course);
+        restored.restore_native_session(wind.serialize_native_session());
+        assert(restored.authored_wind().speed_mph_x10==80);
+        assert(restored.native_fingerprint()==wind.native_fingerprint());
+        for(int i=0;i<40;++i){wind.step_tick();restored.step_tick();assert(restored.native_fingerprint()==wind.native_fingerprint());}
+        auto invalid=preview();invalid.register_course(1,course);invalid.load_next_hole();
+        bool rejected=false;try{invalid.set_authored_wind(-1,60,true);}catch(const std::invalid_argument&){rejected=true;}assert(rejected);
+        rejected=false;try{invalid.set_authored_wind(1024,151,true);}catch(const std::invalid_argument&){rejected=true;}assert(rejected);
     }
     auto empty=preview();
     assert(empty.verified_native_green_arrows().empty());

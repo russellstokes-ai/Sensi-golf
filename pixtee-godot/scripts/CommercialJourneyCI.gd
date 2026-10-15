@@ -12,7 +12,7 @@ func _run() -> void:
 	draft.outfit_id = "kit:3:2:1"
 	assert(scene.profile.apply_edit(draft))
 	assert(scene.profile.snapshot().outfit_id == "kit:3:2:1")
-	scene.start_hole()
+	scene.start_hole(false,false)
 	assert(scene.world.player_sprite.material.get_shader_parameter("shirt_enabled"))
 	scene.on_shoot()
 	for tick in range(30): scene.core.tick_touch_meter(false)
